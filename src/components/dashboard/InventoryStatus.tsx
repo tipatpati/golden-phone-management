@@ -66,6 +66,7 @@ export function InventoryStatus() {
         <div className="space-y-4">
           {lowStockItems.map((item) => {
             const stockStatus = getStockLevel(item.inStock, item.threshold);
+            const percentValue = (item.inStock / item.threshold) * 100;
             
             return (
               <div key={item.sku} className="flex flex-col space-y-2">
@@ -79,11 +80,12 @@ export function InventoryStatus() {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Progress
-                    value={(item.inStock / item.threshold) * 100}
-                    className="h-2"
-                    indicatorClassName={stockStatus.color}
-                  />
+                  <div className={`flex-1 ${stockStatus.color === "bg-red-500" ? "bg-red-100" : stockStatus.color === "bg-yellow-500" ? "bg-yellow-100" : "bg-green-100"} rounded-full h-2 overflow-hidden`}>
+                    <div
+                      className={`h-full ${stockStatus.color}`}
+                      style={{ width: `${percentValue}%` }}
+                    ></div>
+                  </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
                     {item.inStock}/{item.threshold}
                   </span>
