@@ -1,0 +1,144 @@
+
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { 
+  LayoutGrid, 
+  Users, 
+  PackageSearch, 
+  ClipboardList, 
+  BarChart4,
+  Settings,
+  Menu,
+  X
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+type NavItem = {
+  title: string;
+  href: string;
+  icon: React.ElementType;
+  permission: string[];
+};
+
+const navItems: NavItem[] = [
+  {
+    title: "Dashboard",
+    href: "/",
+    icon: LayoutGrid,
+    permission: ["salesperson", "manager", "admin"],
+  },
+  {
+    title: "Clients",
+    href: "/clients",
+    icon: Users,
+    permission: ["salesperson", "manager", "admin"],
+  },
+  {
+    title: "Inventory",
+    href: "/inventory",
+    icon: PackageSearch,
+    permission: ["manager", "admin"],
+  },
+  {
+    title: "Repairs",
+    href: "/repairs",
+    icon: ClipboardList,
+    permission: ["manager", "admin"],
+  },
+  {
+    title: "Reports",
+    href: "/reports",
+    icon: BarChart4,
+    permission: ["manager", "admin"],
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: Settings,
+    permission: ["admin"],
+  },
+];
+
+export function SideNavigation() {
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // For demo purposes, simulate a logged-in admin user
+  const userRole = "admin";
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const filteredNavItems = navItems.filter((item) =>
+    item.permission.includes(userRole)
+  );
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      {isMobile && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={toggleMenu}
+          className="fixed top-4 left-4 z-50"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </Button>
+      )}
+
+      {/* Sidebar navigation */}
+      <aside
+        className={cn(
+          "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out",
+          isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"
+        )}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex h-16 items-center justify-center border-b border-border">
+            <h1 className="text-xl font-bold text-primary">RetailPro</h1>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto p-4">
+            <ul className="space-y-1">
+              {filteredNavItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                      onClick={() => isMobile && setIsOpen(false)}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <div className="border-t border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary" />
+              <div>
+                <p className="text-sm font-medium">Admin User</p>
+                <p className="text-xs text-muted-foreground">admin@example.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
