@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateProduct } from "@/services/useProducts";
+import { useCreateProduct, Product } from "@/services/useProducts";
+import { toast } from "@/components/ui/sonner";
 
-// Define form schema using zod
+// Define form schema using zod - make required fields match Product type
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   sku: z.string().min(1, "SKU is required"),
@@ -53,11 +54,24 @@ export default function Inventory() {
   
   const onSubmit = async (data: ProductFormValues) => {
     try {
-      await createProduct.mutateAsync(data);
+      // Ensure all required fields have values before submitting
+      const productData: Omit<Product, "id"> = {
+        name: data.name,
+        sku: data.sku,
+        category: data.category,
+        price: data.price,
+        stock: data.stock,
+        threshold: data.threshold,
+        description: data.description || ""
+      };
+      
+      await createProduct.mutateAsync(productData);
       form.reset();
       setDialogOpen(false);
+      toast.success("Product added successfully");
     } catch (error) {
       console.error("Failed to create product:", error);
+      toast.error("Failed to add product");
     }
   };
 

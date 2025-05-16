@@ -5,17 +5,6 @@ import { useProducts, Product } from "@/services/useProducts";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash } from "lucide-react";
 
-type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  category_name?: string;
-  price: number;
-  stock: number;
-  threshold: number;
-};
-
 const demoProducts: Product[] = [
   {
     id: "1",
