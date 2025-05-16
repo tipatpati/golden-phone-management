@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
+import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,9 +32,7 @@ const App = () => (
           } />
           <Route path="/inventory" element={
             <MainLayout>
-              <div className="min-h-[80vh] flex items-center justify-center">
-                <h1 className="text-2xl">Inventory Module - Coming Soon</h1>
-              </div>
+              <Inventory />
             </MainLayout>
           } />
           <Route path="/repairs" element={
