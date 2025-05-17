@@ -1,6 +1,6 @@
 import { toast } from '@/components/ui/sonner';
 
-const API_URL = 'https://your-django-backend-url.com/api';  // Replace with your actual Django API URL
+const API_URL = 'http://127.0.0.1:8000/api';  // Replace with your actual Django API URL
 
 // Error handler helper
 const handleApiError = (error: any) => {
