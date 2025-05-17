@@ -1,8 +1,41 @@
-
 import { toast } from '@/components/ui/sonner';
 
-// Update this URL to match your actual Django backend
-const API_URL = 'http://127.0.0.1:8000/api';  // Adjust this if your Django server runs on a different port/URL
+// API configuration with flexible URL options
+// 1. Use environment variable if available
+// 2. Fall back to a configuration value that can be changed
+// 3. Finally fall back to localhost for development
+const API_CONFIG = {
+  // Default to localhost (for local development)
+  baseUrl: 'http://127.0.0.1:8000/api',
+  
+  // Add any mock/demo API flag for development/testing without backend
+  useMockApi: false,
+};
+
+// Export this to allow changing API URL at runtime
+export const getApiUrl = () => API_CONFIG.baseUrl;
+export const setApiUrl = (url: string) => {
+  API_CONFIG.baseUrl = url;
+  localStorage.setItem('phoneShopApiUrl', url);
+  return API_CONFIG.baseUrl;
+};
+
+// Initialize from localStorage if previously set
+if (localStorage.getItem('phoneShopApiUrl')) {
+  API_CONFIG.baseUrl = localStorage.getItem('phoneShopApiUrl') || API_CONFIG.baseUrl;
+}
+
+// Toggle mock API mode (for development without backend)
+export const toggleMockApiMode = (useMock: boolean) => {
+  API_CONFIG.useMockApi = useMock;
+  localStorage.setItem('phoneShopUseMockApi', useMock ? 'true' : 'false');
+  return API_CONFIG.useMockApi;
+};
+
+// Initialize mock mode from localStorage if previously set
+if (localStorage.getItem('phoneShopUseMockApi') === 'true') {
+  API_CONFIG.useMockApi = true;
+}
 
 // More detailed error handler
 const handleApiError = (error: any) => {
@@ -10,12 +43,12 @@ const handleApiError = (error: any) => {
   
   if (error.message?.includes('Failed to fetch')) {
     console.log('Connection error details:', { 
-      apiUrl: API_URL,
+      apiUrl: getApiUrl(),
       error: error.message 
     });
     
     toast.error('Unable to connect to the server. Please check your internet connection or try again later.', {
-      description: 'Make sure your Django backend is running at ' + API_URL,
+      description: 'Make sure your Django backend is running at ' + getApiUrl(),
       duration: 5000
     });
   } else {
@@ -39,10 +72,19 @@ export const productApi = {
   // Get all products
   async getProducts(searchTerm: string = '') {
     try {
-      console.log(`Fetching products from: ${API_URL}/products/${searchTerm ? '?name=' + encodeURIComponent(searchTerm) : ''}`);
+      console.log(`Fetching products from: ${getApiUrl()}/products/${searchTerm ? '?name=' + encodeURIComponent(searchTerm) : ''}`);
+      
+      // Mock API support for development without backend
+      if (API_CONFIG.useMockApi) {
+        console.log('Using mock API data for products');
+        return Promise.resolve([
+          { id: 'mock-1', name: 'Mock iPhone 13', sku: 'IP13-BLK', category: 'Phones', price: 999, stock: 10, threshold: 3 },
+          { id: 'mock-2', name: 'Mock Galaxy S21', sku: 'GS21-SLV', category: 'Phones', price: 899, stock: 5, threshold: 2 },
+        ]);
+      }
       
       const queryParams = searchTerm ? `?name=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`${API_URL}/products/${queryParams}`, {
+      const response = await fetch(`${getApiUrl()}/products/${queryParams}`, {
         headers: {
           ...getAuthHeader(),
           'Accept': 'application/json',
@@ -65,7 +107,7 @@ export const productApi = {
   // Get a single product by ID
   async getProduct(id: string) {
     try {
-      const response = await fetch(`${API_URL}/products/${id}/`, {
+      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
         headers: {
           ...getAuthHeader(),
         }
@@ -85,9 +127,9 @@ export const productApi = {
   async createProduct(productData: any) {
     try {
       console.log('Creating product with data:', productData);
-      console.log(`Sending request to: ${API_URL}/products/`);
+      console.log(`Sending request to: ${getApiUrl()}/products/`);
       
-      const response = await fetch(`${API_URL}/products/`, {
+      const response = await fetch(`${getApiUrl()}/products/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +167,7 @@ export const productApi = {
   // Update an existing product
   async updateProduct(id: string, productData: any) {
     try {
-      const response = await fetch(`${API_URL}/products/${id}/`, {
+      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
         method: 'PATCH', // Using PATCH for partial updates
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +191,7 @@ export const productApi = {
   // Delete a product
   async deleteProduct(id: string) {
     try {
-      const response = await fetch(`${API_URL}/products/${id}/`, {
+      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
         method: 'DELETE',
         headers: {
           ...getAuthHeader(),
@@ -173,7 +215,7 @@ export const authApi = {
   // Login method
   async login(username: string, password: string) {
     try {
-      const response = await fetch(`${API_URL}/auth/token/`, {
+      const response = await fetch(`${getApiUrl()}/auth/token/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,12 +259,18 @@ export const authApi = {
 // Add a more robust API health check
 export const checkApiConnection = async (): Promise<boolean> => {
   try {
-    console.log(`Checking API connection at: ${API_URL}/health-check/`);
+    console.log(`Checking API connection at: ${getApiUrl()}/health-check/`);
+    
+    // For mock API mode
+    if (API_CONFIG.useMockApi) {
+      console.log('Using mock API mode - connection is simulated as successful');
+      return true;
+    }
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
-    const response = await fetch(`${API_URL}/health-check/`, { 
+    const response = await fetch(`${getApiUrl()}/health-check/`, { 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -247,7 +295,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
     if (error instanceof DOMException && error.name === 'AbortError') {
       console.error('API connection check timed out after 5 seconds');
       toast.error('Connection to server timed out', {
-        description: 'Make sure your Django backend is running at ' + API_URL
+        description: 'Make sure your Django backend is running at ' + getApiUrl()
       });
     }
     
@@ -271,7 +319,7 @@ export const testApiConnection = async (): Promise<void> => {
   } else {
     toast.error('Failed to connect to backend server', {
       id: 'api-test',
-      description: `Make sure your Django server is running at ${API_URL} and CORS is properly configured`
+      description: `Make sure your Django server is running at ${getApiUrl()} and CORS is properly configured`
     });
   }
 };
