@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge"; // Add the Badge import
 import { useCreateProduct } from "@/services/useProducts";
 import { toast } from "@/components/ui/sonner";
 import { Smartphone, Barcode } from "lucide-react";
