@@ -2,10 +2,10 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Grid, List, FilterX } from "lucide-react";
+import { Search, Grid, List, FilterX, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function InventoryTableToolbar() {
+export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => void }) {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const queryClient = useQueryClient();
@@ -55,6 +55,15 @@ export function InventoryTableToolbar() {
         </Button>
       </form>
       <div className="flex items-center gap-2">
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={onAddProduct}
+          className="flex items-center gap-1"
+        >
+          <Plus className="h-4 w-4" />
+          Add Product
+        </Button>
         <Button 
           variant={viewMode === "grid" ? "default" : "outline"} 
           size="icon"

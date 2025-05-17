@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useProducts, Product } from "@/services/useProducts";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Barcode, Smartphone } from "lucide-react";
 
 const demoProducts: Product[] = [
   {
@@ -15,6 +16,9 @@ const demoProducts: Product[] = [
     price: 999.99,
     stock: 15,
     threshold: 5,
+    has_serial: true,
+    serial_numbers: ["352908764123456", "352908764123457"],
+    barcode: "8901234567890"
   },
   {
     id: "2",
@@ -25,6 +29,9 @@ const demoProducts: Product[] = [
     price: 899.99,
     stock: 3,
     threshold: 5,
+    has_serial: true,
+    serial_numbers: ["990000862471854"],
+    barcode: "8901234567891"
   },
   {
     id: "3",
@@ -35,6 +42,8 @@ const demoProducts: Product[] = [
     price: 19.99,
     stock: 50,
     threshold: 20,
+    has_serial: false,
+    barcode: "8901234567892"
   },
 ];
 
@@ -66,6 +75,7 @@ export function InventoryTable() {
             <TableHead>Product</TableHead>
             <TableHead>SKU</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>Type</TableHead>
             <TableHead className="text-right">Price</TableHead>
             <TableHead className="text-right">Stock</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -90,6 +100,19 @@ function ProductRow({ product }: { product: Product }) {
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>{product.sku}</TableCell>
       <TableCell>{product.category_name || product.category}</TableCell>
+      <TableCell>
+        {product.has_serial ? (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Smartphone className="h-3 w-3" />
+            IMEI
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Barcode className="h-3 w-3" />
+            Standard
+          </Badge>
+        )}
+      </TableCell>
       <TableCell className="text-right">
         ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
       </TableCell>

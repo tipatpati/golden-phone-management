@@ -13,6 +13,10 @@ export type Product = {
   stock: number;
   threshold: number;
   description?: string;
+  has_serial: boolean;       // Whether this product has serial numbers (like IMEI)
+  serial_numbers?: string[]; // Array of serial numbers/IMEI if applicable
+  barcode?: string;          // Barcode identifier
+  supplier?: string;         // Supplier information
 };
 
 export function useProducts(searchTerm: string = '') {
