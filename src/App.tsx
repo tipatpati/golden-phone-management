@@ -9,59 +9,69 @@ import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={
-            <MainLayout>
-              <Dashboard />
-            </MainLayout>
-          } />
-          <Route path="/clients" element={
-            <MainLayout>
-              <div className="min-h-[80vh] flex items-center justify-center">
-                <h1 className="text-2xl">Clients Module - Coming Soon</h1>
-              </div>
-            </MainLayout>
-          } />
-          <Route path="/inventory" element={
-            <MainLayout>
-              <Inventory />
-            </MainLayout>
-          } />
-          <Route path="/repairs" element={
-            <MainLayout>
-              <div className="min-h-[80vh] flex items-center justify-center">
-                <h1 className="text-2xl">Repairs Module - Coming Soon</h1>
-              </div>
-            </MainLayout>
-          } />
-          <Route path="/reports" element={
-            <MainLayout>
-              <div className="min-h-[80vh] flex items-center justify-center">
-                <h1 className="text-2xl">Reports Module - Coming Soon</h1>
-              </div>
-            </MainLayout>
-          } />
-          <Route path="/settings" element={
-            <MainLayout>
-              <div className="min-h-[80vh] flex items-center justify-center">
-                <h1 className="text-2xl">Settings Module - Coming Soon</h1>
-              </div>
-            </MainLayout>
-          } />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
+            } />
+            <Route path="/clients" element={
+              <MainLayout>
+                <div className="min-h-[80vh] flex items-center justify-center">
+                  <h1 className="text-2xl">Clients Module - Coming Soon</h1>
+                </div>
+              </MainLayout>
+            } />
+            <Route path="/inventory" element={
+              <MainLayout>
+                <Inventory />
+              </MainLayout>
+            } />
+            <Route path="/repairs" element={
+              <MainLayout>
+                <div className="min-h-[80vh] flex items-center justify-center">
+                  <h1 className="text-2xl">Repairs Module - Coming Soon</h1>
+                </div>
+              </MainLayout>
+            } />
+            <Route path="/reports" element={
+              <MainLayout>
+                <div className="min-h-[80vh] flex items-center justify-center">
+                  <h1 className="text-2xl">Reports Module - Coming Soon</h1>
+                </div>
+              </MainLayout>
+            } />
+            <Route path="/settings" element={
+              <MainLayout>
+                <div className="min-h-[80vh] flex items-center justify-center">
+                  <h1 className="text-2xl">Settings Module - Coming Soon</h1>
+                </div>
+              </MainLayout>
+            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
