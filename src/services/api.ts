@@ -1,12 +1,18 @@
-
 import { toast } from '@/components/ui/sonner';
 
-const API_URL = 'http://localhost:8000/api';  // Change this to your Django server URL when deployed
+const API_URL = 'https://your-django-backend-url.com/api';  // Replace with your actual Django API URL
 
 // Error handler helper
 const handleApiError = (error: any) => {
   console.error('API Error:', error);
-  toast.error('An error occurred while connecting to the server');
+  
+  // More specific error handling
+  if (error.message?.includes('Failed to fetch')) {
+    toast.error('Unable to connect to the server. Please check your internet connection or try again later.');
+  } else {
+    toast.error('An error occurred while connecting to the server');
+  }
+  
   throw error;
 };
 
@@ -29,7 +35,8 @@ export const productApi = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
       }
       
       return await response.json();
@@ -142,7 +149,8 @@ export const authApi = {
       
       if (!response.ok) {
         if (response.status === 400) {
-          toast.error('Invalid username or password');
+          const errorData = await response.json().catch(() => ({}));
+          toast.error(errorData.non_field_errors?.[0] || 'Invalid username or password');
         }
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -169,5 +177,22 @@ export const authApi = {
   // Check if user is logged in
   isLoggedIn() {
     return !!localStorage.getItem('authToken');
+  }
+};
+
+// Add a more robust API health check
+export const checkApiConnection = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_URL}/health-check/`, { 
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.error('API connection check failed:', error);
+    return false;
   }
 };
