@@ -6,8 +6,8 @@ import { toast } from '@/components/ui/sonner';
 // 2. Fall back to a configuration value that can be changed
 // 3. Finally fall back to localhost for development
 const API_CONFIG = {
-  // Default to localhost (for local development)
-  baseUrl: 'http://127.0.0.1:8000/api',
+  // Default to your PythonAnywhere URL
+  baseUrl: 'https://amirbenbekhti.pythonanywhere.com',
   
   // Add any mock/demo API flag for development/testing without backend
   useMockApi: false,
@@ -81,7 +81,7 @@ export const productApi = {
   async getProducts(searchTerm: string = '') {
     try {
       const queryParams = searchTerm ? `?name=${encodeURIComponent(searchTerm)}` : '';
-      const url = buildApiUrl(`products/${queryParams}`);
+      const url = buildApiUrl(`api/products/${queryParams}`);
       console.log(`Fetching products from: ${url}`);
       
       // Mock API support for development without backend
@@ -116,7 +116,7 @@ export const productApi = {
   // Get a single product by ID
   async getProduct(id: string) {
     try {
-      const response = await fetch(buildApiUrl(`products/${id}/`), {
+      const response = await fetch(buildApiUrl(`api/products/${id}/`), {
         headers: {
           ...getAuthHeader(),
         }
@@ -135,7 +135,7 @@ export const productApi = {
   // Create a new product
   async createProduct(productData: any) {
     try {
-      const url = buildApiUrl('products/');
+      const url = buildApiUrl('api/products/');
       console.log('Creating product with data:', productData);
       console.log(`Sending request to: ${url}`);
       
@@ -177,7 +177,7 @@ export const productApi = {
   // Update an existing product
   async updateProduct(id: string, productData: any) {
     try {
-      const response = await fetch(buildApiUrl(`products/${id}/`), {
+      const response = await fetch(buildApiUrl(`api/products/${id}/`), {
         method: 'PATCH', // Using PATCH for partial updates
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ export const productApi = {
   // Delete a product
   async deleteProduct(id: string) {
     try {
-      const response = await fetch(buildApiUrl(`products/${id}/`), {
+      const response = await fetch(buildApiUrl(`api/products/${id}/`), {
         method: 'DELETE',
         headers: {
           ...getAuthHeader(),
@@ -225,7 +225,7 @@ export const authApi = {
   // Login method
   async login(username: string, password: string) {
     try {
-      const response = await fetch(`${getApiUrl()}/auth/token/`, {
+      const response = await fetch(buildApiUrl('api/auth/token/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,10 +266,10 @@ export const authApi = {
   }
 };
 
-// Add a more robust API health check
+// Simplified API health check that actually tests your Django backend
 export const checkApiConnection = async (): Promise<boolean> => {
   try {
-    const url = buildApiUrl('health-check/');
+    const url = buildApiUrl('api/products/');
     console.log(`Checking API connection at: ${url}`);
     
     // For mock API mode
@@ -284,6 +284,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
     const response = await fetch(url, { 
       method: 'GET',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       signal: controller.signal,
