@@ -1,3 +1,4 @@
+
 import { toast } from '@/components/ui/sonner';
 
 // API configuration with flexible URL options
@@ -10,6 +11,13 @@ const API_CONFIG = {
   
   // Add any mock/demo API flag for development/testing without backend
   useMockApi: false,
+};
+
+// Helper function to construct URLs properly without double slashes
+const buildApiUrl = (endpoint: string) => {
+  const baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
+  const cleanEndpoint = endpoint.replace(/^\/+/, ''); // Remove leading slashes
+  return `${baseUrl}/${cleanEndpoint}`;
 };
 
 // Export this to allow changing API URL at runtime
@@ -72,7 +80,9 @@ export const productApi = {
   // Get all products
   async getProducts(searchTerm: string = '') {
     try {
-      console.log(`Fetching products from: ${getApiUrl()}/products/${searchTerm ? '?name=' + encodeURIComponent(searchTerm) : ''}`);
+      const queryParams = searchTerm ? `?name=${encodeURIComponent(searchTerm)}` : '';
+      const url = buildApiUrl(`products/${queryParams}`);
+      console.log(`Fetching products from: ${url}`);
       
       // Mock API support for development without backend
       if (API_CONFIG.useMockApi) {
@@ -83,8 +93,7 @@ export const productApi = {
         ]);
       }
       
-      const queryParams = searchTerm ? `?name=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`${getApiUrl()}/products/${queryParams}`, {
+      const response = await fetch(url, {
         headers: {
           ...getAuthHeader(),
           'Accept': 'application/json',
@@ -107,7 +116,7 @@ export const productApi = {
   // Get a single product by ID
   async getProduct(id: string) {
     try {
-      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
+      const response = await fetch(buildApiUrl(`products/${id}/`), {
         headers: {
           ...getAuthHeader(),
         }
@@ -126,10 +135,11 @@ export const productApi = {
   // Create a new product
   async createProduct(productData: any) {
     try {
+      const url = buildApiUrl('products/');
       console.log('Creating product with data:', productData);
-      console.log(`Sending request to: ${getApiUrl()}/products/`);
+      console.log(`Sending request to: ${url}`);
       
-      const response = await fetch(`${getApiUrl()}/products/`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +177,7 @@ export const productApi = {
   // Update an existing product
   async updateProduct(id: string, productData: any) {
     try {
-      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
+      const response = await fetch(buildApiUrl(`products/${id}/`), {
         method: 'PATCH', // Using PATCH for partial updates
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +201,7 @@ export const productApi = {
   // Delete a product
   async deleteProduct(id: string) {
     try {
-      const response = await fetch(`${getApiUrl()}/products/${id}/`, {
+      const response = await fetch(buildApiUrl(`products/${id}/`), {
         method: 'DELETE',
         headers: {
           ...getAuthHeader(),
@@ -259,7 +269,8 @@ export const authApi = {
 // Add a more robust API health check
 export const checkApiConnection = async (): Promise<boolean> => {
   try {
-    console.log(`Checking API connection at: ${getApiUrl()}/health-check/`);
+    const url = buildApiUrl('health-check/');
+    console.log(`Checking API connection at: ${url}`);
     
     // For mock API mode
     if (API_CONFIG.useMockApi) {
@@ -270,7 +281,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
-    const response = await fetch(`${getApiUrl()}/health-check/`, { 
+    const response = await fetch(url, { 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
