@@ -6,13 +6,13 @@ import { useCreateProduct } from "@/services/useProducts";
 import { toast } from "@/components/ui/sonner";
 import { Smartphone, Barcode } from "lucide-react";
 import { ProductTypeSwitch } from "./ProductTypeSwitch";
-import { ProductFormFields } from "./ProductFormFields";
+import { ProductFormFields, CATEGORY_OPTIONS } from "./ProductFormFields";
 import { SerialNumbersInput } from "./SerialNumbersInput";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
-  const [category, setCategory] = useState("Phones");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("1");
   const [threshold, setThreshold] = useState("5");
@@ -52,7 +52,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const newProduct = {
       name,
       sku,
-      category,
+      category: parseInt(category), // Convert category to integer ID
       price: parseFloat(price),
       stock: parseInt(stock),
       threshold: parseInt(threshold),
@@ -62,12 +62,15 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       barcode: barcode || undefined
     };
     
+    console.log('Submitting product with category ID:', newProduct.category);
+    
     createProduct.mutate(newProduct, {
       onSuccess: () => {
         toast.success("Product added successfully");
         onCancel(); // Close form on success
       },
       onError: (error) => {
+        console.error('Product creation failed:', error);
         toast.error(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });

@@ -23,6 +23,14 @@ interface ProductFormFieldsProps {
   setBarcode: (value: string) => void;
 }
 
+// Category mapping - you'll need to adjust these IDs based on your Django backend
+const CATEGORY_OPTIONS = [
+  { id: 1, name: "Phones" },
+  { id: 2, name: "Accessories" },
+  { id: 3, name: "Spare Parts" },
+  { id: 4, name: "Protection" },
+];
+
 export function ProductFormFields({
   name, setName,
   sku, setSku,
@@ -67,10 +75,12 @@ export function ProductFormFields({
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             required
           >
-            <option value="Phones">Phones</option>
-            <option value="Accessories">Accessories</option>
-            <option value="Spare Parts">Spare Parts</option>
-            <option value="Protection">Protection</option>
+            <option value="">Select a category</option>
+            {CATEGORY_OPTIONS.map((cat) => (
+              <option key={cat.id} value={cat.id.toString()}>
+                {cat.name}
+              </option>
+            ))}
           </select>
         </div>
         
@@ -136,3 +146,6 @@ export function ProductFormFields({
     </>
   );
 }
+
+// Export the category mapping for use in AddProductForm
+export { CATEGORY_OPTIONS };
