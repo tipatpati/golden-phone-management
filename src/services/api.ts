@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/sonner';
 
 // API configuration with flexible URL options
@@ -103,6 +102,12 @@ export const productApi = {
       });
       
       if (!response.ok) {
+        // If authentication error, suggest using mock mode
+        if (response.status === 403) {
+          const errorData = await response.json().catch(() => ({}));
+          console.log('Authentication required for API access. Consider enabling mock mode for testing.');
+          throw new Error('Authentication required. Please log in or enable mock data mode for testing.');
+        }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
       }
@@ -296,6 +301,12 @@ export const checkApiConnection = async (): Promise<boolean> => {
     if (response.ok) {
       console.log('API connection successful');
       return true;
+    } else if (response.status === 403) {
+      console.log('API requires authentication - this is expected behavior');
+      toast.info('API requires authentication', {
+        description: 'Enable mock data mode to test the UI, or implement login functionality'
+      });
+      return false;
     } else {
       console.error('API health check returned non-OK response:', response.status);
       return false;
