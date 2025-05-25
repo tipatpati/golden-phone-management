@@ -339,9 +339,10 @@ export const checkApiConnection = async (): Promise<boolean> => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        ...getAuthHeader(), // Include auth header in connection check
       },
       signal: controller.signal,
-      mode: 'cors', // Explicitly set CORS mode
+      mode: 'cors',
     });
     
     clearTimeout(timeoutId);
@@ -350,11 +351,21 @@ export const checkApiConnection = async (): Promise<boolean> => {
       console.log('API connection successful');
       return true;
     } else if (response.status === 403) {
-      console.log('API requires authentication - this is expected behavior');
-      toast.info('API requires authentication', {
-        description: 'Enable mock data mode to test the UI, or implement login functionality'
-      });
-      return false;
+      // If we have a token but still get 403, the token might be expired
+      const token = localStorage.getItem('authToken');
+      if (token && token !== 'mock-token') {
+        console.log('API connection failed - authentication token may be expired');
+        toast.error('Authentication token expired', {
+          description: 'Please log in again'
+        });
+        // Clear expired token
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        return false;
+      } else {
+        console.log('API requires authentication');
+        return false;
+      }
     } else {
       console.error('API health check returned non-OK response:', response.status);
       return false;

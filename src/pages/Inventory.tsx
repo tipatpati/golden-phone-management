@@ -48,6 +48,25 @@ const Inventory = () => {
     checkConnection();
   }, []);
 
+  // Also check connection when auth token changes
+  useEffect(() => {
+    const checkConnectionOnAuthChange = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        const isConnected = await checkApiConnection();
+        setApiConnected(isConnected);
+      }
+    };
+    
+    // Listen for storage changes (like login/logout)
+    const handleStorageChange = () => {
+      checkConnectionOnAuthChange();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const handleTestConnection = async () => {
     setIsCheckingConnection(true);
     await testApiConnection();
@@ -69,6 +88,9 @@ const Inventory = () => {
     handleTestConnection();
     setShowSettings(false);
   };
+
+  // Check if we can add products (either connected to API or using mock mode)
+  const canAddProducts = apiConnected === true || useMockApi;
 
   return (
     <div className="space-y-6">
@@ -176,7 +198,7 @@ const Inventory = () => {
       )}
       
       {/* API Connection Status */}
-      {apiConnected === false && !useMockApi && (
+      {!canAddProducts && (
         <Alert variant="destructive" className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <WifiOff className="h-5 w-5" />
@@ -222,10 +244,10 @@ const Inventory = () => {
         <>
           <InventoryTableToolbar 
             onAddProduct={() => {
-              // Check connection before allowing add product
-              if (apiConnected === false && !useMockApi) {
+              // Check if we can add products
+              if (!canAddProducts) {
                 toast.error("Cannot add products while offline", {
-                  description: "Please check your backend connection first"
+                  description: "Please check your backend connection or enable mock mode"
                 });
                 return;
               }
