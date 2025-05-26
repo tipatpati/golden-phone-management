@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/sonner';
 
 // API configuration with flexible URL options
@@ -17,7 +16,18 @@ const API_CONFIG = {
 const buildApiUrl = (endpoint: string) => {
   let baseUrl = API_CONFIG.baseUrl;
   
-  // Ensure the base URL has a protocol
+  // Clean up the base URL first
+  baseUrl = baseUrl.trim();
+  
+  // Handle cases where protocol might be malformed (like "http//")
+  if (baseUrl.includes('http//') && !baseUrl.includes('http://')) {
+    baseUrl = baseUrl.replace('http//', 'http://');
+  }
+  if (baseUrl.includes('https//') && !baseUrl.includes('https://')) {
+    baseUrl = baseUrl.replace('https//', 'https://');
+  }
+  
+  // Only add protocol if it's completely missing
   if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
     baseUrl = `http://${baseUrl}`;
   }
@@ -28,24 +38,14 @@ const buildApiUrl = (endpoint: string) => {
   // Clean the endpoint
   const cleanEndpoint = endpoint.replace(/^\/+/, '');
   
-  // If the base URL doesn't end with /api and the endpoint starts with api/
-  if (!baseUrl.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
-    return `${baseUrl}/${cleanEndpoint}`;
-  }
+  // Debug logging
+  console.log(`Building URL: baseUrl="${baseUrl}", endpoint="${cleanEndpoint}"`);
   
-  // If base URL already ends with /api, don't add it again
-  if (baseUrl.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
-    const endpointWithoutApi = cleanEndpoint.replace(/^api\//, '');
-    return `${baseUrl}/${endpointWithoutApi}`;
-  }
+  // Simple URL construction - just join base URL with endpoint
+  const finalUrl = `${baseUrl}/${cleanEndpoint}`;
+  console.log(`Final URL: ${finalUrl}`);
   
-  // If base URL ends with /api and endpoint doesn't start with api/
-  if (baseUrl.endsWith('/api')) {
-    return `${baseUrl}/${cleanEndpoint}`;
-  }
-  
-  // Default case - just join base URL with endpoint
-  return `${baseUrl}/${cleanEndpoint}`;
+  return finalUrl;
 };
 
 // Export this to allow changing API URL at runtime
