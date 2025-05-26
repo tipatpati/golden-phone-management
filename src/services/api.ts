@@ -13,10 +13,29 @@ const API_CONFIG = {
   useMockApi: false,
 };
 
-// Helper function to construct URLs properly without double slashes
+// Helper function to construct URLs properly without double slashes or duplicate paths
 const buildApiUrl = (endpoint: string) => {
-  const baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
+  let baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
   const cleanEndpoint = endpoint.replace(/^\/+/, ''); // Remove leading slashes
+  
+  // If the base URL doesn't end with /api and the endpoint starts with api/, 
+  // we need to be smart about URL construction
+  if (!baseUrl.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
+    return `${baseUrl}/${cleanEndpoint}`;
+  }
+  
+  // If base URL already ends with /api, don't add it again
+  if (baseUrl.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
+    const endpointWithoutApi = cleanEndpoint.replace(/^api\//, '');
+    return `${baseUrl}/${endpointWithoutApi}`;
+  }
+  
+  // If base URL ends with /api and endpoint doesn't start with api/
+  if (baseUrl.endsWith('/api')) {
+    return `${baseUrl}/${cleanEndpoint}`;
+  }
+  
+  // Default case - just join base URL with endpoint
   return `${baseUrl}/${cleanEndpoint}`;
 };
 
@@ -25,6 +44,7 @@ export const getApiUrl = () => API_CONFIG.baseUrl;
 export const setApiUrl = (url: string) => {
   API_CONFIG.baseUrl = url;
   localStorage.setItem('phoneShopApiUrl', url);
+  console.log(`API URL updated to: ${url}`);
   return API_CONFIG.baseUrl;
 };
 
@@ -241,7 +261,10 @@ export const authApi = {
     for (const endpoint of authEndpoints) {
       try {
         console.log(`Trying authentication endpoint: ${endpoint}`);
-        const response = await fetch(buildApiUrl(endpoint), {
+        const url = buildApiUrl(endpoint);
+        console.log(`Full auth URL: ${url}`);
+        
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
