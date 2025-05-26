@@ -13,13 +13,22 @@ const API_CONFIG = {
   useMockApi: false,
 };
 
-// Helper function to construct URLs properly without double slashes or duplicate paths
+// Helper function to construct URLs properly
 const buildApiUrl = (endpoint: string) => {
-  let baseUrl = API_CONFIG.baseUrl.replace(/\/+$/, ''); // Remove trailing slashes
-  const cleanEndpoint = endpoint.replace(/^\/+/, ''); // Remove leading slashes
+  let baseUrl = API_CONFIG.baseUrl;
   
-  // If the base URL doesn't end with /api and the endpoint starts with api/, 
-  // we need to be smart about URL construction
+  // Ensure the base URL has a protocol
+  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+    baseUrl = `http://${baseUrl}`;
+  }
+  
+  // Remove trailing slashes from base URL
+  baseUrl = baseUrl.replace(/\/+$/, '');
+  
+  // Clean the endpoint
+  const cleanEndpoint = endpoint.replace(/^\/+/, '');
+  
+  // If the base URL doesn't end with /api and the endpoint starts with api/
   if (!baseUrl.endsWith('/api') && cleanEndpoint.startsWith('api/')) {
     return `${baseUrl}/${cleanEndpoint}`;
   }
