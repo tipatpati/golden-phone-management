@@ -2,6 +2,23 @@
 import { toast } from '@/components/ui/sonner';
 import { buildApiUrl, getAuthHeader, getApiUrl, getMockApiConfig } from './config';
 
+// Helper function to get headers including ngrok bypass
+const getHeaders = () => {
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    ...getAuthHeader(),
+  };
+  
+  // Add ngrok bypass header if URL contains ngrok
+  const apiUrl = getApiUrl();
+  if (apiUrl.includes('ngrok')) {
+    headers['ngrok-skip-browser-warning'] = 'true';
+  }
+  
+  return headers;
+};
+
 // Simplified API health check that actually tests your Django backend
 export const checkApiConnection = async (): Promise<boolean> => {
   try {
@@ -19,11 +36,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
     
     const response = await fetch(url, { 
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        ...getAuthHeader(), // Include auth header in connection check
-      },
+      headers: getHeaders(),
       signal: controller.signal,
       mode: 'cors',
     });

@@ -1,6 +1,23 @@
 
 import { toast } from '@/components/ui/sonner';
-import { buildApiUrl, getAuthHeader, handleApiError, getMockApiConfig } from './config';
+import { buildApiUrl, getAuthHeader, handleApiError, getMockApiConfig, getApiUrl } from './config';
+
+// Helper function to get headers including ngrok bypass
+const getHeaders = () => {
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    ...getAuthHeader(),
+  };
+  
+  // Add ngrok bypass header if URL contains ngrok
+  const apiUrl = getApiUrl();
+  if (apiUrl.includes('ngrok')) {
+    headers['ngrok-skip-browser-warning'] = 'true';
+  }
+  
+  return headers;
+};
 
 // Product API methods
 export const productApi = {
@@ -21,11 +38,7 @@ export const productApi = {
       }
       
       const response = await fetch(url, {
-        headers: {
-          ...getAuthHeader(),
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+        headers: getHeaders(),
         mode: 'cors', // Explicitly set CORS mode
       });
       
@@ -49,9 +62,7 @@ export const productApi = {
   async getProduct(id: string) {
     try {
       const response = await fetch(buildApiUrl(`api/products/${id}/`), {
-        headers: {
-          ...getAuthHeader(),
-        }
+        headers: getHeaders()
       });
       
       if (!response.ok) {
@@ -72,11 +83,7 @@ export const productApi = {
       
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...getAuthHeader(),
-        },
+        headers: getHeaders(),
         body: JSON.stringify(productData),
         mode: 'cors', // Explicitly set CORS mode
       });
@@ -109,10 +116,7 @@ export const productApi = {
     try {
       const response = await fetch(buildApiUrl(`api/products/${id}/`), {
         method: 'PATCH', // Using PATCH for partial updates
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeader(),
-        },
+        headers: getHeaders(),
         body: JSON.stringify(productData),
       });
       
@@ -132,9 +136,7 @@ export const productApi = {
     try {
       const response = await fetch(buildApiUrl(`api/products/${id}/`), {
         method: 'DELETE',
-        headers: {
-          ...getAuthHeader(),
-        },
+        headers: getHeaders(),
       });
       
       if (!response.ok) {
