@@ -32,16 +32,24 @@ export const checkApiConnection = async (): Promise<boolean> => {
     }
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10 seconds
+    
+    // Add more detailed logging
+    const headers = getHeaders();
+    console.log('Request headers:', headers);
+    console.log('Making request to:', url);
     
     const response = await fetch(url, { 
       method: 'GET',
-      headers: getHeaders(),
+      headers: headers,
       signal: controller.signal,
       mode: 'cors',
     });
     
     clearTimeout(timeoutId);
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     if (response.ok) {
       console.log('API connection successful');
@@ -64,6 +72,8 @@ export const checkApiConnection = async (): Promise<boolean> => {
       }
     } else {
       console.error('API health check returned non-OK response:', response.status);
+      const responseText = await response.text();
+      console.error('Response body:', responseText);
       return false;
     }
   } catch (error) {
@@ -71,9 +81,14 @@ export const checkApiConnection = async (): Promise<boolean> => {
     
     // More detailed error for timeout
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.error('API connection check timed out after 5 seconds');
+      console.error('API connection check timed out after 10 seconds');
       toast.error('Connection to server timed out', {
         description: 'Make sure your Django backend is running at ' + getApiUrl()
+      });
+    } else if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      console.error('Failed to fetch - this might be a CORS issue or the server is not responding');
+      toast.error('Cannot reach the server', {
+        description: 'Check if your Django server is running and CORS is configured properly'
       });
     }
     

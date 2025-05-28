@@ -17,8 +17,8 @@ const API_CONFIG = {
 export const buildApiUrl = (endpoint: string) => {
   let baseUrl = API_CONFIG.baseUrl;
   
-  // Clean up the base URL first
-  baseUrl = baseUrl.trim();
+  // Clean up the base URL first - be more aggressive with trimming
+  baseUrl = baseUrl.trim().replace(/\s+/g, '');
   
   // Handle cases where protocol might be malformed (like "http//")
   if (baseUrl.includes('http//') && !baseUrl.includes('http://')) {
@@ -50,17 +50,20 @@ export const buildApiUrl = (endpoint: string) => {
 };
 
 // Export this to allow changing API URL at runtime
-export const getApiUrl = () => API_CONFIG.baseUrl;
+export const getApiUrl = () => API_CONFIG.baseUrl.trim().replace(/\s+/g, '');
 export const setApiUrl = (url: string) => {
-  API_CONFIG.baseUrl = url;
-  localStorage.setItem('phoneShopApiUrl', url);
-  console.log(`API URL updated to: ${url}`);
+  // Clean the URL when setting it
+  const cleanUrl = url.trim().replace(/\s+/g, '');
+  API_CONFIG.baseUrl = cleanUrl;
+  localStorage.setItem('phoneShopApiUrl', cleanUrl);
+  console.log(`API URL updated to: ${cleanUrl}`);
   return API_CONFIG.baseUrl;
 };
 
 // Initialize from localStorage if previously set
 if (localStorage.getItem('phoneShopApiUrl')) {
-  API_CONFIG.baseUrl = localStorage.getItem('phoneShopApiUrl') || API_CONFIG.baseUrl;
+  const storedUrl = localStorage.getItem('phoneShopApiUrl') || API_CONFIG.baseUrl;
+  API_CONFIG.baseUrl = storedUrl.trim().replace(/\s+/g, '');
 }
 
 // Toggle mock API mode (for development without backend)
