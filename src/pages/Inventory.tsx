@@ -20,7 +20,8 @@ import {
   testApiConnection,
   getApiUrl,
   setApiUrl,
-  toggleMockApiMode
+  toggleMockApiMode,
+  getMockApiConfig
 } from "@/services/api";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,7 @@ const Inventory = () => {
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
   const [apiUrl, setApiUrlState] = useState(getApiUrl());
-  const [useMockApi, setUseMockApi] = useState(localStorage.getItem('phoneShopUseMockApi') === 'true');
+  const [useMockApi, setUseMockApi] = useState(getMockApiConfig());
 
   // Check API connection when the component mounts
   useEffect(() => {
@@ -76,12 +77,17 @@ const Inventory = () => {
   };
 
   const handleSaveSettings = () => {
-    // Save the API URL
-    setApiUrl(apiUrl);
+    console.log('Saving settings - API URL:', apiUrl, 'Mock API:', useMockApi);
+    
+    // Save the API URL and update the global config
+    const savedUrl = setApiUrl(apiUrl);
     toggleMockApiMode(useMockApi);
     
+    // Force update the local state to match what was saved
+    setApiUrlState(savedUrl);
+    
     toast.success('API settings updated', {
-      description: useMockApi ? 'Using mock API data' : `API URL set to ${apiUrl}`
+      description: useMockApi ? 'Using mock API data' : `API URL set to ${savedUrl}`
     });
     
     // Test the connection with new settings
@@ -137,7 +143,7 @@ const Inventory = () => {
                   id="api-url"
                   value={apiUrl} 
                   onChange={(e) => setApiUrlState(e.target.value)}
-                  placeholder="http://127.0.0.1:8000/api"
+                  placeholder="https://your-ngrok-url.ngrok-free.app"
                   className="flex-1"
                 />
                 <Button 
@@ -154,7 +160,7 @@ const Inventory = () => {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                For local development, use http://127.0.0.1:8000/api
+                Current URL: {getApiUrl()}
               </p>
             </div>
             
@@ -174,17 +180,11 @@ const Inventory = () => {
               <div className="flex items-start gap-2">
                 <Laptop className="h-5 w-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium mb-1">Local Development Note</p>
+                  <p className="font-medium mb-1">URL Matching Important</p>
                   <p>
-                    When running your frontend on Lovable and backend locally, 
-                    browser security will prevent direct connections to localhost. 
-                    Consider:
+                    Make sure your Django ALLOWED_HOSTS includes the exact same hostname as your API URL above.
+                    For ngrok: if your URL is https://abc-123.ngrok-free.app, add "abc-123.ngrok-free.app" to ALLOWED_HOSTS.
                   </p>
-                  <ul className="list-disc pl-5 mt-1 space-y-1">
-                    <li>Setting up a secure tunnel with a tool like <a href="https://ngrok.com/" target="_blank" rel="noreferrer" className="underline font-medium">ngrok</a></li>
-                    <li>Enabling CORS in your Django settings</li>
-                    <li>Using mock data mode for testing UI (toggle above)</li>
-                  </ul>
                 </div>
               </div>
             </div>
