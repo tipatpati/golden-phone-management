@@ -11,9 +11,9 @@ import {
   getApiUrl,
   setApiUrl,
   toggleMockApiMode,
-  getMockApiConfig,
-  testApiConnection 
-} from "@/services/api";
+  getMockApiConfig
+} from "@/services/config";
+import { testApiConnection } from "@/services/connection";
 
 interface ApiSettingsProps {
   onClose: () => void;

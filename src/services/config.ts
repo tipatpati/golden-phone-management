@@ -10,9 +10,31 @@ const API_CONFIG = {
   useMockApi: false,
 };
 
+// Initialize from localStorage if previously set
+const initializeApiConfig = () => {
+  const storedUrl = localStorage.getItem('phoneShopApiUrl');
+  const storedMockMode = localStorage.getItem('phoneShopUseMockApi');
+  
+  if (storedUrl) {
+    API_CONFIG.baseUrl = storedUrl.trim();
+    console.log('Loaded API URL from localStorage:', API_CONFIG.baseUrl);
+  }
+  
+  if (storedMockMode === 'true') {
+    API_CONFIG.useMockApi = true;
+    console.log('Loaded mock API mode from localStorage:', API_CONFIG.useMockApi);
+  }
+};
+
+// Initialize on module load
+initializeApiConfig();
+
 // Helper function to construct URLs properly
 export const buildApiUrl = (endpoint: string) => {
+  // Always get the current URL from config (which reflects localStorage)
   let baseUrl = API_CONFIG.baseUrl.trim();
+  
+  console.log('Building API URL with base:', baseUrl);
   
   // Remove trailing slashes from base URL
   baseUrl = baseUrl.replace(/\/+$/, '');
@@ -36,7 +58,9 @@ export const buildApiUrl = (endpoint: string) => {
 };
 
 // Export this to allow changing API URL at runtime
-export const getApiUrl = () => API_CONFIG.baseUrl;
+export const getApiUrl = () => {
+  return API_CONFIG.baseUrl;
+};
 
 export const setApiUrl = (url: string) => {
   // Clean the URL when setting it
@@ -47,23 +71,13 @@ export const setApiUrl = (url: string) => {
   return API_CONFIG.baseUrl;
 };
 
-// Initialize from localStorage if previously set
-if (localStorage.getItem('phoneShopApiUrl')) {
-  const storedUrl = localStorage.getItem('phoneShopApiUrl') || API_CONFIG.baseUrl;
-  API_CONFIG.baseUrl = storedUrl.trim();
-}
-
 // Toggle mock API mode (for development without backend)
 export const toggleMockApiMode = (useMock: boolean) => {
   API_CONFIG.useMockApi = useMock;
   localStorage.setItem('phoneShopUseMockApi', useMock ? 'true' : 'false');
+  console.log(`Mock API mode set to: ${useMock}`);
   return API_CONFIG.useMockApi;
 };
-
-// Initialize mock mode from localStorage if previously set
-if (localStorage.getItem('phoneShopUseMockApi') === 'true') {
-  API_CONFIG.useMockApi = true;
-}
 
 // More detailed error handler
 export const handleApiError = (error: any) => {
