@@ -2,9 +2,6 @@
 import { toast } from '@/components/ui/sonner';
 
 // API configuration with flexible URL options
-// 1. Use environment variable if available
-// 2. Fall back to a configuration value that can be changed
-// 3. Finally fall back to localhost for development
 const API_CONFIG = {
   // Default to your PythonAnywhere URL
   baseUrl: 'https://amirbenbekhti.pythonanywhere.com',
@@ -15,45 +12,35 @@ const API_CONFIG = {
 
 // Helper function to construct URLs properly
 export const buildApiUrl = (endpoint: string) => {
-  let baseUrl = API_CONFIG.baseUrl;
-  
-  // Clean up the base URL first - be more aggressive with trimming
-  baseUrl = baseUrl.trim().replace(/\s+/g, '');
-  
-  // Handle cases where protocol might be malformed (like "http//")
-  if (baseUrl.includes('http//') && !baseUrl.includes('http://')) {
-    baseUrl = baseUrl.replace('http//', 'http://');
-  }
-  if (baseUrl.includes('https//') && !baseUrl.includes('https://')) {
-    baseUrl = baseUrl.replace('https//', 'https://');
-  }
-  
-  // Only add protocol if it's completely missing
-  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-    baseUrl = `http://${baseUrl}`;
-  }
+  let baseUrl = API_CONFIG.baseUrl.trim();
   
   // Remove trailing slashes from base URL
   baseUrl = baseUrl.replace(/\/+$/, '');
   
-  // Clean the endpoint
-  const cleanEndpoint = endpoint.replace(/^\/+/, '');
+  // Only add protocol if it's completely missing
+  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+    baseUrl = `https://${baseUrl}`;
+  }
   
-  // Debug logging
-  console.log(`Building URL: baseUrl="${baseUrl}", endpoint="${cleanEndpoint}"`);
+  // Clean the endpoint - remove leading slashes and ensure it doesn't start with api/
+  let cleanEndpoint = endpoint.replace(/^\/+/, '');
+  if (!cleanEndpoint.startsWith('api/')) {
+    cleanEndpoint = `api/${cleanEndpoint}`;
+  }
   
-  // Simple URL construction - just join base URL with endpoint
+  // Simple URL construction
   const finalUrl = `${baseUrl}/${cleanEndpoint}`;
-  console.log(`Final URL: ${finalUrl}`);
+  console.log(`Building API URL: ${finalUrl}`);
   
   return finalUrl;
 };
 
 // Export this to allow changing API URL at runtime
-export const getApiUrl = () => API_CONFIG.baseUrl.trim().replace(/\s+/g, '');
+export const getApiUrl = () => API_CONFIG.baseUrl;
+
 export const setApiUrl = (url: string) => {
   // Clean the URL when setting it
-  const cleanUrl = url.trim().replace(/\s+/g, '');
+  const cleanUrl = url.trim().replace(/\/+$/, '');
   API_CONFIG.baseUrl = cleanUrl;
   localStorage.setItem('phoneShopApiUrl', cleanUrl);
   console.log(`API URL updated to: ${cleanUrl}`);
@@ -63,7 +50,7 @@ export const setApiUrl = (url: string) => {
 // Initialize from localStorage if previously set
 if (localStorage.getItem('phoneShopApiUrl')) {
   const storedUrl = localStorage.getItem('phoneShopApiUrl') || API_CONFIG.baseUrl;
-  API_CONFIG.baseUrl = storedUrl.trim().replace(/\s+/g, '');
+  API_CONFIG.baseUrl = storedUrl.trim();
 }
 
 // Toggle mock API mode (for development without backend)
