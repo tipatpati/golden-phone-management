@@ -32,7 +32,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
     }
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased timeout to 15 seconds
     
     // Add more detailed logging
     const headers = getHeaders();
@@ -70,6 +70,29 @@ export const checkApiConnection = async (): Promise<boolean> => {
         console.log('API requires authentication');
         return false;
       }
+    } else if (response.status === 404) {
+      console.error('API endpoint not found - check your Django URL configuration');
+      const responseText = await response.text();
+      console.error('404 Response body:', responseText);
+      toast.error('API endpoint not found', {
+        description: 'Check that your Django server has the /api/products/ endpoint configured'
+      });
+      return false;
+    } else if (response.status === 400) {
+      console.error('Bad request - checking for DisallowedHost error');
+      const responseText = await response.text();
+      console.error('400 Response body:', responseText);
+      
+      if (responseText.includes('DisallowedHost') || responseText.includes('ALLOWED_HOSTS')) {
+        toast.error('Django ALLOWED_HOSTS configuration error', {
+          description: `Add '${new URL(url).hostname}' to your Django ALLOWED_HOSTS setting`
+        });
+      } else {
+        toast.error('Server returned bad request', {
+          description: 'Check Django server logs for details'
+        });
+      }
+      return false;
     } else {
       console.error('API health check returned non-OK response:', response.status);
       const responseText = await response.text();
@@ -79,9 +102,9 @@ export const checkApiConnection = async (): Promise<boolean> => {
   } catch (error) {
     console.error('API connection check failed:', error);
     
-    // More detailed error for timeout
+    // More detailed error handling
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.error('API connection check timed out after 10 seconds');
+      console.error('API connection check timed out after 15 seconds');
       toast.error('Connection to server timed out', {
         description: 'Make sure your Django backend is running at ' + getApiUrl()
       });
@@ -89,6 +112,11 @@ export const checkApiConnection = async (): Promise<boolean> => {
       console.error('Failed to fetch - this might be a CORS issue or the server is not responding');
       toast.error('Cannot reach the server', {
         description: 'Check if your Django server is running and CORS is configured properly'
+      });
+    } else {
+      console.error('Unexpected error during API connection check:', error);
+      toast.error('Unexpected connection error', {
+        description: error.message || 'Unknown error occurred'
       });
     }
     
@@ -114,5 +142,33 @@ export const testApiConnection = async (): Promise<void> => {
       id: 'api-test',
       description: `Make sure your Django server is running at ${getApiUrl()} and CORS is properly configured`
     });
+  }
+};
+
+// Add a specific function to test different URLs
+export const testSpecificUrl = async (testUrl: string): Promise<boolean> => {
+  try {
+    console.log(`Testing specific URL: ${testUrl}`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(testUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      signal: controller.signal,
+      mode: 'cors',
+    });
+    
+    clearTimeout(timeoutId);
+    console.log(`Test URL ${testUrl} returned status: ${response.status}`);
+    
+    return response.ok;
+  } catch (error) {
+    console.error(`Test URL ${testUrl} failed:`, error);
+    return false;
   }
 };

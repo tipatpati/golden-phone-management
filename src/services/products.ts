@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/sonner';
 import { buildApiUrl, getAuthHeader, handleApiError, getMockApiConfig, getApiUrl } from './config';
 
@@ -42,19 +41,36 @@ export const productApi = {
         mode: 'cors', // Explicitly set CORS mode
       });
       
+      console.log(`Products API response status: ${response.status}`);
+      console.log('Products API response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        // If authentication error, suggest using mock mode
-        if (response.status === 403) {
-          const errorData = await response.json().catch(() => ({}));
-          console.log('Authentication required for API access. Consider enabling mock mode for testing.');
+        const responseText = await response.text();
+        console.error('Products API error response:', responseText);
+        
+        // Handle specific error cases
+        if (response.status === 400 && responseText.includes('DisallowedHost')) {
+          throw new Error(`Django ALLOWED_HOSTS error: Add '${new URL(url).hostname}' to your Django ALLOWED_HOSTS setting`);
+        } else if (response.status === 404) {
+          throw new Error('Products API endpoint not found. Check your Django URL configuration.');
+        } else if (response.status === 403) {
           throw new Error('Authentication required. Please log in or enable mock data mode for testing.');
+        } else {
+          // Try to parse JSON error message
+          try {
+            const errorData = JSON.parse(responseText);
+            throw new Error(errorData.message || errorData.detail || `HTTP error! Status: ${response.status}`);
+          } catch (parseError) {
+            throw new Error(`HTTP error! Status: ${response.status} - ${responseText || 'Unknown error'}`);
+          }
         }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log('Products data received:', data);
+      return data;
     } catch (error) {
+      console.error('Products API error:', error);
       return handleApiError(error);
     }
   },
