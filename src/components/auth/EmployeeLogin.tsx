@@ -7,21 +7,21 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
-import { useAuth } from "@/contexts/AuthContext";
+import { authApi } from "@/services/auth";
 import { toast } from "@/components/ui/sonner";
 
 interface EmployeeLoginProps {
   role: UserRole;
   onBack: () => void;
   onLoginSuccess: (role: UserRole) => void;
+  onLoginError?: () => void;
 }
 
-export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginProps) {
+export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: EmployeeLoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
 
   const config = ROLE_CONFIGS[role];
 
@@ -33,16 +33,21 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
       return;
     }
     
+    console.log('EmployeeLogin: Attempting login for role:', role);
     setIsLoading(true);
     
     try {
-      await login(username, password);
-      // Store the selected role (this will be validated by your Django backend)
+      const result = await authApi.login(username, password);
+      console.log('EmployeeLogin: Login successful:', result);
+      
+      // Store the selected role (this should ideally be validated by your Django backend)
       localStorage.setItem('userRole', role);
       onLoginSuccess(role);
     } catch (error) {
-      console.error('Employee login failed:', error);
-      // Error is already shown by the auth service
+      console.error('EmployeeLogin: Login failed:', error);
+      if (onLoginError) {
+        onLoginError();
+      }
     } finally {
       setIsLoading(false);
     }

@@ -6,7 +6,8 @@ import { buildApiUrl } from './config';
 export const authApi = {
   // Updated login method specifically for Django backend
   async login(username: string, password: string) {
-    console.log('Attempting to authenticate with Django backend...');
+    console.log('authApi.login: Starting authentication with Django backend...');
+    console.log('authApi.login: Username:', username);
     
     // Your Django backend should have an authentication endpoint
     const authEndpoints = [
@@ -14,16 +15,18 @@ export const authApi = {
       'api/token/',
       'api/auth/token/',
       'auth/login/',
-      'auth/token/'
+      'auth/token/',
+      'api/accounts/login/',
+      'accounts/login/'
     ];
     
     let lastError: any = null;
     
     for (const endpoint of authEndpoints) {
       try {
-        console.log(`Trying Django auth endpoint: ${endpoint}`);
+        console.log(`authApi.login: Trying Django auth endpoint: ${endpoint}`);
         const url = buildApiUrl(endpoint);
-        console.log(`Full Django auth URL: ${url}`);
+        console.log(`authApi.login: Full Django auth URL: ${url}`);
         
         const response = await fetch(url, {
           method: 'POST',
@@ -35,11 +38,12 @@ export const authApi = {
           mode: 'cors',
         });
         
-        console.log(`Django auth response status: ${response.status}`);
+        console.log(`authApi.login: Django auth response status: ${response.status}`);
+        console.log('authApi.login: Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Django auth successful, response:', data);
+          console.log('authApi.login: Django auth successful, response:', data);
           
           // Handle different Django auth response formats
           const token = data.token || data.access_token || data.key || data.auth_token;
@@ -56,40 +60,65 @@ export const authApi = {
             toast.success('Successfully logged in to Django backend');
             return data;
           } else {
-            console.warn('No authentication token in Django response:', data);
+            console.warn('authApi.login: No authentication token in Django response:', data);
             throw new Error('No authentication token received');
           }
         } else if (response.status === 404) {
+          console.log(`authApi.login: Endpoint ${endpoint} not found, trying next...`);
           // Try next endpoint
           continue;
         } else {
           // Handle authentication errors
-          const errorData = await response.json().catch(() => ({}));
+          const errorText = await response.text();
+          console.log(`authApi.login: Error response text: ${errorText}`);
+          
+          let errorData: any = {};
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            console.log('authApi.login: Could not parse error response as JSON');
+          }
           
           if (response.status === 400 || response.status === 401) {
             const errorMessage = errorData.non_field_errors?.[0] || 
                                errorData.detail || 
                                errorData.error || 
+                               errorText ||
                                'Invalid username or password';
+            console.log(`authApi.login: Authentication failed: ${errorMessage}`);
             toast.error(errorMessage);
             throw new Error(errorMessage);
           }
           
-          throw new Error(`Django authentication failed: ${response.status}`);
+          throw new Error(`Django authentication failed: ${response.status} - ${errorText}`);
         }
       } catch (error) {
         lastError = error;
-        console.log(`Django auth failed for endpoint ${endpoint}:`, error);
+        console.log(`authApi.login: Django auth failed for endpoint ${endpoint}:`, error);
+        
+        // If it's a network error, don't try other endpoints
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          break;
+        }
+        
         continue;
       }
     }
     
     // If all endpoints failed
-    console.error('All Django authentication endpoints failed. Last error:', lastError);
-    toast.error('Cannot connect to Django authentication server', {
-      description: 'Please check that your Django backend is running and properly configured',
-      duration: 8000
-    });
+    console.error('authApi.login: All Django authentication endpoints failed. Last error:', lastError);
+    
+    if (lastError instanceof TypeError && lastError.message === 'Failed to fetch') {
+      toast.error('Cannot connect to Django backend', {
+        description: 'Please check that your Django server is running and accessible',
+        duration: 8000
+      });
+    } else {
+      toast.error('Authentication failed', {
+        description: lastError?.message || 'Please check your credentials and try again',
+        duration: 8000
+      });
+    }
     
     throw lastError || new Error('Django authentication failed - no endpoints available');
   },
@@ -109,7 +138,7 @@ export const authApi = {
           'Content-Type': 'application/json',
         },
       }).catch(error => {
-        console.log('Django logout endpoint call failed (this is usually fine):', error);
+        console.log('authApi.logout: Django logout endpoint call failed (this is usually fine):', error);
       });
     }
     
