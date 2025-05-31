@@ -1,103 +1,127 @@
 
 import { toast } from '@/components/ui/sonner';
-import { buildApiUrl, toggleMockApiMode } from './config';
+import { buildApiUrl } from './config';
 
-// Auth API methods
+// Auth API methods for Django backend
 export const authApi = {
-  // Login method with multiple endpoint attempts
+  // Updated login method specifically for Django backend
   async login(username: string, password: string) {
-    // List of possible authentication endpoints to try
+    console.log('Attempting to authenticate with Django backend...');
+    
+    // Your Django backend should have an authentication endpoint
     const authEndpoints = [
-      'api/auth/token/',
-      'api/token/',
-      'auth/token/',
       'api/auth/login/',
-      'api/login/',
-      'auth/login/'
+      'api/token/',
+      'api/auth/token/',
+      'auth/login/',
+      'auth/token/'
     ];
     
     let lastError: any = null;
     
     for (const endpoint of authEndpoints) {
       try {
-        console.log(`Trying authentication endpoint: ${endpoint}`);
+        console.log(`Trying Django auth endpoint: ${endpoint}`);
         const url = buildApiUrl(endpoint);
-        console.log(`Full auth URL: ${url}`);
+        console.log(`Full Django auth URL: ${url}`);
         
         const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({ username, password }),
+          mode: 'cors',
         });
+        
+        console.log(`Django auth response status: ${response.status}`);
         
         if (response.ok) {
           const data = await response.json();
-          // Store the token (handle different response formats)
+          console.log('Django auth successful, response:', data);
+          
+          // Handle different Django auth response formats
           const token = data.token || data.access_token || data.key || data.auth_token;
+          
           if (token) {
             localStorage.setItem('authToken', token);
-            localStorage.setItem('userId', data.user_id || data.id || username);
-            toast.success('Logged in successfully');
+            localStorage.setItem('userId', data.user?.username || data.username || username);
+            
+            // Store user role if provided by Django
+            if (data.user?.role || data.role) {
+              localStorage.setItem('userRole', data.user?.role || data.role);
+            }
+            
+            toast.success('Successfully logged in to Django backend');
             return data;
           } else {
-            console.warn('No token found in response:', data);
+            console.warn('No authentication token in Django response:', data);
+            throw new Error('No authentication token received');
           }
         } else if (response.status === 404) {
           // Try next endpoint
           continue;
         } else {
-          // Handle other errors (400, 401, etc.)
+          // Handle authentication errors
           const errorData = await response.json().catch(() => ({}));
+          
           if (response.status === 400 || response.status === 401) {
-            toast.error(errorData.non_field_errors?.[0] || errorData.detail || 'Invalid username or password');
+            const errorMessage = errorData.non_field_errors?.[0] || 
+                               errorData.detail || 
+                               errorData.error || 
+                               'Invalid username or password';
+            toast.error(errorMessage);
+            throw new Error(errorMessage);
           }
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          
+          throw new Error(`Django authentication failed: ${response.status}`);
         }
       } catch (error) {
         lastError = error;
-        console.log(`Failed to authenticate with endpoint ${endpoint}:`, error);
+        console.log(`Django auth failed for endpoint ${endpoint}:`, error);
         continue;
       }
     }
     
-    // If we get here, all endpoints failed
-    console.error('All authentication endpoints failed. Last error:', lastError);
-    toast.error('Authentication endpoint not found. Your Django backend may not have authentication configured.', {
-      description: 'Check your Django backend configuration or enable mock mode for testing.',
+    // If all endpoints failed
+    console.error('All Django authentication endpoints failed. Last error:', lastError);
+    toast.error('Cannot connect to Django authentication server', {
+      description: 'Please check that your Django backend is running and properly configured',
       duration: 8000
     });
     
-    // Ask user if they want to enable mock mode
-    setTimeout(() => {
-      toast.info('Would you like to enable mock mode to test the interface?', {
-        action: {
-          label: 'Enable Mock Mode',
-          onClick: () => {
-            toggleMockApiMode(true);
-            // Simulate successful login in mock mode
-            localStorage.setItem('authToken', 'mock-token');
-            localStorage.setItem('userId', username);
-            window.location.reload();
-          }
-        },
-        duration: 10000
-      });
-    }, 2000);
-    
-    throw lastError || new Error('Authentication failed - no endpoints available');
+    throw lastError || new Error('Django authentication failed - no endpoints available');
   },
   
-  // Logout method
+  // Updated logout method
   logout() {
+    const token = localStorage.getItem('authToken');
+    
+    // If we have a real token, try to logout from Django backend
+    if (token && token !== 'mock-token' && token !== 'employee-token') {
+      // Optionally call Django logout endpoint
+      const logoutUrl = buildApiUrl('api/auth/logout/');
+      fetch(logoutUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }).catch(error => {
+        console.log('Django logout endpoint call failed (this is usually fine):', error);
+      });
+    }
+    
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
     toast.success('Logged out successfully');
   },
   
-  // Check if user is logged in
+  // Check if user is logged in with real token
   isLoggedIn() {
-    return !!localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
+    return !!(token && token !== 'mock-token' && token !== 'employee-token');
   }
 };

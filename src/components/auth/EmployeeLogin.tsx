@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 interface EmployeeLoginProps {
   role: UserRole;
@@ -19,6 +21,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   const config = ROLE_CONFIGS[role];
 
@@ -26,19 +29,23 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
     e.preventDefault();
     
     if (!username || !password) {
+      toast.error("Please fill in all fields");
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
-      localStorage.setItem('authToken', 'employee-token');
+    try {
+      await login(username, password);
+      // Store the selected role (this will be validated by your Django backend)
       localStorage.setItem('userRole', role);
-      localStorage.setItem('userId', username);
       onLoginSuccess(role);
+    } catch (error) {
+      console.error('Employee login failed:', error);
+      // Error is already shown by the auth service
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -57,9 +64,9 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
             <Badge variant="secondary" className="mb-2">
               {config.name}
             </Badge>
-            <CardTitle className="text-xl">Accesso Dipendenti</CardTitle>
+            <CardTitle className="text-xl">Employee Access</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Accedi per accedere alla tua dashboard {config.name.toLowerCase()}
+              Login with your Django backend credentials for {config.name.toLowerCase()} access
             </p>
           </div>
         </CardHeader>
@@ -67,13 +74,13 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">ID Dipendente / Nome Utente</Label>
+              <Label htmlFor="username">Django Username</Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Inserisci il tuo ID dipendente"
+                placeholder="Enter your Django username"
                 required
               />
             </div>
@@ -86,7 +93,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Inserisci la tua password"
+                  placeholder="Enter your Django password"
                   required
                 />
                 <Button
@@ -108,7 +115,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Accesso in corso..." : "Accedi"}
+              {isLoading ? "Connecting to Django..." : "Login"}
             </Button>
           </CardFooter>
         </form>

@@ -1,12 +1,12 @@
 
 import { toast } from '@/components/ui/sonner';
 
-// API configuration with flexible URL options
+// API configuration with your Django backend URL
 const API_CONFIG = {
-  // Default to your PythonAnywhere URL
+  // Set to your Django backend URL
   baseUrl: 'https://amirbenbekhti.pythonanywhere.com',
   
-  // Add any mock/demo API flag for development/testing without backend
+  // Disable mock API by default since we want real authentication
   useMockApi: false,
 };
 
@@ -18,41 +18,47 @@ const initializeApiConfig = () => {
   if (storedUrl) {
     API_CONFIG.baseUrl = storedUrl.trim();
     console.log('Loaded API URL from localStorage:', API_CONFIG.baseUrl);
+  } else {
+    // Set the default Django backend URL in localStorage
+    localStorage.setItem('phoneShopApiUrl', API_CONFIG.baseUrl);
   }
   
   if (storedMockMode === 'true') {
     API_CONFIG.useMockApi = true;
     console.log('Loaded mock API mode from localStorage:', API_CONFIG.useMockApi);
+  } else {
+    // Ensure mock mode is disabled by default
+    localStorage.setItem('phoneShopUseMockApi', 'false');
   }
 };
 
 // Initialize on module load
 initializeApiConfig();
 
-// Helper function to construct URLs properly
+// Helper function to construct URLs properly for Django backend
 export const buildApiUrl = (endpoint: string) => {
-  // Always get the current URL from config (which reflects localStorage)
   let baseUrl = API_CONFIG.baseUrl.trim();
   
-  console.log('Building API URL with base:', baseUrl);
+  console.log('Building Django API URL with base:', baseUrl);
   
   // Remove trailing slashes from base URL
   baseUrl = baseUrl.replace(/\/+$/, '');
   
-  // Only add protocol if it's completely missing
+  // Ensure we have the protocol
   if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
     baseUrl = `https://${baseUrl}`;
   }
   
-  // Clean the endpoint - remove leading slashes and ensure it doesn't start with api/
+  // Clean the endpoint - remove leading slashes
   let cleanEndpoint = endpoint.replace(/^\/+/, '');
-  if (!cleanEndpoint.startsWith('api/')) {
+  
+  // For Django, don't automatically add 'api/' if it's already there
+  if (!cleanEndpoint.startsWith('api/') && !cleanEndpoint.includes('api/')) {
     cleanEndpoint = `api/${cleanEndpoint}`;
   }
   
-  // Simple URL construction
   const finalUrl = `${baseUrl}/${cleanEndpoint}`;
-  console.log(`Building API URL: ${finalUrl}`);
+  console.log(`Django API URL: ${finalUrl}`);
   
   return finalUrl;
 };
@@ -63,7 +69,6 @@ export const getApiUrl = () => {
 };
 
 export const setApiUrl = (url: string) => {
-  // Clean the URL when setting it
   const cleanUrl = url.trim().replace(/\/+$/, '');
   API_CONFIG.baseUrl = cleanUrl;
   localStorage.setItem('phoneShopApiUrl', cleanUrl);
@@ -71,7 +76,6 @@ export const setApiUrl = (url: string) => {
   return API_CONFIG.baseUrl;
 };
 
-// Toggle mock API mode (for development without backend)
 export const toggleMockApiMode = (useMock: boolean) => {
   API_CONFIG.useMockApi = useMock;
   localStorage.setItem('phoneShopUseMockApi', useMock ? 'true' : 'false');
@@ -79,22 +83,21 @@ export const toggleMockApiMode = (useMock: boolean) => {
   return API_CONFIG.useMockApi;
 };
 
-// More detailed error handler
 export const handleApiError = (error: any) => {
-  console.error('API Error:', error);
+  console.error('Django API Error:', error);
   
   if (error.message?.includes('Failed to fetch')) {
-    console.log('Connection error details:', { 
+    console.log('Django connection error details:', { 
       apiUrl: getApiUrl(),
       error: error.message 
     });
     
-    toast.error('Unable to connect to the server. Please check your internet connection or try again later.', {
-      description: 'Make sure your Django backend is running at ' + getApiUrl(),
+    toast.error('Unable to connect to Django backend', {
+      description: 'Make sure your Django server is running at ' + getApiUrl(),
       duration: 5000
     });
   } else {
-    toast.error('An error occurred while connecting to the server', {
+    toast.error('Django backend error occurred', {
       description: error.message || 'Unknown error',
       duration: 5000
     });
@@ -103,11 +106,13 @@ export const handleApiError = (error: any) => {
   throw error;
 };
 
-// Auth header helper
 export const getAuthHeader = () => {
   const token = localStorage.getItem('authToken');
-  return token ? { 'Authorization': `Token ${token}` } : {};
+  // Only add auth header for real tokens
+  if (token && token !== 'mock-token' && token !== 'employee-token') {
+    return { 'Authorization': `Token ${token}` };
+  }
+  return {};
 };
 
-// Get mock API config
 export const getMockApiConfig = () => API_CONFIG.useMockApi;
