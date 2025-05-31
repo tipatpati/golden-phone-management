@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
 import { AuthFlow } from "@/components/app/AuthFlow";
 import { UserRole } from "@/types/roles";
+import ApiSettings from "@/pages/ApiSettings";
 
 function App() {
   const [authenticatedRole, setAuthenticatedRole] = useState<UserRole | null>(null);
@@ -52,7 +54,14 @@ function App() {
     console.log('App: Showing auth flow');
     return (
       <AppProviders>
-        <AuthFlow onAuthComplete={handleAuthComplete} onAuthError={handleAuthError} />
+        <BrowserRouter>
+          <Routes>
+            {/* Public API Settings route - accessible without login */}
+            <Route path="/api-settings" element={<ApiSettings />} />
+            {/* All other routes go to auth flow */}
+            <Route path="*" element={<AuthFlow onAuthComplete={handleAuthComplete} onAuthError={handleAuthError} />} />
+          </Routes>
+        </BrowserRouter>
       </AppProviders>
     );
   }

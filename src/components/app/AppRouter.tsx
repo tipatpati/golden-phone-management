@@ -11,6 +11,7 @@ import Clients from "@/pages/Clients";
 import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
 import Repairs from "@/pages/Repairs";
+import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
 
 interface AppRouterProps {
@@ -23,6 +24,9 @@ export function AppRouter({ userRole }: AppRouterProps) {
     return (
       <BrowserRouter>
         <Routes>
+          {/* Public API Settings route - accessible without login */}
+          <Route path="/api-settings" element={<ApiSettings />} />
+          
           <Route path="/" element={
             <ProtectedRoute>
               <MainLayout>
@@ -86,6 +90,9 @@ export function AppRouter({ userRole }: AppRouterProps) {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public API Settings route - accessible without login */}
+        <Route path="/api-settings" element={<ApiSettings />} />
+        
         <Route path="/" element={
           <EmployeeLayout userRole={userRole}>
             <EmployeeDashboard userRole={userRole} />

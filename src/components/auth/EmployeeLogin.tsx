@@ -5,7 +5,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { authApi } from "@/services/auth";
 import { toast } from "@/components/ui/sonner";
@@ -65,6 +66,16 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: Em
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
+          
+          <Link 
+            to="/api-settings"
+            className="absolute top-4 right-4"
+          >
+            <Button variant="ghost" size="sm" className="p-2">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </Link>
+          
           <div className="mt-4">
             <Badge variant="secondary" className="mb-2">
               {config.name}
@@ -72,6 +83,11 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: Em
             <CardTitle className="text-xl">Employee Access</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
               Login with your Django backend credentials for {config.name.toLowerCase()} access
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              <Link to="/api-settings" className="hover:underline">
+                Configure API settings if having connection issues
+              </Link>
             </p>
           </div>
         </CardHeader>
