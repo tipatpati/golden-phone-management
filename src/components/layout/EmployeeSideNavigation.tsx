@@ -102,7 +102,7 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-center border-b border-border px-4">
             <div className="text-center">
-              <h1 className="text-lg font-bold text-primary">RetailPro</h1>
+              <h1 className="text-lg font-bold text-primary">GOLDEN PHONE</h1>
               <Badge variant="secondary" className="text-xs mt-1">
                 {config.name}
               </Badge>

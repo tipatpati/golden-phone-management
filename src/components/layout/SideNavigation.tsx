@@ -12,9 +12,11 @@ import {
   BarChart4,
   Settings,
   Menu,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 type NavItem = {
   title: string;
@@ -72,6 +74,7 @@ export function SideNavigation() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
 
   // For demo purposes, simulate a logged-in admin user
   const userRole = "admin";
@@ -107,7 +110,7 @@ export function SideNavigation() {
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-center border-b border-border">
-            <h1 className="text-xl font-bold text-primary">RetailPro</h1>
+            <h1 className="text-xl font-bold text-primary">GOLDEN PHONE</h1>
           </div>
 
           <nav className="flex-1 overflow-y-auto p-4">
@@ -136,12 +139,24 @@ export function SideNavigation() {
           </nav>
 
           <div className="border-t border-border p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary" />
-              <div>
-                <p className="text-sm font-medium">Admin User</p>
-                <p className="text-xs text-muted-foreground">admin@example.com</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground text-sm font-medium">A</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Store Owner</p>
+                  <p className="text-xs text-muted-foreground">admin@goldenphone.com</p>
+                </div>
               </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={logout}
+                className="h-8 w-8"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
