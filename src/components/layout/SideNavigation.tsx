@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutGrid, 
   Users, 
+  ShoppingCart,
   PackageSearch, 
   ClipboardList, 
   BarChart4,
@@ -27,6 +28,12 @@ const navItems: NavItem[] = [
     title: "Dashboard",
     href: "/",
     icon: LayoutGrid,
+    permission: ["salesperson", "manager", "admin"],
+  },
+  {
+    title: "Sales",
+    href: "/sales",
+    icon: ShoppingCart,
     permission: ["salesperson", "manager", "admin"],
   },
   {

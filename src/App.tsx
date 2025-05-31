@@ -8,7 +8,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import Clients from "./pages/Clients";
+import Sales from "./pages/Sales";
 import Inventory from "./pages/Inventory";
+import Repairs from "./pages/Repairs";
 import NotFound from "./pages/NotFound";
 
 // Create a client
@@ -37,12 +40,17 @@ function App() {
                   </MainLayout>
                 </ProtectedRoute>
               } />
+              <Route path="/sales" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Sales />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
               <Route path="/clients" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div className="min-h-[80vh] flex items-center justify-center">
-                      <h1 className="text-2xl">Clients Module - Coming Soon</h1>
-                    </div>
+                    <Clients />
                   </MainLayout>
                 </ProtectedRoute>
               } />
@@ -56,9 +64,7 @@ function App() {
               <Route path="/repairs" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div className="min-h-[80vh] flex items-center justify-center">
-                      <h1 className="text-2xl">Repairs Module - Coming Soon</h1>
-                    </div>
+                    <Repairs />
                   </MainLayout>
                 </ProtectedRoute>
               } />
