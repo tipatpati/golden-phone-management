@@ -26,7 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     authApi.logout();
+    // Clear role-specific data
+    localStorage.removeItem('userRole');
     setIsLoggedIn(false);
+    // Reload to reset the app state
+    window.location.reload();
   };
 
   useEffect(() => {
