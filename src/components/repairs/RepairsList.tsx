@@ -13,7 +13,7 @@ export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No repairs found matching your search.</p>
+            <p className="text-muted-foreground">Nessuna riparazione trovata che corrisponda alla tua ricerca.</p>
           </div>
         </CardContent>
       </Card>

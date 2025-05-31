@@ -13,10 +13,10 @@ export function InventoryHeader({ onToggleSettings }: InventoryHeaderProps) {
       <div className="flex-1 min-w-0 w-full sm:w-auto">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
           <PackageSearch className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
-          <span className="truncate">Inventory Management</span>
+          <span className="truncate">Gestione Inventario</span>
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base mt-1">
-          Manage your phone products, accessories, and keep track of stock levels.
+          Gestisci i tuoi prodotti, accessori e tieni traccia dei livelli di scorte.
         </p>
       </div>
       <div className="flex-shrink-0 w-full sm:w-auto flex justify-end">
@@ -25,7 +25,7 @@ export function InventoryHeader({ onToggleSettings }: InventoryHeaderProps) {
           size="icon" 
           onClick={onToggleSettings}
           className="h-10 w-10 flex items-center justify-center"
-          title="API Settings"
+          title="Impostazioni API"
         >
           <Settings className="h-4 w-4" />
         </Button>

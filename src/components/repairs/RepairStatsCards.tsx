@@ -18,7 +18,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold">{statusCounts.total}</div>
-            <div className="text-sm text-muted-foreground">Total Repairs</div>
+            <div className="text-sm text-muted-foreground">Riparazioni Totali</div>
           </div>
         </CardContent>
       </Card>
@@ -27,7 +27,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{statusCounts.in_progress}</div>
-            <div className="text-sm text-muted-foreground">In Progress</div>
+            <div className="text-sm text-muted-foreground">In Corso</div>
           </div>
         </CardContent>
       </Card>
@@ -36,7 +36,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">{statusCounts.awaiting_parts}</div>
-            <div className="text-sm text-muted-foreground">Awaiting Parts</div>
+            <div className="text-sm text-muted-foreground">In Attesa Pezzi</div>
           </div>
         </CardContent>
       </Card>
@@ -45,7 +45,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{statusCounts.completed_today}</div>
-            <div className="text-sm text-muted-foreground">Completed Today</div>
+            <div className="text-sm text-muted-foreground">Completate Oggi</div>
           </div>
         </CardContent>
       </Card>

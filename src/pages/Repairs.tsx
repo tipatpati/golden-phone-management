@@ -13,12 +13,12 @@ const Repairs = () => {
   // Mock repair data
   const repairs: Repair[] = [
     {
-      id: "REP-001",
-      clientName: "John Doe",
+      id: "RIP-001",
+      clientName: "Mario Rossi",
       device: "iPhone 13 Pro",
       imei: "352908764123456",
-      issue: "Cracked screen replacement",
-      technician: "Mike Johnson",
+      issue: "Sostituzione schermo rotto",
+      technician: "Marco Bianchi",
       status: "in_progress",
       dateCreated: "2024-01-12",
       estimatedCompletion: "2024-01-16",
@@ -26,12 +26,12 @@ const Repairs = () => {
       priority: "normal"
     },
     {
-      id: "REP-002", 
-      clientName: "Tech Solutions Inc.",
+      id: "RIP-002", 
+      clientName: "Soluzioni Tech S.r.l.",
       device: "Samsung Galaxy S22",
       imei: "990000862471854",
-      issue: "Battery replacement + charging port cleaning",
-      technician: "Sarah Wilson",
+      issue: "Sostituzione batteria + pulizia porta di ricarica",
+      technician: "Sara Verdi",
       status: "awaiting_parts",
       dateCreated: "2024-01-10",
       estimatedCompletion: "2024-01-18",
@@ -39,12 +39,12 @@ const Repairs = () => {
       priority: "high"
     },
     {
-      id: "REP-003",
+      id: "RIP-003",
       clientName: "Maria Garcia", 
       device: "iPhone 12",
       imei: "352908764123789",
-      issue: "Water damage assessment and repair",
-      technician: "Mike Johnson",
+      issue: "Valutazione e riparazione danni da acqua",
+      technician: "Marco Bianchi",
       status: "completed",
       dateCreated: "2024-01-08",
       estimatedCompletion: "2024-01-15",
@@ -52,12 +52,12 @@ const Repairs = () => {
       priority: "urgent"
     },
     {
-      id: "REP-004",
+      id: "RIP-004",
       clientName: "David Kim",
       device: "iPad Air",
       imei: "352908764123999",
-      issue: "Screen and digitizer replacement",
-      technician: "Sarah Wilson", 
+      issue: "Sostituzione schermo e digitalizzatore",
+      technician: "Sara Verdi", 
       status: "quoted",
       dateCreated: "2024-01-14",
       estimatedCompletion: "2024-01-20",
@@ -86,14 +86,14 @@ const Repairs = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Repair Management</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Gestione Riparazioni</h2>
           <p className="text-muted-foreground">
-            Track device repairs, assign technicians, and manage repair workflows.
+            Traccia le riparazioni dei dispositivi, assegna i tecnici e gestisci i flussi di lavoro delle riparazioni.
           </p>
         </div>
         <Button className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
-          New Repair
+          Nuova Riparazione
         </Button>
       </div>
 

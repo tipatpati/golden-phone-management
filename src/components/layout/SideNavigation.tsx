@@ -33,37 +33,37 @@ const navItems: NavItem[] = [
     permission: ["salesperson", "manager", "admin"],
   },
   {
-    title: "Sales",
+    title: "Vendite",
     href: "/sales",
     icon: ShoppingCart,
     permission: ["salesperson", "manager", "admin"],
   },
   {
-    title: "Clients",
+    title: "Clienti",
     href: "/clients",
     icon: Users,
     permission: ["salesperson", "manager", "admin"],
   },
   {
-    title: "Inventory",
+    title: "Inventario",
     href: "/inventory",
     icon: PackageSearch,
     permission: ["manager", "admin"],
   },
   {
-    title: "Repairs",
+    title: "Riparazioni",
     href: "/repairs",
     icon: ClipboardList,
     permission: ["manager", "admin"],
   },
   {
-    title: "Reports",
+    title: "Report",
     href: "/reports",
     icon: BarChart4,
     permission: ["manager", "admin"],
   },
   {
-    title: "Settings",
+    title: "Impostazioni",
     href: "/settings",
     icon: Settings,
     permission: ["admin"],
@@ -142,10 +142,10 @@ export function SideNavigation() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground text-sm font-medium">A</span>
+                  <span className="text-primary-foreground text-sm font-medium">P</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Store Owner</p>
+                  <p className="text-sm font-medium">Proprietario</p>
                   <p className="text-xs text-muted-foreground">admin@goldenphone.com</p>
                 </div>
               </div>

@@ -31,8 +31,8 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">GOLDEN PHONE Employee Portal</h1>
-          <p className="text-gray-600">Select your role to continue</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">GOLDEN PHONE Portale Dipendenti</h1>
+          <p className="text-gray-600">Seleziona il tuo ruolo per continuare</p>
         </div>
         
         <div className="grid md:grid-cols-3 gap-6">
@@ -64,7 +64,7 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
                     onClick={() => onRoleSelect(role)}
                     className="w-full"
                   >
-                    Continue as {config.name}
+                    Continua come {config.name}
                   </Button>
                 </CardContent>
               </Card>
@@ -78,7 +78,7 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
             onClick={() => onRoleSelect('admin')}
             className="text-sm text-gray-500 hover:text-gray-700"
           >
-            Store Owner? Click here
+            Proprietario del negozio? Clicca qui
           </Button>
         </div>
       </div>

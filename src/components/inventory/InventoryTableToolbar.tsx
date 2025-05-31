@@ -35,7 +35,7 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
           <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search products..."
+            placeholder="Cerca prodotti..."
             className="w-full pl-8 h-10"
             value={search}
             onChange={handleSearch}
@@ -52,7 +52,7 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
         </div>
         <Button type="submit" variant="outline" className="h-10 px-3 flex-shrink-0">
           <Search className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Search</span>
+          <span className="hidden sm:inline">Cerca</span>
         </Button>
       </form>
       
@@ -63,7 +63,7 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
           className="flex items-center justify-center gap-2 h-10 order-1 sm:order-none"
         >
           <Plus className="h-4 w-4" />
-          <span>Add Product</span>
+          <span>Aggiungi Prodotto</span>
         </Button>
         
         <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">

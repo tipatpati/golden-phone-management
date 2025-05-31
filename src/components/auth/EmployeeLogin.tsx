@@ -57,9 +57,9 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
             <Badge variant="secondary" className="mb-2">
               {config.name}
             </Badge>
-            <CardTitle className="text-xl">Employee Login</CardTitle>
+            <CardTitle className="text-xl">Accesso Dipendenti</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Sign in to access your {config.name.toLowerCase()} dashboard
+              Accedi per accedere alla tua dashboard {config.name.toLowerCase()}
             </p>
           </div>
         </CardHeader>
@@ -67,13 +67,13 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Employee ID / Username</Label>
+              <Label htmlFor="username">ID Dipendente / Nome Utente</Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your employee ID"
+                placeholder="Inserisci il tuo ID dipendente"
                 required
               />
             </div>
@@ -86,7 +86,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Inserisci la tua password"
                   required
                 />
                 <Button
@@ -108,7 +108,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess }: EmployeeLoginPro
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Accesso in corso..." : "Accedi"}
             </Button>
           </CardFooter>
         </form>

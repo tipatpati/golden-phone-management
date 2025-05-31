@@ -13,7 +13,7 @@ const Dashboard = () => {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">
-          Welcome back! Here's what's happening in your store today.
+          Bentornato! Ecco cosa sta succedendo nel tuo negozio oggi.
         </p>
       </div>
 
