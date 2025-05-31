@@ -20,39 +20,41 @@ export function ConnectionStatus({
   if (canAddProducts) return null;
 
   return (
-    <Alert variant="destructive" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-      <div className="flex items-start gap-2 flex-1 min-w-0">
-        <WifiOff className="h-5 w-5 flex-shrink-0 mt-0.5" />
-        <div className="min-w-0 flex-1">
-          <AlertTitle className="text-sm sm:text-base">Backend Connection Issue</AlertTitle>
-          <AlertDescription className="text-xs sm:text-sm">
-            Unable to connect to the backend server. This will affect adding, updating, and viewing products.
-          </AlertDescription>
+    <Alert variant="destructive" className="w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+        <div className="flex items-start gap-2 flex-1 min-w-0">
+          <WifiOff className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div className="min-w-0 flex-1">
+            <AlertTitle className="text-sm sm:text-base">Backend Connection Issue</AlertTitle>
+            <AlertDescription className="text-xs sm:text-sm">
+              Unable to connect to the backend server. This will affect adding, updating, and viewing products.
+            </AlertDescription>
+          </div>
         </div>
-      </div>
-      <div className="flex gap-2 w-full sm:w-auto">
-        <Button 
-          size="sm" 
-          onClick={onShowSettings} 
-          variant="outline"
-          className="flex-1 sm:flex-none touch-target"
-        >
-          <Settings className="h-4 w-4 mr-1" />
-          <span className="hidden sm:inline">Settings</span>
-        </Button>
-        <Button 
-          size="sm" 
-          onClick={onTestConnection} 
-          disabled={isCheckingConnection}
-          className="flex-1 sm:flex-none touch-target"
-        >
-          {isCheckingConnection ? (
-            <RefreshCw className="h-4 w-4 animate-spin mr-1" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-1" />
-          )}
-          <span className="hidden sm:inline">Test Connection</span>
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
+          <Button 
+            size="sm" 
+            onClick={onShowSettings} 
+            variant="outline"
+            className="flex-1 sm:flex-none h-9 flex items-center justify-center gap-1"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="text-xs sm:text-sm">Settings</span>
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={onTestConnection} 
+            disabled={isCheckingConnection}
+            className="flex-1 sm:flex-none h-9 flex items-center justify-center gap-1"
+          >
+            {isCheckingConnection ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            <span className="text-xs sm:text-sm">Test</span>
+          </Button>
+        </div>
       </div>
     </Alert>
   );

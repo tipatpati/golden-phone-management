@@ -68,29 +68,31 @@ export function InventoryTable() {
   }
 
   return (
-    <div className="rounded-md border overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[120px]">Product</TableHead>
-              <TableHead className="min-w-[100px]">SKU</TableHead>
-              <TableHead className="hidden sm:table-cell min-w-[80px]">Category</TableHead>
-              <TableHead className="hidden md:table-cell min-w-[80px]">Type</TableHead>
-              <TableHead className="text-right min-w-[80px]">Price</TableHead>
-              <TableHead className="text-right min-w-[60px]">Stock</TableHead>
-              <TableHead className="text-right min-w-[80px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* If products is undefined or empty, show demo products */}
-            {(!products || products.length === 0) ? demoProducts.map((product) => (
-              <ProductRow key={product.id} product={product} />
-            )) : products.map((product) => (
-              <ProductRow key={product.id} product={product} />
-            ))}
-          </TableBody>
-        </Table>
+    <div className="w-full">
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[120px] whitespace-nowrap">Product</TableHead>
+                <TableHead className="min-w-[100px] whitespace-nowrap">SKU</TableHead>
+                <TableHead className="hidden sm:table-cell min-w-[80px] whitespace-nowrap">Category</TableHead>
+                <TableHead className="hidden md:table-cell min-w-[80px] whitespace-nowrap">Type</TableHead>
+                <TableHead className="text-right min-w-[80px] whitespace-nowrap">Price</TableHead>
+                <TableHead className="text-right min-w-[60px] whitespace-nowrap">Stock</TableHead>
+                <TableHead className="text-right min-w-[100px] whitespace-nowrap">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {/* If products is undefined or empty, show demo products */}
+              {(!products || products.length === 0) ? demoProducts.map((product) => (
+                <ProductRow key={product.id} product={product} />
+              )) : products.map((product) => (
+                <ProductRow key={product.id} product={product} />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
@@ -100,27 +102,29 @@ function ProductRow({ product }: { product: Product }) {
   return (
     <TableRow key={product.id}>
       <TableCell className="font-medium">
-        <div className="truncate max-w-[120px]">{product.name}</div>
+        <div className="truncate max-w-[120px] text-sm">{product.name}</div>
       </TableCell>
       <TableCell>
-        <div className="truncate max-w-[100px] text-xs sm:text-sm">{product.sku}</div>
+        <div className="truncate max-w-[100px] text-xs font-mono">{product.sku}</div>
       </TableCell>
-      <TableCell className="hidden sm:table-cell">{product.category_name || product.category}</TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <span className="text-sm">{product.category_name || product.category}</span>
+      </TableCell>
       <TableCell className="hidden md:table-cell">
         {product.has_serial ? (
-          <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+          <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
             <Smartphone className="h-3 w-3" />
             <span className="hidden lg:inline">IMEI</span>
           </Badge>
         ) : (
-          <Badge variant="outline" className="flex items-center gap-1 text-xs">
+          <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
             <Barcode className="h-3 w-3" />
             <span className="hidden lg:inline">Standard</span>
           </Badge>
         )}
       </TableCell>
       <TableCell className="text-right">
-        <div className="text-xs sm:text-sm">
+        <div className="text-sm font-medium">
           ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
         </div>
       </TableCell>
@@ -130,11 +134,11 @@ function ProductRow({ product }: { product: Product }) {
         </Badge>
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end space-x-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 touch-target">
+        <div className="flex justify-end items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex items-center justify-center">
             <Edit className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 touch-target">
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex items-center justify-center">
             <Trash className="h-3 w-3" />
           </Button>
         </div>
