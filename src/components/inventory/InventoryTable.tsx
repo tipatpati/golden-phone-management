@@ -69,27 +69,29 @@ export function InventoryTable() {
 
   return (
     <div className="rounded-md border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>SKU</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">Price</TableHead>
-            <TableHead className="text-right">Stock</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {/* If products is undefined or empty, show demo products */}
-          {(!products || products.length === 0) ? demoProducts.map((product) => (
-            <ProductRow key={product.id} product={product} />
-          )) : products.map((product) => (
-            <ProductRow key={product.id} product={product} />
-          ))}
-        </TableBody>
-      </Table>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[120px]">Product</TableHead>
+              <TableHead className="min-w-[100px]">SKU</TableHead>
+              <TableHead className="hidden sm:table-cell min-w-[80px]">Category</TableHead>
+              <TableHead className="hidden md:table-cell min-w-[80px]">Type</TableHead>
+              <TableHead className="text-right min-w-[80px]">Price</TableHead>
+              <TableHead className="text-right min-w-[60px]">Stock</TableHead>
+              <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* If products is undefined or empty, show demo products */}
+            {(!products || products.length === 0) ? demoProducts.map((product) => (
+              <ProductRow key={product.id} product={product} />
+            )) : products.map((product) => (
+              <ProductRow key={product.id} product={product} />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
@@ -97,37 +99,43 @@ export function InventoryTable() {
 function ProductRow({ product }: { product: Product }) {
   return (
     <TableRow key={product.id}>
-      <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>{product.sku}</TableCell>
-      <TableCell>{product.category_name || product.category}</TableCell>
+      <TableCell className="font-medium">
+        <div className="truncate max-w-[120px]">{product.name}</div>
+      </TableCell>
       <TableCell>
+        <div className="truncate max-w-[100px] text-xs sm:text-sm">{product.sku}</div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">{product.category_name || product.category}</TableCell>
+      <TableCell className="hidden md:table-cell">
         {product.has_serial ? (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge variant="secondary" className="flex items-center gap-1 text-xs">
             <Smartphone className="h-3 w-3" />
-            IMEI
+            <span className="hidden lg:inline">IMEI</span>
           </Badge>
         ) : (
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge variant="outline" className="flex items-center gap-1 text-xs">
             <Barcode className="h-3 w-3" />
-            Standard
+            <span className="hidden lg:inline">Standard</span>
           </Badge>
         )}
       </TableCell>
       <TableCell className="text-right">
-        ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+        <div className="text-xs sm:text-sm">
+          ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+        </div>
       </TableCell>
       <TableCell className="text-right">
-        <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"}>
+        <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"} className="text-xs">
           {product.stock}
         </Badge>
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end space-x-2">
-          <Button variant="ghost" size="icon">
-            <Edit className="h-4 w-4" />
+        <div className="flex justify-end space-x-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8 touch-target">
+            <Edit className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <Trash className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 touch-target">
+            <Trash className="h-3 w-3" />
           </Button>
         </div>
       </TableCell>

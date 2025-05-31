@@ -17,7 +17,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       
       <div className={`flex-1 transition-all ${isMobile ? "pl-0" : "pl-64"}`}>
         <Header />
-        <main className="container px-4 py-6 md:px-6 md:py-8">
+        <main className="container px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full overflow-x-hidden">
           {children}
         </main>
       </div>
