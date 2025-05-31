@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Clock, CheckCircle, AlertCircle, Tool } from "lucide-react";
+import { Plus, Search, Clock, CheckCircle, AlertCircle, Wrench } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Repairs = () => {
@@ -78,7 +77,7 @@ const Repairs = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed": return CheckCircle;
-      case "in_progress": return Tool;
+      case "in_progress": return Wrench;
       case "awaiting_parts": return AlertCircle;
       case "quoted": return Clock;
       default: return Clock;
