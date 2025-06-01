@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,8 @@ export function InventoryTable() {
   const { data: products, isLoading, isError } = useProducts();
   const deleteProduct = useDeleteProduct();
   
+  console.log('InventoryTable render - editingProduct:', editingProduct);
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-48">
@@ -83,15 +86,17 @@ export function InventoryTable() {
   }
 
   const handleEditProduct = (product: Product) => {
-    console.log('Edit product:', product);
+    console.log('Edit product clicked:', product);
     setEditingProduct(product);
   };
 
   const handleCancelEdit = () => {
+    console.log('Cancel edit clicked');
     setEditingProduct(null);
   };
 
   const handleEditSuccess = () => {
+    console.log('Edit success');
     setEditingProduct(null);
   };
 
@@ -109,6 +114,7 @@ export function InventoryTable() {
 
   // If editing a product, show the edit form
   if (editingProduct) {
+    console.log('Rendering EditProductForm for:', editingProduct);
     return (
       <div className="w-full">
         <EditProductForm 
@@ -120,6 +126,7 @@ export function InventoryTable() {
     );
   }
 
+  console.log('Rendering inventory table');
   return (
     <div className="w-full">
       <div className="rounded-md border overflow-hidden">

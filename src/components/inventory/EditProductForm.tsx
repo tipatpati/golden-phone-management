@@ -13,12 +13,14 @@ interface EditProductFormProps {
 }
 
 export function EditProductForm({ product, onCancel, onSuccess }: EditProductFormProps) {
-  const [name, setName] = useState(product.name);
-  const [sku, setSku] = useState(product.sku);
-  const [category, setCategory] = useState(product.category.toString());
-  const [price, setPrice] = useState(product.price.toString());
-  const [stock, setStock] = useState(product.stock.toString());
-  const [threshold, setThreshold] = useState(product.threshold.toString());
+  console.log('EditProductForm rendering with product:', product);
+  
+  const [name, setName] = useState(product.name || "");
+  const [sku, setSku] = useState(product.sku || "");
+  const [category, setCategory] = useState(product.category?.toString() || "");
+  const [price, setPrice] = useState(product.price?.toString() || "");
+  const [stock, setStock] = useState(product.stock?.toString() || "");
+  const [threshold, setThreshold] = useState(product.threshold?.toString() || "");
   const [description, setDescription] = useState(product.description || "");
   const [barcode, setBarcode] = useState(product.barcode || "");
 
@@ -26,6 +28,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting form with data:', { name, sku, category, price, stock, threshold });
     
     try {
       const updatedProduct = {
@@ -54,51 +57,55 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
     }
   };
 
+  console.log('Rendering form with state:', { name, sku, category, price, stock, threshold });
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Edit Product: {product.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <ProductFormFields
-            name={name}
-            setName={setName}
-            sku={sku}
-            setSku={setSku}
-            category={category}
-            setCategory={setCategory}
-            price={price}
-            setPrice={setPrice}
-            stock={stock}
-            setStock={setStock}
-            threshold={threshold}
-            setThreshold={setThreshold}
-            description={description}
-            setDescription={setDescription}
-            barcode={barcode}
-            setBarcode={setBarcode}
-          />
-          
-          <div className="flex gap-2 pt-4">
-            <Button 
-              type="submit" 
-              disabled={updateProduct.isPending}
-              className="flex-1"
-            >
-              {updateProduct.isPending ? "Updating..." : "Update Product"}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Edit Product: {product.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <ProductFormFields
+              name={name}
+              setName={setName}
+              sku={sku}
+              setSku={setSku}
+              category={category}
+              setCategory={setCategory}
+              price={price}
+              setPrice={setPrice}
+              stock={stock}
+              setStock={setStock}
+              threshold={threshold}
+              setThreshold={setThreshold}
+              description={description}
+              setDescription={setDescription}
+              barcode={barcode}
+              setBarcode={setBarcode}
+            />
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                type="submit" 
+                disabled={updateProduct.isPending}
+                className="flex-1"
+              >
+                {updateProduct.isPending ? "Updating..." : "Update Product"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
