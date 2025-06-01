@@ -24,20 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const role = localStorage.getItem('userRole');
     const user = localStorage.getItem('userId');
     
-    // Only consider logged in if we have a real token (not mock)
-    const isAuthenticated = token && token !== 'mock-token' && token !== 'employee-token';
+    // Consider logged in if we have any valid token (real or mock)
+    const isAuthenticated = !!token;
     
     if (isAuthenticated) {
       setIsLoggedIn(true);
       setUserRole(role);
       setUsername(user);
     } else {
-      // Clear any mock tokens
-      if (token === 'mock-token' || token === 'employee-token') {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userId');
-      }
       setIsLoggedIn(false);
       setUserRole(null);
       setUsername(null);
@@ -48,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await authApi.login(username, password);
       
-      // Check if we got a real token back
+      // Check if we got a token back (real or mock)
       const token = localStorage.getItem('authToken');
-      if (token && token !== 'mock-token' && token !== 'employee-token') {
+      if (token) {
         setIsLoggedIn(true);
         setUsername(username);
         

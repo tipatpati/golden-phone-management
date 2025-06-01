@@ -5,11 +5,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { authApi } from "@/services/auth";
 import { toast } from "@/components/ui/sonner";
+import { getMockApiConfig } from "@/services/config";
 
 interface EmployeeLoginProps {
   role: UserRole;
@@ -25,6 +26,7 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: Em
   const [isLoading, setIsLoading] = useState(false);
 
   const config = ROLE_CONFIGS[role];
+  const useMockApi = getMockApiConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,44 +79,68 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: Em
           </Link>
           
           <div className="mt-4">
-            <Badge variant="secondary" className="mb-2">
-              {config.name}
-            </Badge>
-            <CardTitle className="text-xl">Employee Access</CardTitle>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Badge variant="secondary">
+                {config.name}
+              </Badge>
+              {useMockApi && (
+                <Badge variant="outline" className="text-blue-600 border-blue-600">
+                  <Database className="h-3 w-3 mr-1" />
+                  Mock Mode
+                </Badge>
+              )}
+            </div>
+            <CardTitle className="text-xl">
+              {useMockApi ? 'Mock Login' : 'Employee Access'}
+            </CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Login with your Django backend credentials for {config.name.toLowerCase()} access
+              {useMockApi 
+                ? `Enter any credentials to login with mock data for ${config.name.toLowerCase()} access`
+                : `Login with your Django backend credentials for ${config.name.toLowerCase()} access`
+              }
             </p>
-            <p className="text-xs text-blue-600 mt-1">
-              <Link to="/api-settings" className="hover:underline">
-                Configure API settings if having connection issues
-              </Link>
-            </p>
+            {!useMockApi && (
+              <p className="text-xs text-blue-600 mt-1">
+                <Link to="/api-settings" className="hover:underline">
+                  Configure API settings if having connection issues
+                </Link>
+              </p>
+            )}
+            {useMockApi && (
+              <p className="text-xs text-green-600 mt-1">
+                Mock mode is enabled - any username/password will work
+              </p>
+            )}
           </div>
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Django Username</Label>
+              <Label htmlFor="username">
+                {useMockApi ? 'Username (any)' : 'Django Username'}
+              </Label>
               <Input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your Django username"
+                placeholder={useMockApi ? "Enter any username" : "Enter your Django username"}
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">
+                {useMockApi ? 'Password (any)' : 'Password'}
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your Django password"
+                  placeholder={useMockApi ? "Enter any password" : "Enter your Django password"}
                   required
                 />
                 <Button
@@ -136,7 +162,10 @@ export function EmployeeLogin({ role, onBack, onLoginSuccess, onLoginError }: Em
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? "Connecting to Django..." : "Login"}
+              {isLoading 
+                ? (useMockApi ? "Logging in with mock data..." : "Connecting to Django...") 
+                : (useMockApi ? "Mock Login" : "Login")
+              }
             </Button>
           </CardFooter>
         </form>
