@@ -2,9 +2,21 @@
 import React from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useProducts, Product } from "@/services/useProducts";
+import { useProducts, Product, useDeleteProduct } from "@/services/useProducts";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Barcode, Smartphone } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const demoProducts: Product[] = [
   {
@@ -50,6 +62,7 @@ const demoProducts: Product[] = [
 export function InventoryTable() {
   // Use our API hook to fetch products
   const { data: products, isLoading, isError } = useProducts();
+  const deleteProduct = useDeleteProduct();
   
   if (isLoading) {
     return (
@@ -66,6 +79,25 @@ export function InventoryTable() {
       </div>
     );
   }
+
+  const handleEditProduct = (product: Product) => {
+    console.log('Edit product:', product);
+    toast.info(`Editing ${product.name}`, {
+      description: "Edit functionality will be implemented soon"
+    });
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    try {
+      await deleteProduct.mutateAsync(product.id);
+      toast.success(`${product.name} deleted successfully`);
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error(`Failed to delete ${product.name}`, {
+        description: "Please try again later"
+      });
+    }
+  };
 
   return (
     <div className="w-full">
@@ -86,9 +118,21 @@ export function InventoryTable() {
             <TableBody>
               {/* If products is undefined or empty, show demo products */}
               {(!products || products.length === 0) ? demoProducts.map((product) => (
-                <ProductRow key={product.id} product={product} />
+                <ProductRow 
+                  key={product.id} 
+                  product={product} 
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  isDeleting={deleteProduct.isPending}
+                />
               )) : products.map((product) => (
-                <ProductRow key={product.id} product={product} />
+                <ProductRow 
+                  key={product.id} 
+                  product={product} 
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  isDeleting={deleteProduct.isPending}
+                />
               ))}
             </TableBody>
           </Table>
@@ -98,7 +142,17 @@ export function InventoryTable() {
   );
 }
 
-function ProductRow({ product }: { product: Product }) {
+function ProductRow({ 
+  product, 
+  onEdit, 
+  onDelete,
+  isDeleting 
+}: { 
+  product: Product;
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
+  isDeleting: boolean;
+}) {
   return (
     <TableRow key={product.id}>
       <TableCell className="font-medium">
@@ -135,12 +189,44 @@ function ProductRow({ product }: { product: Product }) {
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex items-center justify-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 flex items-center justify-center"
+            onClick={() => onEdit(product)}
+          >
             <Edit className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex items-center justify-center">
-            <Trash className="h-3 w-3" />
-          </Button>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 flex items-center justify-center"
+                disabled={isDeleting}
+              >
+                <Trash className="h-3 w-3" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(product)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </TableCell>
     </TableRow>
