@@ -1,11 +1,11 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useProducts, Product, useDeleteProduct } from "@/services/useProducts";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Barcode, Smartphone } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { EditProductForm } from "@/components/inventory/EditProductForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +60,8 @@ const demoProducts: Product[] = [
 ];
 
 export function InventoryTable() {
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
   // Use our API hook to fetch products
   const { data: products, isLoading, isError } = useProducts();
   const deleteProduct = useDeleteProduct();
@@ -82,9 +84,15 @@ export function InventoryTable() {
 
   const handleEditProduct = (product: Product) => {
     console.log('Edit product:', product);
-    toast.info(`Editing ${product.name}`, {
-      description: "Edit functionality will be implemented soon"
-    });
+    setEditingProduct(product);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+  };
+
+  const handleEditSuccess = () => {
+    setEditingProduct(null);
   };
 
   const handleDeleteProduct = async (product: Product) => {
@@ -98,6 +106,19 @@ export function InventoryTable() {
       });
     }
   };
+
+  // If editing a product, show the edit form
+  if (editingProduct) {
+    return (
+      <div className="w-full">
+        <EditProductForm 
+          product={editingProduct}
+          onCancel={handleCancelEdit}
+          onSuccess={handleEditSuccess}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
