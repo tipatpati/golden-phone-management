@@ -41,7 +41,11 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
             const Icon = getRoleIcon(role);
             
             return (
-              <Card key={role} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card 
+                key={role} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => onRoleSelect(role)}
+              >
                 <CardHeader className="text-center">
                   <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
                     <Icon className="h-8 w-8 text-primary" />
@@ -61,7 +65,10 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
                     ))}
                   </ul>
                   <Button 
-                    onClick={() => onRoleSelect(role)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRoleSelect(role);
+                    }}
                     className="w-full"
                   >
                     Continua come {config.name}
