@@ -8,7 +8,12 @@ export function useEmployees() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("*")
+        .select(`
+          *,
+          profiles:profile_id (
+            role
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

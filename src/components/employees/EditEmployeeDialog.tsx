@@ -10,8 +10,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 
 interface Employee {
   id: string;
@@ -24,6 +32,10 @@ interface Employee {
   status: string;
   hire_date: string;
   salary?: number;
+  profile_id?: string;
+  profiles?: {
+    role: UserRole;
+  };
 }
 
 interface EditEmployeeDialogProps {
@@ -46,6 +58,7 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
     salary: "",
     hire_date: "",
     status: "active",
+    role: "salesperson" as UserRole,
   });
 
   useEffect(() => {
@@ -60,6 +73,7 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
         salary: employee.salary ? employee.salary.toString() : "",
         hire_date: employee.hire_date ? employee.hire_date.split('T')[0] : "",
         status: employee.status || "active",
+        role: employee.profiles?.role || "salesperson",
       });
     }
   }, [employee]);
@@ -70,16 +84,52 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
 
     try {
       const employeeData = {
-        ...formData,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        department: formData.department,
+        position: formData.position,
         salary: formData.salary ? parseFloat(formData.salary) : null,
+        hire_date: formData.hire_date,
+        status: formData.status,
       };
 
-      const { error } = await supabase
+      const { error: employeeError } = await supabase
         .from("employees")
         .update(employeeData)
         .eq("id", employee.id);
 
-      if (error) throw error;
+      if (employeeError) throw employeeError;
+
+      // Update the profile role if profile exists
+      if (employee.profile_id) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ role: formData.role })
+          .eq("id", employee.profile_id);
+
+        if (profileError) throw profileError;
+      } else {
+        // Create a profile if it doesn't exist
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([{
+            id: employee.id,
+            username: formData.email.split('@')[0],
+            role: formData.role,
+          }]);
+
+        if (profileError) throw profileError;
+
+        // Update the employee with the profile_id
+        const { error: updateError } = await supabase
+          .from("employees")
+          .update({ profile_id: employee.id })
+          .eq("id", employee.id);
+
+        if (updateError) throw updateError;
+      }
 
       toast({
         title: "Success",
@@ -152,6 +202,22 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
             />
           </div>
 
+          <div>
+            <Label htmlFor="role">Role *</Label>
+            <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(ROLE_CONFIGS).map(([roleKey, roleConfig]) => (
+                  <SelectItem key={roleKey} value={roleKey}>
+                    {roleConfig.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="department">Department</Label>
@@ -196,16 +262,16 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
 
           <div>
             <Label htmlFor="status">Status</Label>
-            <select
-              id="status"
-              value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              className="w-full border rounded-md px-3 py-2"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="terminated">Terminated</option>
-            </select>
+            <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="terminated">Terminated</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
