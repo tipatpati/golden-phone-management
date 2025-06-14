@@ -21,6 +21,11 @@ interface ProductFormFieldsProps {
   setDescription: (value: string) => void;
   barcode: string;
   setBarcode: (value: string) => void;
+  hasSerial?: boolean;
+  setHasSerial?: (value: boolean) => void;
+  serialNumbers?: string[];
+  setSerialNumbers?: (value: string[]) => void;
+  categories?: { id: number; name: string; }[];
 }
 
 // Category mapping - you'll need to adjust these IDs based on your Django backend
@@ -39,8 +44,11 @@ export function ProductFormFields({
   stock, setStock,
   threshold, setThreshold,
   description, setDescription,
-  barcode, setBarcode
+  barcode, setBarcode,
+  categories
 }: ProductFormFieldsProps) {
+  const categoryOptions = categories || CATEGORY_OPTIONS;
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -76,7 +84,7 @@ export function ProductFormFields({
             required
           >
             <option value="">Select a category</option>
-            {CATEGORY_OPTIONS.map((cat) => (
+            {categoryOptions.map((cat) => (
               <option key={cat.id} value={cat.id.toString()}>
                 {cat.name}
               </option>

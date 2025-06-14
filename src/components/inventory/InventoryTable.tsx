@@ -143,7 +143,7 @@ function ProductRow({
         <div className="truncate max-w-[100px] text-xs font-mono">{product.sku}</div>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
-        <span className="text-sm">{product.category_name || product.category}</span>
+        <span className="text-sm">{product.category_name || product.category?.name}</span>
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {product.has_serial ? (

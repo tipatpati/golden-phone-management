@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export type Product = {
@@ -10,6 +9,7 @@ export type Product = {
     id: number;
     name: string;
   };
+  category_name?: string; // Add this for compatibility
   price: number;
   stock: number;
   threshold: number;
@@ -62,7 +62,6 @@ export const supabaseProductApi = {
     const transformedData = data?.map(product => ({
       ...product,
       category_name: product.category?.name,
-      category: product.category?.name || product.category_id
     })) || [];
     
     console.log('Products fetched successfully:', transformedData);
@@ -89,7 +88,6 @@ export const supabaseProductApi = {
     return {
       ...data,
       category_name: data.category?.name,
-      category: data.category?.name || data.category_id
     };
   },
 
@@ -114,7 +112,6 @@ export const supabaseProductApi = {
     return {
       ...data,
       category_name: data.category?.name,
-      category: data.category?.name || data.category_id
     };
   },
 
@@ -140,7 +137,6 @@ export const supabaseProductApi = {
     return {
       ...data,
       category_name: data.category?.name,
-      category: data.category?.name || data.category_id
     };
   },
 

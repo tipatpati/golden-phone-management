@@ -52,7 +52,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const newProduct = {
       name,
       sku,
-      category: parseInt(category), // Convert category to integer ID
+      category_id: parseInt(category), // Use category_id instead of category
       price: parseFloat(price),
       stock: parseInt(stock),
       threshold: parseInt(threshold),
@@ -62,7 +62,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       barcode: barcode || undefined
     };
     
-    console.log('Submitting product with category ID:', newProduct.category);
+    console.log('Submitting product with category ID:', newProduct.category_id);
     
     createProduct.mutate(newProduct, {
       onSuccess: () => {
@@ -108,6 +108,10 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
             setDescription={setDescription}
             barcode={barcode}
             setBarcode={setBarcode}
+            hasSerial={hasSerial}
+            setHasSerial={setHasSerial}
+            serialNumbers={serialNumbers.split('\n').filter(s => s.trim())}
+            setSerialNumbers={(nums) => setSerialNumbers(nums.join('\n'))}
           />
           
           {hasSerial && (
