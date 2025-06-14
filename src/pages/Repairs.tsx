@@ -26,13 +26,13 @@ const Repairs = () => {
     imei: repair.imei || 'N/A',
     issue: repair.issue,
     technician: repair.technician?.username || 'Unassigned',
-    status: repair.status,
+    status: repair.status as 'quoted' | 'in_progress' | 'awaiting_parts' | 'completed' | 'cancelled',
     dateCreated: new Date(repair.created_at!).toISOString().split('T')[0],
     estimatedCompletion: repair.estimated_completion_date 
       ? new Date(repair.estimated_completion_date).toISOString().split('T')[0]
       : 'TBD',
     cost: repair.cost,
-    priority: repair.priority
+    priority: repair.priority as 'low' | 'normal' | 'high' | 'urgent'
   }));
 
   // Calculate stats
