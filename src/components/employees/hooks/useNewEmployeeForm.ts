@@ -25,13 +25,13 @@ export function useNewEmployeeForm() {
         return false;
       }
 
-      // Create the employee
+      // Create the employee with full auth account
       const { employee, tempPassword } = await EmployeeCreationService.createEmployee(formData);
 
       toast({
         title: "Success",
-        description: `Employee added successfully! Employee will need to sign up using their email: ${formData.email}. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
-        duration: 8000,
+        description: `Employee ${formData.first_name} ${formData.last_name} has been created successfully! They can now log in with their email: ${formData.email}. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
+        duration: 10000,
       });
 
       resetForm();

@@ -1,10 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
-import { authApi } from "@/services/auth";
-import { secureStorage } from "@/services/secureStorage";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 interface AuthContextType {
@@ -35,37 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Auth status check triggered');
   };
 
-  // Check for mock auth on initialization
+  // Set up Supabase auth for all users
   useEffect(() => {
-    const checkMockAuth = () => {
-      const token = secureStorage.getItem('authToken', true);
-      const storedRole = secureStorage.getItem('userRole', false) as UserRole;
-      const storedInterfaceRole = secureStorage.getItem('interfaceRole', false) as UserRole;
-      const storedUserId = secureStorage.getItem('userId', false);
-      
-      if (token && storedRole && storedUserId) {
-        console.log('Found existing mock auth session');
-        setUserRole(storedRole);
-        setInterfaceRole(storedInterfaceRole || storedRole);
-        setUsername(storedUserId);
-        // Create a mock user object for consistency
-        const mockUser = {
-          id: storedUserId,
-          email: storedUserId,
-        } as User;
-        setUser(mockUser);
-        setIsInitialized(true);
-        return true;
-      }
-      return false;
-    };
-
-    // Check mock auth first
-    if (checkMockAuth()) {
-      return;
-    }
-
-    // If no mock auth, set up Supabase auth
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -118,32 +88,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching user profile for:', userId);
-      const { data, error } = await supabase
+      
+      // First try to get the profile
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('username, role')
         .eq('id', userId)
         .single();
       
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        if (error.code === 'PGRST116') {
-          console.log('Profile not found, should be created by trigger');
-          setUserRole('admin'); // Default admin for Supabase users
-          setInterfaceRole('admin');
-          setUsername(user?.email?.split('@')[0] || 'admin');
-        }
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        // Set default admin role for users without profiles
+        setUserRole('admin');
+        setInterfaceRole('admin');
+        setUsername(user?.email?.split('@')[0] || 'user');
         return;
       }
       
-      if (data) {
-        console.log('User profile fetched:', data);
-        setUserRole(data.role as UserRole);
-        setInterfaceRole(data.role as UserRole); // Default to same as user role
-        setUsername(data.username);
+      if (profile) {
+        console.log('User profile fetched:', profile);
+        setUserRole(profile.role as UserRole);
+        setInterfaceRole(profile.role as UserRole);
+        setUsername(profile.username);
+        
+        // Check if this user is also an employee
+        try {
+          const { data: employee } = await supabase
+            .from('employees')
+            .select('first_name, last_name, position')
+            .eq('profile_id', userId)
+            .maybeSingle();
+          
+          if (employee) {
+            console.log('User is also an employee:', employee);
+            // Could set additional employee-specific data here if needed
+          }
+        } catch (error) {
+          console.log('User is not an employee or error fetching employee data');
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setUserRole('admin'); // Fallback to admin for Supabase
+      setUserRole('admin'); // Fallback
       setInterfaceRole('admin');
     }
   };
@@ -186,41 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Invalid credentials format');
       }
       
-      // Check if this should be a mock login (employees) or Supabase login (admin)
-      if (window.location.pathname === '/employee-login') {
-        // Check for existing stored interface role for admins
-        const storedInterfaceRole = secureStorage.getItem('interfaceRole', false) as UserRole;
-        
-        // Use mock auth for employees or admin with interface role
-        const result = await authApi.login(sanitizedEmail, sanitizedPassword);
-        
-        // Create mock user for consistency
-        const mockUser = {
-          id: sanitizedEmail,
-          email: sanitizedEmail,
-        } as User;
-        
-        setUser(mockUser);
-        setUsername(sanitizedEmail);
-        
-        // Get roles from storage (set during login process)
-        const actualRole = secureStorage.getItem('userRole', false) as UserRole;
-        const displayRole = storedInterfaceRole || actualRole || 'salesperson';
-        
-        setUserRole(actualRole || 'salesperson');
-        setInterfaceRole(displayRole);
-        
-        toast.success('Successfully logged in');
-        
-        // Redirect to main dashboard after successful employee login
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
-        
-        return;
-      }
-      
-      // Use Supabase auth for admin
+      // Use Supabase auth for all users now
       const { data, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
         password: sanitizedPassword,
@@ -232,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast.success('Successfully logged in');
       
-      // Redirect to admin dashboard after successful login
+      // Redirect to main dashboard after successful login
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
@@ -296,24 +248,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      // Check if this is a mock auth session
-      const token = secureStorage.getItem('authToken', true);
-      if (token && token.startsWith('mock-') || token?.startsWith('admin-token')) {
-        // Use mock auth logout
-        authApi.logout();
-        // Clear interface role as well
-        secureStorage.removeItem('interfaceRole');
-        setUser(null);
-        setSession(null);
-        setUserRole(null);
-        setInterfaceRole(null);
-        setUsername(null);
-        // Redirect to home page after logout
-        window.location.href = '/';
-        return;
-      }
-      
-      // Use Supabase logout
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;

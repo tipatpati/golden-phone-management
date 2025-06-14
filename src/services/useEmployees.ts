@@ -11,7 +11,8 @@ export function useEmployees() {
         .select(`
           *,
           profiles:profile_id (
-            role
+            role,
+            username
           )
         `)
         .order("created_at", { ascending: false });
