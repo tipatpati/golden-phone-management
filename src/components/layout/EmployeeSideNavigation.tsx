@@ -3,58 +3,71 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   LayoutGrid, 
   Users, 
   ShoppingCart,
   PackageSearch, 
-  ClipboardList,
+  ClipboardList, 
+  BarChart4,
+  Settings,
   Menu,
   X,
   LogOut
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/roles";
 
 type NavItem = {
   title: string;
   href: string;
   icon: React.ElementType;
-  roles: UserRole[];
+  permission: UserRole[];
 };
 
 const navItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/",
+    href: "/employee",
     icon: LayoutGrid,
-    roles: ["manager", "inventory_manager", "salesperson"],
+    permission: ["salesperson", "manager", "inventory_manager", "admin"],
   },
   {
     title: "Vendite",
     href: "/sales",
     icon: ShoppingCart,
-    roles: ["salesperson", "manager"],
+    permission: ["salesperson", "manager", "admin"],
   },
   {
     title: "Clienti",
     href: "/clients",
     icon: Users,
-    roles: ["salesperson", "manager"],
+    permission: ["salesperson", "manager", "admin"],
   },
   {
     title: "Inventario",
     href: "/inventory",
     icon: PackageSearch,
-    roles: ["manager", "inventory_manager"],
+    permission: ["manager", "inventory_manager", "admin"],
   },
   {
     title: "Riparazioni",
     href: "/repairs",
     icon: ClipboardList,
-    roles: ["manager"],
+    permission: ["manager", "admin"],
+  },
+  {
+    title: "Report",
+    href: "/reports",
+    icon: BarChart4,
+    permission: ["manager", "admin"],
+  },
+  {
+    title: "Impostazioni",
+    href: "/settings",
+    icon: Settings,
+    permission: ["admin"],
   },
 ];
 
@@ -73,10 +86,8 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
   };
 
   const filteredNavItems = navItems.filter((item) =>
-    item.roles.includes(userRole)
+    item.permission.includes(userRole)
   );
-
-  const config = ROLE_CONFIGS[userRole];
 
   return (
     <>
@@ -86,7 +97,7 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
           variant="ghost" 
           size="icon" 
           onClick={toggleMenu}
-          className="fixed top-4 left-4 z-50"
+          className="fixed top-4 left-4 z-50 hover:bg-yellow-50 hover:text-yellow-700"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
@@ -100,13 +111,8 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-center border-b border-border px-4">
-            <div className="text-center">
-              <h1 className="text-lg font-bold text-primary">GOLDEN PHONE</h1>
-              <Badge variant="secondary" className="text-xs mt-1">
-                {config.name}
-              </Badge>
-            </div>
+          <div className="flex h-16 items-center justify-center border-b border-border">
+            <h1 className="text-xl font-bold text-primary">GOLDEN PHONE</h1>
           </div>
 
           <nav className="flex-1 overflow-y-auto p-4">
@@ -121,7 +127,7 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
                         "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
                       )}
                       onClick={() => isMobile && setIsOpen(false)}
                     >
@@ -143,15 +149,15 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{username || 'User'}</p>
-                  <p className="text-xs text-muted-foreground">{config.name}</p>
+                  <p className="text-sm font-medium">{username || 'Employee'}</p>
+                  <p className="text-xs text-muted-foreground">{userRole || 'Unknown'}</p>
                 </div>
               </div>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={logout}
-                className="h-8 w-8"
+                className="h-8 w-8 hover:bg-yellow-50 hover:text-yellow-700"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
