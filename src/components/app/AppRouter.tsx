@@ -17,80 +17,17 @@ import Index from "@/pages/Index";
 import AdminLogin from "@/pages/AdminLogin";
 
 export function AppRouter() {
-  const { userRole } = useAuth();
+  const { isLoggedIn, userRole, user } = useAuth();
 
-  // Default to salesperson if no role is set (fallback)
-  const effectiveRole = userRole || 'salesperson';
-
-  // Admin gets the full interface
-  if (effectiveRole === 'admin') {
+  // Show loading only if we have a user but no role yet (brief loading state)
+  if (user && !userRole) {
     return (
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/api-settings" element={<ApiSettings />} />
-          
-          <Route path="/" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/sales" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Sales />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/clients" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Clients />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/inventory" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Inventory />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/repairs" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Repairs />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/reports" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <div className="min-h-[80vh] flex items-center justify-center">
-                  <h1 className="text-2xl">Reports Module - Coming Soon</h1>
-                </div>
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <div className="min-h-[80vh] flex items-center justify-center">
-                  <h1 className="text-2xl">Settings Module - Coming Soon</h1>
-                </div>
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading user profile...</div>
+      </div>
     );
   }
 
-  // Employee gets simplified interface
   return (
     <BrowserRouter>
       <Routes>
@@ -98,31 +35,102 @@ export function AppRouter() {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/api-settings" element={<ApiSettings />} />
         
-        <Route path="/" element={
-          <EmployeeLayout userRole={effectiveRole}>
-            <EmployeeDashboard userRole={effectiveRole} />
-          </EmployeeLayout>
-        } />
-        <Route path="/sales" element={
-          <EmployeeLayout userRole={effectiveRole}>
-            <Sales />
-          </EmployeeLayout>
-        } />
-        <Route path="/clients" element={
-          <EmployeeLayout userRole={effectiveRole}>
-            <Clients />
-          </EmployeeLayout>
-        } />
-        <Route path="/inventory" element={
-          <EmployeeLayout userRole={effectiveRole}>
-            <Inventory />
-          </EmployeeLayout>
-        } />
-        <Route path="/repairs" element={
-          <EmployeeLayout userRole={effectiveRole}>
-            <Repairs />
-          </EmployeeLayout>
-        } />
+        {/* Show index page if user is not authenticated */}
+        {!isLoggedIn && <Route path="/" element={<Index />} />}
+        
+        {/* Protected routes for authenticated users */}
+        {isLoggedIn && (
+          <>
+            {/* Admin gets the full interface */}
+            {userRole === 'admin' ? (
+              <>
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Dashboard />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/sales" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Sales />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/clients" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Clients />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/inventory" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Inventory />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/repairs" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Repairs />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/reports" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <div className="min-h-[80vh] flex items-center justify-center">
+                        <h1 className="text-2xl">Reports Module - Coming Soon</h1>
+                      </div>
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <div className="min-h-[80vh] flex items-center justify-center">
+                        <h1 className="text-2xl">Settings Module - Coming Soon</h1>
+                      </div>
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+              </>
+            ) : (
+              /* Employee gets simplified interface */
+              <>
+                <Route path="/" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <EmployeeDashboard userRole={userRole || 'salesperson'} />
+                  </EmployeeLayout>
+                } />
+                <Route path="/sales" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <Sales />
+                  </EmployeeLayout>
+                } />
+                <Route path="/clients" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <Clients />
+                  </EmployeeLayout>
+                } />
+                <Route path="/inventory" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <Inventory />
+                  </EmployeeLayout>
+                } />
+                <Route path="/repairs" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <Repairs />
+                  </EmployeeLayout>
+                } />
+              </>
+            )}
+          </>
+        )}
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
