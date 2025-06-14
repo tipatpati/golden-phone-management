@@ -81,7 +81,8 @@ export const supabaseSalesApi = {
       `);
     
     if (searchTerm) {
-      query = query.or(`sale_number.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`);
+      // Use explicit table qualification to avoid ambiguity
+      query = query.or(`sales.sale_number.ilike.%${searchTerm}%,sales.notes.ilike.%${searchTerm}%`);
     }
     
     const { data, error } = await query.order('created_at', { ascending: false });
