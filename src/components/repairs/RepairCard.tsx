@@ -1,9 +1,10 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Wrench, DollarSign, AlertTriangle } from "lucide-react";
+import { RepairDetailsDialog } from "./RepairDetailsDialog";
+import { EditRepairDialog } from "./EditRepairDialog";
 
 export type Repair = {
   id: string;
@@ -24,6 +25,9 @@ interface RepairCardProps {
 }
 
 export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'quoted':
@@ -78,84 +82,106 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="font-semibold text-lg">{repair.id}</h3>
+    <>
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <h3 className="font-semibold text-lg">{repair.id}</h3>
+              <div className="flex gap-2">
+                <Badge className={getStatusColor(repair.status)}>
+                  {getStatusText(repair.status)}
+                </Badge>
+                <Badge className={getPriorityColor(repair.priority)}>
+                  {getPriorityText(repair.priority)}
+                </Badge>
+              </div>
+            </div>
             <div className="flex gap-2">
-              <Badge className={getStatusColor(repair.status)}>
-                {getStatusText(repair.status)}
-              </Badge>
-              <Badge className={getPriorityColor(repair.priority)}>
-                {getPriorityText(repair.priority)}
-              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowEdit(true)}
+              >
+                Modifica
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowDetails(true)}
+              >
+                Dettagli
+              </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              Modifica
-            </Button>
-            <Button variant="outline" size="sm">
-              Dettagli
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Cliente:</span>
-              <span>{repair.clientName}</span>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Cliente:</span>
+                <span>{repair.clientName}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Dispositivo:</span>
+                <span>{repair.device}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium">IMEI:</span>
+                <span className="font-mono text-xs">{repair.imei}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Dispositivo:</span>
-              <span>{repair.device}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">IMEI:</span>
-              <span className="font-mono text-xs">{repair.imei}</span>
+            
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Tecnico:</span>
+                <span>{repair.technician}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Creata:</span>
+                <span>{repair.dateCreated}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Completamento:</span>
+                <span>{repair.estimatedCompletion}</span>
+              </div>
             </div>
           </div>
           
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Tecnico:</span>
-              <span>{repair.technician}</span>
+            <div className="flex items-start gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <span className="font-medium">Problema:</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Creata:</span>
-              <span>{repair.dateCreated}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Completamento:</span>
-              <span>{repair.estimatedCompletion}</span>
+            <p className="text-sm text-muted-foreground ml-6">{repair.issue}</p>
+          </div>
+          
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Costo:</span>
+              <span className="font-semibold text-lg">€{repair.cost.toFixed(2)}</span>
             </div>
           </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-start gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <span className="font-medium">Problema:</span>
-          </div>
-          <p className="text-sm text-muted-foreground ml-6">{repair.issue}</p>
-        </div>
-        
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Costo:</span>
-            <span className="font-semibold text-lg">€{repair.cost.toFixed(2)}</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <RepairDetailsDialog
+        repair={repair}
+        open={showDetails}
+        onOpenChange={setShowDetails}
+      />
+
+      <EditRepairDialog
+        repair={repair}
+        open={showEdit}
+        onOpenChange={setShowEdit}
+      />
+    </>
   );
 };
