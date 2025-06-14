@@ -60,7 +60,7 @@ export function useNewEmployeeForm() {
     setIsLoading(true);
 
     try {
-      // First check if email already exists
+      // First check if email already exists in employees table
       const { data: existingEmployee, error: checkError } = await supabase
         .from("employees")
         .select("email")
@@ -83,34 +83,11 @@ export function useNewEmployeeForm() {
 
       // Generate a temporary password if not provided
       const tempPassword = formData.password || generateRandomPassword();
+      console.log("Generated temporary password for employee");
 
-      console.log("Creating Supabase Auth user...");
-
-      // Create the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: tempPassword,
-        email_confirm: true, // Skip email confirmation
-        user_metadata: {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          role: formData.role
-        }
-      });
-
-      if (authError) {
-        console.error("Auth user creation error:", authError);
-        throw new Error(`Failed to create user account: ${authError.message}`);
-      }
-
-      if (!authData.user) {
-        throw new Error("Failed to create user - no user data returned");
-      }
-
-      console.log("Auth user created successfully:", authData.user.id);
-
+      // Create employee record without requiring Supabase Auth user creation
+      // The employee will need to sign up separately or admin can create their auth account later
       const employeeData = {
-        id: authData.user.id, // Use the auth user ID as employee ID
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -120,7 +97,7 @@ export function useNewEmployeeForm() {
         salary: formData.salary ? parseFloat(formData.salary) : null,
         hire_date: formData.hire_date,
         status: formData.status,
-        profile_id: authData.user.id,
+        profile_id: null, // Will be set when the employee creates their auth account
       };
 
       console.log("Creating employee with data:", employeeData);
@@ -133,56 +110,15 @@ export function useNewEmployeeForm() {
 
       if (employeeError) {
         console.error("Employee creation error:", employeeError);
-        // Clean up the auth user if employee creation fails
-        await supabase.auth.admin.deleteUser(authData.user.id);
         throw employeeError;
       }
 
       console.log("Employee created successfully:", employee);
 
-      // The profile should already be created by the trigger, but let's verify and update if needed
-      const { data: existingProfile, error: profileCheckError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", authData.user.id)
-        .maybeSingle();
-
-      if (profileCheckError) {
-        console.error("Profile check error:", profileCheckError);
-      }
-
-      if (existingProfile) {
-        // Update the profile with the correct role
-        const { error: profileUpdateError } = await supabase
-          .from("profiles")
-          .update({ role: formData.role })
-          .eq("id", authData.user.id);
-
-        if (profileUpdateError) {
-          console.error("Profile update error:", profileUpdateError);
-        }
-        console.log("Profile updated with role:", formData.role);
-      } else {
-        // Create profile if it doesn't exist (backup)
-        const profileData = {
-          id: authData.user.id,
-          username: formData.email.split('@')[0],
-          role: formData.role,
-        };
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([profileData]);
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-        }
-        console.log("Profile created as backup");
-      }
-
       toast({
         title: "Success",
-        description: `Employee added successfully with role assigned. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
+        description: `Employee added successfully! Employee will need to sign up using their email: ${formData.email}. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
+        duration: 8000,
       });
 
       resetForm();
