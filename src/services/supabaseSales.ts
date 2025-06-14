@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type Sale = {
@@ -81,8 +82,8 @@ export const supabaseSalesApi = {
       `);
     
     if (searchTerm) {
-      // Use explicit table qualification to avoid ambiguity
-      query = query.or(`sales.sale_number.ilike.%${searchTerm}%,sales.notes.ilike.%${searchTerm}%`);
+      // Use individual filters instead of .or() to avoid ambiguity
+      query = query.or(`sale_number.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`);
     }
     
     const { data, error } = await query.order('created_at', { ascending: false });
