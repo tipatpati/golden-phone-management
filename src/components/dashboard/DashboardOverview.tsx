@@ -5,8 +5,6 @@ import { ArrowUpRight, ArrowDownRight, DollarSign, ShoppingBag, Users, Calendar 
 import { useSales } from "@/services/useSales";
 import { useRepairs } from "@/services/useRepairs";
 import { useClients } from "@/services/useClients";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export function DashboardOverview() {
   const { data: allSales = [] } = useSales();

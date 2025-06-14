@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRepairs } from "@/services/useRepairs";
@@ -16,12 +15,12 @@ interface RepairStatsCardsProps {
 export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts }) => {
   const { data: allRepairs = [] } = useRepairs();
 
-  // Set up real-time subscription
+  // Set up real-time subscription with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('repair-stats-changes')
+      .channel('repair-stats-card-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
-        console.log('Repair stats updated');
+        console.log('Repair stats cards: Repair stats updated');
       })
       .subscribe();
 

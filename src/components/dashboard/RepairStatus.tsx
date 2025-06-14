@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +10,12 @@ type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted
 export function RepairStatus() {
   const { data: allRepairs = [] } = useRepairs();
 
-  // Set up real-time subscription for repair updates
+  // Set up real-time subscription for repair updates with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('repairs-changes')
+      .channel('repair-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
-        console.log('Repairs data updated');
+        console.log('Repair status: Repairs data updated');
       })
       .subscribe();
 

@@ -8,7 +8,7 @@ import { RecentSales } from "@/components/dashboard/RecentSales";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
-  // Set up global real-time subscriptions for dashboard
+  // Set up global real-time subscriptions for dashboard with unique channel name
   useEffect(() => {
     console.log('Dashboard: Setting up real-time subscriptions');
     

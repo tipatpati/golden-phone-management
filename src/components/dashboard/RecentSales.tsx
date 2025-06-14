@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
@@ -9,12 +8,12 @@ import { format } from "date-fns";
 export function RecentSales() {
   const { data: allSales = [], isLoading } = useSales();
 
-  // Set up real-time subscription for sales updates
+  // Set up real-time subscription for sales updates with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('sales-changes')
+      .channel('recent-sales-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
-        console.log('Sales data updated');
+        console.log('Recent sales: Sales data updated');
       })
       .subscribe();
 

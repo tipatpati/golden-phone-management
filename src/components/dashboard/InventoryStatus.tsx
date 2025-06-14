@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 export function InventoryStatus() {
   const { data: allProducts = [] } = useProducts();
 
-  // Set up real-time subscription for inventory updates
+  // Set up real-time subscription for inventory updates with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('inventory-changes')
+      .channel('inventory-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        console.log('Inventory data updated');
+        console.log('Inventory status: Inventory data updated');
       })
       .subscribe();
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,20 +28,19 @@ export function SalesOverview() {
   const { data: allClients = [] } = useClients();
   const [timePeriod, setTimePeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions with unique channel names
   useEffect(() => {
     const salesChannel = supabase
-      .channel('sales-changes')
+      .channel('sales-overview-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
-        // Trigger refetch - the useQuery will handle this automatically
-        console.log('Sales data updated');
+        console.log('Sales overview: Sales data updated');
       })
       .subscribe();
 
     const repairsChannel = supabase
-      .channel('repairs-changes')
+      .channel('repairs-overview-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
-        console.log('Repairs data updated');
+        console.log('Sales overview: Repairs data updated');
       })
       .subscribe();
 
