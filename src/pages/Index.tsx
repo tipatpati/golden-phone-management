@@ -2,7 +2,8 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Smartphone, Settings, Users, TrendingUp } from "lucide-react";
+import { ArrowRight, Smartphone, Settings, Users, TrendingUp, Crown, UserCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const features = [
@@ -39,11 +40,33 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Login Options */}
+        <div className="flex justify-end gap-4 mb-8">
+          <Link to="/admin-login">
+            <Button 
+              variant="outline" 
+              className="gap-2 hover:bg-yellow-50 hover:border-yellow-400 hover:text-yellow-700 transition-all duration-300"
+            >
+              <Crown className="h-4 w-4" />
+              Admin Login
+            </Button>
+          </Link>
+          <Link to="/employee-login">
+            <Button 
+              variant="outline" 
+              className="gap-2 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 transition-all duration-300"
+            >
+              <UserCheck className="h-4 w-4" />
+              Employee Login
+            </Button>
+          </Link>
+        </div>
+
         {/* Hero Section */}
         <div className="text-center space-y-6 py-12">
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-              Repair Shop Pro
+              GOLDEN PHONE
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Complete management solution for your mobile repair business. 
@@ -52,16 +75,25 @@ const Index = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg" className="shadow-md hover:shadow-lg transition-all duration-300">
-              View Dashboard
-            </Button>
+            <Link to="/admin-login">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Get Started as Admin
+                <Crown className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/employee-login">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="shadow-md hover:shadow-lg transition-all duration-300 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700"
+              >
+                Employee Access
+                <UserCheck className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -108,10 +140,10 @@ const Index = () => {
             </CardContent>
           </Card>
           
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-green-900 mb-2">99%</div>
-              <div className="text-sm text-green-600">Success Rate</div>
+              <div className="text-3xl font-bold text-yellow-900 mb-2">99%</div>
+              <div className="text-sm text-yellow-600">Success Rate</div>
             </CardContent>
           </Card>
         </div>

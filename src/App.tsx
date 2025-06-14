@@ -2,15 +2,15 @@
 import React from "react";
 import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
-import { LoginForm } from "@/components/auth/LoginForm";
+import Index from "@/pages/Index";
 import { useAuth } from "@/contexts/AuthContext";
 
 function AppContent() {
   const { isLoggedIn, userRole, user } = useAuth();
 
-  // Show login form if user is not authenticated
+  // Show index page if user is not authenticated
   if (!isLoggedIn) {
-    return <LoginForm onLoginSuccess={() => {}} />;
+    return <Index />;
   }
 
   // Show loading only if we have a user but no role yet (brief loading state)

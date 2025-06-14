@@ -13,6 +13,8 @@ import Inventory from "@/pages/Inventory";
 import Repairs from "@/pages/Repairs";
 import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
+import AdminLogin from "@/pages/AdminLogin";
 
 export function AppRouter() {
   const { userRole } = useAuth();
@@ -25,7 +27,8 @@ export function AppRouter() {
     return (
       <BrowserRouter>
         <Routes>
-          {/* Public API Settings route - accessible without login */}
+          {/* Public routes */}
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/api-settings" element={<ApiSettings />} />
           
           <Route path="/" element={
@@ -91,7 +94,8 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public API Settings route - accessible without login */}
+        {/* Public routes */}
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/api-settings" element={<ApiSettings />} />
         
         <Route path="/" element={
