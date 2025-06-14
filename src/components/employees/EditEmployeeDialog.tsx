@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -106,6 +105,42 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
           setIsLoading(false);
           return;
         }
+
+        // Update the auth user email if it changed
+        console.log("Updating auth user email...");
+        const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+          employee.id,
+          {
+            email: formData.email,
+            user_metadata: {
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              role: formData.role
+            }
+          }
+        );
+
+        if (authUpdateError) {
+          console.error("Auth user update error:", authUpdateError);
+          throw new Error(`Failed to update user account: ${authUpdateError.message}`);
+        }
+        console.log("Auth user updated successfully");
+      } else {
+        // Update user metadata even if email didn't change
+        const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+          employee.id,
+          {
+            user_metadata: {
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              role: formData.role
+            }
+          }
+        );
+
+        if (authUpdateError) {
+          console.error("Auth user metadata update error:", authUpdateError);
+        }
       }
 
       const employeeData = {
@@ -134,48 +169,19 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
 
       console.log("Employee updated successfully");
 
-      // Update the profile role if profile exists
-      if (employee.profile_id) {
-        console.log("Updating existing profile role to:", formData.role);
+      // Update the profile role
+      if (employee.profile_id || employee.id) {
+        console.log("Updating profile role to:", formData.role);
         const { error: profileError } = await supabase
           .from("profiles")
           .update({ role: formData.role })
-          .eq("id", employee.profile_id);
+          .eq("id", employee.profile_id || employee.id);
 
         if (profileError) {
           console.error("Profile update error:", profileError);
           throw profileError;
         }
         console.log("Profile updated successfully");
-      } else {
-        // Create a profile if it doesn't exist
-        console.log("Creating new profile for employee");
-        const profileData = {
-          id: employee.id,
-          username: formData.email.split('@')[0],
-          role: formData.role,
-        };
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([profileData]);
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          throw new Error("Failed to create user profile");
-        }
-
-        // Update the employee with the profile_id
-        const { error: updateError } = await supabase
-          .from("employees")
-          .update({ profile_id: employee.id })
-          .eq("id", employee.id);
-
-        if (updateError) {
-          console.error("Employee profile_id update error:", updateError);
-          throw updateError;
-        }
-        console.log("New profile created and linked successfully");
       }
 
       toast({

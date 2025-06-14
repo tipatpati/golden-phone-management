@@ -41,7 +41,17 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
     hire_date: new Date().toISOString().split('T')[0],
     status: "active",
     role: "salesperson" as UserRole,
+    password: "",
   });
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +80,36 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
         return;
       }
 
+      // Generate a temporary password if not provided
+      const tempPassword = formData.password || generateRandomPassword();
+
+      console.log("Creating Supabase Auth user...");
+
+      // Create the user in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email,
+        password: tempPassword,
+        email_confirm: true, // Skip email confirmation
+        user_metadata: {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          role: formData.role
+        }
+      });
+
+      if (authError) {
+        console.error("Auth user creation error:", authError);
+        throw new Error(`Failed to create user account: ${authError.message}`);
+      }
+
+      if (!authData.user) {
+        throw new Error("Failed to create user - no user data returned");
+      }
+
+      console.log("Auth user created successfully:", authData.user.id);
+
       const employeeData = {
+        id: authData.user.id, // Use the auth user ID as employee ID
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -80,6 +119,7 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
         salary: formData.salary ? parseFloat(formData.salary) : null,
         hire_date: formData.hire_date,
         status: formData.status,
+        profile_id: authData.user.id,
       };
 
       console.log("Creating employee with data:", employeeData);
@@ -92,49 +132,56 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
 
       if (employeeError) {
         console.error("Employee creation error:", employeeError);
+        // Clean up the auth user if employee creation fails
+        await supabase.auth.admin.deleteUser(authData.user.id);
         throw employeeError;
       }
 
       console.log("Employee created successfully:", employee);
 
-      // Create a profile for the employee with the selected role
-      const profileData = {
-        id: employee.id,
-        username: formData.email.split('@')[0],
-        role: formData.role,
-      };
-
-      console.log("Creating profile with data:", profileData);
-
-      const { error: profileError } = await supabase
+      // The profile should already be created by the trigger, but let's verify and update if needed
+      const { data: existingProfile, error: profileCheckError } = await supabase
         .from("profiles")
-        .insert([profileData]);
+        .select("*")
+        .eq("id", authData.user.id)
+        .maybeSingle();
 
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        // If profile creation fails, we should clean up the employee record
-        await supabase.from("employees").delete().eq("id", employee.id);
-        throw new Error("Failed to create user profile. Please try again.");
+      if (profileCheckError) {
+        console.error("Profile check error:", profileCheckError);
       }
 
-      console.log("Profile created successfully");
+      if (existingProfile) {
+        // Update the profile with the correct role
+        const { error: profileUpdateError } = await supabase
+          .from("profiles")
+          .update({ role: formData.role })
+          .eq("id", authData.user.id);
 
-      // Update the employee with the profile_id
-      const { error: updateError } = await supabase
-        .from("employees")
-        .update({ profile_id: employee.id })
-        .eq("id", employee.id);
+        if (profileUpdateError) {
+          console.error("Profile update error:", profileUpdateError);
+        }
+        console.log("Profile updated with role:", formData.role);
+      } else {
+        // Create profile if it doesn't exist (backup)
+        const profileData = {
+          id: authData.user.id,
+          username: formData.email.split('@')[0],
+          role: formData.role,
+        };
 
-      if (updateError) {
-        console.error("Employee update error:", updateError);
-        throw updateError;
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([profileData]);
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+        }
+        console.log("Profile created as backup");
       }
-
-      console.log("Employee updated with profile_id successfully");
 
       toast({
         title: "Success",
-        description: "Employee added successfully with role assigned",
+        description: `Employee added successfully with role assigned. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
       });
 
       setFormData({
@@ -148,6 +195,7 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
         hire_date: new Date().toISOString().split('T')[0],
         status: "active",
         role: "salesperson",
+        password: "",
       });
 
       onSuccess();
@@ -204,6 +252,17 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="password">Password (optional)</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              placeholder="Leave blank for auto-generated password"
             />
           </div>
 
