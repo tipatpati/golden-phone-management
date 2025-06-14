@@ -20,8 +20,11 @@ const Inventory = () => {
   } = useInventoryState();
 
   return (
-    <div className="space-y-6">
-      <InventoryHeader onToggleSettings={handleToggleSettings} />
+    <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
+      {/* Header */}
+      <div className="bg-white rounded-xl shadow-lg p-6 border-0">
+        <InventoryHeader onToggleSettings={handleToggleSettings} />
+      </div>
       
       {/* Settings Panel */}
       {showSettings && (

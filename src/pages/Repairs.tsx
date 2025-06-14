@@ -50,28 +50,32 @@ const Repairs = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Gestione Riparazioni</h2>
-            <p className="text-muted-foreground">Caricamento...</p>
-          </div>
+      <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-0">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Gestione Riparazioni
+          </h2>
+          <p className="text-muted-foreground mt-2">Caricamento...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gestione Riparazioni</h2>
-          <p className="text-muted-foreground">
-            Traccia le riparazioni dei dispositivi, assegna i tecnici e gestisci i flussi di lavoro delle riparazioni.
-          </p>
+      <div className="bg-white rounded-xl shadow-lg p-6 border-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Gestione Riparazioni
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              Traccia le riparazioni dei dispositivi, assegna i tecnici e gestisci i flussi di lavoro delle riparazioni.
+            </p>
+          </div>
+          <NewRepairDialog />
         </div>
-        <NewRepairDialog />
       </div>
 
       {/* Stats Cards */}
