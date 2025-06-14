@@ -83,6 +83,31 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
     setIsLoading(true);
 
     try {
+      // Check if email is being changed and if it already exists
+      if (formData.email !== employee.email) {
+        const { data: existingEmployee, error: checkError } = await supabase
+          .from("employees")
+          .select("email")
+          .eq("email", formData.email)
+          .neq("id", employee.id)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error("Error checking existing email:", checkError);
+          throw new Error("Failed to check email availability");
+        }
+
+        if (existingEmployee) {
+          toast({
+            title: "Error",
+            description: "An employee with this email already exists",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const employeeData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -95,32 +120,50 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
         status: formData.status,
       };
 
+      console.log("Updating employee with data:", employeeData);
+
       const { error: employeeError } = await supabase
         .from("employees")
         .update(employeeData)
         .eq("id", employee.id);
 
-      if (employeeError) throw employeeError;
+      if (employeeError) {
+        console.error("Employee update error:", employeeError);
+        throw employeeError;
+      }
+
+      console.log("Employee updated successfully");
 
       // Update the profile role if profile exists
       if (employee.profile_id) {
+        console.log("Updating existing profile role to:", formData.role);
         const { error: profileError } = await supabase
           .from("profiles")
           .update({ role: formData.role })
           .eq("id", employee.profile_id);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Profile update error:", profileError);
+          throw profileError;
+        }
+        console.log("Profile updated successfully");
       } else {
         // Create a profile if it doesn't exist
+        console.log("Creating new profile for employee");
+        const profileData = {
+          id: employee.id,
+          username: formData.email.split('@')[0],
+          role: formData.role,
+        };
+
         const { error: profileError } = await supabase
           .from("profiles")
-          .insert([{
-            id: employee.id,
-            username: formData.email.split('@')[0],
-            role: formData.role,
-          }]);
+          .insert([profileData]);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          throw new Error("Failed to create user profile");
+        }
 
         // Update the employee with the profile_id
         const { error: updateError } = await supabase
@@ -128,7 +171,11 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
           .update({ profile_id: employee.id })
           .eq("id", employee.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Employee profile_id update error:", updateError);
+          throw updateError;
+        }
+        console.log("New profile created and linked successfully");
       }
 
       toast({
@@ -141,7 +188,7 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
       console.error("Error updating employee:", error);
       toast({
         title: "Error",
-        description: "Failed to update employee",
+        description: error instanceof Error ? error.message : "Failed to update employee",
         variant: "destructive",
       });
     } finally {

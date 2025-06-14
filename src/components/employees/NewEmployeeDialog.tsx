@@ -48,6 +48,28 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
     setIsLoading(true);
 
     try {
+      // First check if email already exists
+      const { data: existingEmployee, error: checkError } = await supabase
+        .from("employees")
+        .select("email")
+        .eq("email", formData.email)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking existing email:", checkError);
+        throw new Error("Failed to check email availability");
+      }
+
+      if (existingEmployee) {
+        toast({
+          title: "Error",
+          description: "An employee with this email already exists",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const employeeData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -60,24 +82,42 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
         status: formData.status,
       };
 
+      console.log("Creating employee with data:", employeeData);
+
       const { data: employee, error: employeeError } = await supabase
         .from("employees")
         .insert([employeeData])
         .select()
         .single();
 
-      if (employeeError) throw employeeError;
+      if (employeeError) {
+        console.error("Employee creation error:", employeeError);
+        throw employeeError;
+      }
+
+      console.log("Employee created successfully:", employee);
 
       // Create a profile for the employee with the selected role
+      const profileData = {
+        id: employee.id,
+        username: formData.email.split('@')[0],
+        role: formData.role,
+      };
+
+      console.log("Creating profile with data:", profileData);
+
       const { error: profileError } = await supabase
         .from("profiles")
-        .insert([{
-          id: employee.id,
-          username: formData.email.split('@')[0],
-          role: formData.role,
-        }]);
+        .insert([profileData]);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        // If profile creation fails, we should clean up the employee record
+        await supabase.from("employees").delete().eq("id", employee.id);
+        throw new Error("Failed to create user profile. Please try again.");
+      }
+
+      console.log("Profile created successfully");
 
       // Update the employee with the profile_id
       const { error: updateError } = await supabase
@@ -85,7 +125,12 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
         .update({ profile_id: employee.id })
         .eq("id", employee.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Employee update error:", updateError);
+        throw updateError;
+      }
+
+      console.log("Employee updated with profile_id successfully");
 
       toast({
         title: "Success",
@@ -110,7 +155,7 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
       console.error("Error adding employee:", error);
       toast({
         title: "Error",
-        description: "Failed to add employee",
+        description: error instanceof Error ? error.message : "Failed to add employee",
         variant: "destructive",
       });
     } finally {
