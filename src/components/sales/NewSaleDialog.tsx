@@ -11,6 +11,7 @@ import { Plus, Search, X } from "lucide-react";
 import { useProducts } from "@/services/useProducts";
 import { useClients } from "@/services/useClients";
 import { useCreateSale } from "@/services/useSales";
+import { useAuth } from "@/contexts/AuthContext";
 
 type SaleItem = {
   product_id: string;
@@ -32,8 +33,13 @@ export function NewSaleDialog() {
   const { data: products = [] } = useProducts(productSearch);
   const { data: clients = [] } = useClients(clientSearch);
   const createSale = useCreateSale();
+  const { user } = useAuth();
+
+  console.log('NewSaleDialog - Products available:', products.length);
+  console.log('NewSaleDialog - Current user:', user?.id);
 
   const addProduct = (product: any) => {
+    console.log('Adding product:', product);
     const existingItem = saleItems.find(item => item.product_id === product.id);
     if (existingItem) {
       setSaleItems(items => 
@@ -89,20 +95,29 @@ export function NewSaleDialog() {
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
+  // Check if form is valid
+  const isFormValid = saleItems.length > 0 && paymentMethod && user?.id;
+
+  console.log('Form validation:', {
+    hasItems: saleItems.length > 0,
+    hasPaymentMethod: !!paymentMethod,
+    hasUserId: !!user?.id,
+    isValid: isFormValid
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (saleItems.length === 0) {
+    if (!isFormValid) {
+      console.log('Form validation failed');
       return;
     }
 
-    // Get current user ID (mock for now - should come from auth context)
-    const salespersonId = "mock-user-id"; // This should come from your auth context
-
     try {
+      console.log('Submitting sale with user ID:', user.id);
       await createSale.mutateAsync({
         client_id: selectedClient?.id,
-        salesperson_id: salespersonId,
+        salesperson_id: user.id,
         payment_method: paymentMethod as any,
         notes,
         sale_items: saleItems.map(item => ({
@@ -118,6 +133,8 @@ export function NewSaleDialog() {
       setSaleItems([]);
       setPaymentMethod("");
       setNotes("");
+      setClientSearch("");
+      setProductSearch("");
       setOpen(false);
     } catch (error) {
       console.error('Error creating sale:', error);
@@ -223,6 +240,11 @@ export function NewSaleDialog() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+            {productSearch && products.length === 0 && (
+              <div className="border rounded-md p-2 text-center text-muted-foreground">
+                No products found matching "{productSearch}"
               </div>
             )}
           </div>
@@ -345,7 +367,7 @@ export function NewSaleDialog() {
             </Button>
             <Button 
               type="submit" 
-              disabled={saleItems.length === 0 || !paymentMethod || createSale.isPending}
+              disabled={!isFormValid || createSale.isPending}
             >
               {createSale.isPending ? "Creating..." : "Create Sale"}
             </Button>
