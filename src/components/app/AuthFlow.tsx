@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { RoleSelector } from "@/components/auth/RoleSelector";
-import { EmployeeLogin } from "@/components/auth/EmployeeLogin";
 import { UserRole } from "@/types/roles";
 
 interface AuthFlowProps {
@@ -35,42 +34,17 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
   const handleRoleSelect = (role: UserRole) => {
     console.log('AuthFlow: Role selected:', role);
     setSelectedRole(role);
-  };
-
-  const handleLoginSuccess = (role: UserRole) => {
-    console.log('AuthFlow: Login successful for role:', role);
-    setSelectedRole(role);
-    setIsAuthenticated(true);
-    onAuthComplete(role);
-  };
-
-  const handleLoginError = () => {
-    console.log('AuthFlow: Login error');
-    if (onAuthError) {
-      onAuthError();
+    // Since we now handle login at the page level, redirect to appropriate login page
+    if (role === 'admin') {
+      window.location.href = '/admin-login';
+    } else {
+      window.location.href = '/employee-login';
     }
-  };
-
-  const handleBack = () => {
-    console.log('AuthFlow: Going back to role selector');
-    setSelectedRole(null);
   };
 
   // Show role selector if no role is selected
   if (!selectedRole) {
     return <RoleSelector onRoleSelect={handleRoleSelect} />;
-  }
-
-  // Show login form if role is selected but not authenticated
-  if (selectedRole && !isAuthenticated) {
-    return (
-      <EmployeeLogin 
-        role={selectedRole} 
-        onBack={handleBack}
-        onLoginSuccess={handleLoginSuccess}
-        onLoginError={handleLoginError}
-      />
-    );
   }
 
   return null;
