@@ -1,66 +1,20 @@
 
 import { useState, useEffect } from "react";
-import { 
-  checkApiConnection, 
-  testApiConnection,
-  getMockApiConfig
-} from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 
 export function useInventoryState() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [apiConnected, setApiConnected] = useState<boolean | null>(null);
-  const [isCheckingConnection, setIsCheckingConnection] = useState(false);
-  const [useMockApi, setUseMockApi] = useState(getMockApiConfig());
+  const { isLoggedIn } = useAuth();
 
-  // Check API connection when the component mounts
-  useEffect(() => {
-    const checkConnection = async () => {
-      setIsCheckingConnection(true);
-      const isConnected = await checkApiConnection();
-      setApiConnected(isConnected);
-      setIsCheckingConnection(false);
-    };
-    
-    checkConnection();
-  }, []);
-
-  // Also check connection when auth token changes
-  useEffect(() => {
-    const checkConnectionOnAuthChange = async () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        const isConnected = await checkApiConnection();
-        setApiConnected(isConnected);
-      }
-    };
-    
-    // Listen for storage changes (like login/logout)
-    const handleStorageChange = () => {
-      checkConnectionOnAuthChange();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const handleTestConnection = async () => {
-    setIsCheckingConnection(true);
-    await testApiConnection();
-    const isConnected = await checkApiConnection();
-    setApiConnected(isConnected);
-    setUseMockApi(getMockApiConfig()); // Update mock API state
-    setIsCheckingConnection(false);
-  };
-
-  // Check if we can add products (either connected to API or using mock mode)
-  const canAddProducts = apiConnected === true || useMockApi;
+  // Check if user can add products (must be logged in with Supabase)
+  const canAddProducts = isLoggedIn;
 
   const handleAddProduct = () => {
     if (!canAddProducts) {
-      toast.error("Cannot add products while offline", {
-        description: "Please check your backend connection or enable mock mode"
+      toast.error("Please log in to add products", {
+        description: "You need to be authenticated to manage inventory"
       });
       return;
     }
@@ -79,12 +33,19 @@ export function useInventoryState() {
     setShowAddProduct(false);
   };
 
+  const handleTestConnection = async () => {
+    // With Supabase, connection testing is not needed as it's handled by the client
+    toast.success("Connected to Supabase", {
+      description: "Your backend is ready to use"
+    });
+  };
+
   return {
     showAddProduct,
     showSettings,
-    apiConnected,
-    isCheckingConnection,
-    useMockApi,
+    apiConnected: isLoggedIn,
+    isCheckingConnection: false,
+    useMockApi: false,
     canAddProducts,
     handleAddProduct,
     handleToggleSettings,

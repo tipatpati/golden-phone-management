@@ -1,36 +1,23 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productApi } from './api';
+import { supabaseProductApi } from './supabaseProducts';
+import { toast } from '@/components/ui/sonner';
 
-// Define the Product type based on our Django model
-export type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  category: string | number; // Can be ID or name depending on context
-  category_name?: string;    // For display purposes
-  price: number;
-  stock: number;
-  threshold: number;
-  description?: string;
-  has_serial: boolean;       // Whether this product has serial numbers (like IMEI)
-  serial_numbers?: string[]; // Array of serial numbers/IMEI if applicable
-  barcode?: string;          // Barcode identifier
-  supplier?: string;         // Supplier information
-};
+// Use the Product type from supabaseProducts
+export type { Product } from './supabaseProducts';
 
 export function useProducts(searchTerm: string = '') {
   return useQuery({
     queryKey: ['products', searchTerm],
-    queryFn: () => productApi.getProducts(searchTerm),
+    queryFn: () => supabaseProductApi.getProducts(searchTerm),
   });
 }
 
 export function useProduct(id: string) {
   return useQuery({
     queryKey: ['product', id],
-    queryFn: () => productApi.getProduct(id),
-    enabled: !!id, // Only run the query if there's an ID
+    queryFn: () => supabaseProductApi.getProduct(id),
+    enabled: !!id,
   });
 }
 
@@ -38,9 +25,16 @@ export function useCreateProduct() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (product: Omit<Product, 'id'>) => productApi.createProduct(product),
+    mutationFn: supabaseProductApi.createProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product created successfully');
+    },
+    onError: (error: any) => {
+      console.error('Create product error:', error);
+      toast.error('Failed to create product', {
+        description: error.message || 'Please try again later'
+      });
     },
   });
 }
@@ -49,10 +43,17 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, product }: { id: string, product: Partial<Product> }) => 
-      productApi.updateProduct(id, product),
+    mutationFn: ({ id, product }: { id: string, product: any }) => 
+      supabaseProductApi.updateProduct(id, product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product updated successfully');
+    },
+    onError: (error: any) => {
+      console.error('Update product error:', error);
+      toast.error('Failed to update product', {
+        description: error.message || 'Please try again later'
+      });
     },
   });
 }
@@ -61,9 +62,23 @@ export function useDeleteProduct() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id: string) => productApi.deleteProduct(id),
+    mutationFn: supabaseProductApi.deleteProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully');
     },
+    onError: (error: any) => {
+      console.error('Delete product error:', error);
+      toast.error('Failed to delete product', {
+        description: error.message || 'Please try again later'
+      });
+    },
+  });
+}
+
+export function useCategories() {
+  return useQuery({
+    queryKey: ['categories'],
+    queryFn: supabaseProductApi.getCategories,
   });
 }

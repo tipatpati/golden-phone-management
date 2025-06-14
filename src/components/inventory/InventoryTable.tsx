@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useProducts, Product, useDeleteProduct } from "@/services/useProducts";
+import { useProducts, useDeleteProduct } from "@/services/useProducts";
+import { Product } from "@/services/supabaseProducts";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Barcode, Smartphone } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
@@ -19,51 +20,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const demoProducts: Product[] = [
-  {
-    id: "1",
-    name: "iPhone 13 Pro",
-    sku: "PHN-IP13P-256-GRY",
-    category: "Phones",
-    category_name: "Phones",
-    price: 999.99,
-    stock: 15,
-    threshold: 5,
-    has_serial: true,
-    serial_numbers: ["352908764123456", "352908764123457"],
-    barcode: "8901234567890"
-  },
-  {
-    id: "2",
-    name: "Samsung Galaxy S22",
-    sku: "PHN-SGS22-256-BLK",
-    category: "Phones",
-    category_name: "Phones",
-    price: 899.99,
-    stock: 3,
-    threshold: 5,
-    has_serial: true,
-    serial_numbers: ["990000862471854"],
-    barcode: "8901234567891"
-  },
-  {
-    id: "3",
-    name: "USB-C Cable",
-    sku: "ACC-CBL-USBC-1M",
-    category: "Accessories",
-    category_name: "Accessories",
-    price: 19.99,
-    stock: 50,
-    threshold: 20,
-    has_serial: false,
-    barcode: "8901234567892"
-  },
-];
-
 export function InventoryTable() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  // Use our API hook to fetch products
+  // Use our Supabase API hook to fetch products
   const { data: products, isLoading, isError } = useProducts();
   const deleteProduct = useDeleteProduct();
   
@@ -103,12 +63,8 @@ export function InventoryTable() {
   const handleDeleteProduct = async (product: Product) => {
     try {
       await deleteProduct.mutateAsync(product.id);
-      toast.success(`${product.name} deleted successfully`);
     } catch (error) {
       console.error('Delete error:', error);
-      toast.error(`Failed to delete ${product.name}`, {
-        description: "Please try again later"
-      });
     }
   };
 
@@ -144,16 +100,7 @@ export function InventoryTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* If products is undefined or empty, show demo products */}
-              {(!products || products.length === 0) ? demoProducts.map((product) => (
-                <ProductRow 
-                  key={product.id} 
-                  product={product} 
-                  onEdit={handleEditProduct}
-                  onDelete={handleDeleteProduct}
-                  isDeleting={deleteProduct.isPending}
-                />
-              )) : products.map((product) => (
+              {products?.map((product) => (
                 <ProductRow 
                   key={product.id} 
                   product={product} 
@@ -166,6 +113,12 @@ export function InventoryTable() {
           </Table>
         </div>
       </div>
+      
+      {(!products || products.length === 0) && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">No products found. Add your first product to get started.</p>
+        </div>
+      )}
     </div>
   );
 }

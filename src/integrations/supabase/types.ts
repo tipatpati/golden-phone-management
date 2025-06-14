@@ -9,7 +9,107 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          category_id: number | null
+          created_at: string | null
+          description: string | null
+          has_serial: boolean | null
+          id: string
+          name: string
+          price: number
+          serial_numbers: string[] | null
+          sku: string
+          stock: number
+          supplier: string | null
+          threshold: number
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          category_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          has_serial?: boolean | null
+          id?: string
+          name: string
+          price: number
+          serial_numbers?: string[] | null
+          sku: string
+          stock?: number
+          supplier?: string | null
+          threshold?: number
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          category_id?: number | null
+          created_at?: string | null
+          description?: string | null
+          has_serial?: boolean | null
+          id?: string
+          name?: string
+          price?: number
+          serial_numbers?: string[] | null
+          sku?: string
+          stock?: number
+          supplier?: string | null
+          threshold?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          role?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

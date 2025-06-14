@@ -4,42 +4,23 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
 import { AuthFlow } from "@/components/app/AuthFlow";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/roles";
 import ApiSettings from "@/pages/ApiSettings";
 
-function App() {
-  const [authenticatedRole, setAuthenticatedRole] = useState<UserRole | null>(null);
+function AppContent() {
+  const { isLoggedIn, userRole } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('App: Checking initial auth status...');
-    
-    // Check if user is already authenticated
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole') as UserRole;
-    
-    console.log('App: Found token:', !!token, 'Role:', role);
-    
-    if (token && token !== 'mock-token' && token !== 'employee-token' && role) {
-      console.log('App: User already authenticated with role:', role);
-      setAuthenticatedRole(role);
-    }
-    
-    setIsLoading(false);
+    // Give auth context time to check for existing session
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
-
-  const handleAuthComplete = (role: UserRole) => {
-    console.log('App: Auth completed with role:', role);
-    setAuthenticatedRole(role);
-  };
-
-  const handleAuthError = () => {
-    console.log('App: Auth error, clearing state');
-    setAuthenticatedRole(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-  };
 
   if (isLoading) {
     return (
@@ -49,28 +30,29 @@ function App() {
     );
   }
 
-  // Show authentication flow if user is not authenticated
-  if (!authenticatedRole) {
-    console.log('App: Showing auth flow');
+  // Show login form if user is not authenticated
+  if (!isLoggedIn) {
     return (
-      <AppProviders>
-        <BrowserRouter>
-          <Routes>
-            {/* Public API Settings route - accessible without login */}
-            <Route path="/api-settings" element={<ApiSettings />} />
-            {/* All other routes go to auth flow */}
-            <Route path="*" element={<AuthFlow onAuthComplete={handleAuthComplete} onAuthError={handleAuthError} />} />
-          </Routes>
-        </BrowserRouter>
-      </AppProviders>
+      <BrowserRouter>
+        <Routes>
+          {/* Public API Settings route - accessible without login */}
+          <Route path="/api-settings" element={<ApiSettings />} />
+          {/* All other routes go to login */}
+          <Route path="*" element={<LoginForm onLoginSuccess={() => {}} />} />
+        </Routes>
+      </BrowserRouter>
     );
   }
 
   // Show the main application with authentication context
-  console.log('App: Showing main app with role:', authenticatedRole);
+  const authenticatedRole = (userRole as UserRole) || 'admin';
+  return <AppRouter userRole={authenticatedRole} />;
+}
+
+function App() {
   return (
     <AppProviders includeAuth>
-      <AppRouter userRole={authenticatedRole} />
+      <AppContent />
     </AppProviders>
   );
 }

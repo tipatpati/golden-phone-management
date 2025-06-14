@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductFormFields, CATEGORY_OPTIONS } from "@/components/inventory/ProductFormFields";
-import { useUpdateProduct, Product } from "@/services/useProducts";
+import { useUpdateProduct, useCategories } from "@/services/useProducts";
+import { Product } from "@/services/supabaseProducts";
 import { toast } from "@/components/ui/sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -17,29 +18,34 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   
   const [name, setName] = useState(product.name || "");
   const [sku, setSku] = useState(product.sku || "");
-  const [category, setCategory] = useState(product.category?.toString() || "");
+  const [categoryId, setCategoryId] = useState(product.category_id?.toString() || "");
   const [price, setPrice] = useState(product.price?.toString() || "");
   const [stock, setStock] = useState(product.stock?.toString() || "");
   const [threshold, setThreshold] = useState(product.threshold?.toString() || "");
   const [description, setDescription] = useState(product.description || "");
   const [barcode, setBarcode] = useState(product.barcode || "");
+  const [hasSerial, setHasSerial] = useState(product.has_serial || false);
+  const [serialNumbers, setSerialNumbers] = useState<string[]>(product.serial_numbers || []);
 
   const updateProduct = useUpdateProduct();
+  const { data: categories } = useCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with data:', { name, sku, category, price, stock, threshold });
+    console.log('Submitting form with data:', { name, sku, categoryId, price, stock, threshold });
     
     try {
       const updatedProduct = {
         name,
         sku,
-        category: parseInt(category),
+        category_id: parseInt(categoryId),
         price: parseFloat(price),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
         description: description || undefined,
         barcode: barcode || undefined,
+        has_serial: hasSerial,
+        serial_numbers: hasSerial ? serialNumbers : undefined,
       };
 
       await updateProduct.mutateAsync({ 
@@ -47,17 +53,13 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         product: updatedProduct 
       });
       
-      toast.success(`${name} updated successfully`);
       onSuccess();
     } catch (error) {
       console.error('Update error:', error);
-      toast.error(`Failed to update ${name}`, {
-        description: "Please try again later"
-      });
     }
   };
 
-  console.log('Rendering form with state:', { name, sku, category, price, stock, threshold });
+  console.log('Rendering form with state:', { name, sku, categoryId, price, stock, threshold });
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -72,8 +74,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setName={setName}
               sku={sku}
               setSku={setSku}
-              category={category}
-              setCategory={setCategory}
+              category={categoryId}
+              setCategory={setCategoryId}
               price={price}
               setPrice={setPrice}
               stock={stock}
@@ -84,6 +86,11 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setDescription={setDescription}
               barcode={barcode}
               setBarcode={setBarcode}
+              hasSerial={hasSerial}
+              setHasSerial={setHasSerial}
+              serialNumbers={serialNumbers}
+              setSerialNumbers={setSerialNumbers}
+              categories={categories}
             />
             
             <div className="flex gap-2 pt-4">
