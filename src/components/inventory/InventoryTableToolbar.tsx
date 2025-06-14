@@ -81,6 +81,8 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
             size="icon"
             onClick={() => setViewMode("list")}
             className="h-12 w-12 flex items-center justify-center"
+          >
+            <List className="h-4 w-4" />
           </Button>
         </div>
       </div>
