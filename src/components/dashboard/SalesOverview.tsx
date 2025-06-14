@@ -1,131 +1,308 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Package, Users, Wrench } from "lucide-react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { useSales } from "@/services/useSales";
+import { useRepairs } from "@/services/useRepairs";
+import { useProducts } from "@/services/useProducts";
+import { useClients } from "@/services/useClients";
+import { supabase } from "@/integrations/supabase/client";
+
+const chartConfig = {
+  revenue: {
+    label: "Revenue",
+    color: "hsl(221, 83%, 53%)",
+  },
+  sales: {
+    label: "Sales",
+    color: "hsl(142, 76%, 36%)",
+  },
+};
 
 export function SalesOverview() {
-  // Mock data - would come from API in real implementation
-  const salesData = {
-    today: {
-      revenue: 2340.50,
-      transactions: 15,
-      trend: "+12%"
-    },
-    thisWeek: {
-      revenue: 18750.25,
-      transactions: 89,
-      trend: "+8%"
-    },
-    thisMonth: {
-      revenue: 67890.75,
-      transactions: 342,
-      trend: "+15%"
+  const { data: allSales = [] } = useSales();
+  const { data: allRepairs = [] } = useRepairs();
+  const { data: allProducts = [] } = useProducts();
+  const { data: allClients = [] } = useClients();
+  const [timePeriod, setTimePeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    const salesChannel = supabase
+      .channel('sales-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
+        // Trigger refetch - the useQuery will handle this automatically
+        console.log('Sales data updated');
+      })
+      .subscribe();
+
+    const repairsChannel = supabase
+      .channel('repairs-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
+        console.log('Repairs data updated');
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(salesChannel);
+      supabase.removeChannel(repairsChannel);
+    };
+  }, []);
+
+  // Calculate current period data
+  const today = new Date();
+  const getDateRange = (period: string) => {
+    const dates = [];
+    const daysBack = period === 'daily' ? 7 : period === 'weekly' ? 4 : 12;
+    
+    for (let i = daysBack - 1; i >= 0; i--) {
+      const date = new Date(today);
+      if (period === 'daily') {
+        date.setDate(date.getDate() - i);
+      } else if (period === 'weekly') {
+        date.setDate(date.getDate() - (i * 7));
+      } else {
+        date.setMonth(date.getMonth() - i);
+      }
+      dates.push(date);
     }
+    return dates;
   };
 
-  const topProducts = [
-    { name: "iPhone 13 Pro", sold: 12, revenue: 11988 },
-    { name: "Samsung Galaxy S22", sold: 8, revenue: 7199.92 },
-    { name: "AirPods Pro", sold: 25, revenue: 4997.5 },
-  ];
+  const chartData = getDateRange(timePeriod).map(date => {
+    const dateStr = date.toISOString().split('T')[0];
+    const periodSales = allSales.filter(sale => {
+      if (timePeriod === 'daily') {
+        return sale.sale_date.startsWith(dateStr);
+      } else if (timePeriod === 'weekly') {
+        const saleDate = new Date(sale.sale_date);
+        const weekStart = new Date(date);
+        const weekEnd = new Date(date);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        return saleDate >= weekStart && saleDate <= weekEnd;
+      } else {
+        const saleDate = new Date(sale.sale_date);
+        return saleDate.getMonth() === date.getMonth() && saleDate.getFullYear() === date.getFullYear();
+      }
+    });
+
+    const revenue = periodSales.reduce((sum, sale) => sum + sale.total_amount, 0);
+    
+    return {
+      period: timePeriod === 'daily' 
+        ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : timePeriod === 'weekly'
+        ? `Week ${Math.ceil(date.getDate() / 7)}`
+        : date.toLocaleDateString('en-US', { month: 'short' }),
+      revenue: revenue,
+      sales: periodSales.length,
+    };
+  });
+
+  // Calculate today's data
+  const todayStr = today.toISOString().split('T')[0];
+  const todaySales = allSales.filter(sale => sale.sale_date.startsWith(todayStr));
+  const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total_amount, 0);
+
+  // Calculate this week's data
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay());
+  const thisWeekSales = allSales.filter(sale => {
+    const saleDate = new Date(sale.sale_date);
+    return saleDate >= weekStart;
+  });
+  const thisWeekRevenue = thisWeekSales.reduce((sum, sale) => sum + sale.total_amount, 0);
+
+  // Calculate this month's data
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const thisMonthSales = allSales.filter(sale => {
+    const saleDate = new Date(sale.sale_date);
+    return saleDate >= monthStart;
+  });
+  const thisMonthRevenue = thisMonthSales.reduce((sum, sale) => sum + sale.total_amount, 0);
+
+  // Quick stats with real data
+  const activeRepairs = allRepairs.filter(repair => 
+    repair.status === 'in_progress' || repair.status === 'awaiting_parts'
+  ).length;
+
+  const lowStockItems = allProducts.filter(product => 
+    product.stock <= product.threshold
+  ).length;
+
+  const newClientsThisMonth = allClients.filter(client => {
+    if (!client.created_at) return false;
+    const clientDate = new Date(client.created_at);
+    return clientDate >= monthStart;
+  }).length;
 
   const quickStats = [
     {
       title: "Active Repairs",
-      value: "23",
+      value: activeRepairs.toString(),
       icon: Wrench,
       color: "text-orange-600"
     },
     {
       title: "Low Stock Items",
-      value: "7",
+      value: lowStockItems.toString(),
       icon: Package,
       color: "text-red-600"
     },
     {
       title: "New Clients",
-      value: "18",
+      value: newClientsThisMonth.toString(),
       icon: Users,
       color: "text-green-600"
     }
   ];
 
+  // Top products calculation
+  const productSales = allSales.flatMap(sale => sale.sale_items || []);
+  const productRevenue = productSales.reduce((acc, item) => {
+    const productName = item.product?.name || 'Unknown Product';
+    acc[productName] = (acc[productName] || 0) + item.total_price;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topProducts = Object.entries(productRevenue)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 3)
+    .map(([name, revenue]) => ({
+      name,
+      revenue,
+      sold: productSales.filter(item => item.product?.name === name).reduce((sum, item) => sum + item.quantity, 0)
+    }));
+
   return (
     <div className="space-y-6">
+      {/* Time Period Selector */}
+      <div className="flex gap-2">
+        {(['daily', 'weekly', 'monthly'] as const).map((period) => (
+          <button
+            key={period}
+            onClick={() => setTimePeriod(period)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              timePeriod === period
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {period.charAt(0).toUpperCase() + period.slice(1)}
+          </button>
+        ))}
+      </div>
+
       {/* Sales Performance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-700">Today's Sales</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${salesData.today.revenue.toFixed(2)}</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">{salesData.today.trend}</span>
-              <span className="ml-2">{salesData.today.transactions} transactions</span>
+            <div className="text-2xl font-bold text-blue-900">${todayRevenue.toFixed(2)}</div>
+            <div className="flex items-center text-xs text-blue-600">
+              <TrendingUp className="mr-1 h-3 w-3" />
+              <span>{todaySales.length} transactions</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
+            <CardTitle className="text-sm font-medium text-green-700">This Week</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${salesData.thisWeek.revenue.toFixed(2)}</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">{salesData.thisWeek.trend}</span>
-              <span className="ml-2">{salesData.thisWeek.transactions} transactions</span>
+            <div className="text-2xl font-bold text-green-900">${thisWeekRevenue.toFixed(2)}</div>
+            <div className="flex items-center text-xs text-green-600">
+              <TrendingUp className="mr-1 h-3 w-3" />
+              <span>{thisWeekSales.length} transactions</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-purple-700">This Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${salesData.thisMonth.revenue.toFixed(2)}</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">{salesData.thisMonth.trend}</span>
-              <span className="ml-2">{salesData.thisMonth.transactions} transactions</span>
+            <div className="text-2xl font-bold text-purple-900">${thisMonthRevenue.toFixed(2)}</div>
+            <div className="flex items-center text-xs text-purple-600">
+              <TrendingUp className="mr-1 h-3 w-3" />
+              <span>{thisMonthSales.length} transactions</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Revenue Chart */}
+      <Card className="border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-lg">Revenue Trend</CardTitle>
+          <CardDescription>
+            {timePeriod === 'daily' ? 'Last 7 days' : timePeriod === 'weekly' ? 'Last 4 weeks' : 'Last 12 months'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig}>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                <XAxis dataKey="period" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="url(#revenueGradient)" 
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                />
+                <defs>
+                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
       {/* Quick Stats and Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Stats */}
-        <Card>
+        <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg">Quick Stats</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {quickStats.map((stat, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-white shadow-sm">
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
                   <span className="text-sm font-medium">{stat.title}</span>
                 </div>
-                <Badge variant="outline">{stat.value}</Badge>
+                <Badge variant="outline" className="bg-white">{stat.value}</Badge>
               </div>
             ))}
           </CardContent>
         </Card>
 
         {/* Top Products */}
-        <Card>
+        <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg">Top Products This Month</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {topProducts.map((product, index) => (
-              <div key={index} className="flex items-center justify-between">
+            {topProducts.length > 0 ? topProducts.map((product, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
                 <div>
                   <div className="font-medium">{product.name}</div>
                   <div className="text-sm text-muted-foreground">{product.sold} units sold</div>
@@ -134,7 +311,11 @@ export function SalesOverview() {
                   <div className="font-medium">${product.revenue.toFixed(2)}</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No sales data available yet
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

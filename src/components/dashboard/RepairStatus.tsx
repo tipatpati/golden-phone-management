@@ -1,119 +1,149 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useRepairs } from "@/services/useRepairs";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
-type RepairStatusType = "In Progress" | "Awaiting Parts" | "Ready for Pickup" | "Completed";
-
-type RepairItem = {
-  id: string;
-  client: string;
-  device: string;
-  status: RepairStatusType;
-  technician: string;
-  dueDate: string;
-};
+type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted" | "cancelled";
 
 export function RepairStatus() {
-  // Sample data - would come from API in real implementation
-  const repairs: RepairItem[] = [
-    {
-      id: "REP-2023-001",
-      client: "Michael Wilson",
-      device: "iPhone 13 Pro",
-      status: "In Progress",
-      technician: "Alex T.",
-      dueDate: "Today",
-    },
-    {
-      id: "REP-2023-002",
-      client: "Laura Garcia",
-      device: "MacBook Air",
-      status: "Awaiting Parts",
-      technician: "Sam J.",
-      dueDate: "Apr 28",
-    },
-    {
-      id: "REP-2023-003",
-      client: "David Kim",
-      device: "iPad Pro",
-      status: "Ready for Pickup",
-      technician: "Alex T.",
-      dueDate: "Apr 27",
-    },
-    {
-      id: "REP-2023-004",
-      client: "Sarah Johnson",
-      device: "Samsung Galaxy S22",
-      status: "In Progress",
-      technician: "Chris M.",
-      dueDate: "Apr 29",
-    },
-    {
-      id: "REP-2023-005",
-      client: "Tech Solutions Inc.",
-      device: "Dell XPS 15 (x3)",
-      status: "Awaiting Parts",
-      technician: "Sam J.",
-      dueDate: "Apr 30",
-    },
-  ];
+  const { data: allRepairs = [] } = useRepairs();
+
+  // Set up real-time subscription for repair updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('repairs-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
+        console.log('Repairs data updated');
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Filter active repairs (not completed or cancelled)
+  const activeRepairs = allRepairs.filter(repair => 
+    repair.status !== 'completed' && repair.status !== 'cancelled'
+  ).slice(0, 5); // Show only first 5
 
   const getStatusColor = (status: RepairStatusType) => {
     switch (status) {
-      case "In Progress":
+      case "in_progress":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "Awaiting Parts":
+      case "awaiting_parts":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-      case "Ready for Pickup":
+      case "completed":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "Completed":
+      case "quoted":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+      case "cancelled":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
     }
   };
 
+  const getStatusDisplayName = (status: RepairStatusType) => {
+    switch (status) {
+      case "in_progress":
+        return "In Progress";
+      case "awaiting_parts":
+        return "Awaiting Parts";
+      case "completed":
+        return "Completed";
+      case "quoted":
+        return "Quoted";
+      case "cancelled":
+        return "Cancelled";
+      default:
+        return status;
+    }
+  };
+
+  const getClientName = (client: any) => {
+    if (!client) return "Walk-in Customer";
+    return client.type === "business" 
+      ? client.company_name 
+      : `${client.first_name} ${client.last_name}`;
+  };
+
+  const getTechnicianName = (technician: any) => {
+    return technician?.username || "Unassigned";
+  };
+
+  const formatDueDate = (date: string | null) => {
+    if (!date) return "Not set";
+    const dueDate = new Date(date);
+    const today = new Date();
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+    if (diffDays === -1) return "Yesterday";
+    if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+    return format(dueDate, "MMM dd");
+  };
+
   return (
-    <Card className="col-span-1 lg:col-span-2">
+    <Card className="col-span-1 lg:col-span-2 border-0 shadow-lg">
       <CardHeader>
-        <CardTitle>Active Repairs</CardTitle>
+        <CardTitle className="text-lg">Active Repairs</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="pb-3 pr-4 font-medium">ID</th>
-                <th className="pb-3 pr-4 font-medium">Client</th>
-                <th className="pb-3 pr-4 font-medium">Device</th>
-                <th className="pb-3 pr-4 font-medium">Status</th>
-                <th className="pb-3 pr-4 font-medium">Technician</th>
-                <th className="pb-3 pr-4 font-medium">Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {repairs.map((repair) => (
-                <tr key={repair.id} className="border-b last:border-0">
-                  <td className="py-3 pr-4">{repair.id}</td>
-                  <td className="py-3 pr-4">{repair.client}</td>
-                  <td className="py-3 pr-4">{repair.device}</td>
-                  <td className="py-3 pr-4">
-                    <span
-                      className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
-                        repair.status
-                      )}`}
-                    >
-                      {repair.status}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4">{repair.technician}</td>
-                  <td className="py-3 pr-4">{repair.dueDate}</td>
+        {activeRepairs.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="pb-3 pr-4 font-medium text-gray-600">ID</th>
+                  <th className="pb-3 pr-4 font-medium text-gray-600">Client</th>
+                  <th className="pb-3 pr-4 font-medium text-gray-600">Device</th>
+                  <th className="pb-3 pr-4 font-medium text-gray-600">Status</th>
+                  <th className="pb-3 pr-4 font-medium text-gray-600">Technician</th>
+                  <th className="pb-3 pr-4 font-medium text-gray-600">Due</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {activeRepairs.map((repair) => (
+                  <tr key={repair.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <td className="py-3 pr-4 font-mono text-xs">{repair.repair_number}</td>
+                    <td className="py-3 pr-4">{getClientName(repair.client)}</td>
+                    <td className="py-3 pr-4">{repair.device}</td>
+                    <td className="py-3 pr-4">
+                      <span
+                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
+                          repair.status as RepairStatusType
+                        )}`}
+                      >
+                        {getStatusDisplayName(repair.status as RepairStatusType)}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4">{getTechnicianName(repair.technician)}</td>
+                    <td className="py-3 pr-4">
+                      <span className={formatDueDate(repair.estimated_completion_date).includes('overdue') ? 'text-red-600 font-medium' : ''}>
+                        {formatDueDate(repair.estimated_completion_date)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-sm text-muted-foreground">No active repairs at the moment!</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

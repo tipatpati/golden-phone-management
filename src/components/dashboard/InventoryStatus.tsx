@@ -1,99 +1,96 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-type InventoryItem = {
-  name: string;
-  sku: string;
-  inStock: number;
-  threshold: number;
-  category: string;
-};
+import { useProducts } from "@/services/useProducts";
+import { supabase } from "@/integrations/supabase/client";
 
 export function InventoryStatus() {
-  // Sample data - would come from API in real implementation
-  const lowStockItems: InventoryItem[] = [
-    {
-      name: "iPhone 13 Pro Case",
-      sku: "ACC-CASE-IP13P",
-      inStock: 3,
-      threshold: 10,
-      category: "Accessories",
-    },
-    {
-      name: "USB-C Cable (1m)",
-      sku: "ACC-CABLE-USBC1",
-      inStock: 5,
-      threshold: 20,
-      category: "Accessories",
-    },
-    {
-      name: "Screen Protector (Universal)",
-      sku: "ACC-SCRN-UNI",
-      inStock: 2,
-      threshold: 15,
-      category: "Accessories",
-    },
-    {
-      name: "Samsung Galaxy S22",
-      sku: "PHN-SSG-S22-BLK",
-      inStock: 1,
-      threshold: 5,
-      category: "Phones",
-    },
-  ];
+  const { data: allProducts = [] } = useProducts();
+
+  // Set up real-time subscription for inventory updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('inventory-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        console.log('Inventory data updated');
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Filter products that are at or below their threshold
+  const lowStockItems = allProducts.filter(product => 
+    product.stock <= product.threshold
+  );
 
   const getStockLevel = (current: number, threshold: number) => {
-    const percentage = (current / threshold) * 100;
-    if (percentage <= 20) return { color: "bg-red-500", level: "Critical" };
-    if (percentage <= 50) return { color: "bg-yellow-500", level: "Low" };
-    return { color: "bg-green-500", level: "Good" };
+    const percentage = threshold > 0 ? (current / threshold) * 100 : 100;
+    if (percentage <= 20) return { color: "bg-red-500", level: "Critical", bgColor: "bg-red-100" };
+    if (percentage <= 50) return { color: "bg-yellow-500", level: "Low", bgColor: "bg-yellow-100" };
+    return { color: "bg-green-500", level: "Good", bgColor: "bg-green-100" };
+  };
+
+  const getStockBadgeVariant = (level: string) => {
+    if (level === "Critical") return "destructive";
+    return "outline";
   };
 
   return (
-    <Card>
+    <Card className="border-0 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Low Stock Items</CardTitle>
-        <Button variant="outline" size="sm">
+        <CardTitle className="text-lg">Low Stock Items</CardTitle>
+        <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700">
           Order Stock
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {lowStockItems.map((item) => {
-            const stockStatus = getStockLevel(item.inStock, item.threshold);
-            const percentValue = (item.inStock / item.threshold) * 100;
-            
-            return (
-              <div key={item.sku} className="flex flex-col space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.sku}</p>
+        {lowStockItems.length > 0 ? (
+          <div className="space-y-4">
+            {lowStockItems.map((item) => {
+              const stockStatus = getStockLevel(item.stock, item.threshold);
+              const percentValue = item.threshold > 0 ? (item.stock / item.threshold) * 100 : 100;
+              
+              return (
+                <div key={item.id} className="p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.sku}</p>
+                    </div>
+                    <Badge variant={getStockBadgeVariant(stockStatus.level)}>
+                      {item.stock} left
+                    </Badge>
                   </div>
-                  <Badge variant={stockStatus.level === "Critical" ? "destructive" : "outline"}>
-                    {item.inStock} left
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className={`flex-1 ${stockStatus.color === "bg-red-500" ? "bg-red-100" : stockStatus.color === "bg-yellow-500" ? "bg-yellow-100" : "bg-green-100"} rounded-full h-2 overflow-hidden`}>
-                    <div
-                      className={`h-full ${stockStatus.color}`}
-                      style={{ width: `${percentValue}%` }}
-                    ></div>
+                  <div className="flex items-center gap-2">
+                    <div className={`flex-1 ${stockStatus.bgColor} rounded-full h-2 overflow-hidden`}>
+                      <div
+                        className={`h-full ${stockStatus.color} transition-all duration-300`}
+                        style={{ width: `${Math.min(percentValue, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {item.stock}/{item.threshold}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {item.inStock}/{item.threshold}
-                  </span>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-sm text-muted-foreground">All items are well stocked!</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
