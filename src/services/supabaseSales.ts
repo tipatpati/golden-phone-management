@@ -1,0 +1,234 @@
+
+import { supabase } from "@/integrations/supabase/client";
+
+export type Sale = {
+  id: string;
+  sale_number: string;
+  client_id?: string;
+  salesperson_id: string;
+  status: 'completed' | 'pending' | 'cancelled' | 'refunded';
+  payment_method: 'cash' | 'card' | 'bank_transfer' | 'other';
+  subtotal: number;
+  tax_amount: number;
+  total_amount: number;
+  notes?: string;
+  sale_date: string;
+  created_at?: string;
+  updated_at?: string;
+  client?: {
+    id: string;
+    type: string;
+    first_name?: string;
+    last_name?: string;
+    company_name?: string;
+    email?: string;
+    phone?: string;
+  };
+  salesperson?: {
+    id: string;
+    username?: string;
+  };
+  sale_items?: SaleItem[];
+};
+
+export type SaleItem = {
+  id: string;
+  sale_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  serial_number?: string;
+  product?: {
+    id: string;
+    name: string;
+    sku: string;
+  };
+};
+
+export type CreateSaleData = {
+  client_id?: string;
+  salesperson_id: string;
+  status?: 'completed' | 'pending' | 'cancelled' | 'refunded';
+  payment_method: 'cash' | 'card' | 'bank_transfer' | 'other';
+  notes?: string;
+  sale_items: {
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+    serial_number?: string;
+  }[];
+};
+
+export const supabaseSalesApi = {
+  async getSales(searchTerm: string = '') {
+    console.log('Fetching sales from Supabase...');
+    
+    let query = supabase
+      .from('sales')
+      .select(`
+        *,
+        client:clients(id, type, first_name, last_name, company_name, email, phone),
+        salesperson:profiles(id, username),
+        sale_items(
+          id,
+          product_id,
+          quantity,
+          unit_price,
+          total_price,
+          serial_number,
+          product:products(id, name, sku)
+        )
+      `);
+    
+    if (searchTerm) {
+      query = query.or(`sale_number.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching sales:', error);
+      throw error;
+    }
+    
+    console.log('Sales fetched successfully:', data);
+    return data || [];
+  },
+
+  async getSale(id: string) {
+    console.log('Fetching sale:', id);
+    
+    const { data, error } = await supabase
+      .from('sales')
+      .select(`
+        *,
+        client:clients(id, type, first_name, last_name, company_name, email, phone),
+        salesperson:profiles(id, username),
+        sale_items(
+          id,
+          product_id,
+          quantity,
+          unit_price,
+          total_price,
+          serial_number,
+          product:products(id, name, sku)
+        )
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching sale:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+
+  async createSale(saleData: CreateSaleData) {
+    console.log('Creating sale:', saleData);
+    
+    // Calculate totals
+    const subtotal = saleData.sale_items.reduce((sum, item) => 
+      sum + (item.unit_price * item.quantity), 0
+    );
+    const tax_amount = subtotal * 0.1; // 10% tax
+    const total_amount = subtotal + tax_amount;
+    
+    // Create the sale
+    const { data: sale, error: saleError } = await supabase
+      .from('sales')
+      .insert([{
+        client_id: saleData.client_id,
+        salesperson_id: saleData.salesperson_id,
+        status: saleData.status || 'completed',
+        payment_method: saleData.payment_method,
+        subtotal,
+        tax_amount,
+        total_amount,
+        notes: saleData.notes
+      }])
+      .select('*')
+      .single();
+    
+    if (saleError) {
+      console.error('Error creating sale:', saleError);
+      throw saleError;
+    }
+    
+    // Create sale items
+    const saleItems = saleData.sale_items.map(item => ({
+      sale_id: sale.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      total_price: item.unit_price * item.quantity,
+      serial_number: item.serial_number
+    }));
+    
+    const { error: itemsError } = await supabase
+      .from('sale_items')
+      .insert(saleItems);
+    
+    if (itemsError) {
+      console.error('Error creating sale items:', itemsError);
+      throw itemsError;
+    }
+    
+    // Update product stock
+    for (const item of saleData.sale_items) {
+      const { data: product } = await supabase
+        .from('products')
+        .select('stock')
+        .eq('id', item.product_id)
+        .single();
+      
+      if (product) {
+        await supabase
+          .from('products')
+          .update({ stock: product.stock - item.quantity })
+          .eq('id', item.product_id);
+      }
+    }
+    
+    console.log('Sale created successfully:', sale);
+    return sale;
+  },
+
+  async updateSale(id: string, saleData: Partial<CreateSaleData>) {
+    console.log('Updating sale:', id, saleData);
+    
+    const { data, error } = await supabase
+      .from('sales')
+      .update(saleData)
+      .eq('id', id)
+      .select('*')
+      .single();
+    
+    if (error) {
+      console.error('Error updating sale:', error);
+      throw error;
+    }
+    
+    console.log('Sale updated successfully:', data);
+    return data;
+  },
+
+  async deleteSale(id: string) {
+    console.log('Deleting sale:', id);
+    
+    const { error } = await supabase
+      .from('sales')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting sale:', error);
+      throw error;
+    }
+    
+    console.log('Sale deleted successfully');
+    return true;
+  }
+};
