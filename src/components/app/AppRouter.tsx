@@ -15,6 +15,7 @@ import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import AdminLogin from "@/pages/AdminLogin";
+import EmployeeLogin from "@/pages/EmployeeLogin";
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user } = useAuth();
@@ -33,6 +34,7 @@ export function AppRouter() {
       <Routes>
         {/* Public routes */}
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/employee-login" element={<EmployeeLogin />} />
         <Route path="/api-settings" element={<ApiSettings />} />
         
         {/* Show index page if user is not authenticated */}

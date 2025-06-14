@@ -11,28 +11,24 @@ const Index = () => {
       title: "Sales Management",
       description: "Track and manage all your sales transactions with ease",
       icon: TrendingUp,
-      href: "/sales",
       gradient: "from-blue-500 to-purple-600"
     },
     {
       title: "Repair Services",
       description: "Manage device repairs and track technician progress",
       icon: Smartphone,
-      href: "/repairs",
       gradient: "from-purple-500 to-pink-600"
     },
     {
       title: "Inventory Control",
       description: "Keep track of stock levels and product management",
       icon: Settings,
-      href: "/inventory",
       gradient: "from-green-500 to-blue-600"
     },
     {
       title: "Client Management",
       description: "Maintain customer relationships and contact information",
       icon: Users,
-      href: "/clients",
       gradient: "from-orange-500 to-red-600"
     }
   ];
@@ -40,28 +36,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Login Options */}
-        <div className="flex justify-end gap-4 mb-8">
-          <Link to="/admin-login">
-            <Button 
-              variant="outline" 
-              className="gap-2 hover:bg-yellow-50 hover:border-yellow-400 hover:text-yellow-700 transition-all duration-300"
-            >
-              <Crown className="h-4 w-4" />
-              Admin Login
-            </Button>
-          </Link>
-          <Link to="/employee-login">
-            <Button 
-              variant="outline" 
-              className="gap-2 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 transition-all duration-300"
-            >
-              <UserCheck className="h-4 w-4" />
-              Employee Login
-            </Button>
-          </Link>
-        </div>
-
         {/* Hero Section */}
         <div className="text-center space-y-6 py-12">
           <div className="space-y-4">
@@ -74,24 +48,24 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/admin-login">
+          {/* Simplified Login Options */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+            <Link to="/admin-login" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Get Started as Admin
-                <Crown className="ml-2 h-5 w-5" />
+                <Crown className="mr-2 h-5 w-5" />
+                Store Owner
               </Button>
             </Link>
-            <Link to="/employee-login">
+            <Link to="/employee-login" className="w-full sm:w-auto">
               <Button 
-                variant="outline" 
                 size="lg" 
-                className="shadow-md hover:shadow-lg transition-all duration-300 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Employee Access
-                <UserCheck className="ml-2 h-5 w-5" />
+                <UserCheck className="mr-2 h-5 w-5" />
+                Employee
               </Button>
             </Link>
           </div>
@@ -111,14 +85,10 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
-                <Button 
-                  variant="ghost" 
-                  className="w-full group-hover:bg-gradient-to-r group-hover:from-blue-50 group-hover:to-purple-50 transition-all duration-300"
-                  onClick={() => window.location.href = feature.href}
-                >
+                <div className="flex items-center justify-center text-sm text-blue-600 group-hover:text-blue-700 transition-colors">
                   Learn More
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                </Button>
+                  <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -146,6 +116,17 @@ const Index = () => {
               <div className="text-sm text-yellow-600">Success Rate</div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Quick Access for Settings */}
+        <div className="text-center">
+          <Link 
+            to="/api-settings"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Settings className="h-4 w-4" />
+            API Settings
+          </Link>
         </div>
       </div>
     </div>
