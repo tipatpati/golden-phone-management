@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, ArrowLeft, Settings, Database, UserCheck } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Settings, Database, UserCheck, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
@@ -14,6 +14,7 @@ import { authApi } from "@/services/auth";
 import { getMockApiConfig } from "@/services/config";
 import { secureStorage } from "@/services/secureStorage";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState("");
@@ -24,6 +25,26 @@ export default function EmployeeLogin() {
   
   const { login } = useAuth();
   const useMockApi = getMockApiConfig();
+
+  const checkIfAdminCredentials = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // Try to authenticate with Supabase to check if these are admin credentials
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (!error && data.user) {
+        // Valid admin credentials - sign out immediately as we'll handle login through our auth context
+        await supabase.auth.signOut();
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,16 +61,41 @@ export default function EmployeeLogin() {
     setIsLoading(true);
     
     try {
+      // First check if these are admin credentials
+      const isAdmin = await checkIfAdminCredentials(sanitizedEmail, sanitizedPassword);
+      
+      if (isAdmin) {
+        // Admin login - use the selected role for interface but maintain admin privileges
+        toast.success(`Logging in as Owner with ${ROLE_CONFIGS[selectedRole].name} interface`, {
+          description: "You have full admin access regardless of interface",
+          duration: 3000
+        });
+        
+        // Store the selected role for interface purposes, but mark as admin
+        secureStorage.setItem('userRole', 'admin', false);
+        secureStorage.setItem('interfaceRole', selectedRole, false);
+        secureStorage.setItem('authToken', 'admin-token-' + Date.now(), true);
+        secureStorage.setItem('userId', sanitizedEmail, false);
+        
+        // Use the auth context login for proper session management
+        await login(sanitizedEmail, sanitizedPassword);
+        return;
+      }
+      
       if (useMockApi) {
-        // Use mock auth service for employees
+        // Regular employee mock login
         await authApi.login(sanitizedEmail, sanitizedPassword);
         secureStorage.setItem('userRole', selectedRole, false);
+        toast.success(`Logged in as ${ROLE_CONFIGS[selectedRole].name}`);
       } else {
         // Use Supabase auth for real authentication
         await login(sanitizedEmail, sanitizedPassword);
       }
-    } catch (error) {
-      // Error is already shown by the auth service
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      toast.error('Login failed', {
+        description: error.message || 'Please check your credentials'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -137,7 +183,7 @@ export default function EmployeeLogin() {
 
               <div className="space-y-2">
                 <Label htmlFor="role" className="text-sm font-medium">
-                  Your Role
+                  Interface Role
                 </Label>
                 <div className="grid grid-cols-1 gap-2">
                   {employeeRoles.map((role) => (
@@ -159,13 +205,19 @@ export default function EmployeeLogin() {
                     </Button>
                   ))}
                 </div>
+                <div className="flex items-center gap-2 p-2 bg-amber-50 rounded-md border border-amber-200">
+                  <Crown className="h-4 w-4 text-amber-600" />
+                  <p className="text-xs text-amber-700">
+                    Owners can login with any role interface while maintaining full admin access
+                  </p>
+                </div>
               </div>
 
               <div className="pt-2">
                 <p className="text-xs text-muted-foreground text-center">
                   {useMockApi 
                     ? "Mock mode is enabled - any credentials will work"
-                    : "Only authorized employees can access this portal"
+                    : "Only authorized employees and owners can access this portal"
                   }
                 </p>
               </div>
@@ -177,7 +229,7 @@ export default function EmployeeLogin() {
                 className="w-full h-11 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300" 
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In as Employee"}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
               
               <div className="flex items-center justify-between text-sm">
@@ -185,7 +237,7 @@ export default function EmployeeLogin() {
                   to="/admin-login" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Store Owner? Sign in here
+                  Dedicated Admin Portal
                 </Link>
                 <Link 
                   to="/api-settings"

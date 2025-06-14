@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -13,6 +12,7 @@ interface AuthContextType {
   session: Session | null;
   isLoggedIn: boolean;
   userRole: UserRole | null;
+  interfaceRole: UserRole | null;
   username: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, username?: string, role?: UserRole) => Promise<void>;
@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [interfaceRole, setInterfaceRole] = useState<UserRole | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -39,11 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkMockAuth = () => {
       const token = secureStorage.getItem('authToken', true);
       const storedRole = secureStorage.getItem('userRole', false) as UserRole;
+      const storedInterfaceRole = secureStorage.getItem('interfaceRole', false) as UserRole;
       const storedUserId = secureStorage.getItem('userId', false);
       
       if (token && storedRole && storedUserId) {
         console.log('Found existing mock auth session');
         setUserRole(storedRole);
+        setInterfaceRole(storedInterfaceRole || storedRole);
         setUsername(storedUserId);
         // Create a mock user object for consistency
         const mockUser = {
@@ -82,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         } else {
           setUserRole(null);
+          setInterfaceRole(null);
           setUsername(null);
           setIsInitialized(true);
         }
@@ -125,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.code === 'PGRST116') {
           console.log('Profile not found, should be created by trigger');
           setUserRole('admin'); // Default admin for Supabase users
+          setInterfaceRole('admin');
           setUsername(user?.email?.split('@')[0] || 'admin');
         }
         return;
@@ -133,11 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         console.log('User profile fetched:', data);
         setUserRole(data.role as UserRole);
+        setInterfaceRole(data.role as UserRole); // Default to same as user role
         setUsername(data.username);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setUserRole('admin'); // Fallback to admin for Supabase
+      setInterfaceRole('admin');
     }
   };
 
@@ -157,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUserRole(role);
+      setInterfaceRole(role);
       toast.success(`Role updated to ${role}`);
     } catch (error: any) {
       console.error('Error updating user role:', error);
@@ -180,7 +188,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Check if this should be a mock login (employees) or Supabase login (admin)
       if (window.location.pathname === '/employee-login') {
-        // Use mock auth for employees
+        // Check for existing stored interface role for admins
+        const storedInterfaceRole = secureStorage.getItem('interfaceRole', false) as UserRole;
+        
+        // Use mock auth for employees or admin with interface role
         const result = await authApi.login(sanitizedEmail, sanitizedPassword);
         
         // Create mock user for consistency
@@ -191,9 +202,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUser(mockUser);
         setUsername(sanitizedEmail);
-        // Role should be set by the login component
-        const storedRole = secureStorage.getItem('userRole', false) as UserRole;
-        setUserRole(storedRole || 'salesperson');
+        
+        // Get roles from storage (set during login process)
+        const actualRole = secureStorage.getItem('userRole', false) as UserRole;
+        const displayRole = storedInterfaceRole || actualRole || 'salesperson';
+        
+        setUserRole(actualRole || 'salesperson');
+        setInterfaceRole(displayRole);
         
         toast.success('Successfully logged in');
         
@@ -283,12 +298,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Check if this is a mock auth session
       const token = secureStorage.getItem('authToken', true);
-      if (token && token.startsWith('mock-')) {
+      if (token && token.startsWith('mock-') || token?.startsWith('admin-token')) {
         // Use mock auth logout
         authApi.logout();
+        // Clear interface role as well
+        secureStorage.removeItem('interfaceRole');
         setUser(null);
         setSession(null);
         setUserRole(null);
+        setInterfaceRole(null);
         setUsername(null);
         // Redirect to home page after logout
         window.location.href = '/';
@@ -320,6 +338,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       isLoggedIn, 
       userRole, 
+      interfaceRole,
       username, 
       login,
       signup, 

@@ -19,7 +19,7 @@ import AdminLogin from "@/pages/AdminLogin";
 import EmployeeLogin from "@/pages/EmployeeLogin";
 
 export function AppRouter() {
-  const { isLoggedIn, userRole, user } = useAuth();
+  const { isLoggedIn, userRole, interfaceRole, user } = useAuth();
 
   // Show loading only if we have a user but no role yet (brief loading state)
   if (user && !userRole) {
@@ -29,6 +29,9 @@ export function AppRouter() {
       </div>
     );
   }
+
+  // Use interfaceRole for UI decisions, but userRole for permission checks
+  const displayRole = interfaceRole || userRole;
 
   return (
     <BrowserRouter>
@@ -48,8 +51,9 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
-            {/* Admin gets the full interface */}
-            {userRole === 'admin' ? (
+            {/* Admin or admin with interface role gets appropriate interface */}
+            {userRole === 'admin' && displayRole === 'admin' ? (
+              // Full admin interface
               <>
                 <Route path="/" element={
                   <ProtectedRoute>
@@ -113,30 +117,30 @@ export function AppRouter() {
                 } />
               </>
             ) : (
-              /* Employee gets simplified interface */
+              /* Employee interface or admin with employee interface */
               <>
                 <Route path="/" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
-                    <EmployeeDashboard userRole={userRole || 'salesperson'} />
+                  <EmployeeLayout userRole={displayRole || 'salesperson'}>
+                    <EmployeeDashboard userRole={displayRole || 'salesperson'} />
                   </EmployeeLayout>
                 } />
                 <Route path="/sales" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <EmployeeLayout userRole={displayRole || 'salesperson'}>
                     <Sales />
                   </EmployeeLayout>
                 } />
                 <Route path="/clients" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <EmployeeLayout userRole={displayRole || 'salesperson'}>
                     <Clients />
                   </EmployeeLayout>
                 } />
                 <Route path="/inventory" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <EmployeeLayout userRole={displayRole || 'salesperson'}>
                     <Inventory />
                   </EmployeeLayout>
                 } />
                 <Route path="/repairs" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <EmployeeLayout userRole={displayRole || 'salesperson'}>
                     <Repairs />
                   </EmployeeLayout>
                 } />
