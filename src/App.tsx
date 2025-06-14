@@ -1,37 +1,28 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/contexts/AuthContext";
 
 function AppContent() {
-  const { isLoggedIn, userRole } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Give auth context time to check for existing session
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  const { isLoggedIn, userRole, user } = useAuth();
 
   // Show login form if user is not authenticated
   if (!isLoggedIn) {
     return <LoginForm onLoginSuccess={() => {}} />;
   }
 
-  // Show the main application with the user's role from Supabase
+  // Show loading only if we have a user but no role yet (brief loading state)
+  if (user && !userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading user profile...</div>
+      </div>
+    );
+  }
+
+  // Show the main application
   return <AppRouter />;
 }
 

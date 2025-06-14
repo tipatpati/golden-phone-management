@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const checkAuthStatus = () => {
     console.log('Auth status check triggered');
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching user profile for:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('username, role')
@@ -40,10 +42,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error('Error fetching user profile:', error);
+        // If profile doesn't exist, create one with default role
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating default profile');
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              role: 'salesperson',
+              username: user?.email?.split('@')[0] || 'user'
+            });
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          } else {
+            setUserRole('salesperson');
+            setUsername(user?.email?.split('@')[0] || 'user');
+          }
+        }
         return;
       }
       
       if (data) {
+        console.log('User profile fetched:', data);
         setUserRole(data.role as UserRole);
         setUsername(data.username);
         // Also update localStorage for backwards compatibility
@@ -54,6 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      // Fallback to default role
+      setUserRole('salesperson');
     }
   };
 
@@ -161,21 +184,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (!mounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer profile fetching to avoid blocking the auth state change
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+          // Fetch profile in background without blocking
+          fetchUserProfile(session.user.id).finally(() => {
+            if (mounted) {
+              setIsInitialized(true);
+            }
+          });
         } else {
           setUserRole(null);
           setUsername(null);
+          setIsInitialized(true);
           // Clear localStorage on logout
           localStorage.removeItem('userRole');
           localStorage.removeItem('userId');
@@ -186,16 +217,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
-        setTimeout(() => {
-          fetchUserProfile(session.user.id);
-        }, 0);
+        fetchUserProfile(session.user.id).finally(() => {
+          if (mounted) {
+            setIsInitialized(true);
+          }
+        });
+      } else {
+        setIsInitialized(true);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const isLoggedIn = !!session && !!user;

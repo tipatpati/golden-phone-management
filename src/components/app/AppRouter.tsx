@@ -17,17 +17,11 @@ import NotFound from "@/pages/NotFound";
 export function AppRouter() {
   const { userRole } = useAuth();
 
-  // If no role is determined yet, show loading
-  if (!userRole) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  // Default to salesperson if no role is set (fallback)
+  const effectiveRole = userRole || 'salesperson';
 
   // Admin gets the full interface
-  if (userRole === 'admin') {
+  if (effectiveRole === 'admin') {
     return (
       <BrowserRouter>
         <Routes>
@@ -101,27 +95,27 @@ export function AppRouter() {
         <Route path="/api-settings" element={<ApiSettings />} />
         
         <Route path="/" element={
-          <EmployeeLayout userRole={userRole}>
-            <EmployeeDashboard userRole={userRole} />
+          <EmployeeLayout userRole={effectiveRole}>
+            <EmployeeDashboard userRole={effectiveRole} />
           </EmployeeLayout>
         } />
         <Route path="/sales" element={
-          <EmployeeLayout userRole={userRole}>
+          <EmployeeLayout userRole={effectiveRole}>
             <Sales />
           </EmployeeLayout>
         } />
         <Route path="/clients" element={
-          <EmployeeLayout userRole={userRole}>
+          <EmployeeLayout userRole={effectiveRole}>
             <Clients />
           </EmployeeLayout>
         } />
         <Route path="/inventory" element={
-          <EmployeeLayout userRole={userRole}>
+          <EmployeeLayout userRole={effectiveRole}>
             <Inventory />
           </EmployeeLayout>
         } />
         <Route path="/repairs" element={
-          <EmployeeLayout userRole={userRole}>
+          <EmployeeLayout userRole={effectiveRole}>
             <Repairs />
           </EmployeeLayout>
         } />
