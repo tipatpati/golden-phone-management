@@ -113,124 +113,121 @@ export default function EmployeeManagement() {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Employee Management</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your team members and their roles</p>
-          </div>
-          <Button onClick={() => setIsNewDialogOpen(true)} className="gap-2 w-full sm:w-auto">
-            <Plus className="h-4 w-4" />
-            <span className="sm:inline">Add Employee</span>
-          </Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Employee Management</h1>
+          <p className="text-muted-foreground">Manage your team members and their roles</p>
         </div>
+        <Button onClick={() => setIsNewDialogOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Employee
+        </Button>
+      </div>
 
-        {/* Search */}
-        <Card>
-          <CardContent className="p-4 sm:pt-6">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search employees..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
+      {/* Search */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search employees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Employees List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Employees ({employees.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8">Loading employees...</div>
+          ) : employees.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No employees found
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Employees List */}
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Users className="h-5 w-5" />
-              Employees ({employees.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            {isLoading ? (
-              <div className="text-center py-8">Loading employees...</div>
-            ) : employees.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No employees found
-              </div>
-            ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {employees.map((employee) => (
-                  <div
-                    key={employee.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-medium text-sm sm:text-base truncate">{employee.username}</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          ID: {employee.id.slice(0, 8)}...
-                        </p>
-                      </div>
+          ) : (
+            <div className="space-y-4">
+              {employees.map((employee) => (
+                <div
+                  key={employee.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Users className="h-5 w-5 text-primary" />
                     </div>
-                    
-                    <div className="flex items-center justify-between sm:justify-end gap-3">
-                      <Badge className={`${getRoleBadgeColor(employee.role)} text-xs`}>
-                        {ROLE_CONFIGS[employee.role]?.name || employee.role}
-                      </Badge>
-                      
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(employee)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(employee)}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    <div>
+                      <h3 className="font-medium">{employee.username}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        ID: {employee.id.slice(0, 8)}...
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  
+                  <div className="flex items-center justify-between sm:justify-end gap-4">
+                    <Badge className={getRoleBadgeColor(employee.role)}>
+                      {ROLE_CONFIGS[employee.role]?.name || employee.role}
+                    </Badge>
+                    
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(employee)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(employee)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Dialogs */}
-        <NewEmployeeDialog
-          open={isNewDialogOpen}
-          onOpenChange={setIsNewDialogOpen}
-        />
-        
-        {selectedEmployee && (
-          <>
-            <EditEmployeeDialog
-              open={isEditDialogOpen}
-              onOpenChange={setIsEditDialogOpen}
-              employee={selectedEmployee}
-            />
-            
-            <DeleteEmployeeDialog
-              open={isDeleteDialogOpen}
-              onOpenChange={setIsDeleteDialogOpen}
-              employee={selectedEmployee}
-              onConfirm={confirmDelete}
-              isLoading={deleteEmployeeMutation.isPending}
-            />
-          </>
-        )}
-      </div>
+      {/* Dialogs */}
+      <NewEmployeeDialog
+        open={isNewDialogOpen}
+        onOpenChange={setIsNewDialogOpen}
+      />
+      
+      {selectedEmployee && (
+        <>
+          <EditEmployeeDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            employee={selectedEmployee}
+          />
+          
+          <DeleteEmployeeDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            employee={selectedEmployee}
+            onConfirm={confirmDelete}
+            isLoading={deleteEmployeeMutation.isPending}
+          />
+        </>
+      )}
     </div>
   );
 }
