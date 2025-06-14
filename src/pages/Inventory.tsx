@@ -22,7 +22,7 @@ const Inventory = () => {
   return (
     <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border-0">
+      <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
         <InventoryHeader onToggleSettings={handleToggleSettings} />
       </div>
       

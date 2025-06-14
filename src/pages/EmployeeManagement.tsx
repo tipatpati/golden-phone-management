@@ -29,75 +29,89 @@ export default function EmployeeManagement() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employee Management</h1>
-          <p className="text-gray-600">Manage your team members and their information</p>
-        </div>
-        <Button
-          onClick={() => setIsNewEmployeeOpen(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search employees by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Employee Management
+              </h1>
+              <p className="text-muted-foreground mt-3 text-lg">
+                Manage your team members and their information
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsNewEmployeeOpen(true)}
+              size="lg"
+              className="shadow-lg"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="terminated">Terminated</option>
-            </select>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Employee
+            </Button>
           </div>
         </div>
 
-        <EmployeeTable
-          employees={filteredEmployees}
-          isLoading={isLoading}
-          onEdit={setEditingEmployee}
-          onRefresh={refetch}
-        />
-      </div>
+        {/* Search and Filter */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 border-0">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search employees by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border-2 border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="terminated">Terminated</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-      <NewEmployeeDialog
-        open={isNewEmployeeOpen}
-        onClose={() => setIsNewEmployeeOpen(false)}
-        onSuccess={() => {
-          refetch();
-          setIsNewEmployeeOpen(false);
-        }}
-      />
+        {/* Employee Table */}
+        <div className="bg-white rounded-2xl shadow-xl border-0">
+          <EmployeeTable
+            employees={filteredEmployees}
+            isLoading={isLoading}
+            onEdit={setEditingEmployee}
+            onRefresh={refetch}
+          />
+        </div>
 
-      {editingEmployee && (
-        <EditEmployeeDialog
-          employee={editingEmployee}
-          open={!!editingEmployee}
-          onClose={() => setEditingEmployee(null)}
+        <NewEmployeeDialog
+          open={isNewEmployeeOpen}
+          onClose={() => setIsNewEmployeeOpen(false)}
           onSuccess={() => {
             refetch();
-            setEditingEmployee(null);
+            setIsNewEmployeeOpen(false);
           }}
         />
-      )}
+
+        {editingEmployee && (
+          <EditEmployeeDialog
+            employee={editingEmployee}
+            open={!!editingEmployee}
+            onClose={() => setEditingEmployee(null)}
+            onSuccess={() => {
+              refetch();
+              setEditingEmployee(null);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }

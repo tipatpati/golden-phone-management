@@ -51,11 +51,11 @@ const Repairs = () => {
   if (isLoading) {
     return (
       <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
-        <div className="bg-white rounded-xl shadow-lg p-6 border-0">
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Gestione Riparazioni
           </h2>
-          <p className="text-muted-foreground mt-2">Caricamento...</p>
+          <p className="text-muted-foreground mt-3 text-lg">Caricamento...</p>
         </div>
       </div>
     );
@@ -64,13 +64,13 @@ const Repairs = () => {
   return (
     <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border-0">
+      <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Gestione Riparazioni
             </h2>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-3 text-lg">
               Traccia le riparazioni dei dispositivi, assegna i tecnici e gestisci i flussi di lavoro delle riparazioni.
             </p>
           </div>

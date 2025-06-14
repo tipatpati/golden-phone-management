@@ -36,9 +36,11 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Modifica Riparazione - {repair.id}</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Modifica Riparazione - {repair.id}
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <ClientTechnicianSection
             formData={formData}
             setFormData={setFormData}
@@ -62,11 +64,11 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
             setFormData={setFormData}
           />
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-end gap-3 pt-6 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} size="lg">
               Annulla
             </Button>
-            <Button type="submit" disabled={updateRepair.isPending}>
+            <Button type="submit" disabled={updateRepair.isPending} size="lg" className="shadow-lg">
               {updateRepair.isPending ? 'Aggiornamento...' : 'Aggiorna Riparazione'}
             </Button>
           </div>
