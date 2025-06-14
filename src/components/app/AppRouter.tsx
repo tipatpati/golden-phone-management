@@ -12,6 +12,7 @@ import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
 import Repairs from "@/pages/Repairs";
 import ApiSettings from "@/pages/ApiSettings";
+import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import AdminLogin from "@/pages/AdminLogin";
@@ -91,6 +92,13 @@ export function AppRouter() {
                       <div className="min-h-[80vh] flex items-center justify-center">
                         <h1 className="text-2xl">Reports Module - Coming Soon</h1>
                       </div>
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/employees" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <EmployeeManagement />
                     </MainLayout>
                   </ProtectedRoute>
                 } />

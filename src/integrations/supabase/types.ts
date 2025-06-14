@@ -81,6 +81,62 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          created_at: string
+          department: string | null
+          email: string
+          first_name: string
+          hire_date: string
+          id: string
+          last_name: string
+          phone: string | null
+          position: string | null
+          profile_id: string | null
+          salary: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          email: string
+          first_name: string
+          hire_date?: string
+          id?: string
+          last_name: string
+          phone?: string | null
+          position?: string | null
+          profile_id?: string | null
+          salary?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          email?: string
+          first_name?: string
+          hire_date?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          position?: string | null
+          profile_id?: string | null
+          salary?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null

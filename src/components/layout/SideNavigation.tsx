@@ -13,7 +13,8 @@ import {
   Settings,
   Menu,
   X,
-  LogOut
+  LogOut,
+  UserCog
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,6 +63,12 @@ const navItems: NavItem[] = [
     href: "/reports",
     icon: BarChart4,
     permission: ["manager", "admin"],
+  },
+  {
+    title: "Dipendenti",
+    href: "/employees",
+    icon: UserCog,
+    permission: ["admin"],
   },
   {
     title: "Impostazioni",
