@@ -1,40 +1,31 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Settings, Users, TrendingUp, Crown, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Index = () => {
-  const features = [
-    {
-      title: "Sales Management",
-      description: "Track and manage all your sales transactions with ease",
-      icon: TrendingUp,
-      gradient: "from-blue-500 to-purple-600"
-    },
-    {
-      title: "Repair Services",
-      description: "Manage device repairs and track technician progress",
-      icon: Smartphone,
-      gradient: "from-purple-500 to-pink-600"
-    },
-    {
-      title: "Inventory Control",
-      description: "Keep track of stock levels and product management",
-      icon: Settings,
-      gradient: "from-green-500 to-blue-600"
-    },
-    {
-      title: "Client Management",
-      description: "Maintain customer relationships and contact information",
-      icon: Users,
-      gradient: "from-orange-500 to-red-600"
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
+  const features = [{
+    title: "Sales Management",
+    description: "Track and manage all your sales transactions with ease",
+    icon: TrendingUp,
+    gradient: "from-blue-500 to-purple-600"
+  }, {
+    title: "Repair Services",
+    description: "Manage device repairs and track technician progress",
+    icon: Smartphone,
+    gradient: "from-purple-500 to-pink-600"
+  }, {
+    title: "Inventory Control",
+    description: "Keep track of stock levels and product management",
+    icon: Settings,
+    gradient: "from-green-500 to-blue-600"
+  }, {
+    title: "Client Management",
+    description: "Maintain customer relationships and contact information",
+    icon: Users,
+    gradient: "from-orange-500 to-red-600"
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-6 py-12">
@@ -51,19 +42,13 @@ const Index = () => {
           {/* Simplified Login Options */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
             <Link to="/admin-login" className="w-full sm:w-auto">
-              <Button 
-                size="lg" 
-                className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
+              <Button size="lg" className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Crown className="mr-2 h-5 w-5" />
                 Store Owner
               </Button>
             </Link>
             <Link to="/employee-login" className="w-full sm:w-auto">
-              <Button 
-                size="lg" 
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
+              <Button size="lg" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                 <UserCheck className="mr-2 h-5 w-5" />
                 Employee
               </Button>
@@ -73,8 +58,7 @@ const Index = () => {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          {features.map((feature, index) => <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
                 <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                   <feature.icon className="h-8 w-8 text-white" />
@@ -90,47 +74,20 @@ const Index = () => {
                   <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8">
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-blue-900 mb-2">500+</div>
-              <div className="text-sm text-blue-600">Repairs Completed</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-purple-900 mb-2">1,200+</div>
-              <div className="text-sm text-purple-600">Happy Customers</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
-            <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-yellow-900 mb-2">99%</div>
-              <div className="text-sm text-yellow-600">Success Rate</div>
-            </CardContent>
-          </Card>
-        </div>
+        
 
         {/* Quick Access for Settings */}
         <div className="text-center">
-          <Link 
-            to="/api-settings"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
+          <Link to="/api-settings" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
             <Settings className="h-4 w-4" />
             API Settings
           </Link>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
