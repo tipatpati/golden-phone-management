@@ -11,7 +11,6 @@ import Clients from "@/pages/Clients";
 import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
 import Repairs from "@/pages/Repairs";
-import EmployeeManagement from "@/pages/EmployeeManagement";
 import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
@@ -48,8 +47,8 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
-            {/* Admin routes */}
-            {userRole === 'admin' && (
+            {/* Admin gets the full interface */}
+            {userRole === 'admin' ? (
               <>
                 <Route path="/" element={
                   <ProtectedRoute>
@@ -86,13 +85,6 @@ export function AppRouter() {
                     </MainLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/employees" element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <EmployeeManagement />
-                    </MainLayout>
-                  </ProtectedRoute>
-                } />
                 <Route path="/reports" element={
                   <ProtectedRoute>
                     <MainLayout>
@@ -112,10 +104,8 @@ export function AppRouter() {
                   </ProtectedRoute>
                 } />
               </>
-            )}
-            
-            {/* Employee routes */}
-            {userRole !== 'admin' && (
+            ) : (
+              /* Employee gets simplified interface */
               <>
                 <Route path="/" element={
                   <EmployeeLayout userRole={userRole || 'salesperson'}>
