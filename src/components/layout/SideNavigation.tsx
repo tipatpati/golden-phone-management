@@ -1,166 +1,86 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { 
-  LayoutGrid, 
+  BarChart3, 
+  ShoppingCart, 
   Users, 
-  ShoppingCart,
-  PackageSearch, 
-  ClipboardList, 
-  BarChart4,
+  Package, 
+  Wrench, 
+  FileText, 
   Settings,
-  Menu,
-  X,
-  LogOut
+  UserCog
 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/contexts/AuthContext";
-import { UserRole } from "@/types/roles";
 
-type NavItem = {
-  title: string;
-  href: string;
-  icon: React.ElementType;
-  permission: UserRole[];
-};
-
-const navItems: NavItem[] = [
+const navigationItems = [
   {
-    title: "Dashboard",
+    label: "Dashboard",
     href: "/",
-    icon: LayoutGrid,
-    permission: ["salesperson", "manager", "inventory_manager", "admin"],
+    icon: BarChart3,
   },
   {
-    title: "Vendite",
+    label: "Sales",
     href: "/sales",
     icon: ShoppingCart,
-    permission: ["salesperson", "manager", "admin"],
   },
   {
-    title: "Clienti",
+    label: "Clients",
     href: "/clients",
     icon: Users,
-    permission: ["salesperson", "manager", "admin"],
   },
   {
-    title: "Inventario",
+    label: "Inventory",
     href: "/inventory",
-    icon: PackageSearch,
-    permission: ["manager", "inventory_manager", "admin"],
+    icon: Package,
   },
   {
-    title: "Riparazioni",
+    label: "Repairs",
     href: "/repairs",
-    icon: ClipboardList,
-    permission: ["manager", "admin"],
+    icon: Wrench,
   },
   {
-    title: "Report",
+    label: "Employees",
+    href: "/employees",
+    icon: UserCog,
+  },
+  {
+    label: "Reports",
     href: "/reports",
-    icon: BarChart4,
-    permission: ["manager", "admin"],
+    icon: FileText,
   },
   {
-    title: "Impostazioni",
+    label: "Settings",
     href: "/settings",
     icon: Settings,
-    permission: ["admin"],
   },
 ];
 
 export function SideNavigation() {
   const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
-  const { logout, userRole, username } = useAuth();
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const filteredNavItems = navItems.filter((item) =>
-    userRole && item.permission.includes(userRole)
-  );
 
   return (
-    <>
-      {/* Mobile menu button */}
-      {isMobile && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleMenu}
-          className="fixed top-4 left-4 z-50 hover:bg-yellow-50 hover:text-yellow-700"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </Button>
-      )}
-
-      {/* Sidebar navigation */}
-      <aside
-        className={cn(
-          "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out",
-          isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"
-        )}
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-center border-b border-border">
-            <h1 className="text-xl font-bold text-primary">GOLDEN PHONE</h1>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto p-4">
-            <ul className="space-y-1">
-              {filteredNavItems.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      to={item.href}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
-                      )}
-                      onClick={() => isMobile && setIsOpen(false)}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground text-sm font-medium">
-                    {username?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{username || 'User'}</p>
-                  <p className="text-xs text-muted-foreground">{userRole || 'Unknown'}</p>
-                </div>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={logout}
-                className="h-8 w-8 hover:bg-yellow-50 hover:text-yellow-700"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </>
+    <nav className="space-y-2">
+      {navigationItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = location.pathname === item.href;
+        
+        return (
+          <Link
+            key={item.href}
+            to={item.href}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

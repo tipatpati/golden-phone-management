@@ -11,6 +11,7 @@ import Clients from "@/pages/Clients";
 import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
 import Repairs from "@/pages/Repairs";
+import EmployeeManagement from "@/pages/EmployeeManagement";
 import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
@@ -82,6 +83,13 @@ export function AppRouter() {
                   <ProtectedRoute>
                     <MainLayout>
                       <Repairs />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/employees" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <EmployeeManagement />
                     </MainLayout>
                   </ProtectedRoute>
                 } />
