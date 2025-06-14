@@ -93,7 +93,7 @@ export function SideNavigation() {
           variant="ghost" 
           size="icon" 
           onClick={toggleMenu}
-          className="fixed top-4 left-4 z-50"
+          className="fixed top-4 left-4 z-50 hover:bg-yellow-50 hover:text-yellow-700"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
@@ -123,7 +123,7 @@ export function SideNavigation() {
                         "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
                       )}
                       onClick={() => isMobile && setIsOpen(false)}
                     >
@@ -153,7 +153,7 @@ export function SideNavigation() {
                 variant="ghost" 
                 size="icon"
                 onClick={logout}
-                className="h-8 w-8"
+                className="h-8 w-8 hover:bg-yellow-50 hover:text-yellow-700"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
