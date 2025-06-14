@@ -48,8 +48,8 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
-            {/* Admin gets the full interface */}
-            {userRole === 'admin' ? (
+            {/* Admin routes */}
+            {userRole === 'admin' && (
               <>
                 <Route path="/" element={
                   <ProtectedRoute>
@@ -112,8 +112,10 @@ export function AppRouter() {
                   </ProtectedRoute>
                 } />
               </>
-            ) : (
-              /* Employee gets simplified interface */
+            )}
+            
+            {/* Employee routes */}
+            {userRole !== 'admin' && (
               <>
                 <Route path="/" element={
                   <EmployeeLayout userRole={userRole || 'salesperson'}>
