@@ -1,80 +1,28 @@
 
 import { toast } from '@/components/ui/sonner';
 
-// API configuration with your Django backend URL
+// API configuration for mock mode only
 const API_CONFIG = {
-  // Set to your Django backend URL
-  baseUrl: 'https://amirbenbekhti.pythonanywhere.com',
-  
-  // Disable mock API by default since we want real authentication
-  useMockApi: false,
+  // Enable mock API by default since we're removing Django
+  useMockApi: true,
 };
 
 // Initialize from localStorage if previously set
 const initializeApiConfig = () => {
-  const storedUrl = localStorage.getItem('phoneShopApiUrl');
   const storedMockMode = localStorage.getItem('phoneShopUseMockApi');
   
-  if (storedUrl) {
-    API_CONFIG.baseUrl = storedUrl.trim();
-    console.log('Loaded API URL from localStorage:', API_CONFIG.baseUrl);
-  } else {
-    // Set the default Django backend URL in localStorage
-    localStorage.setItem('phoneShopApiUrl', API_CONFIG.baseUrl);
-  }
-  
-  if (storedMockMode === 'true') {
-    API_CONFIG.useMockApi = true;
+  if (storedMockMode === 'false') {
+    API_CONFIG.useMockApi = false;
     console.log('Loaded mock API mode from localStorage:', API_CONFIG.useMockApi);
   } else {
-    // Ensure mock mode is disabled by default
-    localStorage.setItem('phoneShopUseMockApi', 'false');
+    // Default to mock mode
+    localStorage.setItem('phoneShopUseMockApi', 'true');
+    API_CONFIG.useMockApi = true;
   }
 };
 
 // Initialize on module load
 initializeApiConfig();
-
-// Helper function to construct URLs properly for Django backend
-export const buildApiUrl = (endpoint: string) => {
-  let baseUrl = API_CONFIG.baseUrl.trim();
-  
-  console.log('Building Django API URL with base:', baseUrl);
-  
-  // Remove trailing slashes from base URL
-  baseUrl = baseUrl.replace(/\/+$/, '');
-  
-  // Ensure we have the protocol
-  if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-    baseUrl = `https://${baseUrl}`;
-  }
-  
-  // Clean the endpoint - remove leading slashes
-  let cleanEndpoint = endpoint.replace(/^\/+/, '');
-  
-  // For Django, don't automatically add 'api/' if it's already there
-  if (!cleanEndpoint.startsWith('api/') && !cleanEndpoint.includes('api/')) {
-    cleanEndpoint = `api/${cleanEndpoint}`;
-  }
-  
-  const finalUrl = `${baseUrl}/${cleanEndpoint}`;
-  console.log(`Django API URL: ${finalUrl}`);
-  
-  return finalUrl;
-};
-
-// Export this to allow changing API URL at runtime
-export const getApiUrl = () => {
-  return API_CONFIG.baseUrl;
-};
-
-export const setApiUrl = (url: string) => {
-  const cleanUrl = url.trim().replace(/\/+$/, '');
-  API_CONFIG.baseUrl = cleanUrl;
-  localStorage.setItem('phoneShopApiUrl', cleanUrl);
-  console.log(`API URL updated to: ${cleanUrl}`);
-  return API_CONFIG.baseUrl;
-};
 
 export const toggleMockApiMode = (useMock: boolean) => {
   API_CONFIG.useMockApi = useMock;
@@ -84,20 +32,15 @@ export const toggleMockApiMode = (useMock: boolean) => {
 };
 
 export const handleApiError = (error: any) => {
-  console.error('Django API Error:', error);
+  console.error('API Error:', error);
   
   if (error.message?.includes('Failed to fetch')) {
-    console.log('Django connection error details:', { 
-      apiUrl: getApiUrl(),
-      error: error.message 
-    });
-    
-    toast.error('Unable to connect to Django backend', {
-      description: 'Make sure your Django server is running at ' + getApiUrl(),
+    toast.error('Unable to connect to backend', {
+      description: 'Using mock data instead',
       duration: 5000
     });
   } else {
-    toast.error('Django backend error occurred', {
+    toast.error('API error occurred', {
       description: error.message || 'Unknown error',
       duration: 5000
     });
@@ -108,9 +51,9 @@ export const handleApiError = (error: any) => {
 
 export const getAuthHeader = () => {
   const token = localStorage.getItem('authToken');
-  // Only add auth header for real tokens
+  // Only add auth header for real Supabase tokens
   if (token && token !== 'mock-token' && token !== 'employee-token') {
-    return { 'Authorization': `Token ${token}` };
+    return { 'Authorization': `Bearer ${token}` };
   }
   return {};
 };

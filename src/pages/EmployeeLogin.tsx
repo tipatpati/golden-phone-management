@@ -35,7 +35,7 @@ export default function EmployeeLogin() {
     
     try {
       if (useMockApi) {
-        // Use the Django/mock auth service for employees
+        // Use mock auth service for employees
         await authApi.login(email, password);
         localStorage.setItem('userRole', selectedRole);
       } else {

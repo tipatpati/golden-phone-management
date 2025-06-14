@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Auth status check triggered');
   };
 
-  // Check for mock/Django auth on initialization
+  // Check for mock auth on initialization
   useEffect(() => {
     const checkMockAuth = () => {
       const token = localStorage.getItem('authToken');
@@ -167,9 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Check if this should be a mock/Django login (employees) or Supabase login (admin)
+      // Check if this should be a mock login (employees) or Supabase login (admin)
       if (window.location.pathname === '/employee-login') {
-        // Use mock/Django auth for employees
+        // Use mock auth for employees
         const result = await authApi.login(email, password);
         
         // Create mock user for consistency
@@ -246,7 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Check if this is a mock auth session
       const token = localStorage.getItem('authToken');
-      if (token && (token.startsWith('mock-') || token.includes('employee'))) {
+      if (token && token.startsWith('mock-')) {
         // Use mock auth logout
         authApi.logout();
         setUser(null);

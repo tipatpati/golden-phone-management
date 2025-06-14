@@ -25,9 +25,9 @@ export function ConnectionStatus({
         <div className="flex items-start gap-2 flex-1 min-w-0">
           <WifiOff className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <AlertTitle className="text-sm sm:text-base">Problema di Connessione Backend</AlertTitle>
+            <AlertTitle className="text-sm sm:text-base">Backend Connection Issue</AlertTitle>
             <AlertDescription className="text-xs sm:text-sm">
-              Impossibile connettersi al server backend. Questo influenzerà l'aggiunta, l'aggiornamento e la visualizzazione dei prodotti.
+              Unable to connect to backend. This will affect adding, updating, and viewing products.
             </AlertDescription>
           </div>
         </div>
@@ -39,7 +39,7 @@ export function ConnectionStatus({
             className="flex-1 sm:flex-none h-9 flex items-center justify-center gap-1"
           >
             <Settings className="h-4 w-4" />
-            <span className="text-xs sm:text-sm">Impostazioni</span>
+            <span className="text-xs sm:text-sm">Settings</span>
           </Button>
           <Button 
             size="sm" 
