@@ -3,16 +3,18 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/sonner";
+import { UserRole } from "@/types/roles";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoggedIn: boolean;
-  userRole: string | null;
+  userRole: UserRole | null;
   username: string | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, username?: string) => Promise<void>;
+  signup: (email: string, password: string, username?: string, role?: UserRole) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserRole: (role: UserRole) => Promise<void>;
   checkAuthStatus: () => void;
 }
 
@@ -21,11 +23,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [username, setUsername] = useState<string | null>(null);
 
   const checkAuthStatus = () => {
-    // This will be handled by the auth state change listener
     console.log('Auth status check triggered');
   };
 
@@ -43,11 +44,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (data) {
-        setUserRole(data.role);
+        setUserRole(data.role as UserRole);
         setUsername(data.username);
+        // Also update localStorage for backwards compatibility
+        localStorage.setItem('userRole', data.role);
+        if (data.username) {
+          localStorage.setItem('userId', data.username);
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const updateUserRole = async (role: UserRole) => {
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role })
+        .eq('id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setUserRole(role);
+      localStorage.setItem('userRole', role);
+      toast.success(`Role updated to ${role}`);
+    } catch (error: any) {
+      console.error('Error updating user role:', error);
+      toast.error('Failed to update role', {
+        description: error.message
+      });
+      throw error;
     }
   };
 
@@ -72,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, username?: string) => {
+  const signup = async (email: string, password: string, username?: string, role: UserRole = 'salesperson') => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -83,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           emailRedirectTo: redirectUrl,
           data: {
             username: username || email.split('@')[0],
+            role: role,
           }
         }
       });
@@ -111,6 +145,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         throw error;
       }
+      
+      // Clear localStorage
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('authToken');
+      
       toast.success('Logged out successfully');
     } catch (error: any) {
       console.error('Logout failed:', error);
@@ -136,6 +176,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUserRole(null);
           setUsername(null);
+          // Clear localStorage on logout
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('authToken');
         }
       }
     );
@@ -165,7 +209,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       username, 
       login,
       signup, 
-      logout, 
+      logout,
+      updateUserRole,
       checkAuthStatus 
     }}>
       {children}

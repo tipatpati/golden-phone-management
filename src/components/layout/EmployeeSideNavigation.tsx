@@ -66,7 +66,7 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, username } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -139,11 +139,11 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                   <span className="text-primary-foreground text-sm font-medium">
-                    {localStorage.getItem('userId')?.charAt(0).toUpperCase()}
+                    {username?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{localStorage.getItem('userId')}</p>
+                  <p className="text-sm font-medium">{username || 'User'}</p>
                   <p className="text-xs text-muted-foreground">{config.name}</p>
                 </div>
               </div>

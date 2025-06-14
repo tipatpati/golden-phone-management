@@ -17,12 +17,13 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/roles";
 
 type NavItem = {
   title: string;
   href: string;
   icon: React.ElementType;
-  permission: string[];
+  permission: UserRole[];
 };
 
 const navItems: NavItem[] = [
@@ -30,7 +31,7 @@ const navItems: NavItem[] = [
     title: "Dashboard",
     href: "/",
     icon: LayoutGrid,
-    permission: ["salesperson", "manager", "admin"],
+    permission: ["salesperson", "manager", "inventory_manager", "admin"],
   },
   {
     title: "Vendite",
@@ -48,7 +49,7 @@ const navItems: NavItem[] = [
     title: "Inventario",
     href: "/inventory",
     icon: PackageSearch,
-    permission: ["manager", "admin"],
+    permission: ["manager", "inventory_manager", "admin"],
   },
   {
     title: "Riparazioni",
@@ -74,17 +75,14 @@ export function SideNavigation() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth();
-
-  // For demo purposes, simulate a logged-in admin user
-  const userRole = "admin";
+  const { logout, userRole, username } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   const filteredNavItems = navItems.filter((item) =>
-    item.permission.includes(userRole)
+    userRole && item.permission.includes(userRole)
   );
 
   return (
@@ -142,11 +140,13 @@ export function SideNavigation() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground text-sm font-medium">P</span>
+                  <span className="text-primary-foreground text-sm font-medium">
+                    {username?.charAt(0).toUpperCase() || 'U'}
+                  </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Proprietario</p>
-                  <p className="text-xs text-muted-foreground">admin@goldenphone.com</p>
+                  <p className="text-sm font-medium">{username || 'User'}</p>
+                  <p className="text-xs text-muted-foreground">{userRole || 'Unknown'}</p>
                 </div>
               </div>
               <Button 

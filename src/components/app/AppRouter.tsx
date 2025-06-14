@@ -5,7 +5,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { EmployeeDashboard } from "@/pages/employee/EmployeeDashboard";
-import { UserRole } from "@/types/roles";
+import { useAuth } from "@/contexts/AuthContext";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import Sales from "@/pages/Sales";
@@ -14,11 +14,18 @@ import Repairs from "@/pages/Repairs";
 import ApiSettings from "@/pages/ApiSettings";
 import NotFound from "@/pages/NotFound";
 
-interface AppRouterProps {
-  userRole: UserRole;
-}
+export function AppRouter() {
+  const { userRole } = useAuth();
 
-export function AppRouter({ userRole }: AppRouterProps) {
+  // If no role is determined yet, show loading
+  if (!userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   // Admin gets the full interface
   if (userRole === 'admin') {
     return (

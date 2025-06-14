@@ -5,9 +5,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
 import { LogIn, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -17,6 +19,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("salesperson");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
@@ -54,7 +57,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     setIsLoading(true);
     
     try {
-      await signup(email, password, username);
+      await signup(email, password, username, selectedRole);
       // After successful signup, switch to login tab
       setActiveTab("login");
       setPassword(""); // Clear password for security
@@ -182,6 +185,25 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="role-select">Role</Label>
+                  <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(ROLE_CONFIGS).map(([key, config]) => (
+                        <SelectItem key={key} value={key}>
+                          {config.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {ROLE_CONFIGS[selectedRole].description}
+                  </p>
                 </div>
               </CardContent>
               
