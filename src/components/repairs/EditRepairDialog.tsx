@@ -16,19 +16,32 @@ interface EditRepairDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type FormData = {
+  client_id: string;
+  technician_id: string;
+  device: string;
+  imei: string;
+  issue: string;
+  status: 'quoted' | 'in_progress' | 'awaiting_parts' | 'completed' | 'cancelled';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  estimated_completion_date: string;
+  cost: number;
+  notes: string;
+};
+
 export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({ 
   repair, 
   open, 
   onOpenChange 
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     client_id: "",
     technician_id: "",
     device: "",
     imei: "",
     issue: "",
-    status: "quoted" as const,
-    priority: "normal" as const,
+    status: "quoted",
+    priority: "normal",
     estimated_completion_date: "",
     cost: 0,
     notes: ""
@@ -177,7 +190,7 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">Stato</Label>
-              <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
+              <Select value={formData.status} onValueChange={(value: FormData['status']) => setFormData({...formData, status: value})}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -193,7 +206,7 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="priority">Priorità</Label>
-              <Select value={formData.priority} onValueChange={(value: any) => setFormData({...formData, priority: value})}>
+              <Select value={formData.priority} onValueChange={(value: FormData['priority']) => setFormData({...formData, priority: value})}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
