@@ -5,6 +5,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
 import { authApi } from "@/services/auth";
+import { secureStorage } from "@/services/secureStorage";
+import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 interface AuthContextType {
   user: User | null;
@@ -35,9 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check for mock auth on initialization
   useEffect(() => {
     const checkMockAuth = () => {
-      const token = localStorage.getItem('authToken');
-      const storedRole = localStorage.getItem('userRole') as UserRole;
-      const storedUserId = localStorage.getItem('userId');
+      const token = secureStorage.getItem('authToken', true);
+      const storedRole = secureStorage.getItem('userRole', false) as UserRole;
+      const storedUserId = secureStorage.getItem('userId', false);
       
       if (token && storedRole && storedUserId) {
         console.log('Found existing mock auth session');
@@ -167,21 +169,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email);
+      const sanitizedPassword = sanitizeInput(password);
+      
+      if (!sanitizedEmail || !sanitizedPassword) {
+        toast.error('Invalid email or password format');
+        throw new Error('Invalid credentials format');
+      }
+      
       // Check if this should be a mock login (employees) or Supabase login (admin)
       if (window.location.pathname === '/employee-login') {
         // Use mock auth for employees
-        const result = await authApi.login(email, password);
+        const result = await authApi.login(sanitizedEmail, sanitizedPassword);
         
         // Create mock user for consistency
         const mockUser = {
-          id: email,
-          email: email,
+          id: sanitizedEmail,
+          email: sanitizedEmail,
         } as User;
         
         setUser(mockUser);
-        setUsername(email);
+        setUsername(sanitizedEmail);
         // Role should be set by the login component
-        const storedRole = localStorage.getItem('userRole') as UserRole;
+        const storedRole = secureStorage.getItem('userRole', false) as UserRole;
         setUserRole(storedRole || 'salesperson');
         
         toast.success('Successfully logged in');
@@ -196,8 +207,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Use Supabase auth for admin
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
       });
       
       if (error) {
@@ -222,15 +233,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (email: string, password: string, username?: string, role: UserRole = 'salesperson') => {
     try {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email);
+      const sanitizedPassword = sanitizeInput(password);
+      const sanitizedUsername = username ? sanitizeInput(username) : sanitizedEmail.split('@')[0];
+      
+      if (!sanitizedEmail || !sanitizedPassword) {
+        toast.error('Invalid email or password format');
+        throw new Error('Invalid credentials format');
+      }
+      
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            username: username || email.split('@')[0],
+            username: sanitizedUsername,
             role: role,
           }
         }
@@ -261,7 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       // Check if this is a mock auth session
-      const token = localStorage.getItem('authToken');
+      const token = secureStorage.getItem('authToken', true);
       if (token && token.startsWith('mock-')) {
         // Use mock auth logout
         authApi.logout();

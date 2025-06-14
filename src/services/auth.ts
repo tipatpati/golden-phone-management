@@ -1,13 +1,25 @@
 
 import { toast } from '@/components/ui/sonner';
 import { getMockApiConfig } from './config';
+import { secureStorage } from './secureStorage';
+import { sanitizeInput, sanitizeEmail } from '@/utils/inputSanitizer';
 
 // Auth API methods for Supabase and mock mode only
 export const authApi = {
   // Updated login method to handle mock mode only (no Django)
   async login(username: string, password: string) {
     console.log('authApi.login: Starting authentication...');
-    console.log('authApi.login: Username:', username);
+    
+    // Sanitize inputs
+    const sanitizedUsername = sanitizeEmail(username) || sanitizeInput(username);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!sanitizedUsername || !sanitizedPassword) {
+      toast.error('Invalid credentials provided');
+      throw new Error('Invalid credentials');
+    }
+    
+    console.log('authApi.login: Username:', sanitizedUsername);
     
     // Check if we're in mock mode
     const useMockApi = getMockApiConfig();
@@ -16,7 +28,7 @@ export const authApi = {
       console.log('authApi.login: Using mock authentication');
       
       // Simple mock validation - accept any non-empty credentials
-      if (!username || !password) {
+      if (!sanitizedUsername || !sanitizedPassword) {
         toast.error('Please enter both username and password');
         throw new Error('Username and password required');
       }
@@ -29,14 +41,15 @@ export const authApi = {
       const mockResponse = {
         token: mockToken,
         user: {
-          username: username,
+          username: sanitizedUsername,
           role: 'admin' // Default to admin in mock mode
         }
       };
       
-      localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('userId', username);
-      localStorage.setItem('userRole', 'admin');
+      // Use secure storage for sensitive data
+      secureStorage.setItem('authToken', mockToken, true);
+      secureStorage.setItem('userId', sanitizedUsername, false);
+      secureStorage.setItem('userRole', 'admin', false);
       
       toast.success('Mock login successful!', {
         description: 'You are now logged in with mock data'
@@ -53,15 +66,15 @@ export const authApi = {
   
   // Updated logout method
   logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userRole');
+    secureStorage.removeItem('authToken');
+    secureStorage.removeItem('userId');
+    secureStorage.removeItem('userRole');
     toast.success('Logged out successfully');
   },
   
   // Check if user is logged in with real or mock token
   isLoggedIn() {
-    const token = localStorage.getItem('authToken');
+    const token = secureStorage.getItem('authToken', true);
     return !!token;
   }
 };

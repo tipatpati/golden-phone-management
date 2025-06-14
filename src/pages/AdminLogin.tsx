@@ -8,6 +8,7 @@ import { Eye, EyeOff, Crown, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
+import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -20,15 +21,25 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Please provide valid email and password");
+      return;
+    }
+    
+    // Basic password strength check
+    if (sanitizedPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await login(email, password);
+      await login(sanitizedEmail, sanitizedPassword);
       // The auth context will handle routing based on user role
     } catch (error) {
       // Error is already shown by the auth service
@@ -74,9 +85,10 @@ export default function AdminLogin() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                   placeholder="Enter your admin email"
                   className="h-11 focus-visible:ring-yellow-400"
+                  maxLength={254}
                   required
                 />
               </div>
@@ -93,6 +105,8 @@ export default function AdminLogin() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     className="h-11 pr-10 focus-visible:ring-yellow-400"
+                    maxLength={128}
+                    minLength={6}
                     required
                   />
                   <Button

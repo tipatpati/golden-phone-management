@@ -12,6 +12,8 @@ import { toast } from "@/components/ui/sonner";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { authApi } from "@/services/auth";
 import { getMockApiConfig } from "@/services/config";
+import { secureStorage } from "@/services/secureStorage";
+import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 export default function EmployeeLogin() {
   const [email, setEmail] = useState("");
@@ -26,8 +28,12 @@ export default function EmployeeLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email) || sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Please provide valid credentials");
       return;
     }
     
@@ -36,11 +42,11 @@ export default function EmployeeLogin() {
     try {
       if (useMockApi) {
         // Use mock auth service for employees
-        await authApi.login(email, password);
-        localStorage.setItem('userRole', selectedRole);
+        await authApi.login(sanitizedEmail, sanitizedPassword);
+        secureStorage.setItem('userRole', selectedRole, false);
       } else {
         // Use Supabase auth for real authentication
-        await login(email, password);
+        await login(sanitizedEmail, sanitizedPassword);
       }
     } catch (error) {
       // Error is already shown by the auth service
@@ -94,9 +100,10 @@ export default function EmployeeLogin() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                   placeholder={useMockApi ? "Enter any email" : "Enter your email"}
                   className="h-11 focus-visible:ring-blue-400"
+                  maxLength={254}
                   required
                 />
               </div>
@@ -113,6 +120,7 @@ export default function EmployeeLogin() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={useMockApi ? "Enter any password" : "Enter your password"}
                     className="h-11 pr-10 focus-visible:ring-blue-400"
+                    maxLength={128}
                     required
                   />
                   <Button

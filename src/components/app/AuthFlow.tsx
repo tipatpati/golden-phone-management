@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { RoleSelector } from "@/components/auth/RoleSelector";
 import { UserRole } from "@/types/roles";
+import { secureStorage } from "@/services/secureStorage";
 
 interface AuthFlowProps {
   onAuthComplete: (role: UserRole) => void;
@@ -14,8 +15,8 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
 
   useEffect(() => {
     console.log('AuthFlow: Checking existing auth...');
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole') as UserRole;
+    const token = secureStorage.getItem('authToken', true);
+    const role = secureStorage.getItem('userRole', false) as UserRole;
     
     if (token && token !== 'mock-token' && token !== 'employee-token' && role) {
       console.log('AuthFlow: Found valid auth, role:', role);
@@ -25,9 +26,9 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
     } else {
       console.log('AuthFlow: No valid auth found');
       // Clear any invalid tokens
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
+      secureStorage.removeItem('authToken');
+      secureStorage.removeItem('userRole');
+      secureStorage.removeItem('userId');
     }
   }, [onAuthComplete]);
 

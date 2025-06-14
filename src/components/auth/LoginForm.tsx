@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { LogIn, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
+import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -29,15 +30,19 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Please provide valid email and password");
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await login(email, password);
+      await login(sanitizedEmail, sanitizedPassword);
       onLoginSuccess();
     } catch (error) {
       // Error is already shown by the auth service
@@ -49,15 +54,26 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    const sanitizedUsername = sanitizeInput(username);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Please provide valid email and password");
+      return;
+    }
+    
+    // Basic password strength check
+    if (sanitizedPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await signup(email, password, username, selectedRole);
+      await signup(sanitizedEmail, sanitizedPassword, sanitizedUsername, selectedRole);
       // After successful signup, switch to login tab
       setActiveTab("login");
       setPassword(""); // Clear password for security
@@ -96,8 +112,9 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                     placeholder="Enter your email"
+                    maxLength={254}
                     required
                   />
                 </div>
@@ -111,6 +128,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
+                      maxLength={128}
                       required
                     />
                     <Button
@@ -147,8 +165,9 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="signup-username"
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setUsername(sanitizeInput(e.target.value))}
                     placeholder="Enter a username"
+                    maxLength={50}
                   />
                 </div>
                 
@@ -158,8 +177,9 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="signup-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                     placeholder="Enter your email"
+                    maxLength={254}
                     required
                   />
                 </div>
@@ -172,7 +192,9 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password"
+                      placeholder="Create a password (min 6 characters)"
+                      maxLength={128}
+                      minLength={6}
                       required
                     />
                     <Button

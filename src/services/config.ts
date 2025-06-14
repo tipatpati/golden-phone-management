@@ -1,5 +1,6 @@
 
 import { toast } from '@/components/ui/sonner';
+import { secureStorage } from './secureStorage';
 
 // API configuration for mock mode only
 const API_CONFIG = {
@@ -9,14 +10,14 @@ const API_CONFIG = {
 
 // Initialize from localStorage if previously set
 const initializeApiConfig = () => {
-  const storedMockMode = localStorage.getItem('phoneShopUseMockApi');
+  const storedMockMode = secureStorage.getItem('phoneShopUseMockApi', false);
   
   if (storedMockMode === 'false') {
     API_CONFIG.useMockApi = false;
-    console.log('Loaded mock API mode from localStorage:', API_CONFIG.useMockApi);
+    console.log('Loaded mock API mode from secure storage:', API_CONFIG.useMockApi);
   } else {
     // Default to mock mode
-    localStorage.setItem('phoneShopUseMockApi', 'true');
+    secureStorage.setItem('phoneShopUseMockApi', 'true', false);
     API_CONFIG.useMockApi = true;
   }
 };
@@ -26,7 +27,7 @@ initializeApiConfig();
 
 export const toggleMockApiMode = (useMock: boolean) => {
   API_CONFIG.useMockApi = useMock;
-  localStorage.setItem('phoneShopUseMockApi', useMock ? 'true' : 'false');
+  secureStorage.setItem('phoneShopUseMockApi', useMock ? 'true' : 'false', false);
   console.log(`Mock API mode set to: ${useMock}`);
   return API_CONFIG.useMockApi;
 };
@@ -50,7 +51,7 @@ export const handleApiError = (error: any) => {
 };
 
 export const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken');
+  const token = secureStorage.getItem('authToken', true);
   // Only add auth header for real Supabase tokens
   if (token && token !== 'mock-token' && token !== 'employee-token') {
     return { 'Authorization': `Bearer ${token}` };
