@@ -161,6 +161,126 @@ export type Database = {
         }
         Relationships: []
       }
+      repair_parts: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          repair_id: string
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          repair_id: string
+          total_cost: number
+          unit_cost: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          repair_id?: string
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repair_parts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repair_parts_repair_id_fkey"
+            columns: ["repair_id"]
+            isOneToOne: false
+            referencedRelation: "repairs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repairs: {
+        Row: {
+          actual_completion_date: string | null
+          client_id: string | null
+          cost: number
+          created_at: string
+          device: string
+          estimated_completion_date: string | null
+          id: string
+          imei: string | null
+          issue: string
+          labor_cost: number
+          notes: string | null
+          parts_cost: number
+          priority: string
+          repair_number: string
+          status: string
+          technician_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_completion_date?: string | null
+          client_id?: string | null
+          cost?: number
+          created_at?: string
+          device: string
+          estimated_completion_date?: string | null
+          id?: string
+          imei?: string | null
+          issue: string
+          labor_cost?: number
+          notes?: string | null
+          parts_cost?: number
+          priority?: string
+          repair_number: string
+          status?: string
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_completion_date?: string | null
+          client_id?: string | null
+          cost?: number
+          created_at?: string
+          device?: string
+          estimated_completion_date?: string | null
+          id?: string
+          imei?: string | null
+          issue?: string
+          labor_cost?: number
+          notes?: string | null
+          parts_cost?: number
+          priority?: string
+          repair_number?: string
+          status?: string
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repairs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repairs_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_items: {
         Row: {
           created_at: string
@@ -277,6 +397,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_repair_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_sale_number: {
         Args: Record<PropertyKey, never>
         Returns: string
