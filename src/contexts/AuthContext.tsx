@@ -42,23 +42,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error('Error fetching user profile:', error);
-        // If profile doesn't exist, create one with default role
+        // If profile doesn't exist, it will be created by the trigger
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating default profile');
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              id: userId,
-              role: 'salesperson',
-              username: user?.email?.split('@')[0] || 'user'
-            });
-          
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-          } else {
-            setUserRole('salesperson');
-            setUsername(user?.email?.split('@')[0] || 'user');
-          }
+          console.log('Profile not found, should be created by trigger');
+          // Set default values temporarily
+          setUserRole('salesperson');
+          setUsername(user?.email?.split('@')[0] || 'user');
         }
         return;
       }
@@ -67,11 +56,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('User profile fetched:', data);
         setUserRole(data.role as UserRole);
         setUsername(data.username);
-        // Also update localStorage for backwards compatibility
-        localStorage.setItem('userRole', data.role);
-        if (data.username) {
-          localStorage.setItem('userId', data.username);
-        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -96,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUserRole(role);
-      localStorage.setItem('userRole', role);
       toast.success(`Role updated to ${role}`);
     } catch (error: any) {
       console.error('Error updating user role:', error);
@@ -169,11 +152,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
       
-      // Clear localStorage
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('authToken');
-      
       toast.success('Logged out successfully');
     } catch (error: any) {
       console.error('Logout failed:', error);
@@ -207,10 +185,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserRole(null);
           setUsername(null);
           setIsInitialized(true);
-          // Clear localStorage on logout
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('authToken');
         }
       }
     );

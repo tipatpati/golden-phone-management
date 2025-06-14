@@ -1,5 +1,9 @@
 
-export type UserRole = 'admin' | 'manager' | 'inventory_manager' | 'salesperson';
+// Import the Database type to get the exact enum values from Supabase
+import { Database } from "@/integrations/supabase/types";
+
+// Use the exact enum type from Supabase
+export type UserRole = Database['public']['Enums']['app_role'];
 
 export interface RoleConfig {
   name: string;

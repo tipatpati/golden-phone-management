@@ -80,9 +80,9 @@ export function RoleManagement() {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(ROLE_CONFIGS).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.name}
+                  {(Object.keys(ROLE_CONFIGS) as UserRole[]).map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {ROLE_CONFIGS[role].name}
                     </SelectItem>
                   ))}
                 </SelectContent>
