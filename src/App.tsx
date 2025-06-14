@@ -26,12 +26,10 @@ function AppContent() {
   return <AppRouter />;
 }
 
-function App() {
+export default function App() {
   return (
     <AppProviders includeAuth>
       <AppContent />
     </AppProviders>
   );
 }
-
-export default App;

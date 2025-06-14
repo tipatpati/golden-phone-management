@@ -6,7 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-// Create a client
+interface AppProvidersProps {
+  children: React.ReactNode;
+  includeAuth?: boolean;
+}
+
+// Create a single QueryClient instance outside the component to avoid recreation
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -16,28 +21,21 @@ const queryClient = new QueryClient({
   },
 });
 
-interface AppProvidersProps {
-  children: React.ReactNode;
-  includeAuth?: boolean;
-}
-
 export function AppProviders({ children, includeAuth = false }: AppProvidersProps) {
+  const content = includeAuth ? (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  ) : (
+    children
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {includeAuth ? (
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            {children}
-          </AuthProvider>
-        ) : (
-          <>
-            <Toaster />
-            <Sonner />
-            {children}
-          </>
-        )}
+        {content}
+        <Toaster />
+        <Sonner />
       </TooltipProvider>
     </QueryClientProvider>
   );
