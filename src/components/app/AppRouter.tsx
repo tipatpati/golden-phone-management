@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -33,8 +33,12 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/employee-login" element={<EmployeeLogin />} />
+        <Route path="/admin-login" element={
+          isLoggedIn ? <Navigate to="/" replace /> : <AdminLogin />
+        } />
+        <Route path="/employee-login" element={
+          isLoggedIn ? <Navigate to="/" replace /> : <EmployeeLogin />
+        } />
         <Route path="/api-settings" element={<ApiSettings />} />
         
         {/* Show index page if user is not authenticated */}

@@ -185,6 +185,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserRole(storedRole || 'salesperson');
         
         toast.success('Successfully logged in');
+        
+        // Redirect to main dashboard after successful employee login
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+        
         return;
       }
       
@@ -199,6 +205,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       toast.success('Successfully logged in');
+      
+      // Redirect to admin dashboard after successful login
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+      
     } catch (error: any) {
       console.error('Login failed:', error);
       toast.error('Login failed', {
@@ -232,6 +244,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.success('Check your email for confirmation link');
       } else {
         toast.success('Account created successfully');
+        // Redirect to dashboard after successful signup
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
       }
     } catch (error: any) {
       console.error('Signup failed:', error);
@@ -253,6 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
         setUserRole(null);
         setUsername(null);
+        // Redirect to home page after logout
+        window.location.href = '/';
         return;
       }
       
@@ -263,6 +281,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       toast.success('Logged out successfully');
+      // Redirect to home page after logout
+      window.location.href = '/';
     } catch (error: any) {
       console.error('Logout failed:', error);
       toast.error('Logout failed', {
