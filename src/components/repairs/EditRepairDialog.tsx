@@ -37,7 +37,7 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Modifica Riparazione - {repair.id}
+            Modifica Riparazione - {repair.repairNumber || repair.id}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">

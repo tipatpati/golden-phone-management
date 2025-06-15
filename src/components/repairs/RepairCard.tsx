@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,8 @@ import { RepairDetailsDialog } from "./RepairDetailsDialog";
 import { EditRepairDialog } from "./EditRepairDialog";
 
 export type Repair = {
-  id: string;
+  id: string; // This is now the actual database UUID
+  repairNumber?: string; // Add repair number as separate field
   clientName: string;
   device: string;
   imei: string;
@@ -87,7 +89,7 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <h3 className="font-semibold text-lg">{repair.id}</h3>
+              <h3 className="font-semibold text-lg">{repair.repairNumber || repair.id}</h3>
               <div className="flex gap-2">
                 <Badge className={getStatusColor(repair.status)}>
                   {getStatusText(repair.status)}

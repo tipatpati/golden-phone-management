@@ -16,7 +16,8 @@ const Repairs = () => {
 
   // Convert database repairs to match the expected format
   const formattedRepairs = repairs.map(repair => ({
-    id: repair.repair_number,
+    id: repair.id, // Use the actual database UUID, not repair_number
+    repairNumber: repair.repair_number, // Add repair number separately
     clientName: repair.client 
       ? (repair.client.type === 'business' 
           ? repair.client.company_name || 'Unnamed Business'
