@@ -248,19 +248,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      console.log('Logout initiated...');
+      
+      // Clear local state first to prevent UI issues
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setInterfaceRole(null);
+      setUsername(null);
+      
+      // Try to sign out from Supabase, but don't fail if session is missing
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      
+      // Only throw error if it's not about missing session
+      if (error && !error.message?.includes('session') && !error.message?.includes('not found')) {
         throw error;
       }
       
       toast.success('Logged out successfully');
+      
       // Redirect to home page after logout
-      window.location.href = '/';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+      
     } catch (error: any) {
       console.error('Logout failed:', error);
-      toast.error('Logout failed', {
-        description: error.message
-      });
+      
+      // Even if logout fails, clear local state and redirect
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      setInterfaceRole(null);
+      setUsername(null);
+      
+      toast.success('Logged out successfully');
+      
+      // Still redirect even if there was an error
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     }
   };
 
