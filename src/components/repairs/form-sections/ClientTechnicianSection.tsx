@@ -2,6 +2,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ClientSearchBar } from "../ClientSearchBar";
 import { type RepairFormData } from "../types";
 
 interface ClientTechnicianSectionProps {
@@ -19,23 +20,23 @@ export const ClientTechnicianSection: React.FC<ClientTechnicianSectionProps> = (
   technicians,
   getClientDisplayName
 }) => {
+  const selectedClient = clients.find(c => c.id === formData.client_id);
+
+  const handleClientSelect = (client: any) => {
+    setFormData({ ...formData, client_id: client.id });
+  };
+
+  const handleClientClear = () => {
+    setFormData({ ...formData, client_id: "" });
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
-        <Label htmlFor="client">Cliente</Label>
-        <Select value={formData.client_id} onValueChange={(value) => setFormData({...formData, client_id: value})}>
-          <SelectTrigger>
-            <SelectValue placeholder="Seleziona cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {getClientDisplayName(client)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <ClientSearchBar
+        selectedClient={selectedClient}
+        onClientSelect={handleClientSelect}
+        onClientClear={handleClientClear}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="technician">Tecnico</Label>
