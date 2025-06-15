@@ -14,8 +14,8 @@ interface EditSaleDialogProps {
 
 export function EditSaleDialog({ sale }: EditSaleDialogProps) {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<"completed" | "pending" | "cancelled" | "refunded">(sale.status as "completed" | "pending" | "cancelled" | "refunded");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "bank_transfer" | "other">(sale.payment_method as "cash" | "card" | "bank_transfer" | "other");
+  const [status, setStatus] = useState(sale.status);
+  const [paymentMethod, setPaymentMethod] = useState(sale.payment_method);
   const [notes, setNotes] = useState(sale.notes || "");
 
   const updateSale = useUpdateSale();
@@ -53,7 +53,7 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select value={status} onValueChange={(value: "completed" | "pending" | "cancelled" | "refunded") => setStatus(value)}>
+            <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -68,7 +68,7 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
 
           <div className="space-y-2">
             <Label>Payment Method</Label>
-            <Select value={paymentMethod} onValueChange={(value: "cash" | "card" | "bank_transfer" | "other") => setPaymentMethod(value)}>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

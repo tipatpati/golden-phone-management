@@ -6,8 +6,8 @@ export type Sale = {
   sale_number: string;
   client_id?: string;
   salesperson_id: string;
-  status: 'completed' | 'pending' | 'cancelled' | 'refunded';
-  payment_method: 'cash' | 'card' | 'bank_transfer' | 'other';
+  status: string; // Changed from union type to string to match database
+  payment_method: string; // Changed from union type to string to match database
   subtotal: number;
   tax_amount: number;
   total_amount: number;
