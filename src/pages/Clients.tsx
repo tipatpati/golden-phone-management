@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,14 +8,21 @@ import { Input } from "@/components/ui/input";
 import { NewClientDialog } from "@/components/clients/NewClientDialog";
 import { EditClientDialog } from "@/components/clients/EditClientDialog";
 import { DeleteClientDialog } from "@/components/clients/DeleteClientDialog";
-import { useClients } from "@/services/useClients";
+import { useClients, type Client } from "@/services/useClients";
 import { format } from "date-fns";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: clients = [], isLoading, error } = useClients(searchTerm);
+  const { data: clientsData = [], isLoading, error } = useClients(searchTerm);
 
-  const getClientDisplayName = (client: any) => {
+  // Type assertion to ensure the data conforms to our Client type
+  const clients: Client[] = clientsData.map(client => ({
+    ...client,
+    type: client.type as 'individual' | 'business',
+    status: client.status as 'active' | 'inactive'
+  }));
+
+  const getClientDisplayName = (client: Client) => {
     return client.type === "business" 
       ? client.company_name 
       : `${client.first_name} ${client.last_name}`;
