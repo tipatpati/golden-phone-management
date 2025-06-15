@@ -33,7 +33,7 @@ export type Sale = {
 
 export type SaleItem = {
   id: string;
-  sale_id: string;
+  sale_id?: string; // Made optional since it's not always needed when nested in Sale
   product_id: string;
   quantity: number;
   unit_price: number;
