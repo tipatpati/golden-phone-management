@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -19,6 +18,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/roles";
+import { Logo } from "@/components/shared/Logo";
 
 type NavItem = {
   title: string;
@@ -115,7 +115,7 @@ export function SideNavigation() {
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-center border-b border-border">
-            <h1 className="text-xl font-bold text-primary">GOLDEN PHONE</h1>
+            <Logo size={128} className="mx-auto max-h-12 max-w-[140px]" />
           </div>
 
           <nav className="flex-1 overflow-y-auto p-4">

@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Settings, Users, TrendingUp, Crown, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Logo } from "@/components/shared/Logo";
 
 const Index = () => {
   const features = [
@@ -41,9 +41,9 @@ const Index = () => {
         <div className="pt-16 pb-20 text-center">
           <div className="space-y-8">
             <div className="space-y-6">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent leading-tight">
-                GOLDEN PHONE
-              </h1>
+              <div className="flex justify-center mb-2">
+                <Logo size={320} className="mx-auto w-full max-w-xs md:max-w-lg h-auto" />
+              </div>
               <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
                 Complete management solution for your mobile repair business. 
                 Track sales, manage repairs, control inventory, and maintain customer relationships.
