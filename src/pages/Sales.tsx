@@ -1,11 +1,13 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Receipt, Edit, Trash2, TrendingUp, DollarSign } from "lucide-react";
+import { Search, Filter, TrendingUp, DollarSign, Receipt, Edit, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NewSaleDialog } from "@/components/sales/NewSaleDialog";
+import { EditSaleDialog } from "@/components/sales/EditSaleDialog";
+import { DeleteSaleDialog } from "@/components/sales/DeleteSaleDialog";
+import { SaleReceiptDialog } from "@/components/sales/SaleReceiptDialog";
 import { useSales } from "@/services/useSales";
 import { format } from "date-fns";
 
@@ -104,7 +106,7 @@ const Sales = () => {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-green-700 uppercase tracking-wider">Total Sales</CardTitle>
               <div className="rounded-xl bg-gradient-to-br from-green-500 to-green-600 p-3 shadow-lg">
-                <Receipt className="h-5 w-5 text-white" />
+                <DollarSign className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -200,21 +202,15 @@ const Sales = () => {
                     </div>
                   </div>
 
-                  {/* Status & Actions */}
+                  {/* Status & Actions - Updated with functional buttons */}
                   <div className="xl:col-span-1 flex flex-col sm:flex-row xl:flex-col items-start sm:items-center xl:items-end gap-3">
                     <Badge variant={getStatusColor(sale.status)} className="text-xs font-semibold px-3 py-1">
                       {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
                     </Badge>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                        <Receipt className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <SaleReceiptDialog sale={sale} />
+                      <EditSaleDialog sale={sale} />
+                      <DeleteSaleDialog sale={sale} />
                     </div>
                   </div>
                 </div>
