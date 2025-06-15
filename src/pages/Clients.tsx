@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Building, User, Phone, Mail, Edit, Trash2, Users, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NewClientDialog } from "@/components/clients/NewClientDialog";
+import { EditClientDialog } from "@/components/clients/EditClientDialog";
+import { DeleteClientDialog } from "@/components/clients/DeleteClientDialog";
 import { useClients } from "@/services/useClients";
 import { format } from "date-fns";
 
@@ -190,12 +191,8 @@ const Clients = () => {
                   {/* Actions */}
                   <div className="lg:col-span-1">
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <EditClientDialog client={client} />
+                      <DeleteClientDialog client={client} />
                     </div>
                   </div>
                 </div>
