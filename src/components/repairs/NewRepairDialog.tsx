@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus } from "lucide-react";
 import { useCreateRepair, useTechnicians } from "@/services/useRepairs";
 import { useClients } from "@/services/useClients";
+import { ClientSearchBar } from "./ClientSearchBar";
 
 export const NewRepairDialog = () => {
   const [open, setOpen] = useState(false);
@@ -63,6 +63,16 @@ export const NewRepairDialog = () => {
     return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client';
   };
 
+  const selectedClient = clients.find(c => c.id === formData.client_id);
+
+  const handleClientSelect = (client: any) => {
+    setFormData({ ...formData, client_id: client.id });
+  };
+
+  const handleClientClear = () => {
+    setFormData({ ...formData, client_id: "" });
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -77,21 +87,11 @@ export const NewRepairDialog = () => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="client">Cliente</Label>
-              <Select value={formData.client_id} onValueChange={(value) => setFormData({...formData, client_id: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona cliente (opzionale)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {getClientDisplayName(client)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <ClientSearchBar
+              selectedClient={selectedClient}
+              onClientSelect={handleClientSelect}
+              onClientClear={handleClientClear}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="technician">Tecnico</Label>
