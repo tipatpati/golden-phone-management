@@ -1,9 +1,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseSalesApi } from './supabaseSales';
+import { supabaseSalesApi } from './sales';
 import { toast } from '@/components/ui/sonner';
 
-export type { Sale, SaleItem } from './supabaseSales';
+export type { Sale, SaleItem } from './sales';
 
 export function useSales(searchTerm: string = '') {
   return useQuery({
