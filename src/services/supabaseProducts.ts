@@ -176,5 +176,44 @@ export const supabaseProductApi = {
     
     console.log('Categories fetched successfully:', data);
     return data || [];
+  },
+
+  async getProductRecommendations(productId: string) {
+    console.log('Fetching recommendations for product:', productId);
+    
+    const { data, error } = await supabase
+      .from('product_recommendations')
+      .select(`
+        id,
+        recommendation_type,
+        priority,
+        recommended_product:products!recommended_product_id(
+          id,
+          name,
+          sku,
+          price,
+          min_price,
+          max_price,
+          stock,
+          category:categories(id, name)
+        )
+      `)
+      .eq('product_id', productId)
+      .order('priority', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching recommendations:', error);
+      throw error;
+    }
+    
+    const transformedData = data?.map(rec => ({
+      ...rec.recommended_product,
+      category_name: rec.recommended_product?.category?.name,
+      recommendation_type: rec.recommendation_type,
+      priority: rec.priority
+    })) || [];
+    
+    console.log('Recommendations fetched successfully:', transformedData);
+    return transformedData;
   }
 };

@@ -82,3 +82,11 @@ export function useCategories() {
     queryFn: supabaseProductApi.getCategories,
   });
 }
+
+export function useProductRecommendations(productId: string) {
+  return useQuery({
+    queryKey: ['product-recommendations', productId],
+    queryFn: () => supabaseProductApi.getProductRecommendations(productId),
+    enabled: !!productId,
+  });
+}

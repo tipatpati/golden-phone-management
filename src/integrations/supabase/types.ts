@@ -142,6 +142,51 @@ export type Database = {
           },
         ]
       }
+      product_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          priority: number
+          product_id: string
+          recommendation_type: string
+          recommended_product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          priority?: number
+          product_id: string
+          recommendation_type?: string
+          recommended_product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          priority?: number
+          product_id?: string
+          recommendation_type?: string
+          recommended_product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_product_recommendations_product"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_product_recommendations_recommended"
+            columns: ["recommended_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null

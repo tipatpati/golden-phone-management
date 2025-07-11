@@ -10,6 +10,7 @@ import { useCreateSale } from "@/services/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientSelector } from "./ClientSelector";
 import { ProductSelector } from "./ProductSelector";
+import { ProductRecommendations } from "./ProductRecommendations";
 import { SaleItemsList } from "./SaleItemsList";
 import { SaleTotals } from "./SaleTotals";
 
@@ -176,6 +177,14 @@ export function NewSaleDialog() {
           />
 
           <ProductSelector onProductAdd={addProduct} />
+
+          {saleItems.length > 0 && (
+            <ProductRecommendations 
+              productId={saleItems[saleItems.length - 1].product_id}
+              onProductAdd={addProduct}
+              addedProductIds={saleItems.map(item => item.product_id)}
+            />
+          )}
 
           <SaleItemsList
             saleItems={saleItems}
