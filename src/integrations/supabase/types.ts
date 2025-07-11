@@ -504,6 +504,146 @@ export type Database = {
           },
         ]
       }
+      supplier_transaction_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          total_cost: number
+          transaction_id: string
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          total_cost: number
+          transaction_id: string
+          unit_cost: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          total_cost?: number
+          transaction_id?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_transaction_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_transaction_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          supplier_id: string
+          total_amount: number
+          transaction_date: string
+          transaction_number: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          supplier_id: string
+          total_amount?: number
+          transaction_date?: string
+          transaction_number: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          supplier_id?: string
+          total_amount?: number
+          transaction_date?: string
+          transaction_number?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_transactions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          credit_limit: number | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          phone: string | null
+          status: string
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -514,6 +654,10 @@ export type Database = {
         Returns: string
       }
       generate_sale_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_transaction_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

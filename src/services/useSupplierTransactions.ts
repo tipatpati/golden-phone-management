@@ -38,7 +38,7 @@ export function useSupplierTransactions() {
     queryKey: ["supplier-transactions"],
     queryFn: async () => {
       console.log("Fetching supplier transactions...");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("supplier_transactions")
         .select(`
           *,
@@ -63,16 +63,16 @@ export function useSupplierTransactions() {
       console.log("Creating supplier transaction:", transactionData);
       
       // Start a transaction
-      const { data: transaction, error: transactionError } = await supabase
+      const { data: transaction, error: transactionError } = await (supabase as any)
         .from("supplier_transactions")
-        .insert([{
+        .insert({
           supplier_id: transactionData.supplier_id,
           type: transactionData.type,
           total_amount: transactionData.total_amount,
           transaction_date: transactionData.transaction_date,
           notes: transactionData.notes,
           status: transactionData.status || "pending",
-        }])
+        })
         .select()
         .single();
 
@@ -90,14 +90,14 @@ export function useSupplierTransactions() {
         total_cost: item.quantity * item.unit_cost,
       }));
 
-      const { error: itemsError } = await supabase
+      const { error: itemsError } = await (supabase as any)
         .from("supplier_transaction_items")
         .insert(transactionItems);
 
       if (itemsError) {
         console.error("Error creating transaction items:", itemsError);
         // If items creation fails, we should delete the transaction
-        await supabase.from("supplier_transactions").delete().eq("id", transaction.id);
+        await (supabase as any).from("supplier_transactions").delete().eq("id", transaction.id);
         throw itemsError;
       }
 

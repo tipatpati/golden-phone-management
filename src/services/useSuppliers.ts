@@ -37,7 +37,7 @@ export function useSuppliers() {
     queryKey: ["suppliers"],
     queryFn: async () => {
       console.log("Fetching suppliers...");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("suppliers")
         .select("*")
         .order("name");
@@ -55,7 +55,7 @@ export function useSuppliers() {
   const createSupplier = useMutation({
     mutationFn: async (supplierData: CreateSupplierData) => {
       console.log("Creating supplier:", supplierData);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("suppliers")
         .insert([supplierData])
         .select()
@@ -77,7 +77,7 @@ export function useSuppliers() {
   const updateSupplier = useMutation({
     mutationFn: async ({ id, ...supplierData }: CreateSupplierData & { id: string }) => {
       console.log("Updating supplier:", id, supplierData);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("suppliers")
         .update(supplierData)
         .eq("id", id)
@@ -100,7 +100,7 @@ export function useSuppliers() {
   const deleteSupplier = useMutation({
     mutationFn: async (id: string) => {
       console.log("Deleting supplier:", id);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("suppliers")
         .delete()
         .eq("id", id);

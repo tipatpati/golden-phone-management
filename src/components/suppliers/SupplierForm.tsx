@@ -59,13 +59,36 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
   const onSubmit = async (data: SupplierFormData) => {
     try {
       if (supplier) {
-        await updateSupplier.mutateAsync({ id: supplier.id, ...data });
+        await updateSupplier.mutateAsync({ 
+          id: supplier.id, 
+          name: data.name,
+          contact_person: data.contact_person,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          tax_id: data.tax_id,
+          payment_terms: data.payment_terms,
+          credit_limit: data.credit_limit,
+          notes: data.notes,
+          status: data.status,
+        });
         toast({
           title: "Success",
           description: "Supplier updated successfully",
         });
       } else {
-        await createSupplier.mutateAsync(data);
+        await createSupplier.mutateAsync({
+          name: data.name,
+          contact_person: data.contact_person,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          tax_id: data.tax_id,
+          payment_terms: data.payment_terms,
+          credit_limit: data.credit_limit,
+          notes: data.notes,
+          status: data.status,
+        });
         toast({
           title: "Success",
           description: "Supplier created successfully",

@@ -93,8 +93,17 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
     try {
       const totalAmount = calculateTotal();
       await createTransaction.mutateAsync({
-        ...data,
+        supplier_id: data.supplier_id,
+        type: data.type,
+        transaction_date: data.transaction_date,
+        notes: data.notes,
+        status: data.status,
         total_amount: totalAmount,
+        items: data.items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_cost: item.unit_cost,
+        })),
       });
       toast({
         title: "Success",
