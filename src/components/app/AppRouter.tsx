@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
+import Suppliers from "@/pages/Suppliers";
 import Repairs from "@/pages/Repairs";
 import ApiSettings from "@/pages/ApiSettings";
 import EmployeeManagement from "@/pages/EmployeeManagement";
@@ -79,6 +80,13 @@ export function AppRouter() {
                     </MainLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/suppliers" element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Suppliers />
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/repairs" element={
                   <ProtectedRoute>
                     <MainLayout>
@@ -133,6 +141,11 @@ export function AppRouter() {
                 <Route path="/inventory" element={
                   <EmployeeLayout userRole={userRole || 'salesperson'}>
                     <Inventory />
+                  </EmployeeLayout>
+                } />
+                <Route path="/suppliers" element={
+                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                    <Suppliers />
                   </EmployeeLayout>
                 } />
                 <Route path="/repairs" element={

@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     permission: ["manager", "inventory_manager", "admin"],
   },
   {
+    title: "Fornitori",
+    href: "/suppliers",
+    icon: Users,
+    permission: ["manager", "inventory_manager", "admin"],
+  },
+  {
     title: "Riparazioni",
     href: "/repairs",
     icon: ClipboardList,
