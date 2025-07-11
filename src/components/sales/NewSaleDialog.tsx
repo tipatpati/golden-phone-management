@@ -18,6 +18,8 @@ type SaleItem = {
   product_name: string;
   quantity: number;
   unit_price: number;
+  min_price?: number;
+  max_price?: number;
   serial_number?: string;
 };
 
@@ -52,6 +54,8 @@ export function NewSaleDialog() {
           product_name: product.name,
           quantity: 1,
           unit_price: product.price,
+          min_price: product.min_price,
+          max_price: product.max_price,
         }
       ]);
     }
@@ -110,6 +114,18 @@ export function NewSaleDialog() {
     
     if (!isFormValid) {
       console.log('Form validation failed');
+      return;
+    }
+
+    // Validate that all prices are within allowed range
+    const invalidPriceItems = saleItems.filter(item => 
+      item.min_price && item.max_price && 
+      (item.unit_price < item.min_price || item.unit_price > item.max_price)
+    );
+    
+    if (invalidPriceItems.length > 0) {
+      const invalidNames = invalidPriceItems.map(item => item.product_name).join(', ');
+      alert(`The following items have prices outside the allowed range: ${invalidNames}`);
       return;
     }
 

@@ -14,6 +14,8 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [stock, setStock] = useState("1");
   const [threshold, setThreshold] = useState("5");
   const [description, setDescription] = useState("");
@@ -27,8 +29,23 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     e.preventDefault();
     
     // Validation
-    if (!name || !sku || !category || !price || !stock || !threshold) {
+    if (!name || !sku || !category || !price || !minPrice || !maxPrice || !stock || !threshold) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    // Validate price range
+    const priceNum = parseFloat(price);
+    const minPriceNum = parseFloat(minPrice);
+    const maxPriceNum = parseFloat(maxPrice);
+    
+    if (minPriceNum >= maxPriceNum) {
+      toast.error("Minimum price must be less than maximum price");
+      return;
+    }
+    
+    if (priceNum < minPriceNum || priceNum > maxPriceNum) {
+      toast.error("Base price must be between minimum and maximum selling prices");
       return;
     }
     
@@ -54,6 +71,8 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       sku,
       category_id: parseInt(category), // Use category_id instead of category
       price: parseFloat(price),
+      min_price: parseFloat(minPrice),
+      max_price: parseFloat(maxPrice),
       stock: parseInt(stock),
       threshold: parseInt(threshold),
       description,
@@ -100,6 +119,10 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
             setCategory={setCategory}
             price={price}
             setPrice={setPrice}
+            minPrice={minPrice}
+            setMinPrice={setMinPrice}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
             stock={stock}
             setStock={setStock}
             threshold={threshold}

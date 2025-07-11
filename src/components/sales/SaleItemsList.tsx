@@ -10,6 +10,8 @@ type SaleItem = {
   product_name: string;
   quantity: number;
   unit_price: number;
+  min_price?: number;
+  max_price?: number;
   serial_number?: string;
 };
 
@@ -61,12 +63,31 @@ export function SaleItemsList({
               </div>
               <div>
                 <Label className="text-xs">Unit Price</Label>
+                {item.min_price && item.max_price && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Range: ${item.min_price} - ${item.max_price}
+                  </div>
+                )}
                 <Input
                   type="number"
                   step="0.01"
+                  min={item.min_price || 0}
+                  max={item.max_price || undefined}
                   value={item.unit_price}
                   onChange={(e) => onPriceUpdate(item.product_id, parseFloat(e.target.value) || 0)}
+                  className={
+                    item.min_price && item.max_price && 
+                    (item.unit_price < item.min_price || item.unit_price > item.max_price)
+                      ? "border-red-500" 
+                      : ""
+                  }
                 />
+                {item.min_price && item.max_price && 
+                 (item.unit_price < item.min_price || item.unit_price > item.max_price) && (
+                  <div className="text-xs text-red-500 mt-1">
+                    Price must be between ${item.min_price} - ${item.max_price}
+                  </div>
+                )}
               </div>
               <div>
                 <Label className="text-xs">Serial Number</Label>

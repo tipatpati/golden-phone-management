@@ -40,7 +40,10 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
             >
               <div className="font-medium">{product.name}</div>
               <div className="text-sm text-muted-foreground">
-                SKU: {product.sku} • Stock: {product.stock} • ${product.price}
+                SKU: {product.sku} • Stock: {product.stock}
+              </div>
+              <div className="text-sm text-green-600 font-medium">
+                Selling Range: ${product.min_price} - ${product.max_price}
               </div>
             </div>
           ))}

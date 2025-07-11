@@ -13,6 +13,10 @@ interface ProductFormFieldsProps {
   setCategory: (value: string) => void;
   price: string;
   setPrice: (value: string) => void;
+  minPrice: string;
+  setMinPrice: (value: string) => void;
+  maxPrice: string;
+  setMaxPrice: (value: string) => void;
   stock: string;
   setStock: (value: string) => void;
   threshold: string;
@@ -41,6 +45,8 @@ export function ProductFormFields({
   sku, setSku,
   category, setCategory,
   price, setPrice,
+  minPrice, setMinPrice,
+  maxPrice, setMaxPrice,
   stock, setStock,
   threshold, setThreshold,
   description, setDescription,
@@ -93,7 +99,7 @@ export function ProductFormFields({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="product-price">Price (€) *</Label>
+          <Label htmlFor="product-price">Base Price (€) *</Label>
           <Input 
             id="product-price" 
             type="number" 
@@ -102,6 +108,34 @@ export function ProductFormFields({
             value={price} 
             onChange={(e) => setPrice(e.target.value)} 
             placeholder="899.99" 
+            required 
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-min-price">Minimum Selling Price (€) *</Label>
+          <Input 
+            id="product-min-price" 
+            type="number" 
+            step="0.01" 
+            min="0" 
+            value={minPrice} 
+            onChange={(e) => setMinPrice(e.target.value)} 
+            placeholder="799.99" 
+            required 
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-max-price">Maximum Selling Price (€) *</Label>
+          <Input 
+            id="product-max-price" 
+            type="number" 
+            step="0.01" 
+            min="0" 
+            value={maxPrice} 
+            onChange={(e) => setMaxPrice(e.target.value)} 
+            placeholder="999.99" 
             required 
           />
         </div>

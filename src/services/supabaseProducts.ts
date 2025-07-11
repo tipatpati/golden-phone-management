@@ -11,6 +11,8 @@ export type Product = {
   };
   category_name?: string; // Add this for compatibility
   price: number;
+  min_price: number;
+  max_price: number;
   stock: number;
   threshold: number;
   description?: string;
@@ -27,6 +29,8 @@ export type CreateProductData = {
   sku: string;
   category_id: number;
   price: number;
+  min_price: number;
+  max_price: number;
   stock: number;
   threshold: number;
   description?: string;

@@ -20,6 +20,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const [sku, setSku] = useState(product.sku || "");
   const [categoryId, setCategoryId] = useState(product.category_id?.toString() || "");
   const [price, setPrice] = useState(product.price?.toString() || "");
+  const [minPrice, setMinPrice] = useState(product.min_price?.toString() || "");
+  const [maxPrice, setMaxPrice] = useState(product.max_price?.toString() || "");
   const [stock, setStock] = useState(product.stock?.toString() || "");
   const [threshold, setThreshold] = useState(product.threshold?.toString() || "");
   const [description, setDescription] = useState(product.description || "");
@@ -40,6 +42,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         sku,
         category_id: parseInt(categoryId),
         price: parseFloat(price),
+        min_price: parseFloat(minPrice),
+        max_price: parseFloat(maxPrice),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
         description: description || undefined,
@@ -78,6 +82,10 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setCategory={setCategoryId}
               price={price}
               setPrice={setPrice}
+              minPrice={minPrice}
+              setMinPrice={setMinPrice}
+              maxPrice={maxPrice}
+              setMaxPrice={setMaxPrice}
               stock={stock}
               setStock={setStock}
               threshold={threshold}
