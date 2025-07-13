@@ -222,7 +222,7 @@
     font-size: 1rem;
     letter-spacing: 0.1em;
     font-weight: 400;
-    padding: 12px 24px;
+    padding: 10px 20px;
     transition: 0.5s;
     font-family: 'Poppins', sans-serif;
     border: none;
@@ -230,22 +230,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    min-height: 40px;
+    box-sizing: border-box;
   }
   
   /* Responsive sizing */
   @media (max-width: 640px) {
     .glow-button {
       font-size: 0.875rem;
-      padding: 10px 20px;
-      min-height: 40px;
+      padding: 8px 16px;
+      min-height: 36px;
     }
   }
   
   @media (min-width: 1024px) {
     .glow-button {
       font-size: 1.125rem;
-      padding: 14px 28px;
+      padding: 12px 24px;
+      min-height: 44px;
     }
   }
 
