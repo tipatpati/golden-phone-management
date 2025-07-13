@@ -232,7 +232,7 @@
   /* Standardized Button Styles */
   .glow-button {
     position: relative;
-    background: #fff;
+    background: hsl(var(--card));
     color: hsl(var(--foreground));
     text-decoration: none;
     text-transform: uppercase;
