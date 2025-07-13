@@ -213,6 +213,85 @@
     letter-spacing: 0.25em;
   }
 
+  /* Glowing Button Styles */
+  .glow-button {
+    position: relative;
+    background: #fff;
+    color: hsl(var(--background));
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    padding: 10px 30px;
+    transition: 0.5s;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .glow-button:hover {
+    background: var(--glow-color);
+    color: var(--glow-color);
+    letter-spacing: 0.25em;
+    box-shadow: 0 0 35px var(--glow-color);
+  }
+
+  .glow-button::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: hsl(var(--background));
+  }
+
+  .glow-button .button-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .glow-button .button-effects {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .glow-button .button-effects::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 80%;
+    width: 10px;
+    height: 4px;
+    background: hsl(var(--background));
+    transform: translateX(-50%) skewX(325deg);
+    transition: 0.5s;
+  }
+
+  .glow-button:hover .button-effects::before {
+    width: 20px;
+    left: 20%;
+  }
+
+  .glow-button .button-effects::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 10px;
+    height: 4px;
+    background: hsl(var(--background));
+    transform: translateX(-50%) skewX(325deg);
+    transition: 0.5s;
+  }
+
+  .glow-button:hover .button-effects::after {
+    width: 20px;
+    left: 80%;
+  }
+
   /* Consistent golden hover effects */
   .golden-hover {
     @apply hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800 transition-all duration-200;
