@@ -34,6 +34,23 @@
 
     --radius: 0.5rem;
 
+    /* Design System Tokens */
+    --spacing-xs: 0.25rem;    /* 4px */
+    --spacing-sm: 0.5rem;     /* 8px */
+    --spacing-md: 0.75rem;    /* 12px */
+    --spacing-lg: 1rem;       /* 16px */
+    --spacing-xl: 1.5rem;     /* 24px */
+    --spacing-2xl: 2rem;      /* 32px */
+    --spacing-3xl: 3rem;      /* 48px */
+
+    --font-size-xs: 0.75rem;   /* 12px */
+    --font-size-sm: 0.875rem;  /* 14px */
+    --font-size-base: 1rem;    /* 16px */
+    --font-size-lg: 1.125rem;  /* 18px */
+    --font-size-xl: 1.25rem;   /* 20px */
+    --font-size-2xl: 1.5rem;   /* 24px */
+    --font-size-3xl: 1.875rem; /* 30px */
+
     --sidebar-background: 221 83% 98%;
     --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 221 83% 40%;
@@ -212,61 +229,64 @@
     letter-spacing: 0.25em;
   }
 
-  /* Glowing Button Styles */
+  /* Standardized Button Styles */
   .glow-button {
     position: relative;
     background: #fff;
     color: hsl(var(--foreground));
     text-decoration: none;
     text-transform: uppercase;
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     letter-spacing: 0.1em;
     font-weight: 400;
-    padding: 12px 24px;
+    padding: var(--spacing-md) var(--spacing-xl);
     transition: 0.5s;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Sora', ui-sans-serif, system-ui;
     border: 1px solid var(--glow-color);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
     box-sizing: border-box;
+    border-radius: var(--radius);
   }
 
   .glow-button-sm {
-    font-size: 0.875rem;
-    padding: 8px 16px;
-    min-height: 36px;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    min-height: calc(var(--spacing-xl) + var(--spacing-md));
   }
 
   .glow-button-lg {
-    font-size: 1.125rem;
-    padding: 16px 32px;
-    min-height: 52px;
+    font-size: var(--font-size-lg);
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    min-height: calc(var(--spacing-3xl) + var(--spacing-sm));
   }
 
   .glow-button-icon {
-    padding: 12px;
-    min-width: 44px;
-    min-height: 44px;
+    padding: var(--spacing-md);
+    min-width: calc(var(--spacing-2xl) + var(--spacing-md));
+    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
   }
   
-  /* Responsive sizing */
-  @media (max-width: 640px) {
-    .glow-button {
-      font-size: 0.875rem;
-      padding: 8px 16px;
-      min-height: 36px;
-    }
+  /* Standardized Input Styles */
+  .standard-input {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius);
+    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
   }
-  
-  @media (min-width: 1024px) {
-    .glow-button {
-      font-size: 1.125rem;
-      padding: 12px 24px;
-      min-height: 44px;
-    }
+
+  .standard-card {
+    padding: var(--spacing-xl);
+    border-radius: calc(var(--radius) * 2);
+    gap: var(--spacing-lg);
+  }
+
+  .standard-section {
+    margin-bottom: var(--spacing-2xl);
+    gap: var(--spacing-lg);
   }
 
   .glow-button:hover {
