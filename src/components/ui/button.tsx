@@ -20,10 +20,10 @@ const buttonVariants = cva(
         warning: "[--glow-color:#f59e0b]",
       },
       size: {
-        default: "!px-5 !py-2.5 !min-h-[40px]",
-        sm: "!text-sm !px-4 !py-2 !min-h-[36px]",
-        lg: "!text-lg !px-6 !py-3 !min-h-[48px]",
-        icon: "!p-2.5 !min-w-[40px] !min-h-[40px] !text-base",
+        default: "",
+        sm: "glow-button-sm",
+        lg: "glow-button-lg", 
+        icon: "glow-button-icon",
       },
     },
     defaultVariants: {
