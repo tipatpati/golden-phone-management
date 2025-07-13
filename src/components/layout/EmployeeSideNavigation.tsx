@@ -97,25 +97,33 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
           variant="ghost" 
           size="icon" 
           onClick={toggleMenu}
-          className="fixed top-3 left-3 z-50 hover:bg-yellow-50 hover:text-yellow-700 h-9 w-9"
+          className="fixed top-2 left-2 z-50 hover:bg-yellow-50 hover:text-yellow-700 h-8 w-8 bg-white/80 backdrop-blur-sm shadow-sm"
         >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
+          {isOpen ? <X size={18} /> : <Menu size={18} />}
         </Button>
+      )}
+
+      {/* Mobile overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-30" 
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
       {/* Sidebar navigation */}
       <aside
         className={cn(
-          "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out",
+          "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out shadow-lg",
           isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-center border-b border-border">
-            <Logo size={128} className="mx-auto max-h-12 max-w-[140px]" />
+          <div className="flex h-14 sm:h-16 items-center justify-center border-b border-border px-4">
+            <Logo size={112} className="mx-auto max-h-10 sm:max-h-12 max-w-[120px] sm:max-w-[140px]" />
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className="flex-1 overflow-y-auto p-3 sm:p-4">
             <ul className="space-y-1">
               {filteredNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
@@ -124,15 +132,15 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
                     <Link
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
+                        "flex items-center gap-2 sm:gap-3 rounded-md px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors",
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
                       )}
                       onClick={() => isMobile && setIsOpen(false)}
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
+                      <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <span className="truncate">{item.title}</span>
                     </Link>
                   </li>
                 );
@@ -140,26 +148,26 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
             </ul>
           </nav>
 
-          <div className="border-t border-border p-4">
+          <div className="border-t border-border p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground text-sm font-medium">
-                    {username?.charAt(0).toUpperCase() || 'U'}
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <span className="text-primary-foreground text-xs sm:text-sm font-medium">
+                    {username?.charAt(0).toUpperCase() || 'E'}
                   </span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{username || 'Employee'}</p>
-                  <p className="text-xs text-muted-foreground">{userRole || 'Unknown'}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'Employee'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Unknown'}</p>
                 </div>
               </div>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={logout}
-                className="h-8 w-8 hover:bg-yellow-50 hover:text-yellow-700"
+                className="h-7 w-7 sm:h-8 sm:w-8 hover:bg-yellow-50 hover:text-yellow-700 flex-shrink-0"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>

@@ -73,29 +73,29 @@ export function DashboardOverview() {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
       {overviewData.map((item, index) => (
         <Card key={index} className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">{item.title}</CardTitle>
-            <div className={`rounded-full bg-gradient-to-br ${item.gradient} p-2.5 shadow-md`}>
-              <item.icon className="h-4 w-4 text-white" />
+            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">{item.title}</CardTitle>
+            <div className={`rounded-full bg-gradient-to-br ${item.gradient} p-2 sm:p-2.5 shadow-md flex-shrink-0`}>
+              <item.icon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{item.value}</div>
+          <CardContent className="pt-0">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">{item.value}</div>
             <div className="flex items-center text-xs">
               {typeof item.change === 'string' && item.change.includes('%') ? (
                 <>
                   {item.isPositive ? (
-                    <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
+                    <ArrowUpRight className="mr-1 h-3 w-3 text-green-500 flex-shrink-0" />
                   ) : (
-                    <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
+                    <ArrowDownRight className="mr-1 h-3 w-3 text-red-500 flex-shrink-0" />
                   )}
                   <span className={item.isPositive ? "text-green-500" : "text-red-500"}>
                     {item.change}
                   </span>
-                  <span className="text-gray-500 ml-1">from yesterday</span>
+                  <span className="text-gray-500 ml-1 hidden sm:inline">from yesterday</span>
                 </>
               ) : (
                 <span className="text-gray-500">{item.change}</span>

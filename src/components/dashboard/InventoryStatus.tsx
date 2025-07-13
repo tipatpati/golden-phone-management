@@ -41,38 +41,38 @@ export function InventoryStatus() {
 
   return (
     <Card className="border-0 shadow-lg">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Low Stock Items</CardTitle>
-        <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-base sm:text-lg">Low Stock Items</CardTitle>
+        <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">
           Order Stock
         </Button>
       </CardHeader>
       <CardContent>
         {lowStockItems.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {lowStockItems.map((item) => {
               const stockStatus = getStockLevel(item.stock, item.threshold);
               const percentValue = item.threshold > 0 ? (item.stock / item.threshold) * 100 : 100;
               
               return (
-                <div key={item.id} className="p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
+                <div key={item.id} className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
                   <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="text-sm font-medium">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.sku}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium truncate">{item.name}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.sku}</p>
                     </div>
-                    <Badge variant={getStockBadgeVariant(stockStatus.level)}>
+                    <Badge variant={getStockBadgeVariant(stockStatus.level)} className="text-xs flex-shrink-0 ml-2">
                       {item.stock} left
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`flex-1 ${stockStatus.bgColor} rounded-full h-2 overflow-hidden`}>
+                    <div className={`flex-1 ${stockStatus.bgColor} rounded-full h-1.5 sm:h-2 overflow-hidden`}>
                       <div
                         className={`h-full ${stockStatus.color} transition-all duration-300`}
                         style={{ width: `${Math.min(percentValue, 100)}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                       {item.stock}/{item.threshold}
                     </span>
                   </div>
@@ -81,13 +81,13 @@ export function InventoryStatus() {
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-6 sm:py-8">
+            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-sm text-muted-foreground">All items are well stocked!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">All items are well stocked!</p>
           </div>
         )}
       </CardContent>

@@ -28,13 +28,13 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-8 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen p-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen p-3 sm:p-4 lg:p-6">
       {/* Welcome Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border-0">
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 border-0">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Dashboard
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
           Bentornato! Ecco cosa sta succedendo nel tuo negozio oggi.
         </p>
       </div>
@@ -46,10 +46,14 @@ const Dashboard = () => {
       <SalesOverview />
 
       {/* Grid Layout for Status Components */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <InventoryStatus />
-        <RepairStatus />
-        <RecentSales />
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="lg:col-span-2 xl:col-span-2">
+          <RepairStatus />
+        </div>
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
+          <InventoryStatus />
+          <RecentSales />
+        </div>
       </div>
     </div>
   );
