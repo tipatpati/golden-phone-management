@@ -1,15 +1,19 @@
 
-// Input sanitization utilities for security
+// Enhanced input sanitization utilities for security
 export const sanitizeInput = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
   
-  // Remove HTML tags and potentially dangerous characters
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<[^>]*>/g, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim();
+    .trim()
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .slice(0, 1000); // Limit length
 };
 
 export const sanitizeEmail = (email: string): string => {

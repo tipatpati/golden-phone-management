@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Users, Shield } from "lucide-react";
 
 export function RoleManagement() {
-  const { userRole, updateUserRole } = useAuth();
+  const { userRole, updateUserRole, user } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>(userRole || 'salesperson');
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -20,9 +20,14 @@ export function RoleManagement() {
       return;
     }
 
+    if (!user?.id) {
+      toast.error("User not found");
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      await updateUserRole(selectedRole);
+      await updateUserRole(user.id, selectedRole);
     } catch (error) {
       // Error is handled in the auth context
     } finally {
@@ -57,7 +62,7 @@ export function RoleManagement() {
             Role Management
           </CardTitle>
           <CardDescription>
-            Manage your user role and permissions
+            Manage user roles and permissions (Admin Only)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

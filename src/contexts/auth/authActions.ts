@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
+import { logFailedAuthAttempt } from "@/utils/securityAudit";
 import { User } from "@supabase/supabase-js";
 
 interface AuthActionsParams {
@@ -17,39 +18,44 @@ interface AuthActionsParams {
 export function createAuthActions(params: AuthActionsParams) {
   const { user, setUserRole, setInterfaceRole, setUsername, setUser, setSession } = params;
 
-  const updateUserRole = async (role: UserRole) => {
+  const updateUserRole = async (targetUserId: string, role: UserRole) => {
     if (!user) {
       throw new Error('No authenticated user');
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role })
-        .eq('id', user.id);
+      // Use the secure admin function instead of direct profile update
+      const { data, error } = await supabase.rpc('admin_update_user_role', {
+        target_user_id: targetUserId,
+        new_role: role
+      });
 
       if (error) {
         throw error;
       }
 
-      setUserRole(role);
-      setInterfaceRole(role);
+      // Only update local state if updating current user
+      if (targetUserId === user.id) {
+        setUserRole(role);
+        setInterfaceRole(role);
+      }
+      
       toast.success(`Role updated to ${role}`);
     } catch (error: any) {
       console.error('Error updating user role:', error);
       toast.error('Failed to update role', {
-        description: error.message
+        description: error.message || 'Only admins can change user roles'
       });
       throw error;
     }
   };
 
   const login = async (email: string, password: string) => {
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
     try {
-      // Sanitize inputs
-      const sanitizedEmail = sanitizeEmail(email);
-      const sanitizedPassword = sanitizeInput(password);
-      
       if (!sanitizedEmail || !sanitizedPassword) {
         toast.error('Invalid email or password format');
         throw new Error('Invalid credentials format');
@@ -74,6 +80,11 @@ export function createAuthActions(params: AuthActionsParams) {
       
     } catch (error: any) {
       console.error('Login failed:', error);
+      
+      // Log failed auth attempt for security monitoring
+      const emailToLog = sanitizedEmail || email;
+      await logFailedAuthAttempt(emailToLog, error.message || 'Authentication failed');
+      
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials'
       });
