@@ -236,7 +236,7 @@
     color: hsl(var(--foreground));
     text-decoration: none;
     text-transform: uppercase;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     letter-spacing: 0.1em;
     font-weight: 400;
     padding: var(--spacing-md) var(--spacing-xl);
