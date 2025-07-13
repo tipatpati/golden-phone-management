@@ -241,6 +241,8 @@
   /* Standardized Button Styles */
   .glow-button {
     position: relative;
+  }
+
 /* Aurora Background Effect */
 .aurora-background {
   background: radial-gradient(ellipse 80% 50% at 20% -20%, var(--color-1), transparent),
