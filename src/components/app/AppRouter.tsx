@@ -16,8 +16,7 @@ import ApiSettings from "@/pages/ApiSettings";
 import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
-import AdminLogin from "@/pages/AdminLogin";
-import EmployeeLogin from "@/pages/EmployeeLogin";
+import Login from "@/pages/Login";
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user } = useAuth();
@@ -35,12 +34,12 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* Public routes - redirect to main app if already logged in */}
-        <Route path="/admin-login" element={
-          isLoggedIn ? <Navigate to="/" replace /> : <AdminLogin />
+        <Route path="/login" element={
+          isLoggedIn ? <Navigate to="/" replace /> : <Login />
         } />
-        <Route path="/employee-login" element={
-          isLoggedIn ? <Navigate to="/" replace /> : <EmployeeLogin />
-        } />
+        {/* Legacy routes - redirect to new unified login */}
+        <Route path="/admin-login" element={<Navigate to="/login" replace />} />
+        <Route path="/employee-login" element={<Navigate to="/login" replace />} />
         <Route path="/api-settings" element={<ApiSettings />} />
         
         {/* Show index page if user is not authenticated */}
