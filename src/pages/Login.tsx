@@ -13,7 +13,7 @@ import { getMockApiConfig } from "@/services/config";
 import { secureStorage } from "@/services/secureStorage";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { supabase } from "@/integrations/supabase/client";
-import forestBackground from "@/assets/forest-background.jpg";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 type LoginType = 'admin' | 'employee';
 
@@ -107,12 +107,13 @@ export default function Login() {
   const employeeRoles: UserRole[] = ['manager', 'inventory_manager', 'salesperson'];
 
   return (
-    <div 
-      className="min-h-screen forest-background flex items-center justify-center p-4 relative"
-      style={{ backgroundImage: `url(${forestBackground})` }}
-    >
-      {/* Overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/30"></div>
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+      <AuroraBackground 
+        colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
+        speed={1.0}
+        blend={0.8}
+        amplitude={1.2}
+      />
       
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Back to Home Link */}

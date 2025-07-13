@@ -241,7 +241,47 @@
   /* Standardized Button Styles */
   .glow-button {
     position: relative;
-    background: hsl(var(--card));
+/* Aurora Background Effect */
+.aurora-background {
+  background: radial-gradient(ellipse 80% 50% at 20% -20%, var(--color-1), transparent),
+              radial-gradient(ellipse 80% 70% at 90% -10%, var(--color-2), transparent),
+              radial-gradient(ellipse 100% 80% at 50% 100%, var(--color-3), transparent);
+  opacity: calc(var(--aurora-blend) * 0.8);
+  animation: aurora-flow var(--aurora-speed) ease-in-out infinite alternate;
+}
+
+@keyframes aurora-flow {
+  0% {
+    background: radial-gradient(ellipse 80% 50% at 20% -20%, var(--color-1), transparent),
+                radial-gradient(ellipse 80% 70% at 90% -10%, var(--color-2), transparent),
+                radial-gradient(ellipse 100% 80% at 50% 100%, var(--color-3), transparent);
+    filter: blur(40px) brightness(0.8);
+  }
+  25% {
+    background: radial-gradient(ellipse 90% 60% at 30% -10%, var(--color-2), transparent),
+                radial-gradient(ellipse 70% 80% at 80% -20%, var(--color-3), transparent),
+                radial-gradient(ellipse 110% 70% at 60% 90%, var(--color-1), transparent);
+    filter: blur(50px) brightness(1.0);
+  }
+  50% {
+    background: radial-gradient(ellipse 70% 70% at 40% -30%, var(--color-3), transparent),
+                radial-gradient(ellipse 90% 60% at 70% 0%, var(--color-1), transparent),
+                radial-gradient(ellipse 120% 90% at 70% 110%, var(--color-2), transparent);
+    filter: blur(60px) brightness(1.2);
+  }
+  75% {
+    background: radial-gradient(ellipse 100% 80% at 10% -10%, var(--color-1), transparent),
+                radial-gradient(ellipse 60% 90% at 100% -30%, var(--color-2), transparent),
+                radial-gradient(ellipse 80% 100% at 40% 120%, var(--color-3), transparent);
+    filter: blur(45px) brightness(0.9);
+  }
+  100% {
+    background: radial-gradient(ellipse 85% 60% at 25% -15%, var(--color-2), transparent),
+                radial-gradient(ellipse 75% 75% at 85% -5%, var(--color-3), transparent),
+                radial-gradient(ellipse 95% 85% at 55% 95%, var(--color-1), transparent);
+    filter: blur(35px) brightness(1.1);
+  }
+}
     color: hsl(var(--foreground));
     text-decoration: none;
     text-transform: uppercase;
