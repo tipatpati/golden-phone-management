@@ -39,3 +39,31 @@ export const logUnauthorizedAccess = async (resource: string, attempted_action: 
     event_data: { resource, attempted_action }
   });
 };
+
+export const logDataAccess = async (table: string, action: 'read' | 'write' | 'delete', recordCount?: number) => {
+  await logSecurityEvent({
+    event_type: 'data_access',
+    event_data: { table, action, recordCount }
+  });
+};
+
+export const logSessionActivity = async (activity: 'login' | 'logout' | 'timeout' | 'concurrent_session') => {
+  await logSecurityEvent({
+    event_type: 'session_activity',
+    event_data: { activity, timestamp: new Date().toISOString() }
+  });
+};
+
+export const logPermissionChange = async (targetUserId: string, oldRole: string, newRole: string) => {
+  await logSecurityEvent({
+    event_type: 'permission_change',
+    event_data: { targetUserId, oldRole, newRole }
+  });
+};
+
+export const logSuspiciousActivity = async (activity: string, metadata?: Record<string, any>) => {
+  await logSecurityEvent({
+    event_type: 'suspicious_activity',
+    event_data: { activity, metadata, severity: 'high' }
+  });
+};
