@@ -200,6 +200,19 @@
     @apply text-sm sm:text-base md:text-lg;
   }
 
+  /* Glowing Button Effects */
+  .letter-spacing-wider {
+    letter-spacing: 0.1em;
+  }
+
+  .letter-spacing-widest {
+    letter-spacing: 0.25em;
+  }
+
+  .hover\:letter-spacing-widest:hover {
+    letter-spacing: 0.25em;
+  }
+
   /* Consistent golden hover effects */
   .golden-hover {
     @apply hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800 transition-all duration-200;

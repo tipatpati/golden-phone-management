@@ -6,27 +6,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 transform hover:scale-105 shadow-md hover:shadow-xl",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-decoration-none uppercase letter-spacing-wider font-normal transition-all duration-500 overflow-hidden",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg",
-        destructive:
-          "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg",
-        outline:
-          "border-2 border-gray-200 bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-700 hover:border-blue-300 shadow-sm",
-        secondary:
-          "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 hover:from-gray-200 hover:to-gray-300 shadow-sm",
-        ghost: "hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-700 shadow-none hover:shadow-sm",
-        link: "text-blue-600 underline-offset-4 hover:underline hover:text-purple-600 shadow-none",
-        success: "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg",
-        warning: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600 shadow-lg",
+        default: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.blue.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        destructive: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.red.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        outline: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.purple.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        secondary: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.gray.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        ghost: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.indigo.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        link: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.cyan.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        success: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.green.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
+        warning: "bg-white text-white px-8 py-3 hover:letter-spacing-widest [--glow-color:theme(colors.orange.500)] hover:shadow-[0_0_35px_var(--glow-color)] hover:bg-[var(--glow-color)] hover:text-[var(--glow-color)] before:content-[''] before:absolute before:inset-[2px] before:bg-background before:z-0 after:content-[''] after:absolute after:inset-0 after:block",
       },
       size: {
-        default: "h-11 px-6 py-3 text-sm",
-        sm: "h-9 rounded-md px-4 py-2 text-xs",
-        lg: "h-12 rounded-lg px-8 py-3 text-base font-semibold",
-        icon: "h-10 w-10 rounded-lg",
+        default: "h-auto text-base",
+        sm: "h-auto text-sm px-6 py-2",
+        lg: "h-auto text-lg px-10 py-4",
+        icon: "h-12 w-12 p-0",
       },
     },
     defaultVariants: {
@@ -43,14 +40,17 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      />
+      >
+        <span className="relative z-10">{children}</span>
+        <i className="absolute inset-0 block before:content-[''] before:absolute before:top-0 before:left-[80%] before:w-[10px] before:h-[4px] before:bg-background before:transform before:translate-x-[-50%] before:skew-x-[-35deg] before:transition-all before:duration-500 hover:before:w-[20px] hover:before:left-[20%] after:content-[''] after:absolute after:bottom-0 after:left-[20%] after:w-[10px] after:h-[4px] after:bg-background after:transform after:translate-x-[-50%] after:skew-x-[-35deg] after:transition-all after:duration-500 hover:after:w-[20px] hover:after:left-[80%]"></i>
+      </Comp>
     )
   }
 )
