@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SecurityProvider } from "@/components/security/SecurityProvider";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -33,9 +34,11 @@ export function AppProviders({ children, includeAuth = false }: AppProvidersProp
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {content}
-        <Toaster />
-        <Sonner />
+        <SecurityProvider>
+          {content}
+          <Toaster />
+          <Sonner />
+        </SecurityProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -4,6 +4,7 @@ import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { logFailedAuthAttempt } from "@/utils/securityAudit";
+import { handleSecurityError } from "@/utils/securityEnhancements";
 import { User } from "@supabase/supabase-js";
 
 interface AuthActionsParams {
