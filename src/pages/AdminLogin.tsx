@@ -113,7 +113,7 @@ export default function AdminLogin() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-yellow-50"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-7 w-7 hover:bg-yellow-50 flex items-center justify-center"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
