@@ -39,32 +39,32 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Hero Section */}
-        <div className="pt-16 pb-20 text-center">
-          <div className="space-y-8">
-            <div className="space-y-6">
+        <div className="pt-12 sm:pt-16 pb-16 sm:pb-20 text-center">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-center mb-2">
-                <Logo size={320} className="mx-auto w-full max-w-xs md:max-w-lg h-auto" />
+                <Logo size={280} className="mx-auto w-full max-w-[240px] sm:max-w-[280px] md:max-w-[320px] h-auto" />
               </div>
-              <p className="text-lg sm:text-xl lg:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-white/85 max-w-3xl mx-auto leading-relaxed px-4">
                 Complete management solution for your mobile repair business. 
                 Track sales, manage repairs, control inventory, and maintain customer relationships.
               </p>
             </div>
             
             {/* Login Options */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center max-w-md mx-auto pt-4">
               <Link to="/admin-login" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-48 h-14 text-lg bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <Crown className="mr-3 h-6 w-6" />
+                <Button size="lg" className="w-full sm:w-44 h-12 sm:h-14 text-base sm:text-lg bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-medium">
+                  <Crown className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                   Store Owner
                 </Button>
               </Link>
               <Link to="/employee-login" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-48 h-14 text-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <UserCheck className="mr-3 h-6 w-6" />
+                <Button size="lg" className="w-full sm:w-44 h-12 sm:h-14 text-base sm:text-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-medium">
+                  <UserCheck className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
                   Employee
                 </Button>
               </Link>
@@ -73,36 +73,36 @@ const Index = () => {
         </div>
 
         {/* Features Section */}
-        <div className="pb-20">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+        <div className="pb-16 sm:pb-20">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">
               Everything you need to manage your business
             </h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-white/75 max-w-2xl mx-auto px-4">
               Streamline your operations with our comprehensive suite of business management tools
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <Link
                 key={index}
                 to={`/login?role=${feature.role}`}
-                className="block group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-2 border border-white/20 rounded-lg"
+                className="block group hover:shadow-2xl transition-all duration-500 shadow-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-2 border border-white/20 rounded-xl"
               >
-                <div className="text-center pb-6 pt-8">
-                  <div className={`mx-auto w-20 h-20 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
-                    <feature.icon className="h-10 w-10 text-white" />
+                <div className="text-center pb-5 sm:pb-6 pt-6 sm:pt-8">
+                  <div className={`mx-auto w-16 sm:w-20 h-16 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
+                    <feature.icon className="h-8 sm:h-10 w-8 sm:w-10 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-white leading-tight mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-white leading-tight mb-3 sm:mb-4 px-4">
                     {feature.title}
                   </h3>
                 </div>
-                <div className="text-center space-y-6 pb-8 px-6">
-                  <p className="text-white/70 leading-relaxed">
+                <div className="text-center space-y-4 sm:space-y-6 pb-6 sm:pb-8 px-4 sm:px-6">
+                  <p className="text-sm sm:text-base text-white/75 leading-relaxed">
                     {feature.description}
                   </p>
-                  <div className="flex items-center justify-center text-white/90 group-hover:text-white transition-colors font-medium">
+                  <div className="flex items-center justify-center text-white/90 group-hover:text-white transition-colors font-medium text-sm sm:text-base">
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
@@ -113,13 +113,13 @@ const Index = () => {
         </div>
 
         {/* Footer Section */}
-        <div className="border-t border-white/20 py-12">
+        <div className="border-t border-white/20 py-8 sm:py-12">
           <div className="text-center">
             <Link 
               to="/api-settings" 
-              className="inline-flex items-center gap-3 text-white/70 hover:text-white transition-colors duration-200 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full shadow-sm hover:shadow-md border border-white/20"
+              className="inline-flex items-center gap-2 sm:gap-3 text-white/75 hover:text-white transition-colors duration-200 bg-white/10 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-sm hover:shadow-md border border-white/20 text-sm sm:text-base"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="font-medium">API Settings</span>
             </Link>
           </div>
