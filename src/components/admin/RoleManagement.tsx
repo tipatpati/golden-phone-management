@@ -7,14 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, Shield } from "lucide-react";
+import { Users, Shield, AlertTriangle, History } from "lucide-react";
+import { RoleChangeConfirmationDialog } from "@/components/security/RoleChangeConfirmationDialog";
+import { logSecurityEvent } from "@/utils/securityAudit";
 
 export function RoleManagement() {
   const { userRole, updateUserRole, user } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>(userRole || 'salesperson');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  const handleUpdateRole = async () => {
+  const handleRoleChangeRequest = () => {
     if (selectedRole === userRole) {
       toast.info("Role is already set to this value");
       return;
@@ -25,11 +28,66 @@ export function RoleManagement() {
       return;
     }
 
+    // Prevent admins from changing their own role without proper verification
+    if (userRole === 'admin' && user.id && selectedRole !== 'admin') {
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    // For high-risk changes, always show confirmation
+    if ((userRole !== 'admin' && selectedRole === 'admin') || 
+        (userRole === 'admin' && selectedRole !== 'admin')) {
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    // For lower-risk changes, proceed directly
+    handleUpdateRole();
+  };
+
+  const handleUpdateRole = async () => {
+    if (!user?.id) return;
+
     setIsUpdating(true);
     try {
+      // Log the attempted role change for security audit
+      await logSecurityEvent({
+        event_type: 'role_change_attempted',
+        event_data: {
+          target_user_id: user.id,
+          old_role: userRole,
+          new_role: selectedRole,
+          is_self_change: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+
       await updateUserRole(user.id, selectedRole);
+      setShowConfirmDialog(false);
+      
+      // Log successful role change
+      await logSecurityEvent({
+        event_type: 'role_change_completed',
+        event_data: {
+          target_user_id: user.id,
+          old_role: userRole,
+          new_role: selectedRole,
+          is_self_change: true,
+          timestamp: new Date().toISOString()
+        }
+      });
     } catch (error) {
-      // Error is handled in the auth context
+      // Log failed role change attempt
+      await logSecurityEvent({
+        event_type: 'role_change_failed',
+        event_data: {
+          target_user_id: user.id,
+          old_role: userRole,
+          attempted_role: selectedRole,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        }
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -93,8 +151,9 @@ export function RoleManagement() {
                 </SelectContent>
               </Select>
               <Button 
-                onClick={handleUpdateRole}
+                onClick={handleRoleChangeRequest}
                 disabled={isUpdating || selectedRole === userRole}
+                variant={selectedRole === 'admin' ? 'destructive' : 'default'}
               >
                 {isUpdating ? "Updating..." : "Update Role"}
               </Button>
@@ -130,6 +189,17 @@ export function RoleManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Role Change Confirmation Dialog */}
+      <RoleChangeConfirmationDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleUpdateRole}
+        currentRole={userRole || 'salesperson'}
+        newRole={selectedRole}
+        targetUserId={user?.id || ''}
+        isOwnRole={true}
+      />
     </div>
   );
 }

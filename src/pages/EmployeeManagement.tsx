@@ -11,6 +11,7 @@ import { useEmployees } from "@/services/useEmployees";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleManagement } from "@/components/admin/RoleManagement";
 import { SecurityAuditLog } from "@/components/security/SecurityAuditLog";
+import { SecurityAlerts } from "@/components/security/SecurityAlerts";
 import { SecurityDashboard } from "@/components/security/SecurityDashboard";
 
 export default function EmployeeManagement() {
@@ -34,8 +35,11 @@ export default function EmployeeManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Security Alerts */}
+          <SecurityAlerts />
+          
+          {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
