@@ -225,7 +225,7 @@
     padding: 12px 24px;
     transition: 0.5s;
     font-family: 'Poppins', sans-serif;
-    border: none;
+    border: 1px solid var(--glow-color);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
