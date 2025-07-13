@@ -113,9 +113,9 @@ export default function Login() {
   const employeeRoles: UserRole[] = ['manager', 'inventory_manager', 'salesperson'];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       
-      <div className="w-full max-w-md space-y-6 relative z-10">
+      <div className="w-full max-w-md space-y-4 sm:space-y-6 relative z-10">
         {/* Back to Home Link */}
         <Link 
           to="/" 
@@ -126,46 +126,46 @@ export default function Login() {
         </Link>
 
         {/* Login Card */}
-        <div className="glass-card p-8 space-y-6">
+        <div className="glass-card p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
           {/* Toggle Buttons */}
           <div className="flex rounded-full p-1 glass-card">
             <button
               type="button"
               onClick={() => setLoginType('employee')}
-              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 loginType === 'employee' 
                   ? 'bg-white/20 text-white shadow-md' 
                   : 'text-white/70 hover:text-white'
               }`}
             >
-              <User className="h-4 w-4 inline mr-2" />
+              <User className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
               Employee
             </button>
             <button
               type="button"
               onClick={() => setLoginType('admin')}
-              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 loginType === 'admin' 
                   ? 'bg-white/20 text-white shadow-md' 
                   : 'text-white/70 hover:text-white'
               }`}
             >
-              <Crown className="h-4 w-4 inline mr-2" />
+              <Crown className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
               Admin
             </button>
           </div>
 
           {/* Welcome Section */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-white">Welcome Back!</h1>
-            <p className="text-white/80 text-sm">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome Back!</h1>
+            <p className="text-white/80 text-xs sm:text-sm">
               {loginType === 'admin' 
                 ? 'Sign in to your admin account' 
                 : 'Sign in to your employee account'
               }
             </p>
             {loginType === 'employee' && useMockApi && (
-              <Badge variant="outline" className="text-green-300 border-green-300/50 bg-green-500/10">
+              <Badge variant="outline" className="text-green-300 border-green-300/50 bg-green-500/10 text-xs">
                 <Database className="h-3 w-3 mr-1" />
                 Mock Mode
               </Badge>
@@ -173,11 +173,11 @@ export default function Login() {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Email Field */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/90 text-sm font-medium">
-                <Mail className="h-4 w-4 inline mr-2" />
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="email" className="text-white/90 text-xs sm:text-sm font-medium">
+                <Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 {useMockApi && loginType === 'employee' ? 'Username/Email (any)' : 'Email Address'}
               </Label>
               <Input
@@ -186,16 +186,16 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                 placeholder={useMockApi && loginType === 'employee' ? "Enter any email" : "Enter your email"}
-                className="glass-input h-12 text-white placeholder:text-white/60"
+                className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base"
                 maxLength={254}
                 required
               />
             </div>
             
             {/* Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/90 text-sm font-medium">
-                <Lock className="h-4 w-4 inline mr-2" />
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="password" className="text-white/90 text-xs sm:text-sm font-medium">
+                <Lock className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 {useMockApi && loginType === 'employee' ? 'Password (any)' : 'Password'}
               </Label>
               <div className="relative">
@@ -205,48 +205,48 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={useMockApi && loginType === 'employee' ? "Enter any password" : "Enter your password"}
-                  className="glass-input h-12 pr-12 text-white placeholder:text-white/60"
+                  className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base"
                   maxLength={128}
                   minLength={loginType === 'admin' ? 6 : undefined}
                   required
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                  className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
                 </button>
               </div>
             </div>
 
             {/* Role Selection for Employee */}
             {loginType === 'employee' && (
-              <div className="space-y-2">
-                <Label className="text-white/90 text-sm font-medium">
+              <div className="space-y-1 sm:space-y-2">
+                <Label className="text-white/90 text-xs sm:text-sm font-medium">
                   Interface Role
                 </Label>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-1.5 sm:gap-2">
                   {employeeRoles.map((role) => (
                     <button
                       key={role}
                       type="button"
-                      className={`p-3 rounded-lg text-left transition-all ${
+                      className={`p-2 sm:p-3 rounded-lg text-left transition-all ${
                         selectedRole === role 
                           ? 'bg-white/20 text-white border border-white/30' 
                           : 'bg-white/5 text-white/80 border border-white/10 hover:bg-white/10'
                       }`}
                       onClick={() => setSelectedRole(role)}
                     >
-                      <div className="font-medium text-sm">{ROLE_CONFIGS[role].name}</div>
-                      <div className="text-xs text-white/60">{ROLE_CONFIGS[role].description}</div>
+                      <div className="font-medium text-xs sm:text-sm">{ROLE_CONFIGS[role].name}</div>
+                      <div className="text-[10px] sm:text-xs text-white/60">{ROLE_CONFIGS[role].description}</div>
                     </button>
                   ))}
                 </div>
                 {loginType === 'employee' && (
-                  <div className="flex items-center gap-2 p-2 bg-amber-500/10 rounded-md border border-amber-400/30">
-                    <Crown className="h-4 w-4 text-amber-300" />
-                    <p className="text-xs text-amber-200">
+                  <div className="flex items-start gap-2 p-2 bg-amber-500/10 rounded-md border border-amber-400/30">
+                    <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-amber-300 mt-0.5 flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-amber-200 leading-tight">
                       Owners can login with any role interface while maintaining full admin access
                     </p>
                   </div>
@@ -257,16 +257,16 @@ export default function Login() {
             {/* Submit Button */}
             <Button 
               type="submit" 
-              className="w-full h-12 glass-button font-medium text-white"
+              className="w-full h-10 sm:h-12 glass-button font-medium text-white text-sm sm:text-base"
               disabled={isLoading}
             >
-              <LogIn className="h-4 w-4 mr-2" />
+              <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               {isLoading ? "Signing In..." : "Sign In"}
             </Button>
 
             {/* Additional Info */}
             <div className="text-center">
-              <p className="text-xs text-white/60">
+              <p className="text-[10px] sm:text-xs text-white/60 leading-tight">
                 {useMockApi && loginType === 'employee'
                   ? "Mock mode is enabled - any credentials will work"
                   : loginType === 'admin' 
@@ -278,7 +278,7 @@ export default function Login() {
           </form>
 
           {/* Footer Links */}
-          <div className="flex items-center justify-between text-sm pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between text-xs sm:text-sm pt-3 sm:pt-4 border-t border-white/10">
             <div className="text-white/60">
               Forgot password?
             </div>
@@ -286,14 +286,14 @@ export default function Login() {
               to="/api-settings"
               className="text-white/60 hover:text-white transition-colors"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
             </Link>
           </div>
         </div>
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-white/60">
+          <p className="text-[10px] sm:text-xs text-white/60">
             GOLDEN PHONE Management System
           </p>
         </div>

@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 export function Header() {
-  return <header className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-border bg-background sm:px-4 md:px-6 px-[64px]">
-      <div className="flex flex-1 items-center gap-2 md:gap-4 min-w-0">
-        <div className="relative w-full max-w-sm md:max-w-md">
+  return <header className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-border bg-background px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-1 items-center gap-2 sm:gap-4 min-w-0">
+        <div className="relative w-full max-w-[200px] sm:max-w-sm lg:max-w-md">
           <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input type="search" placeholder="Search..." className="w-full rounded-md border pl-8 h-9 sm:h-10 text-sm focus-visible:ring-yellow-400" />
         </div>
@@ -27,7 +27,7 @@ export function Header() {
           </Badge>
         </Button>
         
-        <Button variant="default" className="hidden sm:flex h-10 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">
+        <Button variant="default" className="hidden sm:flex h-10 px-3 sm:px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 text-sm sm:text-base">
           New Sale
         </Button>
         <Button variant="default" size="icon" className="sm:hidden h-9 w-9 flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0">

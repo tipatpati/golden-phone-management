@@ -106,9 +106,9 @@ export function SideNavigation() {
           variant="ghost" 
           size="icon" 
           onClick={toggleMenu}
-          className="fixed top-4 left-4 z-50 hover:bg-yellow-50 hover:text-yellow-700"
+          className="fixed top-3 left-3 z-50 hover:bg-yellow-50 hover:text-yellow-700 h-9 w-9"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>
       )}
 
