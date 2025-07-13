@@ -284,6 +284,8 @@
     filter: blur(35px) brightness(1.1);
   }
 }
+
+  .glow-button {
     color: hsl(var(--foreground));
     text-decoration: none;
     text-transform: uppercase;
