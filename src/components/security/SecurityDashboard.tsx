@@ -153,20 +153,18 @@ export function SecurityDashboard() {
                 }}
                 className="h-[300px]"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={metrics.eventsByType}>
-                    <XAxis 
-                      dataKey="type" 
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      fontSize={10}
-                    />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" fill="hsl(var(--chart-1))" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarChart data={metrics.eventsByType}>
+                  <XAxis 
+                    dataKey="type" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={10}
+                  />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="count" fill="hsl(var(--chart-1))" />
+                </BarChart>
               </ChartContainer>
             </CardContent>
           </Card>
