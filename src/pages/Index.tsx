@@ -87,7 +87,7 @@ const Index = () => {
             {features.map((feature, index) => (
               <Link
                 key={index}
-                to={`/login?role=${feature.role}`}
+                to="/employee-login"
                 className="block group hover:shadow-2xl transition-all duration-500 shadow-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-2 border border-white/20 rounded-xl"
               >
                 <div className="text-center pb-5 sm:pb-6 pt-6 sm:pt-8">

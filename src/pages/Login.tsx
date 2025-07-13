@@ -23,11 +23,6 @@ export default function Login() {
   const [loginType, setLoginType] = useState<LoginType>('employee');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>(
-    roleParam && ['manager', 'inventory_manager', 'salesperson'].includes(roleParam) 
-      ? roleParam 
-      : "salesperson"
-  );
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -75,30 +70,8 @@ export default function Login() {
         await login(sanitizedEmail, sanitizedPassword);
       } else {
         // Employee login logic
-        const isAdmin = await checkIfAdminCredentials(sanitizedEmail, sanitizedPassword);
-        
-        if (isAdmin) {
-          toast.success(`Logging in as Owner with ${ROLE_CONFIGS[selectedRole].name} interface`, {
-            description: "You have full admin access regardless of interface",
-            duration: 3000
-          });
-          
-          secureStorage.setItem('userRole', 'admin', false);
-          secureStorage.setItem('interfaceRole', selectedRole, false);
-          secureStorage.setItem('authToken', 'admin-token-' + Date.now(), true);
-          secureStorage.setItem('userId', sanitizedEmail, false);
-          
-          await login(sanitizedEmail, sanitizedPassword);
-          return;
-        }
-        
-        if (useMockApi) {
-          await authApi.login(sanitizedEmail, sanitizedPassword);
-          secureStorage.setItem('userRole', selectedRole, false);
-          toast.success(`Logged in as ${ROLE_CONFIGS[selectedRole].name}`);
-        } else {
-          await login(sanitizedEmail, sanitizedPassword);
-        }
+        // Employee login - just authenticate with Supabase
+        await login(sanitizedEmail, sanitizedPassword);
       }
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -110,7 +83,7 @@ export default function Login() {
     }
   };
 
-  const employeeRoles: UserRole[] = ['manager', 'inventory_manager', 'salesperson'];
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
@@ -220,39 +193,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Role Selection for Employee */}
-            {loginType === 'employee' && (
-              <div className="space-y-1 sm:space-y-2">
-                <Label className="text-white/90 text-xs sm:text-sm font-medium">
-                  Interface Role
-                </Label>
-                <div className="grid grid-cols-1 gap-1.5 sm:gap-2">
-                  {employeeRoles.map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      className={`p-2 sm:p-3 rounded-lg text-left transition-all ${
-                        selectedRole === role 
-                          ? 'bg-white/20 text-white border border-white/30' 
-                          : 'bg-white/5 text-white/80 border border-white/10 hover:bg-white/10'
-                      }`}
-                      onClick={() => setSelectedRole(role)}
-                    >
-                      <div className="font-medium text-xs sm:text-sm">{ROLE_CONFIGS[role].name}</div>
-                      <div className="text-[10px] sm:text-xs text-white/60">{ROLE_CONFIGS[role].description}</div>
-                    </button>
-                  ))}
-                </div>
-                {loginType === 'employee' && (
-                  <div className="flex items-start gap-2 p-2 bg-amber-500/10 rounded-md border border-amber-400/30">
-                    <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-amber-300 mt-0.5 flex-shrink-0" />
-                    <p className="text-[10px] sm:text-xs text-amber-200 leading-tight">
-                      Owners can login with any role interface while maintaining full admin access
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Submit Button */}
             <Button 
