@@ -13,7 +13,6 @@ import { getMockApiConfig } from "@/services/config";
 import { secureStorage } from "@/services/secureStorage";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { supabase } from "@/integrations/supabase/client";
-import { AuroraBackground } from "@/components/ui/aurora-background";
 
 type LoginType = 'admin' | 'employee';
 
@@ -114,13 +113,7 @@ export default function Login() {
   const employeeRoles: UserRole[] = ['manager', 'inventory_manager', 'salesperson'];
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-      <AuroraBackground 
-        colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
-        speed={1.0}
-        blend={0.8}
-        amplitude={1.2}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-4 relative overflow-hidden">
       
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Back to Home Link */}

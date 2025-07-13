@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Smartphone, Settings, Users, TrendingUp, Crown, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/shared/Logo";
-import { AuroraBackground } from "@/components/ui/aurora-background";
 
 const Index = () => {
   const features = [
@@ -39,13 +38,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      <AuroraBackground 
-        colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
-        speed={1.0}
-        blend={0.7}
-        amplitude={1.0}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Hero Section */}
