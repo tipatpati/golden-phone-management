@@ -12,25 +12,29 @@ const Index = () => {
       title: "Sales Management",
       description: "Track and manage all your sales transactions with ease",
       icon: TrendingUp,
-      gradient: "from-blue-500 to-purple-600"
+      gradient: "from-blue-500 to-purple-600",
+      role: "salesperson"
     },
     {
       title: "Repair Services", 
       description: "Manage device repairs and track technician progress",
       icon: Smartphone,
-      gradient: "from-purple-500 to-pink-600"
+      gradient: "from-purple-500 to-pink-600",
+      role: "manager"
     },
     {
       title: "Inventory Control",
       description: "Keep track of stock levels and product management", 
       icon: Settings,
-      gradient: "from-green-500 to-blue-600"
+      gradient: "from-green-500 to-blue-600",
+      role: "inventory_manager"
     },
     {
       title: "Client Management",
       description: "Maintain customer relationships and contact information",
       icon: Users,
-      gradient: "from-orange-500 to-red-600"
+      gradient: "from-orange-500 to-red-600",
+      role: "manager"
     }
   ];
 
@@ -88,25 +92,29 @@ const Index = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-2 border border-white/20">
-                <CardHeader className="text-center pb-6 pt-8">
+              <Link
+                key={index}
+                to={`/login?role=${feature.role}`}
+                className="block group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transform hover:-translate-y-2 border border-white/20 rounded-lg"
+              >
+                <div className="text-center pb-6 pt-8">
                   <div className={`mx-auto w-20 h-20 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-xl`}>
                     <feature.icon className="h-10 w-10 text-white" />
                   </div>
-                  <CardTitle className="text-xl font-bold text-white leading-tight">
+                  <h3 className="text-xl font-bold text-white leading-tight mb-4">
                     {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center space-y-6 pb-8">
-                  <p className="text-white/70 leading-relaxed px-2">
+                  </h3>
+                </div>
+                <div className="text-center space-y-6 pb-8 px-6">
+                  <p className="text-white/70 leading-relaxed">
                     {feature.description}
                   </p>
                   <div className="flex items-center justify-center text-white/90 group-hover:text-white transition-colors font-medium">
-                    Learn More
+                    Get Started
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

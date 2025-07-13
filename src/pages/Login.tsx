@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, ArrowLeft, Settings, Database, UserCheck, Crown, User, Mail, Lock, LogIn } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
@@ -18,10 +18,17 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 type LoginType = 'admin' | 'employee';
 
 export default function Login() {
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get('role') as UserRole;
+  
   const [loginType, setLoginType] = useState<LoginType>('employee');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("salesperson");
+  const [selectedRole, setSelectedRole] = useState<UserRole>(
+    roleParam && ['manager', 'inventory_manager', 'salesperson'].includes(roleParam) 
+      ? roleParam 
+      : "salesperson"
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
