@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -107,8 +106,8 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
-    font-family: inherit;
+    @apply font-title font-semibold tracking-tight;
+    font-family: 'Sora', ui-sans-serif, system-ui;
     line-height: 1.2;
   }
 
