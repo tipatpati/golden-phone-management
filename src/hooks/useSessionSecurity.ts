@@ -32,30 +32,30 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
     const timeSinceActivity = now - lastActivityRef.current;
     const maxIdleMs = maxIdleMinutes * 60 * 1000;
 
-    // Check for idle timeout
+    // Check for idle timeout only
     if (timeSinceActivity > maxIdleMs) {
       await handleSessionTimeout('idle');
       return;
     }
 
-    // Check for absolute session timeout
+    // Get current session to check if it's still valid
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      // Use access_token creation time or current time for session age calculation
-      const sessionStartTime = session.expires_at ? 
-        new Date(session.expires_at).getTime() - (session.expires_in * 1000) : 
-        now - (60 * 60 * 1000); // Default to 1 hour ago if no expiry info
-      
-      const sessionAge = now - sessionStartTime;
-      const maxSessionMs = timeoutMinutes * 60 * 1000;
+    if (!session) {
+      // No session means user is already logged out
+      setIsSessionValid(false);
+      return;
+    }
 
-      if (sessionAge > maxSessionMs) {
+    // Check if session token has actually expired according to Supabase
+    if (session.expires_at) {
+      const expiresAt = new Date(session.expires_at).getTime();
+      if (now >= expiresAt) {
         await handleSessionTimeout('expired');
         return;
       }
     }
 
-    // Detect concurrent sessions if enabled
+    // Detect concurrent sessions if enabled (but don't auto-logout for this)
     if (detectConcurrentSessions && session) {
       await checkConcurrentSessions(session.user.id);
     }
@@ -107,11 +107,11 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
       document.addEventListener(event, updateActivity, { passive: true });
     });
 
-    // Set up session checking interval
-    sessionCheckRef.current = setInterval(checkSessionTimeout, 60000); // Check every minute
+    // Set up session checking interval (check every 5 minutes instead of every minute)
+    sessionCheckRef.current = setInterval(checkSessionTimeout, 5 * 60 * 1000); // Check every 5 minutes
 
-    // Initial session check
-    checkSessionTimeout();
+    // Don't run initial session check immediately to avoid false positives
+    // Let the user activity settle first
 
     return () => {
       // Cleanup
@@ -155,6 +155,11 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
       const maxIdleMs = maxIdleMinutes * 60 * 1000;
       const timeSinceActivity = Date.now() - lastActivityRef.current;
       return Math.max(0, maxIdleMs - timeSinceActivity);
+    },
+    // Add method to manually reset activity (useful after login)
+    resetActivity: () => {
+      lastActivityRef.current = Date.now();
+      setIsSessionValid(true);
     }
   };
 }
