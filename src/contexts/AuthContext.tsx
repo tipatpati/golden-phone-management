@@ -4,6 +4,7 @@ import { AuthContextType } from "./auth/types";
 import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
+import { usePeriodicReminder } from '@/hooks/usePeriodicReminder';
 import { logSessionActivity } from '@/utils/securityAudit';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const isLoggedIn = !!authState.session || !!authState.user;
+
+  // Set up 60-minute reminder system
+  usePeriodicReminder({
+    intervalMinutes: 60,
+    title: "Work Reminder",
+    message: "You've been working for an hour. Consider saving your progress and taking a short break!",
+    enabled: isLoggedIn
+  });
 
   // Log session activities and reset security timer
   useEffect(() => {
