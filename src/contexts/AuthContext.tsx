@@ -12,12 +12,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
   
-  // Initialize session security monitoring with very lenient settings
-  const { isSessionValid, resetActivity } = useSessionSecurity({
-    timeoutMinutes: 1440, // 24 hours
-    maxIdleMinutes: 720,  // 12 hours - very long idle time
-    detectConcurrentSessions: false // Disabled
-  });
+  // Disable custom session security to rely on Supabase's built-in token management
+  // const { isSessionValid, resetActivity } = useSessionSecurity({
+  //   timeoutMinutes: 1440, // 24 hours
+  //   maxIdleMinutes: 720,  // 12 hours - very long idle time
+  //   detectConcurrentSessions: false // Disabled
+  // });
   
   const authActions = createAuthActions({
     user: authState.user,
@@ -38,13 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     enabled: isLoggedIn
   });
 
-  // Log session activities and reset security timer
+  // Log session activities
   useEffect(() => {
     if (authState.user) {
       logSessionActivity('login');
-      resetActivity(); // Reset the session security timer after successful login
     }
-  }, [authState.user, resetActivity]);
+  }, [authState.user]);
 
   return (
     <AuthContext.Provider value={{ 
