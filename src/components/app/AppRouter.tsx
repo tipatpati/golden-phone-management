@@ -15,7 +15,6 @@ import Repairs from "@/pages/Repairs";
 import ApiSettings from "@/pages/ApiSettings";
 import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
-import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 
 export function AppRouter() {
@@ -37,13 +36,12 @@ export function AppRouter() {
         <Route path="/login" element={
           isLoggedIn ? <Navigate to="/" replace /> : <Login />
         } />
-        {/* Legacy routes - redirect to new unified login */}
         <Route path="/admin-login" element={<Navigate to="/login" replace />} />
         <Route path="/employee-login" element={<Navigate to="/login" replace />} />
         <Route path="/api-settings" element={<ApiSettings />} />
         
-        {/* Show index page if user is not authenticated */}
-        {!isLoggedIn && <Route path="/" element={<Index />} />}
+        {/* Redirect unauthenticated users to login */}
+        {!isLoggedIn && <Route path="/" element={<Navigate to="/login" replace />} />}
         
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (

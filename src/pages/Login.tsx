@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { getMockApiConfig } from "@/services/config";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
+import { Logo } from "@/components/shared/Logo";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -56,21 +57,21 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       
       <div className="w-full max-w-md space-y-4 sm:space-y-6 relative z-10">
-        {/* Back to Home Link */}
+        {/* Back to API Settings Link */}
         <Link 
-          to="/" 
+          to="/api-settings" 
           className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Home
+          API Settings
         </Link>
 
         {/* Login Card */}
         <div className="glass-card p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-          {/* Welcome Section */}
-          <div className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg mb-4">
-              <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+          {/* Logo and Welcome Section */}
+          <div className="text-center space-y-4">
+            <div className="flex justify-center mb-4">
+              <Logo size={160} className="mx-auto" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome Back!</h1>
             <p className="text-white/80 text-xs sm:text-sm">
