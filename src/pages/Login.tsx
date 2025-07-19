@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, ArrowLeft, Settings, Database, UserCheck, Crown, User, Mail, Lock, LogIn } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, ArrowLeft, Settings, Database, UserCheck, Mail, Lock, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { UserRole, ROLE_CONFIGS } from "@/types/roles";
-import { authApi } from "@/services/auth";
 import { getMockApiConfig } from "@/services/config";
-import { secureStorage } from "@/services/secureStorage";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
-import { supabase } from "@/integrations/supabase/client";
-
-type LoginType = 'admin' | 'employee';
 
 export default function Login() {
-  const [searchParams] = useSearchParams();
-  const roleParam = searchParams.get('role') as UserRole;
-  
-  const [loginType, setLoginType] = useState<LoginType>('employee');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,24 +18,6 @@ export default function Login() {
   
   const { login } = useAuth();
   const useMockApi = getMockApiConfig();
-
-  const checkIfAdminCredentials = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (!error && data.user) {
-        await supabase.auth.signOut();
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      return false;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +30,8 @@ export default function Login() {
       return;
     }
 
-    if (loginType === 'admin' && sanitizedPassword.length < 6) {
+    // Basic password strength check for real auth
+    if (!useMockApi && sanitizedPassword.length < 6) {
       toast.error("Password must be at least 6 characters long");
       return;
     }
@@ -66,13 +39,9 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      if (loginType === 'admin') {
-        await login(sanitizedEmail, sanitizedPassword);
-      } else {
-        // Employee login logic
-        // Employee login - just authenticate with Supabase
-        await login(sanitizedEmail, sanitizedPassword);
-      }
+      // Use the auth context login - it will automatically detect user role from database
+      await login(sanitizedEmail, sanitizedPassword);
+      toast.success("Login successful! Redirecting...");
     } catch (error: any) {
       console.error('Login failed:', error);
       toast.error('Login failed', {
@@ -82,8 +51,6 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-
-  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
@@ -100,44 +67,16 @@ export default function Login() {
 
         {/* Login Card */}
         <div className="glass-card p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-          {/* Toggle Buttons */}
-          <div className="flex rounded-full p-1 glass-card">
-            <button
-              type="button"
-              onClick={() => setLoginType('employee')}
-              className={`flex-1 py-2 px-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-all ${
-                loginType === 'employee' 
-                  ? 'bg-white/20 text-white shadow-md' 
-                  : 'text-white/70 hover:text-white'
-              }`}
-            >
-              <User className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
-              Employee
-            </button>
-            <button
-              type="button"
-              onClick={() => setLoginType('admin')}
-              className={`flex-1 py-2 px-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-all ${
-                loginType === 'admin' 
-                  ? 'bg-white/20 text-white shadow-md' 
-                  : 'text-white/70 hover:text-white'
-              }`}
-            >
-              <Crown className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
-              Admin
-            </button>
-          </div>
-
           {/* Welcome Section */}
           <div className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg mb-4">
+              <UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            </div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome Back!</h1>
             <p className="text-white/80 text-xs sm:text-sm">
-              {loginType === 'admin' 
-                ? 'Sign in to your admin account' 
-                : 'Sign in to your employee account'
-              }
+              Sign in to access GOLDEN PHONE Management System
             </p>
-            {loginType === 'employee' && useMockApi && (
+            {useMockApi && (
               <Badge variant="outline" className="text-green-300 border-green-300/50 bg-green-500/10 text-xs">
                 <Database className="h-3 w-3 mr-1" />
                 Mock Mode
@@ -151,14 +90,14 @@ export default function Login() {
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="email" className="text-white/90 text-xs sm:text-sm font-medium">
                 <Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
-                {useMockApi && loginType === 'employee' ? 'Username/Email (any)' : 'Email Address'}
+                {useMockApi ? 'Username/Email (any)' : 'Email Address'}
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(sanitizeInput(e.target.value))}
-                placeholder={useMockApi && loginType === 'employee' ? "Enter any email" : "Enter your email"}
+                placeholder={useMockApi ? "Enter any email" : "Enter your email"}
                 className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base"
                 maxLength={254}
                 required
@@ -169,7 +108,7 @@ export default function Login() {
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="password" className="text-white/90 text-xs sm:text-sm font-medium">
                 <Lock className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
-                {useMockApi && loginType === 'employee' ? 'Password (any)' : 'Password'}
+                {useMockApi ? 'Password (any)' : 'Password'}
               </Label>
               <div className="relative">
                 <Input
@@ -177,10 +116,10 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={useMockApi && loginType === 'employee' ? "Enter any password" : "Enter your password"}
+                  placeholder={useMockApi ? "Enter any password" : "Enter your password"}
                   className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base"
                   maxLength={128}
-                  minLength={loginType === 'admin' ? 6 : undefined}
+                  minLength={useMockApi ? 1 : 6}
                   required
                 />
                 <button
@@ -192,7 +131,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
 
             {/* Submit Button */}
             <Button 
@@ -207,11 +145,9 @@ export default function Login() {
             {/* Additional Info */}
             <div className="text-center">
               <p className="text-[10px] sm:text-xs text-white/60 leading-tight">
-                {useMockApi && loginType === 'employee'
-                  ? "Mock mode is enabled - any credentials will work"
-                  : loginType === 'admin' 
-                    ? "Only authorized store owners can access admin portal"
-                    : "Only authorized employees and owners can access this portal"
+                {useMockApi
+                  ? "Mock mode is enabled - any credentials will work. Your role will be auto-detected after login."
+                  : "Enter your credentials to access the system. Your role and permissions will be automatically detected."
                 }
               </p>
             </div>
