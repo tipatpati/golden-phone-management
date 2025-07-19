@@ -12,7 +12,6 @@ import Sales from "@/pages/Sales";
 import Inventory from "@/pages/Inventory";
 import Suppliers from "@/pages/Suppliers";
 import Repairs from "@/pages/Repairs";
-import ApiSettings from "@/pages/ApiSettings";
 import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
@@ -38,7 +37,6 @@ export function AppRouter() {
         } />
         <Route path="/admin-login" element={<Navigate to="/login" replace />} />
         <Route path="/employee-login" element={<Navigate to="/login" replace />} />
-        <Route path="/api-settings" element={<ApiSettings />} />
         
         {/* Redirect unauthenticated users to login */}
         {!isLoggedIn && <Route path="/" element={<Navigate to="/login" replace />} />}

@@ -3,11 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { PackageSearch, Settings } from "lucide-react";
 
-interface InventoryHeaderProps {
-  onToggleSettings: () => void;
-}
-
-export function InventoryHeader({ onToggleSettings }: InventoryHeaderProps) {
+export function InventoryHeader() {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 w-full">
       <div className="flex-1 min-w-0 w-full sm:w-auto">
@@ -18,17 +14,6 @@ export function InventoryHeader({ onToggleSettings }: InventoryHeaderProps) {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base mt-1">
           Gestisci i tuoi prodotti, accessori e tieni traccia dei livelli di scorte.
         </p>
-      </div>
-      <div className="flex-shrink-0 w-full sm:w-auto flex justify-end">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={onToggleSettings}
-          className="h-10 w-10 flex items-center justify-center"
-          title="Impostazioni API"
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

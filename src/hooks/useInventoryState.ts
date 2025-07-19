@@ -5,7 +5,6 @@ import { toast } from "@/components/ui/sonner";
 
 export function useInventoryState() {
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const { isLoggedIn } = useAuth();
 
   // Check if user can add products (must be logged in with Supabase)
@@ -21,13 +20,6 @@ export function useInventoryState() {
     setShowAddProduct(true);
   };
 
-  const handleToggleSettings = () => {
-    setShowSettings(!showSettings);
-  };
-
-  const handleCloseSettings = () => {
-    setShowSettings(false);
-  };
 
   const handleCancelAddProduct = () => {
     setShowAddProduct(false);
@@ -42,14 +34,10 @@ export function useInventoryState() {
 
   return {
     showAddProduct,
-    showSettings,
     apiConnected: isLoggedIn,
     isCheckingConnection: false,
-    useMockApi: false,
     canAddProducts,
     handleAddProduct,
-    handleToggleSettings,
-    handleCloseSettings,
     handleCancelAddProduct,
     handleTestConnection
   };

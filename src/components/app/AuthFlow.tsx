@@ -18,7 +18,7 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
     const token = secureStorage.getItem('authToken', true);
     const role = secureStorage.getItem('userRole', false) as UserRole;
     
-    if (token && token !== 'mock-token' && token !== 'employee-token' && role) {
+    if (token && token !== 'invalid-token' && role) {
       console.log('AuthFlow: Found valid auth, role:', role);
       setSelectedRole(role);
       setIsAuthenticated(true);

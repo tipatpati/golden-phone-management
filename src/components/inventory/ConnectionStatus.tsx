@@ -7,14 +7,12 @@ import { WifiOff, RefreshCw, Settings } from "lucide-react";
 interface ConnectionStatusProps {
   canAddProducts: boolean;
   isCheckingConnection: boolean;
-  onShowSettings: () => void;
   onTestConnection: () => void;
 }
 
 export function ConnectionStatus({ 
   canAddProducts, 
   isCheckingConnection, 
-  onShowSettings, 
   onTestConnection 
 }: ConnectionStatusProps) {
   if (canAddProducts) return null;
@@ -32,15 +30,6 @@ export function ConnectionStatus({
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
-          <Button 
-            size="sm" 
-            onClick={onShowSettings} 
-            variant="outline"
-            className="flex-1 sm:flex-none h-9 flex items-center justify-center gap-1"
-          >
-            <Settings className="h-4 w-4" />
-            <span className="text-xs sm:text-sm">Settings</span>
-          </Button>
           <Button 
             size="sm" 
             onClick={onTestConnection} 
