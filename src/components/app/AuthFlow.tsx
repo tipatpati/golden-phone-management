@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { RoleSelector } from "@/components/auth/RoleSelector";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { UserRole } from "@/types/roles";
 import { secureStorage } from "@/services/secureStorage";
 
@@ -39,9 +40,19 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
     secureStorage.setItem('selectedRole', role, false);
   };
 
+  const handleLoginSuccess = () => {
+    console.log('AuthFlow: Login successful');
+    // The useAuth context will handle the rest
+  };
+
   // Show role selector if no role is selected
   if (!selectedRole) {
     return <RoleSelector onRoleSelect={handleRoleSelect} />;
+  }
+
+  // Show login form after role selection
+  if (!isAuthenticated) {
+    return <LoginForm onLoginSuccess={handleLoginSuccess} />;
   }
 
   return null;
