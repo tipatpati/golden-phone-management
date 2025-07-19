@@ -35,12 +35,8 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
   const handleRoleSelect = (role: UserRole) => {
     console.log('AuthFlow: Role selected:', role);
     setSelectedRole(role);
-    // Since we now handle login at the page level, redirect to appropriate login page
-    if (role === 'admin') {
-      window.location.href = '/admin-login';
-    } else {
-      window.location.href = '/employee-login';
-    }
+    // Store the selected role and continue with the same login page
+    secureStorage.setItem('selectedRole', role, false);
   };
 
   // Show role selector if no role is selected

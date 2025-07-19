@@ -14,7 +14,7 @@ import Suppliers from "@/pages/Suppliers";
 import Repairs from "@/pages/Repairs";
 import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
-import Login from "@/pages/Login";
+import { AuthFlow } from "@/components/app/AuthFlow";
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user } = useAuth();
@@ -33,10 +33,8 @@ export function AppRouter() {
       <Routes>
         {/* Public routes - redirect to main app if already logged in */}
         <Route path="/login" element={
-          isLoggedIn ? <Navigate to="/" replace /> : <Login />
+          isLoggedIn ? <Navigate to="/" replace /> : <AuthFlow onAuthComplete={() => {}} />
         } />
-        <Route path="/admin-login" element={<Navigate to="/login" replace />} />
-        <Route path="/employee-login" element={<Navigate to="/login" replace />} />
         
         {/* Redirect unauthenticated users to login */}
         {!isLoggedIn && <Route path="/" element={<Navigate to="/login" replace />} />}
