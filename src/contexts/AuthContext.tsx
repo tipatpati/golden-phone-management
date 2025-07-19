@@ -11,11 +11,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
   
-  // Initialize session security monitoring with less aggressive settings
+  // Initialize session security monitoring with very lenient settings
   const { isSessionValid, resetActivity } = useSessionSecurity({
-    timeoutMinutes: 480, // 8 hours instead of 2
-    maxIdleMinutes: 60,  // 1 hour instead of 30 minutes
-    detectConcurrentSessions: false // Disable for now to avoid issues
+    timeoutMinutes: 1440, // 24 hours
+    maxIdleMinutes: 720,  // 12 hours - very long idle time
+    detectConcurrentSessions: false // Disabled
   });
   
   const authActions = createAuthActions({
