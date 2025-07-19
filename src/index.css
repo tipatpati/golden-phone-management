@@ -314,7 +314,7 @@
     color: hsl(0 0% 100%); /* White text */
     text-decoration: none;
     text-transform: uppercase;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs); /* Reduced from sm to xs */
     letter-spacing: 0.1em;
     font-weight: 400;
     padding: var(--spacing-md) var(--spacing-xl);
@@ -325,6 +325,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     min-height: calc(var(--spacing-2xl) + var(--spacing-md));
     box-sizing: border-box;
     border-radius: var(--radius);
@@ -384,6 +385,11 @@
   .glow-button .button-text {
     position: relative;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
   }
 
   .glow-button .button-effects {
