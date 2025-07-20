@@ -155,6 +155,20 @@ export function AppRouter() {
           </>
         )}
         
+        {/* Redirect unauthenticated users trying to access protected routes */}
+        {!isLoggedIn && (
+          <>
+            <Route path="/employees" element={<Navigate to="/" replace />} />
+            <Route path="/sales" element={<Navigate to="/" replace />} />
+            <Route path="/clients" element={<Navigate to="/" replace />} />
+            <Route path="/inventory" element={<Navigate to="/" replace />} />
+            <Route path="/suppliers" element={<Navigate to="/" replace />} />
+            <Route path="/repairs" element={<Navigate to="/" replace />} />
+            <Route path="/reports" element={<Navigate to="/" replace />} />
+            <Route path="/settings" element={<Navigate to="/" replace />} />
+          </>
+        )}
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
