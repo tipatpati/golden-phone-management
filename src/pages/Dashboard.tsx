@@ -46,13 +46,15 @@ const Dashboard = () => {
       <SalesOverview />
 
       {/* Grid Layout for Status Components */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        <div className="lg:col-span-2 xl:col-span-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+        <div className="lg:col-span-1">
           <RepairStatus />
         </div>
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
-          <InventoryStatus />
-          <RecentSales />
+        <div className="w-full">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1">
+            <InventoryStatus />
+            <RecentSales />
+          </div>
         </div>
       </div>
     </div>
