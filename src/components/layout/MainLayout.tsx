@@ -17,7 +17,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       
       <div className={`flex-1 min-w-0 transition-all duration-200 ${isMobile ? "pl-0" : "pl-64"}`}>
         <Header />
-        <main className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 max-w-full overflow-x-hidden">
+        <main className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 max-w-full overflow-x-hidden flex justify-center">
           <div className="max-w-full overflow-x-hidden">
             {children}
           </div>
