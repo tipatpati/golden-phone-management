@@ -113,6 +113,7 @@ const handleIndividualContact = async (req: Request, body: any): Promise<Respons
 };
 
 const handleLowStockAlert = async (req: Request): Promise<Response> => {
+  try {
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://joiwowvlujajwbarpsuc.supabase.co";
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaXdvd3ZsdWphandiYXJwc3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjY5NDEsImV4cCI6MjA2NTQ0Mjk0MX0.0zl0V76SCadbeuFw7VfzaKfvKdMb18KuEji26VbU3mw";
@@ -129,7 +130,7 @@ const handleLowStockAlert = async (req: Request): Promise<Response> => {
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
       // Set the auth header for this request
-      supabase.auth.setSession({
+      await supabase.auth.setSession({
         access_token: token,
         refresh_token: "",
       });
@@ -239,7 +240,7 @@ const handleLowStockAlert = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error("Error in contact-suppliers function:", error);
+    console.error("Error in handleLowStockAlert function:", error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
