@@ -52,7 +52,8 @@ export const supabaseProductApi = {
       `);
     
     if (searchTerm) {
-      query = query.or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`);
+      // Search by name, sku, serial numbers array, and barcode
+      query = query.or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%,serial_numbers.cs.{${searchTerm}}`);
     }
     
     const { data, error } = await query.order('created_at', { ascending: false });

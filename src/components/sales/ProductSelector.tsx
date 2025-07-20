@@ -24,26 +24,40 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search products to add..."
+          placeholder="Search by name, SKU, barcode, or serial number..."
           value={productSearch}
           onChange={(e) => setProductSearch(e.target.value)}
           className="pl-8"
         />
       </div>
       {productSearch && products.length > 0 && (
-        <div className="border rounded-md max-h-32 overflow-y-auto">
-          {products.slice(0, 5).map((product) => (
+        <div className="border rounded-md max-h-40 overflow-y-auto bg-background/95 backdrop-blur z-50">
+          {products.slice(0, 8).map((product) => (
             <div
               key={product.id}
-              className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+              className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors"
               onClick={() => handleProductSelect(product)}
             >
-              <div className="font-medium">{product.name}</div>
-              <div className="text-sm text-muted-foreground">
-                SKU: {product.sku} • Stock: {product.stock}
+              <div className="font-medium text-sm">{product.name}</div>
+              <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
+                <span>SKU: {product.sku}</span>
+                <span>•</span>
+                <span>Stock: {product.stock}</span>
+                {product.barcode && (
+                  <>
+                    <span>•</span>
+                    <span>Barcode: {product.barcode}</span>
+                  </>
+                )}
               </div>
-              <div className="text-sm text-green-600 font-medium">
-                Selling Range: ${product.min_price} - ${product.max_price}
+              {product.serial_numbers && product.serial_numbers.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Serial: {product.serial_numbers.slice(0, 2).join(', ')}
+                  {product.serial_numbers.length > 2 && ` +${product.serial_numbers.length - 2} more`}
+                </div>
+              )}
+              <div className="text-xs text-green-600 font-medium mt-1">
+                Range: ${product.min_price} - ${product.max_price}
               </div>
             </div>
           ))}

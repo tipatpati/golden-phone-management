@@ -164,19 +164,22 @@ export function NewSaleDialog() {
           New Sale
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle>Create New Sale</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <ClientSelector
-            selectedClient={selectedClient}
-            onClientSelect={setSelectedClient}
-            onClientClear={() => setSelectedClient(null)}
-          />
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* Client and Product Selection - Side by side on larger screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <ClientSelector
+              selectedClient={selectedClient}
+              onClientSelect={setSelectedClient}
+              onClientClear={() => setSelectedClient(null)}
+            />
 
-          <ProductSelector onProductAdd={addProduct} />
+            <ProductSelector onProductAdd={addProduct} />
+          </div>
 
           {saleItems.length > 0 && (
             <ProductRecommendations 
@@ -194,45 +197,49 @@ export function NewSaleDialog() {
             onRemoveItem={removeProduct}
           />
 
-          {/* Payment Method */}
-          <div className="space-y-2">
-            <Label>Payment Method *</Label>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="card">Card</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Payment Method and Notes - Side by side on larger screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-2">
+              <Label>Payment Method *</Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="card">Card</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label>Notes</Label>
-            <Textarea
-              placeholder="Additional notes..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                placeholder="Additional notes..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="min-h-[2.5rem]"
+              />
+            </div>
           </div>
 
           <SaleTotals saleItems={saleItems} />
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setOpen(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={!isFormValid || createSale.isPending}
+              className="w-full sm:w-auto sm:flex-1"
             >
               {createSale.isPending ? "Creating..." : "Create Sale"}
             </Button>
