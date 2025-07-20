@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Mail } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
+import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { useSuppliers } from "@/services/useSuppliers";
 
 interface SuppliersTableProps {
@@ -27,6 +28,7 @@ interface SuppliersTableProps {
 export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [deletingSupplier, setDeletingSupplier] = useState<any>(null);
+  const [contactingSupplier, setContactingSupplier] = useState<any>(null);
   const { data: suppliers, isLoading } = useSuppliers();
 
   const filteredSuppliers = suppliers?.filter((supplier) =>
@@ -93,6 +95,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-background border shadow-lg">
                         <DropdownMenuItem 
+                          onClick={() => setContactingSupplier(supplier)}
+                          className="cursor-pointer"
+                          disabled={!supplier.email}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          Contact
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
                           onClick={() => setEditingSupplier(supplier)}
                           className="cursor-pointer"
                         >
@@ -126,6 +136,12 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
         supplier={deletingSupplier}
         open={!!deletingSupplier}
         onOpenChange={(open) => !open && setDeletingSupplier(null)}
+      />
+
+      <ContactSupplierDialog
+        supplier={contactingSupplier}
+        open={!!contactingSupplier}
+        onOpenChange={(open) => !open && setContactingSupplier(null)}
       />
     </>
   );

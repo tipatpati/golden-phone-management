@@ -25,9 +25,97 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const body = await req.json();
+    const { type } = body;
+
+    if (type === 'individual') {
+      return await handleIndividualContact(req, body);
+    } else {
+      return await handleLowStockAlert(req);
+    }
+  } catch (error: any) {
+    console.error("Error in contact-suppliers function:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        success: false 
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+const handleIndividualContact = async (req: Request, body: any): Promise<Response> => {
+  const { supplierEmail, supplierName, subject, message } = body;
+
+  if (!supplierEmail || !subject || !message) {
+    return new Response(
+      JSON.stringify({ 
+        error: "Missing required fields: supplierEmail, subject, message",
+        success: false 
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+
+  try {
+    const emailHTML = `
+      <h2>${subject}</h2>
+      <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        ${message.replace(/\n/g, '<br>')}
+      </div>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+      <p style="color: #666; font-size: 12px;">
+        This message was sent from the Phone Management System.<br>
+        Please reply to this email to respond directly to the sender.
+      </p>
+    `;
+
+    const emailResponse = await resend.emails.send({
+      from: "Phone Management <inventory@your-domain.com>",
+      to: [supplierEmail],
+      subject: subject,
+      html: emailHTML,
+    });
+
+    console.log(`Individual email sent to ${supplierName}:`, emailResponse);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Message sent successfully to ${supplierName}`,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+
+  } catch (emailError) {
+    console.error(`Failed to send email to ${supplierName}:`, emailError);
+    return new Response(
+      JSON.stringify({ 
+        error: `Failed to send email: ${emailError.message}`,
+        success: false 
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+const handleLowStockAlert = async (req: Request): Promise<Response> => {
     // Initialize Supabase client
-    const supabaseUrl = "https://joiwowvlujajwbarpsuc.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaXdvd3ZsdWphandiYXJwc3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjY5NDEsImV4cCI6MjA2NTQ0Mjk0MX0.0zl0V76SCadbeuFw7VfzaKfvKdMb18KuEji26VbU3mw";
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://joiwowvlujajwbarpsuc.supabase.co";
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaXdvd3ZsdWphandiYXJwc3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjY5NDEsImV4cCI6MjA2NTQ0Mjk0MX0.0zl0V76SCadbeuFw7VfzaKfvKdMb18KuEji26VbU3mw";
     
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
@@ -39,7 +127,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Get authorization token from request
     const authHeader = req.headers.get("authorization");
     if (authHeader) {
-      supabase.auth.setAuth(authHeader.replace("Bearer ", ""));
+      const token = authHeader.replace("Bearer ", "");
+      // Set the auth header for this request
+      supabase.auth.setSession({
+        access_token: token,
+        refresh_token: "",
+      });
     }
 
     console.log("Fetching low stock items...");

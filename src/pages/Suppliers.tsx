@@ -7,12 +7,39 @@ import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
-import { Search, Plus, Building2, Receipt } from "lucide-react";
+import { Search, Plus, Building2, Receipt, Mail, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
+  const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
+
+  const handleContactAllSuppliers = async () => {
+    setIsContactingSuppliers(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-suppliers', {
+        body: { type: 'lowstock' }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || "Failed to contact suppliers");
+      }
+    } catch (error: any) {
+      console.error("Error contacting suppliers:", error);
+      toast.error("Failed to contact suppliers. Please try again.");
+    } finally {
+      setIsContactingSuppliers(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -43,13 +70,28 @@ const Suppliers = () => {
                   <Building2 className="h-5 w-5" />
                   Supplier Management
                 </CardTitle>
-                <Button 
-                  onClick={() => setShowNewSupplier(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Supplier
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    onClick={handleContactAllSuppliers}
+                    variant="outline"
+                    disabled={isContactingSuppliers}
+                    className="flex items-center gap-2"
+                  >
+                    {isContactingSuppliers ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4" />
+                    )}
+                    {isContactingSuppliers ? "Contacting..." : "Contact Low Stock"}
+                  </Button>
+                  <Button 
+                    onClick={() => setShowNewSupplier(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Supplier
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
