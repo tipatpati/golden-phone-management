@@ -10,14 +10,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "[--glow-color:#1e9bff]",
-        destructive: "[--glow-color:#ff1867]",
-        outline: "[--glow-color:#6eff3e]",
-        secondary: "[--glow-color:#9ca3af]",
-        ghost: "[--glow-color:#8b5cf6]",
-        link: "[--glow-color:#06b6d4]",
-        success: "[--glow-color:#10b981]",
-        warning: "[--glow-color:#f59e0b]",
+        default: "[--glow-color:#2563eb]",
+        destructive: "[--glow-color:#dc2626]",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        success: "[--glow-color:#16a34a]",
+        warning: "[--glow-color:#ea580c]",
       },
       size: {
         default: "",

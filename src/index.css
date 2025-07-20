@@ -60,6 +60,14 @@
     --font-size-2xl: 1.5rem;   /* 24px */
     --font-size-3xl: 1.875rem; /* 30px */
 
+    /* Button Color Scheme */
+    --button-blue: 221 83% 40%;        /* Blue background */
+    --button-blue-hover: 45 86% 62%;   /* Golden background on hover */
+    --button-text: 0 0% 100%;          /* White text */
+    --button-text-hover: 0 0% 20%;     /* Dark text on golden hover */
+    --button-border: 221 83% 45%;      /* Blue border */
+    --button-border-hover: 43 74% 66%; /* Golden border on hover */
+
     --sidebar-background: 221 83% 98%;
     --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 221 83% 40%;
@@ -310,17 +318,17 @@
 }
 
   .glow-button {
-    background: hsl(120 100% 25%); /* Green background */
-    color: hsl(0 0% 100%); /* White text */
+    background: hsl(var(--button-blue)); /* Blue background */
+    color: hsl(var(--button-text)); /* White text */
     text-decoration: none;
     text-transform: uppercase;
-    font-size: var(--font-size-xs); /* Reduced from sm to xs */
+    font-size: var(--font-size-xs);
     letter-spacing: 0.1em;
     font-weight: 400;
     padding: var(--spacing-md) var(--spacing-xl);
-    transition: 0.5s;
+    transition: all 0.3s ease;
     font-family: 'Sora', ui-sans-serif, system-ui;
-    border: 1px solid hsl(120 100% 30%);
+    border: 1px solid hsl(var(--button-border));
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -369,17 +377,26 @@
   }
 
   .glow-button:hover {
-    background: hsl(120 100% 30%); /* Darker green on hover */
-    color: hsl(0 0% 100%); /* Keep white text */
+    background: hsl(var(--button-blue-hover)); /* Golden background on hover */
+    color: hsl(var(--button-text-hover)); /* Dark text on golden hover */
+    border-color: hsl(var(--button-border-hover));
     letter-spacing: 0.25em;
-    box-shadow: 0 0 35px hsl(120 100% 40%);
+    box-shadow: 0 0 25px hsl(var(--button-blue-hover) / 0.4);
+    transform: translateY(-1px);
   }
 
   .glow-button::before {
     content: '';
     position: absolute;
     inset: 2px;
-    background: hsl(120 100% 25%); /* Match green background */
+    background: hsl(var(--button-blue));
+    border-radius: calc(var(--radius) - 2px);
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+
+  .glow-button:hover::before {
+    background: hsl(var(--button-blue-hover));
   }
 
   .glow-button .button-text {
@@ -407,7 +424,7 @@
     height: 4px;
     background: hsl(var(--background));
     transform: translateX(-50%) skewX(325deg);
-    transition: 0.5s;
+    transition: 0.3s ease;
   }
 
   .glow-button:hover .button-effects::before {
@@ -424,7 +441,7 @@
     height: 4px;
     background: hsl(var(--background));
     transform: translateX(-50%) skewX(325deg);
-    transition: 0.5s;
+    transition: 0.3s ease;
   }
 
   .glow-button:hover .button-effects::after {
