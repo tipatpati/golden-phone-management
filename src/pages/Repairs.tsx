@@ -8,6 +8,7 @@ import { useRepairs } from "@/services/useRepairs";
 
 const Repairs = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const { data: repairs = [], isLoading, error } = useRepairs(searchTerm);
 
   if (error) {
@@ -36,6 +37,23 @@ const Repairs = () => {
     priority: repair.priority as 'low' | 'normal' | 'high' | 'urgent'
   }));
 
+  // Apply status filter
+  const filteredRepairs = statusFilter 
+    ? formattedRepairs.filter(repair => {
+        if (statusFilter === 'total') return true;
+        if (statusFilter === 'in_progress') return repair.status === 'in_progress';
+        if (statusFilter === 'awaiting_parts') return repair.status === 'awaiting_parts';
+        if (statusFilter === 'completed_today') {
+          const today = new Date().toISOString().split('T')[0];
+          const completionDate = repairs.find(r => r.id === repair.id)?.actual_completion_date 
+            ? new Date(repairs.find(r => r.id === repair.id)!.actual_completion_date!).toISOString().split('T')[0]
+            : null;
+          return completionDate === today;
+        }
+        return true;
+      })
+    : formattedRepairs;
+
   // Calculate stats
   const statusCounts = {
     total: repairs.length,
@@ -47,6 +65,10 @@ const Repairs = () => {
       const completionDate = new Date(r.actual_completion_date).toISOString().split('T')[0];
       return completionDate === today;
     }).length
+  };
+
+  const handleFilterChange = (filter: string | null) => {
+    setStatusFilter(filter === statusFilter ? null : filter);
   };
 
   if (isLoading) {
@@ -80,13 +102,17 @@ const Repairs = () => {
       </div>
 
       {/* Stats Cards */}
-      <RepairStatsCards statusCounts={statusCounts} />
+      <RepairStatsCards 
+        statusCounts={statusCounts} 
+        onFilterChange={handleFilterChange}
+        currentFilter={statusFilter}
+      />
 
       {/* Search */}
       <RepairSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       {/* Repairs List */}
-      <RepairsList repairs={formattedRepairs} />
+      <RepairsList repairs={filteredRepairs} />
     </div>
   );
 };
