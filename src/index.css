@@ -64,7 +64,7 @@
     --button-blue: 221 83% 40%;        /* Blue background */
     --button-blue-hover: 45 86% 62%;   /* Golden background on hover */
     --button-text: 0 0% 100%;          /* White text */
-    --button-text-hover: 0 0% 20%;     /* Dark text on golden hover */
+    --button-text-hover: 0 0% 100%;    /* White text on golden hover */
     --button-border: 221 83% 45%;      /* Blue border */
     --button-border-hover: 43 74% 66%; /* Golden border on hover */
 
