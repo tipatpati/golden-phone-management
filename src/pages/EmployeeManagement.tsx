@@ -61,15 +61,15 @@ export default function EmployeeManagement() {
             <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="employees" className="space-y-4">
-            <div className="flex justify-end mb-4">
+          <TabsContent value="employees" className="space-y-6">
+            <div className="flex justify-center mb-6">
               <Button
                 onClick={() => setIsNewEmployeeOpen(true)}
                 size="lg"
-                className="shadow-lg"
+                className="px-8 py-3 text-lg font-semibold"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Employee
+                <Plus className="h-5 w-5 mr-3" />
+                Add New Employee
               </Button>
             </div>
 
