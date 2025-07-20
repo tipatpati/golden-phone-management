@@ -5,24 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Search, Grid, List, FilterX, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => void }) {
-  const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+interface InventoryTableToolbarProps {
+  onAddProduct: () => void;
+  onSearchChange: (searchTerm: string) => void;
+  onViewModeChange: (viewMode: "list" | "grid") => void;
+  searchTerm: string;
+  viewMode: "list" | "grid";
+}
+
+export function InventoryTableToolbar({ 
+  onAddProduct, 
+  onSearchChange, 
+  onViewModeChange, 
+  searchTerm, 
+  viewMode 
+}: InventoryTableToolbarProps) {
   const queryClient = useQueryClient();
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    // Debounce could be added here for better performance
+    const newSearchTerm = e.target.value;
+    onSearchChange(newSearchTerm);
   };
   
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    queryClient.invalidateQueries({ queryKey: ['products', search] });
+    // The search is handled in real-time via onSearchChange
   };
   
   const clearSearch = () => {
-    setSearch("");
-    queryClient.invalidateQueries({ queryKey: ['products', ""] });
+    onSearchChange("");
   };
 
   return (
@@ -37,10 +48,10 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
             type="search"
             placeholder="Cerca prodotti..."
             className="w-full pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-            value={search}
+            value={searchTerm}
             onChange={handleSearch}
           />
-          {search && (
+          {searchTerm && (
             <button 
               type="button"
               className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-muted rounded transition-colors"
@@ -71,7 +82,7 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
           <Button 
             variant={viewMode === "grid" ? "default" : "outline"} 
             size="icon"
-            onClick={() => setViewMode("grid")}
+            onClick={() => onViewModeChange("grid")}
             className="h-12 w-12 flex items-center justify-center"
           >
             <Grid className="h-4 w-4" />
@@ -79,7 +90,7 @@ export function InventoryTableToolbar({ onAddProduct }: { onAddProduct: () => vo
           <Button 
             variant={viewMode === "list" ? "default" : "outline"} 
             size="icon"
-            onClick={() => setViewMode("list")}
+            onClick={() => onViewModeChange("list")}
             className="h-12 w-12 flex items-center justify-center"
           >
             <List className="h-4 w-4" />

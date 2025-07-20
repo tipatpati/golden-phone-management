@@ -20,11 +20,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export function InventoryTable() {
+interface InventoryTableProps {
+  searchTerm?: string;
+  viewMode?: "list" | "grid";
+}
+
+export function InventoryTable({ searchTerm = "", viewMode = "list" }: InventoryTableProps) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  // Use our Supabase API hook to fetch products
-  const { data: products, isLoading, isError } = useProducts();
+  // Use our Supabase API hook to fetch products with search
+  const { data: products, isLoading, isError } = useProducts(searchTerm);
   const deleteProduct = useDeleteProduct();
   
   console.log('InventoryTable render - editingProduct:', editingProduct);

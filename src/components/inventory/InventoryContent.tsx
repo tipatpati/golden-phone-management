@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryTableToolbar } from "@/components/inventory/InventoryTableToolbar";
 import { AddProductForm } from "@/components/inventory/AddProductForm";
@@ -16,6 +16,17 @@ export function InventoryContent({
   onAddProduct, 
   onCancelAddProduct 
 }: InventoryContentProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+  };
+
+  const handleViewModeChange = (newViewMode: "list" | "grid") => {
+    setViewMode(newViewMode);
+  };
+
   if (showAddProduct) {
     return (
       <div className="bg-muted/50 p-4 rounded-lg">
@@ -26,8 +37,14 @@ export function InventoryContent({
 
   return (
     <>
-      <InventoryTableToolbar onAddProduct={onAddProduct} />
-      <InventoryTable />
+      <InventoryTableToolbar 
+        onAddProduct={onAddProduct}
+        onSearchChange={handleSearchChange}
+        onViewModeChange={handleViewModeChange}
+        searchTerm={searchTerm}
+        viewMode={viewMode}
+      />
+      <InventoryTable searchTerm={searchTerm} viewMode={viewMode} />
 
       <div className="mt-4 flex items-center justify-center p-4 border border-dashed rounded-lg">
         <div className="flex flex-col items-center text-center max-w-md p-4">
