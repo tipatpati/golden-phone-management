@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { SideNavigation } from "./SideNavigation";
 import { Header } from "./Header";
+import { PWAStatus } from "@/components/pwa/PWAStatus";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MainLayoutProps {
@@ -33,6 +34,9 @@ export function MainLayout({ children }: MainLayoutProps) {
           </main>
         </div>
       </div>
+      
+      {/* PWA Status Component */}
+      <PWAStatus />
     </div>
   );
 }
