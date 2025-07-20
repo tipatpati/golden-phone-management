@@ -33,18 +33,18 @@ export default function EmployeeManagement() {
   });
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-6">
+    <div className="space-y-4 sm:space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-3 sm:p-6">
       {/* Security Alerts */}
       <SecurityAlerts />
       
       {/* Header */}
-      <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Employee Management
             </h1>
-            <p className="text-muted-foreground mt-3 text-lg">
+            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">
               Manage your team members and security settings
             </p>
           </div>
@@ -53,37 +53,38 @@ export default function EmployeeManagement() {
 
       {/* Tabs Section */}
       <Tabs defaultValue="employees" className="w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-6 border-0">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="employees">Employees</TabsTrigger>
-            <TabsTrigger value="roles">Role Management</TabsTrigger>
-            <TabsTrigger value="security">Security Dashboard</TabsTrigger>
-            <TabsTrigger value="audit">Security Audit</TabsTrigger>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-6 border-0">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 h-auto">
+            <TabsTrigger value="employees" className="text-xs sm:text-sm p-2 sm:p-3">Employees</TabsTrigger>
+            <TabsTrigger value="roles" className="text-xs sm:text-sm p-2 sm:p-3">Roles</TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm p-2 sm:p-3">Security</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs sm:text-sm p-2 sm:p-3">Audit</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="employees" className="space-y-6 mt-0">
+          <TabsContent value="employees" className="space-y-4 sm:space-y-6 mt-0">
             {/* Add Employee Button */}
             <div className="flex justify-end">
               <Button
                 onClick={() => setIsNewEmployeeOpen(true)}
-                size="lg"
-                className="px-6 py-3"
+                size="sm"
+                className="sm:size-lg px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Employee
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Add Employee</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
 
             {/* Search and Filter */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
+            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search employees by name or email..."
+                    placeholder="Search employees..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 h-10 sm:h-12 text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -91,7 +92,7 @@ export default function EmployeeManagement() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border-2 border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                    className="border-2 border-gray-200 rounded-lg px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-w-[100px]"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -103,7 +104,7 @@ export default function EmployeeManagement() {
             </div>
 
             {/* Employee Table */}
-            <div className="bg-white rounded-xl border border-gray-200">
+            <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 overflow-hidden">
               <EmployeeTable
                 employees={filteredEmployees}
                 isLoading={isLoading}

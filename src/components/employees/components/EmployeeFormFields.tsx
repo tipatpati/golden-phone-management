@@ -32,7 +32,7 @@ interface EmployeeFormFieldsProps {
 export function EmployeeFormFields({ formData, onFieldChange, showPassword = true }: EmployeeFormFieldsProps) {
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="first_name">First Name *</Label>
           <Input
@@ -102,7 +102,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="department">Department</Label>
           <Input
@@ -121,7 +121,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="salary">Salary (€)</Label>
           <Input
