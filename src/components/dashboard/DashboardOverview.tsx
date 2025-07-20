@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownRight, DollarSign, ShoppingBag, Users, Calendar } from "lucide-react";
 import { useSales } from "@/services/useSales";
@@ -7,6 +8,7 @@ import { useRepairs } from "@/services/useRepairs";
 import { useClients } from "@/services/useClients";
 
 export function DashboardOverview() {
+  const navigate = useNavigate();
   const { data: allSales = [] } = useSales();
   const { data: allRepairs = [] } = useRepairs();
   const { data: allClients = [] } = useClients();
@@ -36,6 +38,23 @@ export function DashboardOverview() {
   const revenueChange = yesterdayRevenue > 0 
     ? ((totalRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1)
     : '0';
+
+  const handleCardClick = (title: string) => {
+    switch (title) {
+      case "Total Revenue":
+      case "Total Sales":
+        navigate("/sales");
+        break;
+      case "New Customers":
+        navigate("/clients");
+        break;
+      case "Pending Repairs":
+        navigate("/repairs");
+        break;
+      default:
+        break;
+    }
+  };
 
   const overviewData = [
     {
@@ -75,7 +94,11 @@ export function DashboardOverview() {
   return (
     <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
       {overviewData.map((item, index) => (
-        <Card key={index} className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 hover:shadow-xl transition-all duration-300">
+        <Card 
+          key={index} 
+          className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+          onClick={() => handleCardClick(item.title)}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">{item.title}</CardTitle>
             <div className={`rounded-full bg-gradient-to-br ${item.gradient} p-2 sm:p-2.5 shadow-md flex-shrink-0`}>
