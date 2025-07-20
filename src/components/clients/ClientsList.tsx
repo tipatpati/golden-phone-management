@@ -26,7 +26,7 @@ export const ClientsList = ({ clients }: ClientsListProps) => {
   return (
     <div className="space-y-4">
       {clients.map((client) => (
-        <Card key={client.id} className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white hover:bg-gray-50/50 transform hover:-translate-y-1">
+        <Card key={client.id} className="card-glow hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white hover:bg-gray-50/50 transform hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
               {/* Client Info */}

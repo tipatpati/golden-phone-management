@@ -211,7 +211,7 @@ export const SalesOverview = React.memo(() => {
 
       {/* Sales Performance Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">Today's Sales</CardTitle>
           </CardHeader>

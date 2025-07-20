@@ -15,6 +15,7 @@
 
     --primary: 221 83% 40%;
     --primary-foreground: 210 40% 98%;
+    --primary-glow: 230 100% 75%;
 
     --secondary: 215 19% 35%;
     --secondary-foreground: 210 40% 98%;
@@ -90,6 +91,7 @@
 
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-glow: 230 100% 85%;
 
     --secondary: 217.2 32.6% 40%;
     --secondary-foreground: 210 40% 98%;
@@ -569,4 +571,41 @@
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+  }
+
+  /* Card Glow Effect */
+  @property --glow-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .card-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-glow::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -2px;
+    border: 2px solid;
+    border-image: conic-gradient(
+      from var(--glow-angle), 
+      hsl(var(--primary)), 
+      hsl(var(--primary-glow)),
+      hsl(var(--primary))
+    ) 1;
+    border-radius: inherit;
+    animation: glow-rotate 3s linear infinite;
+  }
+
+  @keyframes glow-rotate {
+    0% {
+      --glow-angle: 0deg;
+    }
+    100% {
+      --glow-angle: 360deg;
+    }
   }

@@ -30,7 +30,7 @@ export function SaleCard({ sale }: SaleCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white hover:bg-gray-50/50 transform hover:-translate-y-1">
+    <Card className="card-glow hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white hover:bg-gray-50/50 transform hover:-translate-y-1">
       <CardContent className="p-6">
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
           {/* Sale Info */}

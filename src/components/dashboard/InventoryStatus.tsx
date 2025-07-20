@@ -40,7 +40,7 @@ export function InventoryStatus() {
   };
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="card-glow border-0 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base sm:text-lg">Low Stock Items</CardTitle>
         <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">

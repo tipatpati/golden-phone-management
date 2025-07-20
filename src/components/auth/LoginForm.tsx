@@ -86,7 +86,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md card-glow">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2">
             <LogIn className="h-6 w-6" />

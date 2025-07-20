@@ -47,7 +47,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
@@ -56,7 +56,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         </CardContent>
       </Card>
       
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+      <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-900">{stats.in_progress}</div>
@@ -65,7 +65,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         </CardContent>
       </Card>
       
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
+      <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-900">{stats.awaiting_parts}</div>
@@ -74,7 +74,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
         </CardContent>
       </Card>
       
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+      <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
         <CardContent className="pt-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-900">{stats.completed_today}</div>
