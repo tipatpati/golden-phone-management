@@ -25,7 +25,7 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
         </Button>
       )}
       
-      <div className="flex flex-1 items-center gap-2 sm:gap-4 min-w-0">
+      <div className="flex flex-1 items-center justify-center gap-2 sm:gap-4 min-w-0">
         <div className="relative w-full max-w-[200px] sm:max-w-sm lg:max-w-md">
           <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input type="search" placeholder="Search..." className="w-full rounded-md border pl-8 h-9 sm:h-10 text-sm focus-visible:ring-yellow-400" />
