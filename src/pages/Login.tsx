@@ -7,21 +7,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { Logo } from "@/components/shared/Logo";
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { login } = useAuth();
-
+  const {
+    login
+  } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const sanitizedEmail = sanitizeEmail(email) || sanitizeInput(email);
     const sanitizedPassword = sanitizeInput(password);
-    
     if (!sanitizedEmail || !sanitizedPassword) {
       toast.error("Please provide valid credentials");
       return;
@@ -32,9 +29,7 @@ export default function Login() {
       toast.error("Password must be at least 6 characters long");
       return;
     }
-    
     setIsLoading(true);
-    
     try {
       // Use the auth context login - it will automatically detect user role from database
       await login(sanitizedEmail, sanitizedPassword);
@@ -48,9 +43,7 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       
       <div className="w-full max-w-md space-y-4 sm:space-y-6 relative z-10">
         {/* Login Card */}
@@ -74,16 +67,7 @@ export default function Login() {
                 <Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 Email Address
               </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(sanitizeInput(e.target.value))}
-                placeholder="Enter your email"
-                className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base"
-                maxLength={254}
-                required
-              />
+              <Input id="email" type="email" value={email} onChange={e => setEmail(sanitizeInput(e.target.value))} placeholder="Enter your email" className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={254} required />
             </div>
             
             {/* Password Field */}
@@ -93,33 +77,15 @@ export default function Login() {
                 Password
               </Label>
               <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base"
-                  maxLength={128}
-                  minLength={6}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
+                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={128} minLength={6} required />
+                <button type="button" className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
                 </button>
               </div>
             </div>
 
             {/* Submit Button */}
-            <Button 
-              type="submit" 
-              className="w-full h-10 sm:h-12 glass-button font-medium text-white text-sm sm:text-base"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full h-10 sm:h-12 glass-button font-medium text-white text-sm sm:text-base" disabled={isLoading}>
               <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               {isLoading ? "Signing In..." : "Sign In"}
             </Button>
@@ -134,9 +100,7 @@ export default function Login() {
 
           {/* Footer Links */}
           <div className="flex items-center justify-center text-xs sm:text-sm pt-3 sm:pt-4 border-t border-white/10">
-            <div className="text-white/60">
-              Powered by Supabase
-            </div>
+            
           </div>
         </div>
 
@@ -147,6 +111,5 @@ export default function Login() {
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
