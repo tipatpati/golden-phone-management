@@ -1,6 +1,8 @@
 
+import { calculatePasswordStrength } from '@/components/password/PasswordStrengthIndicator';
+
 export const generateRandomPassword = (): string => {
-  const length = 16; // Increased length for better security
+  const length = 16; // Strong length for better security
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   
   // Use crypto.getRandomValues for cryptographically secure random generation
@@ -12,15 +14,14 @@ export const generateRandomPassword = (): string => {
     password += chars.charAt(array[i] % chars.length);
   }
   
-  // Ensure password contains at least one character from each category
-  const hasLower = /[a-z]/.test(password);
-  const hasUpper = /[A-Z]/.test(password);
-  const hasDigit = /\d/.test(password);
-  const hasSpecial = /[!@#$%^&*]/.test(password);
+  // Ensure password meets strength requirements
+  const strength = calculatePasswordStrength(password);
   
-  if (!hasLower || !hasUpper || !hasDigit || !hasSpecial) {
-    // Regenerate if password doesn't meet complexity requirements
-    return generateRandomPassword();
+  // If password doesn't meet minimum strength requirements, regenerate
+  if (strength.score < 5 || !strength.requirements.length || !strength.requirements.uppercase || 
+      !strength.requirements.lowercase || !strength.requirements.numbers || 
+      !strength.requirements.special || !strength.requirements.common) {
+    return generateRandomPassword(); // Recursive call to regenerate
   }
   
   return password;

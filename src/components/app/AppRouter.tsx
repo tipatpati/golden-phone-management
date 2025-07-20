@@ -15,6 +15,7 @@ import Repairs from "@/pages/Repairs";
 import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
+import ResetPassword from "@/pages/ResetPassword";
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user } = useAuth();
@@ -54,6 +55,9 @@ export function AppRouter() {
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/admin-login" element={<Navigate to="/" replace />} />
         <Route path="/employee-login" element={<Navigate to="/" replace />} />
+        
+        {/* Password reset route - accessible without authentication */}
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (

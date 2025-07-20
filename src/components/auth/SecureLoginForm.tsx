@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { enhancedRateLimiter, validateInput, handleSecurityError, monitorSecurityEvents } from "@/utils/securityEnhancements";
+import { PasswordStrengthIndicator } from "@/components/password/PasswordStrengthIndicator";
+import { PasswordResetDialog } from "@/components/password/PasswordResetDialog";
 
 interface SecureLoginFormProps {
   onLoginSuccess: () => void;
@@ -26,6 +28,7 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
   const [activeTab, setActiveTab] = useState("login");
   const [rateLimited, setRateLimited] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number>(0);
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   
   // Validation states
   const [emailError, setEmailError] = useState<string>("");
@@ -248,9 +251,20 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
                   </div>
                   {passwordError && (
                     <p className="text-sm text-destructive">{passwordError}</p>
-                  )}
-                </div>
-              </CardContent>
+                   )}
+                 </div>
+
+                 <div className="flex justify-end">
+                   <Button
+                     type="button"
+                     variant="link"
+                     className="text-sm p-0 h-auto"
+                     onClick={() => setPasswordResetOpen(true)}
+                   >
+                     Forgot your password?
+                   </Button>
+                 </div>
+               </CardContent>
               
               <CardFooter>
                 <Button 
@@ -328,10 +342,11 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {passwordError && (
-                    <p className="text-sm text-destructive">{passwordError}</p>
-                  )}
-                </div>
+                   {passwordError && (
+                     <p className="text-sm text-destructive">{passwordError}</p>
+                   )}
+                   <PasswordStrengthIndicator password={password} />
+                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="role-select">Role</Label>
@@ -371,6 +386,11 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
           </TabsContent>
         </Tabs>
       </Card>
+
+      <PasswordResetDialog
+        open={passwordResetOpen}
+        onOpenChange={setPasswordResetOpen}
+      />
     </div>
   );
 }
