@@ -284,7 +284,7 @@ export const SalesOverview = React.memo(() => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full mx-auto">
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
               <XAxis dataKey="period" stroke="#6b7280" />
