@@ -84,15 +84,19 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function SideNavigation() {
+interface SideNavigationProps {
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
+}
+
+export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const { logout, userRole, username } = useAuth();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const menuIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
+  const setMenuOpen = setIsOpen || setInternalIsOpen;
 
   const filteredNavItems = navItems.filter((item) =>
     userRole && item.permission.includes(userRole)
@@ -100,23 +104,12 @@ export function SideNavigation() {
 
   return (
     <>
-      {/* Mobile menu button */}
-      {isMobile && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleMenu}
-          className="fixed top-2 left-2 z-50 hover:bg-yellow-50 hover:text-yellow-700 h-8 w-8 bg-white/80 backdrop-blur-sm shadow-sm"
-        >
-          {isOpen ? <X size={18} /> : <Menu size={18} />}
-        </Button>
-      )}
 
       {/* Mobile overlay */}
-      {isMobile && isOpen && (
+      {isMobile && menuIsOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-30" 
-          onClick={() => setIsOpen(false)}
+          onClick={() => setMenuOpen(false)}
         />
       )}
 
@@ -124,7 +117,7 @@ export function SideNavigation() {
       <aside
         className={cn(
           "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out shadow-lg",
-          isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"
+          isMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
       >
         <div className="flex h-full flex-col">
@@ -146,7 +139,7 @@ export function SideNavigation() {
                           ? "bg-primary text-primary-foreground"
                           : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
                       )}
-                      onClick={() => isMobile && setIsOpen(false)}
+                      onClick={() => isMobile && setMenuOpen(false)}
                     >
                       <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       <span className="truncate">{item.title}</span>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { SideNavigation } from "./SideNavigation";
 import { Header } from "./Header";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,15 +10,20 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Full-width header bar */}
-      <Header />
+      <Header isMenuOpen={isSidebarOpen} toggleMenu={toggleSidebar} />
       
       {/* Sidebar and main content container */}
       <div className="flex">
-        <SideNavigation />
+        <SideNavigation isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         
         <div className={`flex-1 min-w-0 transition-all duration-200 ${isMobile ? "pl-0" : "pl-64"}`}>
           <main className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 flex justify-center">
