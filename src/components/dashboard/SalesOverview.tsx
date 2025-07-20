@@ -283,8 +283,8 @@ export const SalesOverview = React.memo(() => {
             {timePeriod === 'daily' ? 'Last 7 days' : timePeriod === 'weekly' ? 'Last 4 weeks' : 'Last 12 months'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
+        <CardContent className="flex justify-center">
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
               <XAxis dataKey="period" stroke="#6b7280" />
