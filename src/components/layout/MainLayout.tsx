@@ -12,7 +12,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useIsMobile();
   
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 justify-center px-4 md:px-8 lg:px-12">
       <SideNavigation />
       
       <div className={`flex-1 min-w-0 transition-all duration-200 ${isMobile ? "pl-0" : "pl-64"}`}>
