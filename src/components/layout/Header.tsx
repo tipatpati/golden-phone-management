@@ -12,6 +12,7 @@ export function Header() {
         </div>
       </div>
       
+      <i className="button-effects"></i>
       
     </header>;
 }

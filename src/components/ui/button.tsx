@@ -49,7 +49,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         <span className="button-text">{children}</span>
-        <i className="button-effects"></i>
       </Comp>
     )
   }
