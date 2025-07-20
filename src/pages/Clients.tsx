@@ -20,13 +20,13 @@ const Clients = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
-            <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Client Management
             </h2>
-            <p className="text-muted-foreground mt-3 text-lg">Loading clients...</p>
+            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">Loading clients...</p>
           </div>
         </div>
       </div>
@@ -35,13 +35,13 @@ const Clients = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border-0">
-            <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Client Management
             </h2>
-            <p className="text-red-500 mt-3 text-lg">Error loading clients. Please try again.</p>
+            <p className="text-red-500 mt-2 sm:mt-3 text-base sm:text-lg">Error loading clients. Please try again.</p>
           </div>
         </div>
       </div>
@@ -49,11 +49,11 @@ const Clients = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         <ClientsHeader />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="lg:col-span-2">
             <ClientsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
