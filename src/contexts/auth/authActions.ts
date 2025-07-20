@@ -74,10 +74,8 @@ export function createAuthActions(params: AuthActionsParams) {
       
       toast.success('Successfully logged in');
       
-      // Redirect to main dashboard after successful login
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
+      // Don't force a page reload - let React Router handle navigation
+      // React Router will automatically redirect based on authentication state
       
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -127,10 +125,7 @@ export function createAuthActions(params: AuthActionsParams) {
         toast.success('Check your email for confirmation link');
       } else {
         toast.success('Account created successfully');
-        // Redirect to dashboard after successful signup
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
+        // Let React Router handle navigation automatically
       }
     } catch (error: any) {
       console.error('Signup failed:', error);
@@ -161,11 +156,7 @@ export function createAuthActions(params: AuthActionsParams) {
       }
       
       toast.success('Logged out successfully');
-      
-      // Redirect to home page after logout
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
+      // Let React Router handle navigation automatically
       
     } catch (error: any) {
       console.error('Logout failed:', error);
@@ -178,11 +169,7 @@ export function createAuthActions(params: AuthActionsParams) {
       setUsername(null);
       
       toast.success('Logged out successfully');
-      
-      // Still redirect even if there was an error
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
+      // Let React Router handle navigation automatically
     }
   };
 
