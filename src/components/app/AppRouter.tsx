@@ -31,15 +31,29 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes - redirect to main app if already logged in */}
-        <Route path="/login" element={
-          isLoggedIn ? <Navigate to="/" replace /> : <Login />
+        {/* Root route - login if not authenticated, main app if authenticated */}
+        <Route path="/" element={
+          isLoggedIn ? (
+            userRole === 'admin' ? (
+              <ProtectedRoute>
+                <MainLayout>
+                  <Dashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            ) : (
+              <EmployeeLayout userRole={userRole || 'salesperson'}>
+                <EmployeeDashboard userRole={userRole || 'salesperson'} />
+              </EmployeeLayout>
+            )
+          ) : (
+            <Login />
+          )
         } />
-        <Route path="/admin-login" element={<Navigate to="/login" replace />} />
-        <Route path="/employee-login" element={<Navigate to="/login" replace />} />
         
-        {/* Redirect unauthenticated users to login */}
-        {!isLoggedIn && <Route path="/" element={<Navigate to="/login" replace />} />}
+        {/* Legacy login routes redirect to root */}
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/admin-login" element={<Navigate to="/" replace />} />
+        <Route path="/employee-login" element={<Navigate to="/" replace />} />
         
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
@@ -47,13 +61,6 @@ export function AppRouter() {
             {/* Admin users get full admin interface */}
             {userRole === 'admin' ? (
               <>
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Dashboard />
-                    </MainLayout>
-                  </ProtectedRoute>
-                } />
                 <Route path="/sales" element={
                   <ProtectedRoute>
                     <MainLayout>
@@ -118,11 +125,6 @@ export function AppRouter() {
             ) : (
               /* Employee interface for non-admin roles */
               <>
-                <Route path="/" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
-                    <EmployeeDashboard userRole={userRole || 'salesperson'} />
-                  </EmployeeLayout>
-                } />
                 <Route path="/sales" element={
                   <EmployeeLayout userRole={userRole || 'salesperson'}>
                     <Sales />
