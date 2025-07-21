@@ -28,7 +28,10 @@ export function useAuthState() {
         // Set default admin role for users without profiles
         setUserRole('admin');
         setInterfaceRole('admin');
-        setUsername(user?.email?.split('@')[0] || 'user');
+        // Get user email from the current session for username
+        const currentSession = await supabase.auth.getSession();
+        const userEmail = currentSession.data.session?.user?.email;
+        setUsername(userEmail?.split('@')[0] || 'user');
         return;
       }
       
