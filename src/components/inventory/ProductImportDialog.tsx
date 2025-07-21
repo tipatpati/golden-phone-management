@@ -71,22 +71,25 @@ export function ProductImportDialog() {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const { data, error } = await supabase.functions.invoke('product-bulk-operations', {
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      }, {
-        method: 'POST',
-        query: { operation: 'import' }
-      });
+      const response = await fetch(
+        `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/product-bulk-operations?operation=import`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Import failed');
+      }
+
+      const data = await response.json();
 
       clearInterval(progressInterval);
       setProgress(100);
-
-      if (error) {
-        throw error;
-      }
 
       setResult(data);
       

@@ -90,7 +90,7 @@ export function ProductExportDialog() {
               <Checkbox 
                 id="timestamps" 
                 checked={includeTimestamps}
-                onCheckedChange={setIncludeTimestamps}
+                onCheckedChange={(checked) => setIncludeTimestamps(checked === true)}
               />
               <Label htmlFor="timestamps" className="text-sm">
                 Include created/updated timestamps
