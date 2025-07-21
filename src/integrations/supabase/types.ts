@@ -214,7 +214,6 @@ export type Database = {
           name: string
           price: number
           serial_numbers: string[] | null
-          sku: string
           stock: number
           supplier: string | null
           threshold: number
@@ -232,7 +231,6 @@ export type Database = {
           name: string
           price: number
           serial_numbers?: string[] | null
-          sku: string
           stock?: number
           supplier?: string | null
           threshold?: number
@@ -250,7 +248,6 @@ export type Database = {
           name?: string
           price?: number
           serial_numbers?: string[] | null
-          sku?: string
           stock?: number
           supplier?: string | null
           threshold?: number

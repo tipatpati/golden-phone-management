@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 interface ProductFormFieldsProps {
   name: string;
   setName: (value: string) => void;
-  sku: string;
-  setSku: (value: string) => void;
   category: string;
   setCategory: (value: string) => void;
   price: string;
@@ -42,7 +40,6 @@ const CATEGORY_OPTIONS = [
 
 export function ProductFormFields({
   name, setName,
-  sku, setSku,
   category, setCategory,
   price, setPrice,
   minPrice, setMinPrice,
@@ -65,17 +62,6 @@ export function ProductFormFields({
             value={name} 
             onChange={(e) => setName(e.target.value)} 
             placeholder="iPhone 13 Pro" 
-            required 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="product-sku">SKU *</Label>
-          <Input 
-            id="product-sku" 
-            value={sku} 
-            onChange={(e) => setSku(e.target.value)} 
-            placeholder="PHN-IP13P-256-GRY" 
             required 
           />
         </div>

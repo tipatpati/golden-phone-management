@@ -81,7 +81,7 @@ export function ProductRecommendations({
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                SKU: {product.sku} • Stock: {product.stock}
+                Stock: {product.stock}
               </div>
               <div className="text-xs text-green-600 font-medium">
                 ${product.min_price} - ${product.max_price}

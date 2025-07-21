@@ -45,7 +45,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           ref={searchInputRef}
-          placeholder="Search by name, SKU, barcode, or scan barcode..."
+          placeholder="Search by name, serial/IMEI, barcode, or scan barcode..."
           value={productSearch}
           onChange={(e) => setProductSearch(e.target.value)}
           className="pl-8 pr-12"
@@ -69,7 +69,11 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
             >
               <div className="font-medium text-sm">{product.name}</div>
               <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
-                <span>SKU: {product.sku}</span>
+                <span>
+                  {product.serial_numbers?.[0] ? 
+                    `Serial: ${product.serial_numbers[0]}` : 
+                    `ID: ${product.id.slice(0, 8)}`}
+                </span>
                 <span>•</span>
                 <span>Stock: {product.stock}</span>
                 {product.barcode && (
