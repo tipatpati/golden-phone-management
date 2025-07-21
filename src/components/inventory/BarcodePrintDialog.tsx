@@ -110,32 +110,38 @@ export function BarcodePrintDialog({
             }
             
             .print-label {
-              border: 1px solid #ddd;
-              padding: 15px;
+              border: 1px solid #d1d5db;
+              padding: 12px;
               margin: 5px;
               text-align: center;
               background: white;
               width: ${currentSize.width}px;
-              min-height: ${currentSize.height}px;
+              height: ${currentSize.height}px;
               display: inline-block;
               vertical-align: top;
+              box-sizing: border-box;
+              overflow: hidden;
             }
             
-            /* Tailwind class overrides to match preview exactly */
+            /* Exact Tailwind class replications */
             .text-xs {
               font-size: 12px;
+              line-height: 1rem;
             }
             
             .text-sm {
               font-size: 14px;
+              line-height: 1.25rem;
             }
             
             .text-lg {
               font-size: 18px;
+              line-height: 1.75rem;
             }
             
             .text-xl {
               font-size: 20px;
+              line-height: 1.75rem;
             }
             
             .font-bold {
@@ -223,19 +229,43 @@ export function BarcodePrintDialog({
               color: #6b7280;
             }
             
+            .text-center {
+              text-align: center;
+            }
+            
+            /* Canvas and barcode styling */
             canvas {
               max-width: 100%;
               height: auto;
+              display: block;
+              margin: 0 auto;
             }
             
-            /* Additional styles for better print quality */
-            .text-center {
-              text-align: center;
+            /* Ensure content fits within label dimensions */
+            .print-label > * {
+              max-width: 100%;
+            }
+            
+            /* Responsive canvas for different label sizes */
+            .barcode-container {
+              width: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin: 8px 0;
             }
           </style>
         </head>
         <body>
           ${allLabels}
+          <script>
+            // Wait for canvases to render before printing
+            window.addEventListener('load', function() {
+              setTimeout(function() {
+                window.print();
+              }, 1000);
+            });
+          </script>
         </body>
       </html>
     `);
@@ -243,11 +273,14 @@ export function BarcodePrintDialog({
     printWindow.document.close();
     printWindow.focus();
     
-    // Small delay to ensure content is loaded
+    // Longer delay to ensure barcodes are fully rendered
     setTimeout(() => {
       printWindow.print();
-      printWindow.close();
-    }, 500);
+      // Don't close immediately to allow user to see print preview
+      setTimeout(() => {
+        printWindow.close();
+      }, 2000);
+    }, 1500);
 
     toast.success(`Preparing to print ${copiesNum} label(s)`);
   };
