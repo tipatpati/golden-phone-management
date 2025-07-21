@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useProducts, useDeleteProduct } from "@/services/useProducts";
+import { useProducts, useDeleteProduct, useUpdateProduct } from "@/services/useProducts";
 import { Product } from "@/services/supabaseProducts";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Barcode, Smartphone, Printer } from "lucide-react";
@@ -32,6 +32,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
   // Use our Supabase API hook to fetch products with search
   const { data: products, isLoading, isError } = useProducts(searchTerm);
   const deleteProduct = useDeleteProduct();
+  const updateProduct = useUpdateProduct();
   
   console.log('InventoryTable render - editingProduct:', editingProduct);
   
@@ -112,6 +113,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
                   product={product} 
                   onEdit={handleEditProduct}
                   onDelete={handleDeleteProduct}
+                  onUpdate={updateProduct}
                   isDeleting={deleteProduct.isPending}
                 />
               ))}
@@ -133,11 +135,13 @@ function ProductRow({
   product, 
   onEdit, 
   onDelete,
+  onUpdate,
   isDeleting 
 }: { 
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onUpdate: any;
   isDeleting: boolean;
 }) {
   return (
@@ -176,25 +180,30 @@ function ProductRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end items-center gap-1">
-          {product.barcode && (
-            <BarcodePrintDialog
-              productName={product.name}
-              barcode={product.barcode}
-              sku={product.sku}
-              price={product.price}
-              specifications={product.description}
-              trigger={
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 flex items-center justify-center"
-                  title="Print Product Sticker"
-                >
-                  <Printer className="h-3 w-3" />
-                </Button>
-              }
-            />
-          )}
+          <BarcodePrintDialog
+            productName={product.name}
+            barcode={product.barcode || undefined}
+            sku={product.sku}
+            price={product.price}
+            specifications={product.description}
+            onBarcodeGenerated={(newBarcode) => {
+              // Update the product with the new barcode
+              onUpdate.mutate({
+                id: product.id,
+                product: { ...product, barcode: newBarcode }
+              });
+            }}
+            trigger={
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 flex items-center justify-center"
+                title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
+              >
+                <Printer className="h-3 w-3" />
+              </Button>
+            }
+          />
           
           <Button 
             variant="ghost" 

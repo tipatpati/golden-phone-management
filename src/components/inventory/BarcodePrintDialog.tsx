@@ -1,31 +1,34 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarcodeGenerator } from './BarcodeGenerator';
-import { Printer, Download, Copy } from 'lucide-react';
+import { Printer, Download, Copy, RotateCcw } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
 
 interface BarcodePrintDialogProps {
   productName: string;
-  barcode: string;
+  barcode?: string;
   sku: string;
   price: number;
   specifications?: string;
   companyName?: string;
   trigger?: React.ReactNode;
+  onBarcodeGenerated?: (barcode: string) => void;
 }
 
 export function BarcodePrintDialog({
   productName,
-  barcode,
+  barcode: initialBarcode,
   sku,
   price,
   specifications,
   companyName = "GOLDEN PHONE SRL",
-  trigger
+  trigger,
+  onBarcodeGenerated
 }: BarcodePrintDialogProps) {
   const [copies, setCopies] = useState("1");
   const [labelSize, setLabelSize] = useState("medium");
@@ -35,7 +38,13 @@ export function BarcodePrintDialog({
   const [includeCompany, setIncludeCompany] = useState(true);
   const [labelFormat, setLabelFormat] = useState("sticker"); // "basic" or "sticker"
   const [isOpen, setIsOpen] = useState(false);
+  const [barcode, setBarcode] = useState(initialBarcode || '');
+  const [isGeneratingBarcode, setIsGeneratingBarcode] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setBarcode(initialBarcode || '');
+  }, [initialBarcode]);
 
   const labelSizes = {
     small: { width: 200, height: 120, barcodeWidth: 1.5, barcodeHeight: 60 },
@@ -47,6 +56,11 @@ export function BarcodePrintDialog({
 
   const handlePrint = () => {
     if (!printAreaRef.current) return;
+    
+    if (!barcode) {
+      toast.error('Please generate a barcode before printing');
+      return;
+    }
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -213,7 +227,25 @@ export function BarcodePrintDialog({
     toast.info('Use the Print button for best results. Download feature coming soon.');
   };
 
+  const handleGenerateBarcode = async () => {
+    setIsGeneratingBarcode(true);
+    try {
+      const newBarcode = generateSKUBasedBarcode(sku);
+      setBarcode(newBarcode);
+      onBarcodeGenerated?.(newBarcode);
+      toast.success('Barcode generated successfully');
+    } catch (error) {
+      toast.error('Failed to generate barcode');
+    } finally {
+      setIsGeneratingBarcode(false);
+    }
+  };
+
   const handleCopyBarcode = () => {
+    if (!barcode) {
+      toast.error('No barcode to copy');
+      return;
+    }
     navigator.clipboard.writeText(barcode).then(() => {
       toast.success('Barcode copied to clipboard');
     }).catch(() => {
@@ -332,7 +364,18 @@ export function BarcodePrintDialog({
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={handleCopyBarcode} variant="outline" size="sm">
+              {!barcode && (
+                <Button 
+                  onClick={handleGenerateBarcode} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={isGeneratingBarcode}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  {isGeneratingBarcode ? 'Generating...' : 'Generate Barcode'}
+                </Button>
+              )}
+              <Button onClick={handleCopyBarcode} variant="outline" size="sm" disabled={!barcode}>
                 <Copy className="h-4 w-4 mr-2" />
                 Copy Barcode
               </Button>
@@ -372,14 +415,20 @@ export function BarcodePrintDialog({
                       </div>
                     )}
                     
-                    <div className="my-3 flex justify-center">
-                      <BarcodeGenerator
-                        value={barcode}
-                        width={currentSize.barcodeWidth}
-                        height={currentSize.barcodeHeight}
-                        displayValue={true}
-                      />
-                    </div>
+                     <div className="my-3 flex justify-center">
+                       {barcode ? (
+                         <BarcodeGenerator
+                           value={barcode}
+                           width={currentSize.barcodeWidth}
+                           height={currentSize.barcodeHeight}
+                           displayValue={true}
+                         />
+                       ) : (
+                         <div className="text-sm text-gray-500 border-2 border-dashed border-gray-300 p-4 rounded">
+                           No barcode - Click "Generate Barcode" to create one
+                         </div>
+                       )}
+                     </div>
 
                     {includePrice && (
                       <div className="text-xl font-bold text-black">
@@ -393,14 +442,20 @@ export function BarcodePrintDialog({
                       {productName}
                     </div>
                     
-                    <div className="my-3 flex justify-center">
-                      <BarcodeGenerator
-                        value={barcode}
-                        width={currentSize.barcodeWidth}
-                        height={currentSize.barcodeHeight}
-                        displayValue={true}
-                      />
-                    </div>
+                     <div className="my-3 flex justify-center">
+                       {barcode ? (
+                         <BarcodeGenerator
+                           value={barcode}
+                           width={currentSize.barcodeWidth}
+                           height={currentSize.barcodeHeight}
+                           displayValue={true}
+                         />
+                       ) : (
+                         <div className="text-sm text-gray-500 border-2 border-dashed border-gray-300 p-4 rounded">
+                           No barcode - Generate one first
+                         </div>
+                       )}
+                     </div>
 
                     <div className="text-xs text-gray-600 space-y-1">
                       {includePrice && (
@@ -429,7 +484,7 @@ export function BarcodePrintDialog({
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
-          <Button onClick={handlePrint}>
+          <Button onClick={handlePrint} disabled={!barcode}>
             <Printer className="h-4 w-4 mr-2" />
             Print {copies} Label{parseInt(copies) !== 1 ? 's' : ''}
           </Button>
