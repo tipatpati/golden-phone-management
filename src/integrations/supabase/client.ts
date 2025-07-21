@@ -3,24 +3,18 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Use environment variables for security
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://joiwowvlujajwbarpsuc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaXdvd3ZsdWphandiYXJwc3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjY5NDEsImV4cCI6MjA2NTQ0Mjk0MX0.0zl0V76SCadbeuFw7VfzaKfvKdMb18KuEji26VbU3mw";
-
-// Validate environment variables
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Missing required Supabase environment variables');
-}
+// Direct configuration - Lovable doesn't support VITE_ environment variables
+const SUPABASE_URL = "https://joiwowvlujajwbarpsuc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaXdvd3ZsdWphandiYXJwc3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4NjY5NDEsImV4cCI6MjA2NTQ0Mjk0MX0.0zl0V76SCadbeuFw7VfzaKfvKdMb18KuEji26VbU3mw";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce' // Use PKCE flow for better security
+    detectSessionInUrl: false, // Disable URL detection to avoid issues
+    flowType: 'implicit' // Use simpler flow for better compatibility
   }
 });
