@@ -80,9 +80,24 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
                 )}
               </div>
               {product.serial_numbers && product.serial_numbers.length > 0 && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  Serial: {product.serial_numbers.slice(0, 2).join(', ')}
-                  {product.serial_numbers.length > 2 && ` +${product.serial_numbers.length - 2} more`}
+                <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                  {product.serial_numbers.slice(0, 2).map((serial, index) => {
+                    const parts = serial.split(' ');
+                    const serialNumber = parts.slice(0, -1).join(' ') || parts[0];
+                    const battery = parts.length > 1 ? parseInt(parts[parts.length - 1]) : null;
+                    
+                    return (
+                      <div key={index} className="flex items-center gap-2">
+                        <span>Serial: {serialNumber}</span>
+                        {battery !== null && !isNaN(battery) && battery >= 0 && battery <= 100 && (
+                          <span className="text-green-600 font-medium">🔋{battery}%</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {product.serial_numbers.length > 2 && (
+                    <div className="text-xs">+{product.serial_numbers.length - 2} more</div>
+                  )}
                 </div>
               )}
               <div className="text-xs text-green-600 font-medium mt-1">

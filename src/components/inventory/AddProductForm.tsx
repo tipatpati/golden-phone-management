@@ -75,7 +75,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     
     // If product has serial numbers, validate they are provided
     if (hasSerial && !serialNumbers.trim()) {
-      toast.error("Please add at least one IMEI/serial number");
+      toast.error("Please add at least one IMEI/serial number with battery level");
       return;
     }
     
@@ -83,6 +83,20 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const serialArray = hasSerial 
       ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
       : [];
+      
+    // Validate serial number format with battery levels
+    if (hasSerial && serialArray.length > 0) {
+      for (const serial of serialArray) {
+        const parts = serial.split(/\s+/);
+        if (parts.length >= 2) {
+          const batteryLevel = parseInt(parts[parts.length - 1]);
+          if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
+            toast.error(`Invalid battery level for "${serial}". Battery level must be between 0-100.`);
+            return;
+          }
+        }
+      }
+    }
       
     // Validate that number of serial numbers matches stock quantity
     if (hasSerial && serialArray.length !== parseInt(stock)) {

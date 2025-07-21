@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ProductFormFields, CATEGORY_OPTIONS } from "@/components/inventory/ProductFormFields";
 import { useUpdateProduct, useCategories } from "@/services/useProducts";
 import { Product } from "@/services/supabaseProducts";
@@ -30,7 +32,9 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const [description, setDescription] = useState(product.description || "");
   const [barcode, setBarcode] = useState(product.barcode || "");
   const [hasSerial, setHasSerial] = useState(product.has_serial || false);
-  const [serialNumbers, setSerialNumbers] = useState<string[]>(product.serial_numbers || []);
+  const [serialNumbers, setSerialNumbers] = useState<string>(
+    product.serial_numbers ? product.serial_numbers.join('\n') : ""
+  );
 
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
@@ -50,7 +54,27 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
     e.preventDefault();
     console.log('Submitting form with data:', { name, sku, categoryId, price, stock, threshold });
     
+    // Validate serial numbers with battery levels if they exist
+    if (hasSerial && serialNumbers.trim()) {
+      const serialArray = serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "");
+      
+      for (const serial of serialArray) {
+        const parts = serial.split(/\s+/);
+        if (parts.length >= 2) {
+          const batteryLevel = parseInt(parts[parts.length - 1]);
+          if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
+            toast.error(`Invalid battery level for "${serial}". Battery level must be between 0-100.`);
+            return;
+          }
+        }
+      }
+    }
+    
     try {
+      const serialArray = hasSerial && serialNumbers.trim() 
+        ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
+        : [];
+        
       const updatedProduct = {
         name,
         sku,
@@ -63,7 +87,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         description: description || undefined,
         barcode: barcode || undefined,
         has_serial: hasSerial,
-        serial_numbers: hasSerial ? serialNumbers : undefined,
+        serial_numbers: hasSerial ? serialArray : undefined,
       };
 
       await updateProduct.mutateAsync({ 
@@ -110,10 +134,26 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setBarcode={setBarcode}
               hasSerial={hasSerial}
               setHasSerial={setHasSerial}
-              serialNumbers={serialNumbers}
-              setSerialNumbers={setSerialNumbers}
               categories={categories}
             />
+            
+            {hasSerial && (
+              <div className="space-y-2">
+                <Label htmlFor="serial-numbers">
+                  IMEI/Serial Numbers with Battery Level (One per line)
+                </Label>
+                <Textarea 
+                  id="serial-numbers"
+                  value={serialNumbers}
+                  onChange={(e) => setSerialNumbers(e.target.value)}
+                  placeholder="352908764123456 85&#10;352908764123457 92&#10;352908764123458 78"
+                  className="h-32"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Format: IMEI/Serial followed by battery level (e.g., "352908764123456 85")
+                </p>
+              </div>
+            )}
             
             {/* Barcode Section */}
             {barcode && (
