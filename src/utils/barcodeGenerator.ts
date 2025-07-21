@@ -77,7 +77,7 @@ export function generateSerialBasedBarcode(serial: string, productId?: string): 
   return partialBarcode + checkDigit;
 }
 
-// Legacy function name for backward compatibility - now uses serial
+// Legacy function name for backward compatibility - now uses serial/IMEI
 export function generateSKUBasedBarcode(serial: string, productId?: string): string {
   return generateSerialBasedBarcode(serial, productId);
 }

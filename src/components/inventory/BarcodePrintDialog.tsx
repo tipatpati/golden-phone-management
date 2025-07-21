@@ -339,7 +339,7 @@ export function BarcodePrintDialog({
   const handleGenerateBarcode = async () => {
     setIsGeneratingBarcode(true);
     try {
-      // Use IMEI + Battery level for barcode instead of SKU
+      // Use IMEI + Battery level for barcode generation
       const barcodeValue = imeiInfo ? 
         `${imeiInfo.serial}${imeiInfo.batteryLevel !== undefined ? ' ' + imeiInfo.batteryLevel : ''}` : 
         productName;
