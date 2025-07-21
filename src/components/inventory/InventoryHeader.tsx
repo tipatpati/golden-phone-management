@@ -56,32 +56,36 @@ export function InventoryHeader() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 w-full">
-      <div className="flex-1 min-w-0 w-full sm:w-auto">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-          <PackageSearch className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 flex-shrink-0" />
+    <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 lg:gap-6 w-full">
+      <div className="flex-1 min-w-0">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight flex items-center gap-2 mb-2">
+          <PackageSearch className="h-6 w-6 lg:h-8 lg:w-8 flex-shrink-0 text-primary" />
           <span className="truncate">Gestione Inventario</span>
         </h2>
-        <p className="text-muted-foreground text-xs sm:text-sm md:text-base mt-1">
+        <p className="text-muted-foreground text-sm lg:text-base">
           Gestisci i tuoi prodotti, accessori e tieni traccia dei livelli di scorte.
         </p>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <ProductExportDialog />
-        <ProductImportDialog />
+      
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+        <div className="flex gap-2">
+          <ProductExportDialog />
+          <ProductImportDialog />
+        </div>
+        
         <Button
           onClick={handleContactSuppliers}
           disabled={isContacting}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 min-w-fit"
         >
           {isContacting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Mail className="h-4 w-4" />
           )}
-          <span className="button-text">
+          <span className="whitespace-nowrap">
             {isContacting ? "Contacting..." : "Contact Suppliers"}
           </span>
         </Button>
