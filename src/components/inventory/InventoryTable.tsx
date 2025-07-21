@@ -186,6 +186,7 @@ function ProductRow({
             sku={product.sku}
             price={product.price}
             specifications={product.description}
+            serialNumbers={product.serial_numbers}
             onBarcodeGenerated={(newBarcode) => {
               // Update the product with the new barcode - only send necessary fields
               onUpdate.mutate({

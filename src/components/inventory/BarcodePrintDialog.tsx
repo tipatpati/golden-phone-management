@@ -8,6 +8,7 @@ import { BarcodeGenerator } from './BarcodeGenerator';
 import { Printer, Download, Copy, RotateCcw } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
+import { parseSerialWithBattery } from '@/utils/serialNumberUtils';
 
 interface BarcodePrintDialogProps {
   productName: string;
@@ -16,6 +17,7 @@ interface BarcodePrintDialogProps {
   price: number;
   specifications?: string;
   companyName?: string;
+  serialNumbers?: string[];
   trigger?: React.ReactNode;
   onBarcodeGenerated?: (barcode: string) => void;
 }
@@ -27,6 +29,7 @@ export function BarcodePrintDialog({
   price,
   specifications,
   companyName = "GOLDEN PHONE SRL",
+  serialNumbers,
   trigger,
   onBarcodeGenerated
 }: BarcodePrintDialogProps) {
@@ -52,6 +55,8 @@ export function BarcodePrintDialog({
     large: { width: 400, height: 280, barcodeWidth: 2.5, barcodeHeight: 100 }
   };
 
+  // Parse IMEI and battery information from serial numbers
+  const imeiInfo = serialNumbers?.[0] ? parseSerialWithBattery(serialNumbers[0]) : null;
   const currentSize = labelSizes[labelSize as keyof typeof labelSizes];
 
   const handlePrint = () => {
@@ -133,6 +138,23 @@ export function BarcodePrintDialog({
               color: #000;
             }
             
+            .imei-info {
+              font-size: 12px;
+              color: #333;
+              margin-bottom: 8px;
+              line-height: 1.4;
+            }
+            
+            .imei-text {
+              font-weight: 600;
+              color: #000;
+            }
+            
+            .battery-text {
+              color: #16a34a;
+              font-weight: 500;
+            }
+            
             .product-specs {
               font-size: 12px;
               color: #666;
@@ -153,10 +175,11 @@ export function BarcodePrintDialog({
             }
             
             .price {
-              font-size: 18px;
+              font-size: 20px;
               font-weight: bold;
-              color: #000;
+              color: #dc2626;
               margin-top: 8px;
+              margin-bottom: 8px;
             }
             
             .sku {
@@ -409,9 +432,20 @@ export function BarcodePrintDialog({
                       {productName}
                     </div>
                     
-                    {includeSpecs && specifications && (
-                      <div className="text-sm text-gray-600 mb-3">
-                        {specifications}
+                    {imeiInfo && (
+                      <div className="text-sm text-gray-800 mb-2">
+                        <div className="font-semibold">IMEI: {imeiInfo.serial}</div>
+                        {imeiInfo.batteryLevel && (
+                          <div className="text-green-600 font-medium">
+                            Battery: {imeiInfo.batteryLevel}%
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {includePrice && (
+                      <div className="text-xl font-bold text-red-600 mb-3">
+                        {price.toFixed(2)}€
                       </div>
                     )}
                     
@@ -429,12 +463,6 @@ export function BarcodePrintDialog({
                          </div>
                        )}
                      </div>
-
-                    {includePrice && (
-                      <div className="text-xl font-bold text-black">
-                        {price.toFixed(2)}€
-                      </div>
-                    )}
                   </>
                 ) : (
                   <>
