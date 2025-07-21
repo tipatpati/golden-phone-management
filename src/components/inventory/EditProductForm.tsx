@@ -6,6 +6,9 @@ import { useUpdateProduct, useCategories } from "@/services/useProducts";
 import { Product } from "@/services/supabaseProducts";
 import { toast } from "@/components/ui/sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { generateSKUBasedBarcode, generateUniqueBarcode } from "@/utils/barcodeGenerator";
+import { BarcodeGenerator } from "./BarcodeGenerator";
+import { RefreshCw } from "lucide-react";
 
 interface EditProductFormProps {
   product: Product;
@@ -31,6 +34,17 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
 
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
+
+  const generateNewBarcode = () => {
+    if (sku) {
+      const newBarcode = generateSKUBasedBarcode(sku, product.id);
+      setBarcode(newBarcode);
+    } else {
+      const newBarcode = generateUniqueBarcode();
+      setBarcode(newBarcode);
+    }
+    toast.success("New barcode generated");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +114,46 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setSerialNumbers={setSerialNumbers}
               categories={categories}
             />
+            
+            {/* Barcode Section */}
+            {barcode && (
+              <div className="space-y-2 p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">Product Barcode</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={generateNewBarcode}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Regenerate
+                  </Button>
+                </div>
+                <div className="flex justify-center">
+                  <BarcodeGenerator value={barcode} />
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  Barcode: {barcode}
+                </p>
+              </div>
+            )}
+            
+            {!barcode && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800 mb-2">
+                  This product doesn't have a barcode yet.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={generateNewBarcode}
+                >
+                  Generate Barcode
+                </Button>
+              </div>
+            )}
             
             <div className="flex gap-2 pt-4">
               <Button 

@@ -3,6 +3,7 @@ import React from "react";
 import { PackageSearch } from "lucide-react";
 import { ProductImportDialog } from "./ProductImportDialog";
 import { ProductExportDialog } from "./ProductExportDialog";
+import { BulkBarcodeGenerator } from "./BulkBarcodeGenerator";
 
 export function InventoryHeader() {
 
@@ -19,6 +20,7 @@ export function InventoryHeader() {
       </div>
       
       <div className="flex gap-2 sm:gap-3">
+        <BulkBarcodeGenerator />
         <ProductExportDialog />
         <ProductImportDialog />
       </div>

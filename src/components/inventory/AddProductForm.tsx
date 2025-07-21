@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreateProduct } from "@/services/useProducts";
 import { toast } from "@/components/ui/sonner";
-import { Smartphone, Barcode } from "lucide-react";
+import { Smartphone, Barcode, RefreshCw, Printer } from "lucide-react";
 import { ProductTypeSwitch } from "./ProductTypeSwitch";
 import { ProductFormFields, CATEGORY_OPTIONS } from "./ProductFormFields";
 import { SerialNumbersInput } from "./SerialNumbersInput";
+import { generateSKUBasedBarcode, generateUniqueBarcode } from "@/utils/barcodeGenerator";
+import { BarcodeGenerator } from "./BarcodeGenerator";
+import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [name, setName] = useState("");
@@ -22,8 +25,29 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [hasSerial, setHasSerial] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState("");
   const [barcode, setBarcode] = useState("");
+  const [createdProduct, setCreatedProduct] = useState<any>(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const createProduct = useCreateProduct();
+
+  // Generate barcode when SKU changes
+  React.useEffect(() => {
+    if (sku && !barcode) {
+      const generatedBarcode = generateSKUBasedBarcode(sku);
+      setBarcode(generatedBarcode);
+    }
+  }, [sku, barcode]);
+
+  const generateNewBarcode = () => {
+    if (sku) {
+      const newBarcode = generateSKUBasedBarcode(sku, Date.now().toString());
+      setBarcode(newBarcode);
+    } else {
+      const newBarcode = generateUniqueBarcode();
+      setBarcode(newBarcode);
+    }
+    toast.success("New barcode generated");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,15 +102,16 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       description,
       has_serial: hasSerial,
       serial_numbers: serialArray,
-      barcode: barcode || undefined
+      barcode: barcode || generateUniqueBarcode() // Ensure every product has a barcode
     };
     
     console.log('Submitting product with category ID:', newProduct.category_id);
     
     createProduct.mutate(newProduct, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         toast.success("Product added successfully");
-        onCancel(); // Close form on success
+        setCreatedProduct({ ...newProduct, id: data?.id });
+        setShowPrintDialog(true);
       },
       onError: (error) => {
         console.error('Product creation failed:', error);
@@ -95,7 +120,44 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     });
   };
 
+  const handlePrintDialogClose = () => {
+    setShowPrintDialog(false);
+    setCreatedProduct(null);
+    onCancel(); // Close the form after printing
+  };
+
   return (
+    <>
+      {showPrintDialog && createdProduct && (
+        <BarcodePrintDialog
+          productName={createdProduct.name}
+          barcode={createdProduct.barcode}
+          sku={createdProduct.sku}
+          price={createdProduct.price}
+          trigger={
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-background p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
+                <h3 className="text-lg font-semibold mb-4">Product Created Successfully!</h3>
+                <div className="text-center mb-4">
+                  <BarcodeGenerator value={createdProduct.barcode} />
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Would you like to print barcode labels for this product?
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={handlePrintDialogClose} variant="outline" className="flex-1">
+                    Skip
+                  </Button>
+                  <Button onClick={() => {}} className="flex-1">
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print Labels
+                  </Button>
+                </div>
+              </div>
+            </div>
+          }
+        />
+      )}
     <Card className="w-full max-w-3xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -144,6 +206,30 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
               stock={stock}
             />
           )}
+          
+          {/* Barcode Section */}
+          {barcode && (
+            <div className="space-y-2 p-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">Generated Barcode</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={generateNewBarcode}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Regenerate
+                </Button>
+              </div>
+              <div className="flex justify-center">
+                <BarcodeGenerator value={barcode} />
+              </div>
+              <p className="text-xs text-center text-muted-foreground">
+                Barcode: {barcode}
+              </p>
+            </div>
+          )}
         </CardContent>
         
         <CardFooter className="flex justify-between">
@@ -157,5 +243,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
         </CardFooter>
       </form>
     </Card>
+    </>
   );
 }

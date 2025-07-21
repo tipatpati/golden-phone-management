@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { useProducts, useDeleteProduct } from "@/services/useProducts";
 import { Product } from "@/services/supabaseProducts";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Barcode, Smartphone } from "lucide-react";
+import { Edit, Trash, Barcode, Smartphone, Printer } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { EditProductForm } from "@/components/inventory/EditProductForm";
+import { BarcodePrintDialog } from "@/components/inventory/BarcodePrintDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -175,6 +176,25 @@ function ProductRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end items-center gap-1">
+          {product.barcode && (
+            <BarcodePrintDialog
+              productName={product.name}
+              barcode={product.barcode}
+              sku={product.sku}
+              price={product.price}
+              trigger={
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 flex items-center justify-center"
+                  title="Print Barcode Label"
+                >
+                  <Printer className="h-3 w-3" />
+                </Button>
+              }
+            />
+          )}
+          
           <Button 
             variant="ghost" 
             size="icon" 
