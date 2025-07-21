@@ -67,10 +67,23 @@ export function useAuthState() {
   // Set up Supabase auth for all users
   useEffect(() => {
     let mounted = true;
+    
+    // Fallback timeout to prevent infinite loading
+    const fallbackTimeout = setTimeout(() => {
+      if (mounted && !isInitialized) {
+        console.warn('Auth initialization timeout, forcing initialization');
+        setIsInitialized(true);
+      }
+    }, 5000);
+
+    const cleanup = () => {
+      mounted = false;
+      clearTimeout(fallbackTimeout);
+    };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Supabase auth state changed:', event, session?.user?.id);
+        console.log('Supabase auth state changed:', event, session?.user?.id || 'NO_USER');
         
         if (!mounted) return;
 
@@ -78,16 +91,19 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('User found, fetching profile...');
           setTimeout(() => {
             if (mounted) {
               fetchUserProfile(session.user.id).finally(() => {
                 if (mounted) {
+                  console.log('Setting initialized to true (with user)');
                   setIsInitialized(true);
                 }
               });
             }
           }, 0);
         } else {
+          console.log('No user, setting initialized to true');
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
@@ -99,30 +115,33 @@ export function useAuthState() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
-      console.log('Initial session check:', session?.user?.id);
+      console.log('Initial session check:', session?.user?.id || 'NO_USER');
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        console.log('Initial user found, fetching profile...');
         setTimeout(() => {
           if (mounted) {
             fetchUserProfile(session.user.id).finally(() => {
               if (mounted) {
+                console.log('Setting initialized to true (initial with user)');
                 setIsInitialized(true);
               }
             });
           }
         }, 0);
       } else {
+        console.log('No initial user, setting initialized to true');
         setIsInitialized(true);
       }
     });
 
     return () => {
-      mounted = false;
+      cleanup();
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isInitialized]);
 
   return {
     user,
