@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { PackageSearch, Settings, Mail, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ProductImportDialog } from "./ProductImportDialog";
+import { ProductExportDialog } from "./ProductExportDialog";
 
 export function InventoryHeader() {
   const [isContacting, setIsContacting] = useState(false);
@@ -64,7 +66,9 @@ export function InventoryHeader() {
           Gestisci i tuoi prodotti, accessori e tieni traccia dei livelli di scorte.
         </p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
+        <ProductExportDialog />
+        <ProductImportDialog />
         <Button
           onClick={handleContactSuppliers}
           disabled={isContacting}
