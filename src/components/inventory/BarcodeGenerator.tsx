@@ -23,8 +23,18 @@ export function BarcodeGenerator({
   useEffect(() => {
     if (canvasRef.current && value) {
       try {
+        // Auto-detect format based on barcode length and content
+        let detectedFormat = format;
+        if (format === 'EAN13' && value.length !== 13) {
+          // If it's not 13 digits, use CODE128 which is more flexible
+          detectedFormat = 'CODE128';
+        } else if (format === 'EAN13' && !/^\d+$/.test(value)) {
+          // If it contains non-numeric characters, use CODE128
+          detectedFormat = 'CODE128';
+        }
+
         JsBarcode(canvasRef.current, value, {
-          format,
+          format: detectedFormat,
           width,
           height,
           displayValue,
@@ -36,6 +46,22 @@ export function BarcodeGenerator({
         });
       } catch (error) {
         console.error('Error generating barcode:', error);
+        // Fallback to CODE128 if EAN13 fails
+        try {
+          JsBarcode(canvasRef.current, value, {
+            format: 'CODE128',
+            width,
+            height,
+            displayValue,
+            fontSize: 14,
+            textMargin: 5,
+            margin: 10,
+            background: '#ffffff',
+            lineColor: '#000000'
+          });
+        } catch (fallbackError) {
+          console.error('Fallback barcode generation also failed:', fallbackError);
+        }
       }
     }
   }, [value, width, height, displayValue, format]);

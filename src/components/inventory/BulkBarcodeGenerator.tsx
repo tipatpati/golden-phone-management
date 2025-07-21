@@ -42,7 +42,6 @@ export function BulkBarcodeGenerator() {
         await updateProduct.mutateAsync({
           id: product.id,
           product: {
-            ...product,
             barcode: newBarcode
           }
         });

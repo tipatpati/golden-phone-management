@@ -187,10 +187,10 @@ function ProductRow({
             price={product.price}
             specifications={product.description}
             onBarcodeGenerated={(newBarcode) => {
-              // Update the product with the new barcode
+              // Update the product with the new barcode - only send necessary fields
               onUpdate.mutate({
                 id: product.id,
-                product: { ...product, barcode: newBarcode }
+                product: { barcode: newBarcode }
               });
             }}
             trigger={
