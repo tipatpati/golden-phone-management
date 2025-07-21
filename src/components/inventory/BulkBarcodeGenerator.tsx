@@ -37,8 +37,7 @@ export function BulkBarcodeGenerator() {
       const product = productsWithoutBarcodes[i];
       
       try {
-        const firstSerial = product.serial_numbers?.[0] || product.name;
-        const newBarcode = generateSKUBasedBarcode(firstSerial, product.id);
+        const newBarcode = generateSKUBasedBarcode(product.sku, product.id);
         
         await updateProduct.mutateAsync({
           id: product.id,
@@ -119,9 +118,7 @@ export function BulkBarcodeGenerator() {
                   {productsWithoutBarcodes.slice(0, 10).map(product => (
                     <div key={product.id} className="flex items-center justify-between text-xs">
                       <span className="truncate">{product.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {product.serial_numbers?.[0] || product.id.slice(0, 8)}
-                      </Badge>
+                      <Badge variant="outline" className="text-xs">{product.sku}</Badge>
                     </div>
                   ))}
                   {productsWithoutBarcodes.length > 10 && (

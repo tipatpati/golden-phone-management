@@ -52,8 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoggedIn, 
       userRole: authState.userRole, 
       interfaceRole: authState.interfaceRole,
-      username: authState.username,
-      isInitialized: authState.isInitialized,
+      username: authState.username, 
       ...authActions
     }}>
       {children}

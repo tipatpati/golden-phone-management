@@ -98,7 +98,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-[120px] whitespace-nowrap">Product</TableHead>
-                <TableHead className="min-w-[100px] whitespace-nowrap">Serial/IMEI</TableHead>
+                <TableHead className="min-w-[100px] whitespace-nowrap">SKU</TableHead>
                 <TableHead className="hidden sm:table-cell min-w-[80px] whitespace-nowrap">Category</TableHead>
                 <TableHead className="hidden md:table-cell min-w-[80px] whitespace-nowrap">Type</TableHead>
                 <TableHead className="text-right min-w-[80px] whitespace-nowrap">Price</TableHead>
@@ -150,9 +150,7 @@ function ProductRow({
         <div className="truncate max-w-[120px] text-sm">{product.name}</div>
       </TableCell>
       <TableCell>
-        <div className="truncate max-w-[100px] text-xs font-mono">
-          {product.serial_numbers?.[0] || product.id.slice(0, 8)}
-        </div>
+        <div className="truncate max-w-[100px] text-xs font-mono">{product.sku}</div>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
         <span className="text-sm">{product.category_name || product.category?.name}</span>
@@ -185,6 +183,7 @@ function ProductRow({
           <BarcodePrintDialog
             productName={product.name}
             barcode={product.barcode || undefined}
+            sku={product.sku}
             price={product.price}
             specifications={product.description}
             serialNumbers={product.serial_numbers}

@@ -18,16 +18,7 @@ import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 
 export function AppRouter() {
-  const { isLoggedIn, userRole, user, isInitialized } = useAuth();
-
-  // Show loading while auth state is initializing
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  const { isLoggedIn, userRole, user } = useAuth();
 
   // Show loading only if we have a user but no role yet (brief loading state)
   if (user && !userRole) {

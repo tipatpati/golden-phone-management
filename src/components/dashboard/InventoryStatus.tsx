@@ -59,11 +59,7 @@ export function InventoryStatus() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium truncate">{item.name}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {item.serial_numbers && item.serial_numbers.length > 0 ? 
-                          `Serial: ${item.serial_numbers[0]}` : 
-                          `ID: ${item.id.slice(0, 8)}...`}
-                      </p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{item.sku}</p>
                     </div>
                     <Badge variant={getStockBadgeVariant(stockStatus.level)} className="text-xs flex-shrink-0 ml-2">
                       {item.stock} left

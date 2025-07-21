@@ -18,7 +18,7 @@ export const supabaseSalesApi = {
           unit_price,
           total_price,
           serial_number,
-          product:products(id, name)
+          product:products(id, name, sku)
         )
       `);
     
@@ -54,7 +54,7 @@ export const supabaseSalesApi = {
           unit_price,
           total_price,
           serial_number,
-          product:products(id, name)
+          product:products(id, name, sku)
         )
       `)
       .eq('id', id)

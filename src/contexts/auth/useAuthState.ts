@@ -28,10 +28,7 @@ export function useAuthState() {
         // Set default admin role for users without profiles
         setUserRole('admin');
         setInterfaceRole('admin');
-        // Get user email from the current session for username
-        const currentSession = await supabase.auth.getSession();
-        const userEmail = currentSession.data.session?.user?.email;
-        setUsername(userEmail?.split('@')[0] || 'user');
+        setUsername(user?.email?.split('@')[0] || 'user');
         return;
       }
       
@@ -78,15 +75,11 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
+          fetchUserProfile(session.user.id).finally(() => {
             if (mounted) {
-              fetchUserProfile(session.user.id).finally(() => {
-                if (mounted) {
-                  setIsInitialized(true);
-                }
-              });
+              setIsInitialized(true);
             }
-          }, 0);
+          });
         } else {
           setUserRole(null);
           setInterfaceRole(null);
@@ -99,20 +92,15 @@ export function useAuthState() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
-      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(() => {
+        fetchUserProfile(session.user.id).finally(() => {
           if (mounted) {
-            fetchUserProfile(session.user.id).finally(() => {
-              if (mounted) {
-                setIsInitialized(true);
-              }
-            });
+            setIsInitialized(true);
           }
-        }, 0);
+        });
       } else {
         setIsInitialized(true);
       }

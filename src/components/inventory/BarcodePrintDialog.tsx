@@ -13,6 +13,7 @@ import { parseSerialWithBattery } from '@/utils/serialNumberUtils';
 interface BarcodePrintDialogProps {
   productName: string;
   barcode?: string;
+  sku: string;
   price: number;
   specifications?: string;
   companyName?: string;
@@ -24,6 +25,7 @@ interface BarcodePrintDialogProps {
 export function BarcodePrintDialog({
   productName,
   barcode: initialBarcode,
+  sku,
   price,
   specifications,
   companyName = "GOLDEN PHONE SRL",
@@ -34,7 +36,7 @@ export function BarcodePrintDialog({
   const [copies, setCopies] = useState("1");
   const [labelSize, setLabelSize] = useState("medium");
   const [includePrice, setIncludePrice] = useState(true);
-  
+  const [includeSKU, setIncludeSKU] = useState(true);
   const [includeSpecs, setIncludeSpecs] = useState(true);
   const [includeCompany, setIncludeCompany] = useState(true);
   const [labelFormat, setLabelFormat] = useState("sticker"); // "basic" or "sticker"
@@ -342,7 +344,7 @@ export function BarcodePrintDialog({
       // Use IMEI + Battery level for barcode instead of SKU
       const barcodeValue = imeiInfo ? 
         `${imeiInfo.serial}${imeiInfo.batteryLevel !== undefined ? ' ' + imeiInfo.batteryLevel : ''}` : 
-        productName;
+        sku;
       const newBarcode = generateSKUBasedBarcode(barcodeValue);
       setBarcode(newBarcode);
       onBarcodeGenerated?.(newBarcode);
@@ -462,6 +464,18 @@ export function BarcodePrintDialog({
                 />
                 <Label htmlFor="includePrice" className="text-sm">Include price</Label>
               </div>
+              {labelFormat === "basic" && (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="includeSKU"
+                    checked={includeSKU}
+                    onChange={(e) => setIncludeSKU(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="includeSKU" className="text-sm">Include SKU</Label>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -567,6 +581,11 @@ export function BarcodePrintDialog({
                       {includePrice && (
                         <div className="text-blue-600 font-semibold text-sm">
                           €{price.toFixed(2)}
+                        </div>
+                      )}
+                      {includeSKU && (
+                        <div className="text-gray-500 text-xs">
+                          SKU: {sku}
                         </div>
                       )}
                     </div>

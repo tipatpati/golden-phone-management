@@ -45,39 +45,34 @@ export function validateEAN13Barcode(barcode: string): boolean {
   return checkDigit === calculatedCheckDigit;
 }
 
-export function generateSerialBasedBarcode(serial: string, productId?: string): string {
-  // Create a more deterministic barcode based on serial/IMEI
-  const baseNumber = serial.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+export function generateSKUBasedBarcode(sku: string, productId?: string): string {
+  // Create a more deterministic barcode based on SKU
+  const baseNumber = sku.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
   
-  // Convert serial to numeric representation
-  let numericSerial = '';
-  for (let i = 0; i < baseNumber.length && numericSerial.length < 8; i++) {
+  // Convert SKU to numeric representation
+  let numericSku = '';
+  for (let i = 0; i < baseNumber.length && numericSku.length < 8; i++) {
     const char = baseNumber[i];
     if (/\d/.test(char)) {
-      numericSerial += char;
+      numericSku += char;
     } else {
       // Convert letter to number (A=01, B=02, etc.)
       const charCode = char.charCodeAt(0) - 64; // A=1, B=2, etc.
-      numericSerial += charCode.toString().padStart(2, '0');
+      numericSku += charCode.toString().padStart(2, '0');
     }
   }
   
   // Pad or truncate to exactly 8 digits
-  if (numericSerial.length < 8) {
-    numericSerial = numericSerial.padEnd(8, '0');
-  } else if (numericSerial.length > 8) {
-    numericSerial = numericSerial.substring(0, 8);
+  if (numericSku.length < 8) {
+    numericSku = numericSku.padEnd(8, '0');
+  } else if (numericSku.length > 8) {
+    numericSku = numericSku.substring(0, 8);
   }
   
   // Add timestamp-based suffix to ensure uniqueness
   const timestamp = Date.now().toString().slice(-4);
-  const partialBarcode = "123" + numericSerial + timestamp; // Total 12 digits
+  const partialBarcode = "123" + numericSku + timestamp; // Total 12 digits
   
   const checkDigit = calculateEAN13CheckDigit(partialBarcode);
   return partialBarcode + checkDigit;
-}
-
-// Legacy function name for backward compatibility - now uses serial
-export function generateSKUBasedBarcode(serial: string, productId?: string): string {
-  return generateSerialBasedBarcode(serial, productId);
 }

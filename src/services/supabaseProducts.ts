@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type Product = {
   id: string;
   name: string;
+  sku: string;
   category_id: number;
   category?: {
     id: number;
@@ -25,6 +26,7 @@ export type Product = {
 
 export type CreateProductData = {
   name: string;
+  sku: string;
   category_id: number;
   price: number;
   min_price: number;
@@ -50,8 +52,8 @@ export const supabaseProductApi = {
       `);
     
     if (searchTerm) {
-      // Search by name, serial numbers array, and barcode
-      query = query.or(`name.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%,serial_numbers.cs.{${searchTerm}}`);
+      // Search by name, sku, serial numbers array, and barcode
+      query = query.or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%,serial_numbers.cs.{${searchTerm}}`);
     }
     
     const { data, error } = await query.order('created_at', { ascending: false });
@@ -189,7 +191,7 @@ export const supabaseProductApi = {
         recommended_product:products!recommended_product_id(
           id,
           name,
-          
+          sku,
           price,
           min_price,
           max_price,

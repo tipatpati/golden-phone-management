@@ -22,7 +22,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   console.log('EditProductForm rendering with product:', product);
   
   const [name, setName] = useState(product.name || "");
-  
+  const [sku, setSku] = useState(product.sku || "");
   const [categoryId, setCategoryId] = useState(product.category_id?.toString() || "");
   const [price, setPrice] = useState(product.price?.toString() || "");
   const [minPrice, setMinPrice] = useState(product.min_price?.toString() || "");
@@ -40,14 +40,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const { data: categories } = useCategories();
 
   const generateNewBarcode = () => {
-    if (hasSerial && serialNumbers) {
-      const firstSerial = serialNumbers.split('\n')[0]?.trim();
-      if (firstSerial) {
-        const newBarcode = generateSKUBasedBarcode(firstSerial, product.id);
-        setBarcode(newBarcode);
-      }
-    } else if (name) {
-      const newBarcode = generateSKUBasedBarcode(name, product.id);
+    if (sku) {
+      const newBarcode = generateSKUBasedBarcode(sku, product.id);
       setBarcode(newBarcode);
     } else {
       const newBarcode = generateUniqueBarcode();
@@ -58,7 +52,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with data:', { name, categoryId, price, stock, threshold });
+    console.log('Submitting form with data:', { name, sku, categoryId, price, stock, threshold });
     
     // Validate serial numbers with battery levels if they exist
     if (hasSerial && serialNumbers.trim()) {
@@ -83,6 +77,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         
       const updatedProduct = {
         name,
+        sku,
         category_id: parseInt(categoryId),
         price: parseFloat(price),
         min_price: parseFloat(minPrice),
@@ -106,7 +101,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
     }
   };
 
-  console.log('Rendering form with state:', { name, categoryId, price, stock, threshold });
+  console.log('Rendering form with state:', { name, sku, categoryId, price, stock, threshold });
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -119,6 +114,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
             <ProductFormFields
               name={name}
               setName={setName}
+              sku={sku}
+              setSku={setSku}
               category={categoryId}
               setCategory={setCategoryId}
               price={price}
