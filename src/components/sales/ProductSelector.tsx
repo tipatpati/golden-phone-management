@@ -1,9 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useProducts } from "@/services/useProducts";
+import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 type ProductSelectorProps = {
   onProductAdd: (product: any) => void;
@@ -12,10 +14,28 @@ type ProductSelectorProps = {
 export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
   const { data: products = [] } = useProducts(productSearch);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const { setupHardwareScanner } = useBarcodeScanner({
+    onScan: (result) => {
+      setProductSearch(result);
+    }
+  });
+
+  useEffect(() => {
+    if (searchInputRef.current) {
+      const cleanup = setupHardwareScanner(searchInputRef.current);
+      return cleanup;
+    }
+  }, [setupHardwareScanner]);
 
   const handleProductSelect = (product: any) => {
     onProductAdd(product);
     setProductSearch("");
+  };
+
+  const handleBarcodeScanned = (barcode: string) => {
+    setProductSearch(barcode);
   };
 
   return (
@@ -24,11 +44,20 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, SKU, barcode, or serial number..."
+          ref={searchInputRef}
+          placeholder="Search by name, SKU, barcode, or scan barcode..."
           value={productSearch}
           onChange={(e) => setProductSearch(e.target.value)}
-          className="pl-8"
+          className="pl-8 pr-12"
         />
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+          <BarcodeScannerTrigger
+            onScan={handleBarcodeScanned}
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+          />
+        </div>
       </div>
       {productSearch && products.length > 0 && (
         <div className="border rounded-md max-h-40 overflow-y-auto bg-background/95 backdrop-blur z-50">

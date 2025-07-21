@@ -1,9 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Grid, List, FilterX, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 interface InventoryTableToolbarProps {
   onAddProduct: () => void;
@@ -21,10 +23,28 @@ export function InventoryTableToolbar({
   viewMode 
 }: InventoryTableToolbarProps) {
   const queryClient = useQueryClient();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  const { setupHardwareScanner } = useBarcodeScanner({
+    onScan: (result) => {
+      onSearchChange(result);
+    }
+  });
+
+  useEffect(() => {
+    if (searchInputRef.current) {
+      const cleanup = setupHardwareScanner(searchInputRef.current);
+      return cleanup;
+    }
+  }, [setupHardwareScanner]);
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
     onSearchChange(newSearchTerm);
+  };
+
+  const handleBarcodeScanned = (barcode: string) => {
+    onSearchChange(barcode);
   };
   
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,21 +65,30 @@ export function InventoryTableToolbar({
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             type="search"
-            placeholder="Cerca prodotti..."
-            className="w-full pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            placeholder="Cerca prodotti o scansiona barcode..."
+            className="w-full pl-10 pr-20 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
             value={searchTerm}
             onChange={handleSearch}
           />
-          {searchTerm && (
-            <button 
-              type="button"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-muted rounded transition-colors"
-              onClick={clearSearch}
-            >
-              <FilterX className="h-4 w-4 text-muted-foreground" />
-            </button>
-          )}
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+            {searchTerm && (
+              <button 
+                type="button"
+                className="p-1 hover:bg-muted rounded transition-colors"
+                onClick={clearSearch}
+              >
+                <FilterX className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+            <BarcodeScannerTrigger
+              onScan={handleBarcodeScanned}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+            />
+          </div>
         </div>
         <Button type="submit" variant="outline" className="h-12 px-4 flex-shrink-0">
           <Search className="h-4 w-4 sm:mr-2" />

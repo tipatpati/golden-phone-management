@@ -46,14 +46,20 @@ export function InventoryContent({
       />
       <InventoryTable searchTerm={searchTerm} viewMode={viewMode} />
 
-      <div className="mt-4 flex items-center justify-center p-4 border border-dashed rounded-lg">
+      <div className="mt-4 flex items-center justify-center p-4 border border-dashed rounded-lg bg-muted/30">
         <div className="flex flex-col items-center text-center max-w-md p-4">
-          <Barcode className="h-10 w-10 mb-2 text-muted-foreground" />
-          <h3 className="text-lg font-medium">Barcode Scanner Support</h3>
+          <Barcode className="h-10 w-10 mb-2 text-primary" />
+          <h3 className="text-lg font-medium">Barcode Scanner Ready</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Connect a barcode scanner to quickly add or search for products.
-            Simply focus on any search field and scan the barcode.
+            Use the camera scanner button in search fields or connect a hardware barcode scanner.
+            Hardware scanners work automatically when typing in search fields.
           </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded-full">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Camera & Hardware Ready</span>
+            </div>
+          </div>
         </div>
       </div>
     </>
