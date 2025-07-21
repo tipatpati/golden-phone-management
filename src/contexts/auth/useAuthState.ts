@@ -78,11 +78,15 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          fetchUserProfile(session.user.id).finally(() => {
+          setTimeout(() => {
             if (mounted) {
-              setIsInitialized(true);
+              fetchUserProfile(session.user.id).finally(() => {
+                if (mounted) {
+                  setIsInitialized(true);
+                }
+              });
             }
-          });
+          }, 0);
         } else {
           setUserRole(null);
           setInterfaceRole(null);
@@ -95,15 +99,20 @@ export function useAuthState() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id).finally(() => {
+        setTimeout(() => {
           if (mounted) {
-            setIsInitialized(true);
+            fetchUserProfile(session.user.id).finally(() => {
+              if (mounted) {
+                setIsInitialized(true);
+              }
+            });
           }
-        });
+        }, 0);
       } else {
         setIsInitialized(true);
       }
