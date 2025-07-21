@@ -13,6 +13,8 @@ interface BarcodePrintDialogProps {
   barcode: string;
   sku: string;
   price: number;
+  specifications?: string;
+  companyName?: string;
   trigger?: React.ReactNode;
 }
 
@@ -21,19 +23,24 @@ export function BarcodePrintDialog({
   barcode,
   sku,
   price,
+  specifications,
+  companyName = "GOLDEN PHONE SRL",
   trigger
 }: BarcodePrintDialogProps) {
   const [copies, setCopies] = useState("1");
   const [labelSize, setLabelSize] = useState("medium");
   const [includePrice, setIncludePrice] = useState(true);
   const [includeSKU, setIncludeSKU] = useState(true);
+  const [includeSpecs, setIncludeSpecs] = useState(true);
+  const [includeCompany, setIncludeCompany] = useState(true);
+  const [labelFormat, setLabelFormat] = useState("sticker"); // "basic" or "sticker"
   const [isOpen, setIsOpen] = useState(false);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
   const labelSizes = {
     small: { width: 200, height: 120, barcodeWidth: 1.5, barcodeHeight: 60 },
-    medium: { width: 300, height: 180, barcodeWidth: 2, barcodeHeight: 80 },
-    large: { width: 400, height: 240, barcodeWidth: 2.5, barcodeHeight: 100 }
+    medium: { width: 300, height: 200, barcodeWidth: 2, barcodeHeight: 80 },
+    large: { width: 400, height: 280, barcodeWidth: 2.5, barcodeHeight: 100 }
   };
 
   const currentSize = labelSizes[labelSize as keyof typeof labelSizes];
@@ -95,16 +102,28 @@ export function BarcodePrintDialog({
               vertical-align: top;
             }
             
-            .product-name {
-              font-size: 14px;
+            .company-name {
+              font-size: 12px;
               font-weight: bold;
-              margin-bottom: 10px;
+              margin-bottom: 8px;
+              color: #333;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .product-name {
+              font-size: 16px;
+              font-weight: bold;
+              margin-bottom: 8px;
               line-height: 1.2;
-              height: 30px;
-              overflow: hidden;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
+              color: #000;
+            }
+            
+            .product-specs {
+              font-size: 12px;
+              color: #666;
+              margin-bottom: 12px;
+              line-height: 1.3;
             }
             
             .barcode-container {
@@ -120,10 +139,10 @@ export function BarcodePrintDialog({
             }
             
             .price {
-              font-size: 16px;
+              font-size: 18px;
               font-weight: bold;
-              color: #2563eb;
-              margin-top: 5px;
+              color: #000;
+              margin-top: 8px;
             }
             
             .sku {
@@ -236,6 +255,19 @@ export function BarcodePrintDialog({
             </div>
 
             <div>
+              <Label>Label format</Label>
+              <Select value={labelFormat} onValueChange={setLabelFormat}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic Label</SelectItem>
+                  <SelectItem value="sticker">Product Sticker</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label>Label size</Label>
               <Select value={labelSize} onValueChange={setLabelSize}>
                 <SelectTrigger>
@@ -243,14 +275,38 @@ export function BarcodePrintDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="small">Small (200x120px)</SelectItem>
-                  <SelectItem value="medium">Medium (300x180px)</SelectItem>
-                  <SelectItem value="large">Large (400x240px)</SelectItem>
+                  <SelectItem value="medium">Medium (300x200px)</SelectItem>
+                  <SelectItem value="large">Large (400x280px)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label>Label contents</Label>
+              {labelFormat === "sticker" && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="includeCompany"
+                      checked={includeCompany}
+                      onChange={(e) => setIncludeCompany(e.target.checked)}
+                      className="rounded"
+                    />
+                    <Label htmlFor="includeCompany" className="text-sm">Include company name</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="includeSpecs"
+                      checked={includeSpecs}
+                      onChange={(e) => setIncludeSpecs(e.target.checked)}
+                      className="rounded"
+                    />
+                    <Label htmlFor="includeSpecs" className="text-sm">Include specifications</Label>
+                  </div>
+                </>
+              )}
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -261,16 +317,18 @@ export function BarcodePrintDialog({
                 />
                 <Label htmlFor="includePrice" className="text-sm">Include price</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="includeSKU"
-                  checked={includeSKU}
-                  onChange={(e) => setIncludeSKU(e.target.checked)}
-                  className="rounded"
-                />
-                <Label htmlFor="includeSKU" className="text-sm">Include SKU</Label>
-              </div>
+              {labelFormat === "basic" && (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="includeSKU"
+                    checked={includeSKU}
+                    onChange={(e) => setIncludeSKU(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="includeSKU" className="text-sm">Include SKU</Label>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -296,31 +354,68 @@ export function BarcodePrintDialog({
                   minHeight: currentSize.height 
                 }}
               >
-                <div className="text-sm font-semibold mb-2 leading-tight">
-                  {productName}
-                </div>
-                
-                <div className="my-3 flex justify-center">
-                  <BarcodeGenerator
-                    value={barcode}
-                    width={currentSize.barcodeWidth}
-                    height={currentSize.barcodeHeight}
-                    displayValue={true}
-                  />
-                </div>
+                {labelFormat === "sticker" ? (
+                  <>
+                    {includeCompany && (
+                      <div className="text-xs font-bold mb-2 text-gray-700 uppercase tracking-wider">
+                        {companyName}
+                      </div>
+                    )}
+                    
+                    <div className="text-lg font-bold mb-2 leading-tight">
+                      {productName}
+                    </div>
+                    
+                    {includeSpecs && specifications && (
+                      <div className="text-sm text-gray-600 mb-3">
+                        {specifications}
+                      </div>
+                    )}
+                    
+                    <div className="my-3 flex justify-center">
+                      <BarcodeGenerator
+                        value={barcode}
+                        width={currentSize.barcodeWidth}
+                        height={currentSize.barcodeHeight}
+                        displayValue={true}
+                      />
+                    </div>
 
-                <div className="text-xs text-gray-600 space-y-1">
-                  {includePrice && (
-                    <div className="text-blue-600 font-semibold text-sm">
-                      €{price.toFixed(2)}
+                    {includePrice && (
+                      <div className="text-xl font-bold text-black">
+                        {price.toFixed(2)}€
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold mb-2 leading-tight">
+                      {productName}
                     </div>
-                  )}
-                  {includeSKU && (
-                    <div className="text-gray-500 text-xs">
-                      SKU: {sku}
+                    
+                    <div className="my-3 flex justify-center">
+                      <BarcodeGenerator
+                        value={barcode}
+                        width={currentSize.barcodeWidth}
+                        height={currentSize.barcodeHeight}
+                        displayValue={true}
+                      />
                     </div>
-                  )}
-                </div>
+
+                    <div className="text-xs text-gray-600 space-y-1">
+                      {includePrice && (
+                        <div className="text-blue-600 font-semibold text-sm">
+                          €{price.toFixed(2)}
+                        </div>
+                      )}
+                      {includeSKU && (
+                        <div className="text-gray-500 text-xs">
+                          SKU: {sku}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

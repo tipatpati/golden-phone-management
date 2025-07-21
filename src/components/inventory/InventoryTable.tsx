@@ -182,12 +182,13 @@ function ProductRow({
               barcode={product.barcode}
               sku={product.sku}
               price={product.price}
+              specifications={product.description}
               trigger={
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="h-8 w-8 flex items-center justify-center"
-                  title="Print Barcode Label"
+                  title="Print Product Sticker"
                 >
                   <Printer className="h-3 w-3" />
                 </Button>
