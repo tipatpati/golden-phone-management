@@ -91,36 +91,46 @@ export function BarcodePrintDialog({
           <style>
             @media print {
               @page {
-                size: A4;
-                margin: 10mm;
+                size: ${currentSize.width + 20}px ${currentSize.height + 20}px;
+                margin: 10px;
               }
-              .page-break {
-                page-break-before: always;
+              
+              body {
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              
+              .print-label {
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
               }
             }
             
             body {
               font-family: Arial, sans-serif;
               margin: 0;
-              padding: 20px;
-              display: flex;
-              flex-wrap: wrap;
-              gap: 10px;
+              padding: 0;
               background: white;
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
             }
             
             .print-label {
               border: 1px solid #d1d5db;
               padding: 12px;
-              margin: 5px;
               text-align: center;
               background: white;
               width: ${currentSize.width}px;
               height: ${currentSize.height}px;
-              display: inline-block;
-              vertical-align: top;
               box-sizing: border-box;
               overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
             }
             
             /* Exact Tailwind class replications */
@@ -157,11 +167,11 @@ export function BarcodePrintDialog({
             }
             
             .mb-2 {
-              margin-bottom: 8px;
+              margin-bottom: 6px;
             }
             
             .mb-3 {
-              margin-bottom: 12px;
+              margin-bottom: 8px;
             }
             
             .text-gray-700 {
@@ -193,8 +203,8 @@ export function BarcodePrintDialog({
             }
             
             .my-3 {
-              margin-top: 12px;
-              margin-bottom: 12px;
+              margin-top: 8px;
+              margin-bottom: 8px;
             }
             
             .flex {
@@ -235,24 +245,28 @@ export function BarcodePrintDialog({
             
             /* Canvas and barcode styling */
             canvas {
-              max-width: 100%;
+              max-width: 90%;
               height: auto;
               display: block;
               margin: 0 auto;
             }
             
-            /* Ensure content fits within label dimensions */
-            .print-label > * {
-              max-width: 100%;
+            /* Compact layout for small labels */
+            .sticker-content {
+              display: flex;
+              flex-direction: column;
+              height: 100%;
+              justify-content: space-between;
+              align-items: center;
             }
             
-            /* Responsive canvas for different label sizes */
             .barcode-container {
               width: 100%;
               display: flex;
               justify-content: center;
               align-items: center;
-              margin: 8px 0;
+              flex: 1;
+              margin: 4px 0;
             }
           </style>
         </head>
