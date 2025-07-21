@@ -121,75 +121,116 @@ export function BarcodePrintDialog({
               vertical-align: top;
             }
             
-            .company-name {
+            /* Tailwind class overrides to match preview exactly */
+            .text-xs {
               font-size: 12px;
-              font-weight: bold;
-              margin-bottom: 8px;
-              color: #333;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
             }
             
-            .product-name {
-              font-size: 16px;
-              font-weight: bold;
-              margin-bottom: 8px;
-              line-height: 1.2;
-              color: #000;
+            .text-sm {
+              font-size: 14px;
             }
             
-            .imei-info {
-              font-size: 12px;
-              color: #333;
-              margin-bottom: 8px;
-              line-height: 1.4;
+            .text-lg {
+              font-size: 18px;
             }
             
-            .imei-text {
+            .text-xl {
+              font-size: 20px;
+            }
+            
+            .font-bold {
+              font-weight: 700;
+            }
+            
+            .font-semibold {
               font-weight: 600;
-              color: #000;
             }
             
-            .battery-text {
-              color: #16a34a;
+            .font-medium {
               font-weight: 500;
             }
             
-            .product-specs {
-              font-size: 12px;
-              color: #666;
-              margin-bottom: 12px;
-              line-height: 1.3;
-            }
-            
-            .barcode-container {
-              margin: 10px 0;
-              display: flex;
-              justify-content: center;
-            }
-            
-            .product-info {
-              margin-top: 10px;
-              font-size: 12px;
-              color: #666;
-            }
-            
-            .price {
-              font-size: 20px;
-              font-weight: bold;
-              color: #dc2626;
-              margin-top: 8px;
+            .mb-2 {
               margin-bottom: 8px;
             }
             
-            .sku {
-              font-size: 10px;
-              color: #888;
+            .mb-3 {
+              margin-bottom: 12px;
+            }
+            
+            .text-gray-700 {
+              color: #374151;
+            }
+            
+            .text-gray-800 {
+              color: #1f2937;
+            }
+            
+            .text-green-600 {
+              color: #16a34a;
+            }
+            
+            .text-red-600 {
+              color: #dc2626;
+            }
+            
+            .uppercase {
+              text-transform: uppercase;
+            }
+            
+            .tracking-wider {
+              letter-spacing: 0.05em;
+            }
+            
+            .leading-tight {
+              line-height: 1.25;
+            }
+            
+            .my-3 {
+              margin-top: 12px;
+              margin-bottom: 12px;
+            }
+            
+            .flex {
+              display: flex;
+            }
+            
+            .justify-center {
+              justify-content: center;
+            }
+            
+            .border {
+              border-width: 1px;
+            }
+            
+            .border-dashed {
+              border-style: dashed;
+            }
+            
+            .border-gray-300 {
+              border-color: #d1d5db;
+            }
+            
+            .p-4 {
+              padding: 16px;
+            }
+            
+            .rounded {
+              border-radius: 4px;
+            }
+            
+            .text-gray-500 {
+              color: #6b7280;
             }
             
             canvas {
               max-width: 100%;
               height: auto;
+            }
+            
+            /* Additional styles for better print quality */
+            .text-center {
+              text-align: center;
             }
           </style>
         </head>
