@@ -14,7 +14,7 @@ import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [name, setName] = useState("");
-  const [sku, setSku] = useState("");
+  
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -30,17 +30,29 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
 
   const createProduct = useCreateProduct();
 
-  // Generate barcode when SKU changes
+  // Generate barcode when serial numbers change
   React.useEffect(() => {
-    if (sku && !barcode) {
-      const generatedBarcode = generateSKUBasedBarcode(sku);
+    if (hasSerial && serialNumbers && !barcode) {
+      const firstSerial = serialNumbers.split('\n')[0]?.trim();
+      if (firstSerial) {
+        const generatedBarcode = generateSKUBasedBarcode(firstSerial);
+        setBarcode(generatedBarcode);
+      }
+    } else if (!hasSerial && name && !barcode) {
+      const generatedBarcode = generateSKUBasedBarcode(name);
       setBarcode(generatedBarcode);
     }
-  }, [sku, barcode]);
+  }, [hasSerial, serialNumbers, name, barcode]);
 
   const generateNewBarcode = () => {
-    if (sku) {
-      const newBarcode = generateSKUBasedBarcode(sku, Date.now().toString());
+    if (hasSerial && serialNumbers) {
+      const firstSerial = serialNumbers.split('\n')[0]?.trim();
+      if (firstSerial) {
+        const newBarcode = generateSKUBasedBarcode(firstSerial, Date.now().toString());
+        setBarcode(newBarcode);
+      }
+    } else if (name) {
+      const newBarcode = generateSKUBasedBarcode(name, Date.now().toString());
       setBarcode(newBarcode);
     } else {
       const newBarcode = generateUniqueBarcode();
@@ -53,7 +65,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     e.preventDefault();
     
     // Validation
-    if (!name || !sku || !category || !price || !minPrice || !maxPrice || !stock || !threshold) {
+    if (!name || !category || !price || !minPrice || !maxPrice || !stock || !threshold) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -106,7 +118,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     
     const newProduct = {
       name,
-      sku,
       category_id: parseInt(category), // Use category_id instead of category
       price: parseFloat(price),
       min_price: parseFloat(minPrice),
@@ -146,7 +157,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
         <BarcodePrintDialog
           productName={createdProduct.name}
           barcode={createdProduct.barcode}
-          sku={createdProduct.sku}
           price={createdProduct.price}
           trigger={
             <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -189,8 +199,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
           <ProductFormFields
             name={name}
             setName={setName}
-            sku={sku}
-            setSku={setSku}
             category={category}
             setCategory={setCategory}
             price={price}
