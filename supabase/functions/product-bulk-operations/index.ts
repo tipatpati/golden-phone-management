@@ -32,29 +32,37 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response('Authorization header missing', { status: 401, headers: corsHeaders })
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     )
 
     // Check user permissions
-    const { data: { user } } = await supabaseClient.auth.getUser()
-    if (!user) {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    if (userError || !user) {
+      console.error('User authentication failed:', userError)
       return new Response('Unauthorized', { status: 401, headers: corsHeaders })
     }
 
-    const { data: profile } = await supabaseClient
+    const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['admin', 'manager', 'inventory_manager'].includes(profile.role)) {
+    if (profileError || !profile || !['admin', 'manager', 'inventory_manager'].includes(profile.role)) {
+      console.error('Permission check failed:', profileError, profile)
       return new Response('Insufficient permissions', { status: 403, headers: corsHeaders })
     }
 

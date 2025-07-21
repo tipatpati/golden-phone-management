@@ -1,1 +1,4 @@
 project_id = "joiwowvlujajwbarpsuc"
+
+[functions.product-bulk-operations]
+verify_jwt = true
