@@ -141,7 +141,7 @@ export function useAuthState() {
       cleanup();
       subscription.unsubscribe();
     };
-  }, [isInitialized]);
+  }, []); // Remove isInitialized dependency to prevent infinite recreation
 
   return {
     user,
