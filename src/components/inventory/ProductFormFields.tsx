@@ -30,6 +30,10 @@ interface ProductFormFieldsProps {
   serialNumbers?: string[];
   setSerialNumbers?: (value: string[]) => void;
   categories?: { id: number; name: string; }[];
+  imeiSerial?: string;
+  setImeiSerial?: (value: string) => void;
+  batteryLevel?: string;
+  setBatteryLevel?: (value: string) => void;
 }
 
 // Category mapping - you'll need to adjust these IDs based on your Django backend
@@ -50,7 +54,9 @@ export function ProductFormFields({
   threshold, setThreshold,
   description, setDescription,
   barcode, setBarcode,
-  categories
+  categories,
+  imeiSerial, setImeiSerial,
+  batteryLevel, setBatteryLevel
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
   
@@ -156,12 +162,37 @@ export function ProductFormFields({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="product-barcode">Barcode (Optional)</Label>
+          <Label htmlFor="imei-serial">IMEI/Serial Number *</Label>
+          <Input 
+            id="imei-serial" 
+            value={imeiSerial || ""} 
+            onChange={(e) => setImeiSerial?.(e.target.value)} 
+            placeholder="351234567890123" 
+            required 
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="battery-level">Battery Level (%)</Label>
+          <Input 
+            id="battery-level" 
+            type="number" 
+            min="0"
+            max="100"
+            value={batteryLevel || ""} 
+            onChange={(e) => setBatteryLevel?.(e.target.value)} 
+            placeholder="85" 
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-barcode">Generated Barcode</Label>
           <Input 
             id="product-barcode" 
             value={barcode} 
             onChange={(e) => setBarcode(e.target.value)} 
-            placeholder="8901234567890" 
+            placeholder="Auto-generated from IMEI/Serial"
+            readOnly
           />
         </div>
       </div>

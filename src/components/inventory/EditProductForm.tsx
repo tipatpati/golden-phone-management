@@ -23,7 +23,6 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   console.log('EditProductForm rendering with product:', product);
   
   const [name, setName] = useState(product.name || "");
-  
   const [categoryId, setCategoryId] = useState(product.category_id?.toString() || "");
   const [price, setPrice] = useState(product.price?.toString() || "");
   const [minPrice, setMinPrice] = useState(product.min_price?.toString() || "");
@@ -36,32 +35,74 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const [serialNumbers, setSerialNumbers] = useState<string>(
     product.serial_numbers ? product.serial_numbers.join('\n') : ""
   );
+  // Extract IMEI/Serial from existing barcode or first serial number
+  const [imeiSerial, setImeiSerial] = useState(() => {
+    if (product.serial_numbers?.length > 0) {
+      const { serial } = parseSerialWithBattery(product.serial_numbers[0]);
+      return serial;
+    }
+    return "";
+  });
+  const [batteryLevel, setBatteryLevel] = useState(() => {
+    if (product.serial_numbers?.length > 0) {
+      const { batteryLevel } = parseSerialWithBattery(product.serial_numbers[0]);
+      return batteryLevel?.toString() || "";
+    }
+    return "";
+  });
 
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
 
+  // Auto-generate barcode when IMEI/Serial or battery changes
+  useEffect(() => {
+    if (imeiSerial.trim()) {
+      const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+      const generatedBarcode = generateSKUBasedBarcode(imeiSerial.trim(), product.id, battery);
+      setBarcode(generatedBarcode);
+    }
+  }, [imeiSerial, batteryLevel, product.id]);
+
   const generateNewBarcode = () => {
-    if (hasSerial && serialNumbers.trim()) {
-      const firstSerial = serialNumbers.split('\n')[0]?.trim();
-      if (firstSerial) {
-        // Parse serial with battery if available
-        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
-        const newBarcode = generateSKUBasedBarcode(serial, product.id, batteryLevel);
-        setBarcode(newBarcode);
-      } else {
-        toast.error("Please enter a valid IMEI/Serial number");
-        return;
-      }
-    } else {
-      toast.error("Barcode generation requires IMEI/Serial number for products with serial tracking");
+    if (!imeiSerial.trim()) {
+      toast.error("Please enter IMEI/Serial number first");
       return;
     }
+
+    const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+    
+    // Validate battery level if provided
+    if (batteryLevel && (isNaN(battery!) || battery! < 0 || battery! > 100)) {
+      toast.error("Battery level must be between 0-100");
+      return;
+    }
+
+    const newBarcode = generateSKUBasedBarcode(imeiSerial.trim(), product.id, battery);
+    setBarcode(newBarcode);
     toast.success("New barcode generated");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Submitting form with data:', { name, categoryId, price, stock, threshold });
+    
+    // Mandatory IMEI/Serial validation
+    if (!imeiSerial.trim()) {
+      toast.error("IMEI/Serial number is required for barcode generation");
+      return;
+    }
+
+    // Validate battery level if provided
+    if (batteryLevel && (isNaN(parseInt(batteryLevel)) || parseInt(batteryLevel) < 0 || parseInt(batteryLevel) > 100)) {
+      toast.error("Battery level must be between 0-100");
+      return;
+    }
+
+    // Validate that a barcode exists
+    if (!barcode) {
+      toast.error("Barcode is required and must be generated from IMEI/Serial number");
+      return;
+    }
     
     // Validate serial numbers with battery levels if they exist
     if (hasSerial && serialNumbers.trim()) {
@@ -141,6 +182,10 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               hasSerial={hasSerial}
               setHasSerial={setHasSerial}
               categories={categories}
+              imeiSerial={imeiSerial}
+              setImeiSerial={setImeiSerial}
+              batteryLevel={batteryLevel}
+              setBatteryLevel={setBatteryLevel}
             />
             
             {hasSerial && (

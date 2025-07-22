@@ -15,7 +15,6 @@ import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [name, setName] = useState("");
-  
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -26,40 +25,40 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [hasSerial, setHasSerial] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState("");
   const [barcode, setBarcode] = useState("");
+  const [imeiSerial, setImeiSerial] = useState(""); // Required for all products
+  const [batteryLevel, setBatteryLevel] = useState(""); // Optional battery level
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const createProduct = useCreateProduct();
 
-  // Generate barcode when serial numbers change
+  // Generate barcode when IMEI/Serial or battery level changes
   React.useEffect(() => {
-    if (hasSerial && serialNumbers && !barcode) {
-      const firstSerial = serialNumbers.split('\n')[0]?.trim();
-      if (firstSerial) {
-        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
-        const generatedBarcode = generateSKUBasedBarcode(serial, undefined, batteryLevel);
-        setBarcode(generatedBarcode);
-      }
+    if (imeiSerial.trim()) {
+      const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+      const generatedBarcode = generateSKUBasedBarcode(imeiSerial.trim(), undefined, battery);
+      setBarcode(generatedBarcode);
+    } else {
+      setBarcode("");
     }
-    // Note: Non-serial products must manually generate barcode from IMEI/Serial
-  }, [hasSerial, serialNumbers, barcode]);
+  }, [imeiSerial, batteryLevel]);
 
   const generateNewBarcode = () => {
-    if (hasSerial && serialNumbers) {
-      const firstSerial = serialNumbers.split('\n')[0]?.trim();
-      if (firstSerial) {
-        // Parse serial with battery if available
-        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
-        const newBarcode = generateSKUBasedBarcode(serial, undefined, batteryLevel);
-        setBarcode(newBarcode);
-      } else {
-        toast.error("Please enter a valid IMEI/Serial number");
-        return;
-      }
-    } else {
-      toast.error("Barcode generation requires IMEI/Serial number for products with serial tracking");
+    if (!imeiSerial.trim()) {
+      toast.error("Please enter IMEI/Serial number first");
       return;
     }
+
+    const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+    
+    // Validate battery level if provided
+    if (batteryLevel && (isNaN(battery!) || battery! < 0 || battery! > 100)) {
+      toast.error("Battery level must be between 0-100");
+      return;
+    }
+
+    const newBarcode = generateSKUBasedBarcode(imeiSerial.trim(), undefined, battery);
+    setBarcode(newBarcode);
     toast.success("New barcode generated");
   };
 
@@ -69,6 +68,18 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     // Validation
     if (!name || !category || !price || !minPrice || !maxPrice || !stock || !threshold) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Mandatory IMEI/Serial validation
+    if (!imeiSerial.trim()) {
+      toast.error("IMEI/Serial number is required for barcode generation");
+      return;
+    }
+
+    // Validate battery level if provided
+    if (batteryLevel && (isNaN(parseInt(batteryLevel)) || parseInt(batteryLevel) < 0 || parseInt(batteryLevel) > 100)) {
+      toast.error("Battery level must be between 0-100");
       return;
     }
     
@@ -87,46 +98,26 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       return;
     }
     
-    // If product has serial numbers, validate they are provided
-    if (hasSerial && !serialNumbers.trim()) {
-      toast.error("Please add at least one IMEI/serial number with battery level");
+    // Validate that a barcode has been generated
+    if (!barcode) {
+      toast.error("Barcode is required and must be generated from IMEI/Serial number");
       return;
     }
     
-    // Parse serial numbers into an array
-    const serialArray = hasSerial 
+    // For products with serial tracking, build the serial array with battery info
+    const serialArray = hasSerial && serialNumbers.trim()
       ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
       : [];
       
-    // Validate serial number format with battery levels
-    if (hasSerial && serialArray.length > 0) {
-      for (const serial of serialArray) {
-        const parts = serial.split(/\s+/);
-        if (parts.length >= 2) {
-          const batteryLevel = parseInt(parts[parts.length - 1]);
-          if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
-            toast.error(`Invalid battery level for "${serial}". Battery level must be between 0-100.`);
-            return;
-          }
-        }
-      }
-    }
-      
-    // Validate that number of serial numbers matches stock quantity
+    // For products with serial tracking, ensure serial numbers match stock
     if (hasSerial && serialArray.length !== parseInt(stock)) {
       toast.error(`Number of IMEI/serial numbers (${serialArray.length}) must match stock quantity (${stock})`);
       return;
     }
     
-    // Validate that a barcode has been generated
-    if (!barcode) {
-      toast.error("Please generate a barcode from IMEI/Serial number before saving");
-      return;
-    }
-    
     const newProduct = {
       name,
-      category_id: parseInt(category), // Use category_id instead of category
+      category_id: parseInt(category),
       price: parseFloat(price),
       min_price: parseFloat(minPrice),
       max_price: parseFloat(maxPrice),
@@ -135,7 +126,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       description,
       has_serial: hasSerial,
       serial_numbers: serialArray,
-      barcode: barcode // Barcode is required and must be generated from IMEI/Serial
+      barcode: barcode // Mandatory barcode generated from IMEI/Serial
     };
     
     console.log('Submitting product with category ID:', newProduct.category_id);
@@ -227,6 +218,10 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
             setHasSerial={setHasSerial}
             serialNumbers={serialNumbers.split('\n').filter(s => s.trim())}
             setSerialNumbers={(nums) => setSerialNumbers(nums.join('\n'))}
+            imeiSerial={imeiSerial}
+            setImeiSerial={setImeiSerial}
+            batteryLevel={batteryLevel}
+            setBatteryLevel={setBatteryLevel}
           />
           
           {hasSerial && (
