@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { useProducts } from "@/services/useProducts";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
 type ProductSelectorProps = {
   onProductAdd: (product: any) => void;
@@ -14,7 +15,11 @@ type ProductSelectorProps = {
 export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
   const { data: products = [] } = useProducts(productSearch);
+  const { data: allProducts = [] } = useProducts(""); // For autocomplete suggestions
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Get existing product names for autocomplete
+  const existingProductNames = allProducts.map(product => product.name);
 
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
@@ -42,15 +47,15 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
     <div className="space-y-2">
       <Label>Add Products</Label>
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          ref={searchInputRef}
-          placeholder="Search by name, serial/IMEI, barcode, or scan barcode..."
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground z-10" />
+        <AutocompleteInput
           value={productSearch}
-          onChange={(e) => setProductSearch(e.target.value)}
+          onChange={setProductSearch}
+          suggestions={existingProductNames}
+          placeholder="Search by name, serial/IMEI, barcode, or scan barcode..."
           className="pl-8 pr-12"
         />
-        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
           <BarcodeScannerTrigger
             onScan={handleBarcodeScanned}
             variant="ghost"

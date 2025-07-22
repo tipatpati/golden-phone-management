@@ -3,6 +3,8 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { useProducts } from "@/services/useProducts";
 
 interface ProductFormFieldsProps {
   name: string;
@@ -51,18 +53,21 @@ export function ProductFormFields({
   categories
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
+  
+  // Get existing product names for autocomplete
+  const { data: allProducts = [] } = useProducts("");
+  const existingProductNames = allProducts.map(product => product.name);
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="product-name">Product Name *</Label>
-          <Input 
-            id="product-name" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
-            placeholder="iPhone 13 Pro" 
-            required 
+          <AutocompleteInput
+            value={name}
+            onChange={setName}
+            suggestions={existingProductNames}
+            placeholder="iPhone 13 Pro"
           />
         </div>
         
