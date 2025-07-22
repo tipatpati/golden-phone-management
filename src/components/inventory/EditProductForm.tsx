@@ -29,7 +29,6 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const [maxPrice, setMaxPrice] = useState(product.max_price?.toString() || "");
   const [stock, setStock] = useState(product.stock?.toString() || "");
   const [threshold, setThreshold] = useState(product.threshold?.toString() || "");
-  const [description, setDescription] = useState(product.description || "");
   const [barcode, setBarcode] = useState(product.barcode || "");
   const [hasSerial, setHasSerial] = useState(product.has_serial || false);
   const [serialNumbers, setSerialNumbers] = useState<string>(
@@ -133,7 +132,6 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         max_price: parseFloat(maxPrice),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
-        description: description || undefined,
         barcode: barcode || undefined,
         has_serial: hasSerial,
         serial_numbers: hasSerial ? serialArray : undefined,
@@ -175,8 +173,6 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setStock={setStock}
               threshold={threshold}
               setThreshold={setThreshold}
-              description={description}
-              setDescription={setDescription}
               barcode={barcode}
               setBarcode={setBarcode}
               hasSerial={hasSerial}

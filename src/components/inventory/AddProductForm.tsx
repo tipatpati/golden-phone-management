@@ -21,7 +21,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [maxPrice, setMaxPrice] = useState("");
   const [stock, setStock] = useState("1");
   const [threshold, setThreshold] = useState("5");
-  const [description, setDescription] = useState("");
   const [hasSerial, setHasSerial] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState("");
   const [barcode, setBarcode] = useState("");
@@ -123,7 +122,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       max_price: parseFloat(maxPrice),
       stock: parseInt(stock),
       threshold: parseInt(threshold),
-      description,
       has_serial: hasSerial,
       serial_numbers: serialArray,
       barcode: barcode // Mandatory barcode generated from IMEI/Serial
@@ -210,8 +208,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
             setStock={setStock}
             threshold={threshold}
             setThreshold={setThreshold}
-            description={description}
-            setDescription={setDescription}
             barcode={barcode}
             setBarcode={setBarcode}
             hasSerial={hasSerial}

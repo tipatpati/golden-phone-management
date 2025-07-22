@@ -21,8 +21,6 @@ interface ProductFormFieldsProps {
   setStock: (value: string) => void;
   threshold: string;
   setThreshold: (value: string) => void;
-  description: string;
-  setDescription: (value: string) => void;
   barcode: string;
   setBarcode: (value: string) => void;
   hasSerial?: boolean;
@@ -52,7 +50,6 @@ export function ProductFormFields({
   maxPrice, setMaxPrice,
   stock, setStock,
   threshold, setThreshold,
-  description, setDescription,
   barcode, setBarcode,
   categories,
   imeiSerial, setImeiSerial,
@@ -195,17 +192,6 @@ export function ProductFormFields({
             readOnly
           />
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="product-description">Description (Optional)</Label>
-        <Textarea 
-          id="product-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Product description"
-          className="h-20"
-        />
       </div>
     </>
   );
