@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useUpdateProduct } from '@/services/useProducts';
 import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
+import { parseSerialWithBattery } from '@/utils/serialNumberUtils';
 import { toast } from '@/components/ui/sonner';
 import { Barcode, RefreshCw, Check, X } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -37,8 +38,15 @@ export function BulkBarcodeGenerator() {
       const product = productsWithoutBarcodes[i];
       
       try {
-        const firstSerial = product.serial_numbers?.[0] || product.name;
-        const newBarcode = generateSKUBasedBarcode(firstSerial, product.id);
+        if (!product.serial_numbers?.[0]) {
+          console.warn(`Skipping ${product.name}: No IMEI/Serial number available`);
+          errorCount++;
+          continue;
+        }
+        
+        const firstSerial = product.serial_numbers[0];
+        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
+        const newBarcode = generateSKUBasedBarcode(serial, product.id, batteryLevel);
         
         await updateProduct.mutateAsync({
           id: product.id,

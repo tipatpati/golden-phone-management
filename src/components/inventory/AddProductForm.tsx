@@ -8,7 +8,8 @@ import { Smartphone, Barcode, RefreshCw, Printer } from "lucide-react";
 import { ProductTypeSwitch } from "./ProductTypeSwitch";
 import { ProductFormFields, CATEGORY_OPTIONS } from "./ProductFormFields";
 import { SerialNumbersInput } from "./SerialNumbersInput";
-import { generateSKUBasedBarcode, generateUniqueBarcode } from "@/utils/barcodeGenerator";
+import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
+import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
@@ -35,28 +36,29 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     if (hasSerial && serialNumbers && !barcode) {
       const firstSerial = serialNumbers.split('\n')[0]?.trim();
       if (firstSerial) {
-        const generatedBarcode = generateSKUBasedBarcode(firstSerial);
+        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
+        const generatedBarcode = generateSKUBasedBarcode(serial, undefined, batteryLevel);
         setBarcode(generatedBarcode);
       }
-    } else if (!hasSerial && name && !barcode) {
-      const generatedBarcode = generateSKUBasedBarcode(name);
-      setBarcode(generatedBarcode);
     }
-  }, [hasSerial, serialNumbers, name, barcode]);
+    // Note: Non-serial products must manually generate barcode from IMEI/Serial
+  }, [hasSerial, serialNumbers, barcode]);
 
   const generateNewBarcode = () => {
     if (hasSerial && serialNumbers) {
       const firstSerial = serialNumbers.split('\n')[0]?.trim();
       if (firstSerial) {
-        const newBarcode = generateSKUBasedBarcode(firstSerial, Date.now().toString());
+        // Parse serial with battery if available
+        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
+        const newBarcode = generateSKUBasedBarcode(serial, undefined, batteryLevel);
         setBarcode(newBarcode);
+      } else {
+        toast.error("Please enter a valid IMEI/Serial number");
+        return;
       }
-    } else if (name) {
-      const newBarcode = generateSKUBasedBarcode(name, Date.now().toString());
-      setBarcode(newBarcode);
     } else {
-      const newBarcode = generateUniqueBarcode();
-      setBarcode(newBarcode);
+      toast.error("Barcode generation requires IMEI/Serial number for products with serial tracking");
+      return;
     }
     toast.success("New barcode generated");
   };
@@ -116,6 +118,12 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       return;
     }
     
+    // Validate that a barcode has been generated
+    if (!barcode) {
+      toast.error("Please generate a barcode from IMEI/Serial number before saving");
+      return;
+    }
+    
     const newProduct = {
       name,
       category_id: parseInt(category), // Use category_id instead of category
@@ -127,7 +135,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       description,
       has_serial: hasSerial,
       serial_numbers: serialArray,
-      barcode: barcode || generateUniqueBarcode() // Ensure every product has a barcode
+      barcode: barcode // Barcode is required and must be generated from IMEI/Serial
     };
     
     console.log('Submitting product with category ID:', newProduct.category_id);

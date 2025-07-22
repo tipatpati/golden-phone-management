@@ -8,7 +8,8 @@ import { useUpdateProduct, useCategories } from "@/services/useProducts";
 import { Product } from "@/services/supabaseProducts";
 import { toast } from "@/components/ui/sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateSKUBasedBarcode, generateUniqueBarcode } from "@/utils/barcodeGenerator";
+import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
+import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { RefreshCw } from "lucide-react";
 
@@ -40,18 +41,20 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const { data: categories } = useCategories();
 
   const generateNewBarcode = () => {
-    if (hasSerial && serialNumbers) {
+    if (hasSerial && serialNumbers.trim()) {
       const firstSerial = serialNumbers.split('\n')[0]?.trim();
       if (firstSerial) {
-        const newBarcode = generateSKUBasedBarcode(firstSerial, product.id);
+        // Parse serial with battery if available
+        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
+        const newBarcode = generateSKUBasedBarcode(serial, product.id, batteryLevel);
         setBarcode(newBarcode);
+      } else {
+        toast.error("Please enter a valid IMEI/Serial number");
+        return;
       }
-    } else if (name) {
-      const newBarcode = generateSKUBasedBarcode(name, product.id);
-      setBarcode(newBarcode);
     } else {
-      const newBarcode = generateUniqueBarcode();
-      setBarcode(newBarcode);
+      toast.error("Barcode generation requires IMEI/Serial number for products with serial tracking");
+      return;
     }
     toast.success("New barcode generated");
   };
