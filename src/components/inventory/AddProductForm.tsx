@@ -34,7 +34,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   // Generate barcode when IMEI/Serial or battery level changes
   React.useEffect(() => {
     if (imeiSerial.trim()) {
-      const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+      const battery = batteryLevel ? parseInt(batteryLevel) : 0;
       const generatedBarcode = generateSKUBasedBarcode(imeiSerial.trim(), undefined, battery);
       setBarcode(generatedBarcode);
     } else {
@@ -48,7 +48,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       return;
     }
 
-    const battery = batteryLevel ? parseInt(batteryLevel) : undefined;
+    const battery = batteryLevel ? parseInt(batteryLevel) : 0;
     
     // Validate battery level if provided
     if (batteryLevel && (isNaN(battery!) || battery! < 0 || battery! > 100)) {

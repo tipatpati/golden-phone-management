@@ -46,40 +46,11 @@ export function validateEAN13Barcode(barcode: string): boolean {
 }
 
 export function generateSerialBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
-  // Create a more deterministic barcode based on serial/IMEI + battery state
-  const baseNumber = serial.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  // Simple format: IMEI/Serial + Battery Level
+  const cleanSerial = serial.replace(/[^A-Za-z0-9]/g, '');
+  const batteryCode = batteryLevel !== undefined ? batteryLevel.toString() : '0';
   
-  // Convert serial to numeric representation
-  let numericSerial = '';
-  for (let i = 0; i < baseNumber.length && numericSerial.length < 6; i++) {
-    const char = baseNumber[i];
-    if (/\d/.test(char)) {
-      numericSerial += char;
-    } else {
-      // Convert letter to number (A=01, B=02, etc.)
-      const charCode = char.charCodeAt(0) - 64; // A=1, B=2, etc.
-      numericSerial += charCode.toString().padStart(2, '0');
-    }
-  }
-  
-  // Pad or truncate to exactly 6 digits for serial part
-  if (numericSerial.length < 6) {
-    numericSerial = numericSerial.padEnd(6, '0');
-  } else if (numericSerial.length > 6) {
-    numericSerial = numericSerial.substring(0, 6);
-  }
-  
-  // Incorporate battery level (0-100) as 2-digit code, or use 99 as default
-  const batteryCode = batteryLevel !== undefined 
-    ? Math.max(0, Math.min(100, Math.round(batteryLevel))).toString().padStart(2, '0')
-    : '99';
-  
-  // Create 12-digit code: Country(3) + Serial(6) + Battery(2) + Random(1)
-  const randomDigit = Math.floor(Math.random() * 10).toString();
-  const partialBarcode = "123" + numericSerial + batteryCode + randomDigit;
-  
-  const checkDigit = calculateEAN13CheckDigit(partialBarcode);
-  return partialBarcode + checkDigit;
+  return cleanSerial + batteryCode;
 }
 
 // Legacy function name for backward compatibility - now uses serial/IMEI + battery state
