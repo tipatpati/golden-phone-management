@@ -64,15 +64,15 @@ export default function EmployeeManagement() {
           <TabsContent value="employees" className="space-y-4 sm:space-y-6 mt-0">
             {/* Add Employee Button */}
             <div className="flex justify-end">
-              <Button
-                onClick={() => setIsNewEmployeeOpen(true)}
-                size="sm"
-                className="sm:size-lg px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
-              >
-                <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Add Employee</span>
-                <span className="sm:hidden">Add</span>
-              </Button>
+            <Button
+              onClick={() => setIsNewEmployeeOpen(true)}
+              size="default"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Employee</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
             </div>
 
             {/* Search and Filter */}
