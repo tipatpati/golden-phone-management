@@ -55,28 +55,32 @@
     --input: 240 5% 84%;
     --ring: 217 91% 60%;
 
-    /* Material Design 3 Motion System */
-    --motion-duration-short-1: 50ms;      /* 50ms for simple transitions */
-    --motion-duration-short-2: 100ms;     /* 100ms for simple state changes */
-    --motion-duration-short-3: 150ms;     /* 150ms for small elements */
-    --motion-duration-short-4: 200ms;     /* 200ms for medium elements */
-    --motion-duration-medium-1: 250ms;    /* 250ms for medium complexity */
-    --motion-duration-medium-2: 300ms;    /* 300ms for detailed transitions */
-    --motion-duration-medium-3: 350ms;    /* 350ms for complex elements */
-    --motion-duration-medium-4: 400ms;    /* 400ms for large elements */
-    --motion-duration-long-1: 450ms;      /* 450ms for complex transitions */
-    --motion-duration-long-2: 500ms;      /* 500ms for very complex animations */
-    --motion-duration-long-3: 550ms;      /* 550ms for extensive animations */
-    --motion-duration-long-4: 600ms;      /* 600ms for page transitions */
+    /* Material Design 3 Enhanced Motion System */
+    --motion-duration-extra-short: 25ms;      /* 25ms for instantaneous feedback */
+    --motion-duration-short-1: 50ms;          /* 50ms for micro-interactions */
+    --motion-duration-short-2: 100ms;         /* 100ms for simple state changes */
+    --motion-duration-short-3: 150ms;         /* 150ms for small components */
+    --motion-duration-short-4: 200ms;         /* 200ms for standard interactions */
+    --motion-duration-medium-1: 250ms;        /* 250ms for medium complexity */
+    --motion-duration-medium-2: 300ms;        /* 300ms for detailed transitions */
+    --motion-duration-medium-3: 350ms;        /* 350ms for complex components */
+    --motion-duration-medium-4: 400ms;        /* 400ms for large components */
+    --motion-duration-long-1: 450ms;          /* 450ms for complex transitions */
+    --motion-duration-long-2: 500ms;          /* 500ms for very complex animations */
+    --motion-duration-long-3: 550ms;          /* 550ms for extensive animations */
+    --motion-duration-long-4: 600ms;          /* 600ms for page-level transitions */
+    --motion-duration-extra-long: 700ms;      /* 700ms for major layout changes */
 
-    /* Material Design 3 Easing Curves */
-    --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);          /* Emphasized - bold, confident */
-    --motion-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1); /* Enter animations */
-    --motion-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);  /* Exit animations */
-    --motion-standard: cubic-bezier(0.2, 0, 0, 1);            /* Standard - smooth, natural */
-    --motion-standard-decelerate: cubic-bezier(0, 0, 0, 1);   /* Enter without emphasis */
-    --motion-standard-accelerate: cubic-bezier(0.3, 0, 1, 1); /* Exit without emphasis */
-    --motion-linear: cubic-bezier(0, 0, 1, 1);                /* Linear for continuous animations */
+    /* Refined Material Design 3 Easing Curves */
+    --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);              /* Bold, confident motion */
+    --motion-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);  /* Entering elements */
+    --motion-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);   /* Exiting elements */
+    --motion-standard: cubic-bezier(0.2, 0, 0, 1);                /* Smooth, natural motion */
+    --motion-standard-decelerate: cubic-bezier(0, 0, 0, 1);       /* Gentle entering */
+    --motion-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);     /* Gentle exiting */
+    --motion-linear: cubic-bezier(0, 0, 1, 1);                    /* Continuous motion */
+    --motion-overshoot: cubic-bezier(0.175, 0.885, 0.32, 1.275);  /* Playful bounce */
+    --motion-anticipate: cubic-bezier(0.68, -0.55, 0.265, 1.55);  /* Anticipation effect */
 
     /* Material Design 3 Elevation Shadows */
     --elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
@@ -331,60 +335,72 @@
     @apply gap-2 sm:gap-4 md:gap-6 lg:gap-8;  /* 8dp, 16dp, 24dp, 32dp */
   }
 
-  /* Material Design Motion Utilities */
-  .md-motion-emphasized {
-    transition: all var(--motion-duration-medium-2) var(--motion-emphasized);
+  /* Enhanced Material Design Motion Utilities */
+  .md-motion-instant {
+    transition: all var(--motion-duration-extra-short) var(--motion-linear);
   }
 
-  .md-motion-standard {
-    transition: all var(--motion-duration-short-4) var(--motion-standard);
+  .md-motion-micro {
+    transition: all var(--motion-duration-short-1) var(--motion-standard);
   }
 
-  .md-motion-short {
+  .md-motion-quick {
     transition: all var(--motion-duration-short-2) var(--motion-standard);
   }
 
-  .md-motion-medium {
-    transition: all var(--motion-duration-medium-2) var(--motion-standard);
+  .md-motion-smooth {
+    transition: all var(--motion-duration-short-4) var(--motion-standard);
   }
 
-  .md-motion-long {
+  .md-motion-flowing {
+    transition: all var(--motion-duration-medium-2) var(--motion-emphasized);
+  }
+
+  .md-motion-graceful {
+    transition: all var(--motion-duration-medium-4) var(--motion-emphasized);
+  }
+
+  .md-motion-dramatic {
     transition: all var(--motion-duration-long-2) var(--motion-emphasized);
   }
 
-  /* State Change Animations */
-  .md-state-change {
+  /* Choreographed State Changes */
+  .md-orchestrated-change {
     transition: 
       background-color var(--motion-duration-short-2) var(--motion-standard),
       color var(--motion-duration-short-2) var(--motion-standard),
-      border-color var(--motion-duration-short-2) var(--motion-standard),
-      box-shadow var(--motion-duration-short-4) var(--motion-emphasized);
+      border-color var(--motion-duration-short-3) var(--motion-standard),
+      box-shadow var(--motion-duration-medium-1) var(--motion-emphasized),
+      transform var(--motion-duration-short-4) var(--motion-emphasized);
   }
 
-  /* Interactive Element Animations */
-  .md-interactive {
+  /* Interactive Element Choreography */
+  .md-interactive-smooth {
     transition: 
-      transform var(--motion-duration-short-2) var(--motion-standard),
-      box-shadow var(--motion-duration-short-4) var(--motion-emphasized),
-      background-color var(--motion-duration-short-1) var(--motion-standard);
+      transform var(--motion-duration-short-2) var(--motion-emphasized),
+      box-shadow var(--motion-duration-medium-1) var(--motion-emphasized),
+      background-color var(--motion-duration-short-1) var(--motion-standard),
+      scale var(--motion-duration-short-3) var(--motion-overshoot);
   }
 
-  .md-interactive:hover {
-    transform: translateY(-1px);
+  .md-interactive-smooth:hover {
+    transform: translateY(-2px) scale(1.02);
+    transition-timing-function: var(--motion-overshoot);
   }
 
-  .md-interactive:active {
-    transform: translateY(0);
+  .md-interactive-smooth:active {
+    transform: translateY(0) scale(0.98);
     transition-duration: var(--motion-duration-short-1);
+    transition-timing-function: var(--motion-standard);
   }
 
-  /* Material Design State Layers with Proper Animation */
-  .md-state-layer {
+  /* Enhanced State Layers with Sophisticated Timing */
+  .md-state-layer-refined {
     position: relative;
     overflow: hidden;
   }
 
-  .md-state-layer::before {
+  .md-state-layer-refined::before {
     content: '';
     position: absolute;
     top: 0;
@@ -393,22 +409,104 @@
     bottom: 0;
     background: currentColor;
     opacity: 0;
-    transition: opacity var(--motion-duration-short-2) var(--motion-standard);
+    transition: 
+      opacity var(--motion-duration-short-2) var(--motion-standard),
+      transform var(--motion-duration-short-3) var(--motion-emphasized);
     pointer-events: none;
     border-radius: inherit;
+    transform: scale(0.8);
   }
 
-  .md-state-layer:hover::before {
+  .md-state-layer-refined:hover::before {
     opacity: 0.08;
+    transform: scale(1);
+    transition-timing-function: var(--motion-overshoot);
   }
 
-  .md-state-layer:focus-visible::before {
+  .md-state-layer-refined:focus-visible::before {
     opacity: 0.12;
+    transform: scale(1.05);
+    transition-duration: var(--motion-duration-short-3);
   }
 
-  .md-state-layer:active::before {
+  .md-state-layer-refined:active::before {
+    opacity: 0.16;
+    transform: scale(0.95);
+    transition-duration: var(--motion-duration-short-1);
+    transition-timing-function: var(--motion-standard);
+  }
+
+  /* Ripple Effect Enhancement */
+  .md-ripple {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .md-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: 
+      width var(--motion-duration-medium-3) var(--motion-emphasized),
+      height var(--motion-duration-medium-3) var(--motion-emphasized),
+      opacity var(--motion-duration-short-4) var(--motion-standard);
+    pointer-events: none;
+  }
+
+  .md-ripple:active::after {
+    width: 300px;
+    height: 300px;
     opacity: 0.12;
     transition-duration: var(--motion-duration-short-1);
+  }
+
+  /* Elevation Changes with Smooth Transitions */
+  .md-elevation-smooth {
+    transition: 
+      box-shadow var(--motion-duration-medium-1) var(--motion-emphasized),
+      transform var(--motion-duration-short-3) var(--motion-emphasized);
+  }
+
+  .md-elevation-1 { 
+    box-shadow: var(--elevation-1);
+  }
+  
+  .md-elevation-2 { 
+    box-shadow: var(--elevation-2);
+  }
+  
+  .md-elevation-3 { 
+    box-shadow: var(--elevation-3);
+  }
+  
+  .md-elevation-4 { 
+    box-shadow: var(--elevation-4);
+  }
+  
+  .md-elevation-5 { 
+    box-shadow: var(--elevation-5);
+  }
+
+  /* Smooth Focus Indicators */
+  .md-focus-smooth {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition: 
+      outline-color var(--motion-duration-short-2) var(--motion-standard),
+      outline-offset var(--motion-duration-short-3) var(--motion-emphasized);
+  }
+
+  .md-focus-smooth:focus-visible {
+    outline-color: hsl(var(--primary));
+    outline-offset: 4px;
   }
 
 /* Aurora Background Effect */
@@ -477,39 +575,71 @@
   }
 }
 
-  /* Enter Animations */
-  .md-enter {
-    animation: md-fade-in var(--motion-duration-medium-2) var(--motion-emphasized-decelerate);
+  /* Enhanced Enter/Exit Animations */
+  .md-enter-refined {
+    animation: md-fade-in-refined var(--motion-duration-medium-2) var(--motion-emphasized-decelerate);
   }
 
-  .md-enter-scale {
-    animation: md-scale-in var(--motion-duration-medium-1) var(--motion-emphasized-decelerate);
+  .md-enter-scale-refined {
+    animation: md-scale-in-refined var(--motion-duration-medium-1) var(--motion-overshoot);
   }
 
-  .md-enter-slide-up {
-    animation: md-slide-up var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
+  .md-enter-slide-up-refined {
+    animation: md-slide-up-refined var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
   }
 
-  .md-enter-slide-down {
-    animation: md-slide-down var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
+  .md-enter-slide-down-refined {
+    animation: md-slide-down-refined var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
   }
 
-  /* Exit Animations */
-  .md-exit {
-    animation: md-fade-out var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
+  .md-enter-bounce {
+    animation: md-bounce-in var(--motion-duration-long-1) var(--motion-overshoot);
   }
 
-  .md-exit-scale {
-    animation: md-scale-out var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
+  /* Exit Animations with Proper Timing */
+  .md-exit-refined {
+    animation: md-fade-out-refined var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
   }
 
-  /* Shared Element Transitions */
-  .md-shared-element {
+  .md-exit-scale-refined {
+    animation: md-scale-out-refined var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
+  }
+
+  /* Staggered Animations for Lists */
+  .md-stagger-container > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: md-stagger-in var(--motion-duration-medium-2) var(--motion-emphasized-decelerate) forwards;
+  }
+
+  .md-stagger-container > *:nth-child(1) { animation-delay: 0ms; }
+  .md-stagger-container > *:nth-child(2) { animation-delay: 50ms; }
+  .md-stagger-container > *:nth-child(3) { animation-delay: 100ms; }
+  .md-stagger-container > *:nth-child(4) { animation-delay: 150ms; }
+  .md-stagger-container > *:nth-child(5) { animation-delay: 200ms; }
+  .md-stagger-container > *:nth-child(6) { animation-delay: 250ms; }
+  .md-stagger-container > *:nth-child(7) { animation-delay: 300ms; }
+  .md-stagger-container > *:nth-child(8) { animation-delay: 350ms; }
+  .md-stagger-container > *:nth-child(9) { animation-delay: 400ms; }
+  .md-stagger-container > *:nth-child(10) { animation-delay: 450ms; }
+
+  /* Shared Element Transitions Enhanced */
+  .md-shared-element-refined {
     transition: 
       transform var(--motion-duration-long-2) var(--motion-emphasized),
       width var(--motion-duration-long-2) var(--motion-emphasized),
       height var(--motion-duration-long-2) var(--motion-emphasized),
-      border-radius var(--motion-duration-long-2) var(--motion-emphasized);
+      border-radius var(--motion-duration-long-2) var(--motion-emphasized),
+      background-color var(--motion-duration-medium-2) var(--motion-standard);
+  }
+
+  /* Loading State Transitions */
+  .md-loading-enter {
+    animation: md-pulse-gentle var(--motion-duration-medium-4) var(--motion-standard) infinite alternate;
+  }
+
+  .md-loading-exit {
+    animation: md-fade-out-refined var(--motion-duration-short-4) var(--motion-standard);
   }
   
   /* Standardized Input Styles */
@@ -707,7 +837,118 @@
     opacity: 1;
     transform: scale(1);
   }
+  }
 }
+
+/* Enhanced Material Design Keyframes */
+@keyframes md-fade-in-refined {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-fade-out-refined {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes md-scale-in-refined {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-scale-out-refined {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes md-slide-up-refined {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-slide-down-refined {
+  from {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-bounce-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-pulse-gentle {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.02);
+  }
 
 /* Responsive grid improvements */
 .responsive-grid {

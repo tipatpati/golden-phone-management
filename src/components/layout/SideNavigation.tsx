@@ -116,7 +116,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
       {/* Sidebar navigation */}
       <aside
         className={cn(
-          "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border md-motion-emphasized",
+          "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border md-motion-graceful md-elevation-3",
           isMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
         style={{ boxShadow: 'var(--elevation-3)' }}
@@ -126,7 +126,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
             <Logo size={112} className="mx-auto max-h-12 max-w-[140px]" />
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4">  {/* 16dp */}
+          <nav className="flex-1 overflow-y-auto p-4 md-stagger-container">  {/* 16dp */}
             <ul className="space-y-2">  {/* 8dp gaps */}
               {filteredNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
@@ -135,7 +135,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
                     <Link
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium md-state-change md-state-layer relative overflow-hidden",
+                        "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium md-orchestrated-change md-state-layer-refined md-focus-smooth relative overflow-hidden",
                         isActive
                           ? "bg-primary-container text-on-primary-container shadow-sm"
                           : "text-on-surface hover:bg-primary/5 hover:text-primary"

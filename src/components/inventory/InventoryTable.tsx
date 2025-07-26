@@ -92,18 +92,18 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
   console.log('Rendering inventory table');
   return (
     <div className="w-full">
-      <div className="rounded-md border overflow-hidden">
+      <div className="rounded-xl border overflow-hidden md-elevation-1 md-elevation-smooth hover:md-elevation-2">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow interactive={false}>
-                <TableHead sortable sortDirection={null}>Product</TableHead>
-                <TableHead>Serial/IMEI</TableHead>
-                <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead className="hidden md:table-cell">Type</TableHead>
-                <TableHead align="right" sortable>Price</TableHead>
-                <TableHead align="right" sortable>Stock</TableHead>
-                <TableHead align="right">Actions</TableHead>
+                <TableHead sortable sortDirection={null} className="md-focus-smooth">Product</TableHead>
+                <TableHead className="md-focus-smooth">Serial/IMEI</TableHead>
+                <TableHead className="hidden sm:table-cell md-focus-smooth">Category</TableHead>
+                <TableHead className="hidden md:table-cell md-focus-smooth">Type</TableHead>
+                <TableHead align="right" sortable className="md-focus-smooth">Price</TableHead>
+                <TableHead align="right" sortable className="md-focus-smooth">Stock</TableHead>
+                <TableHead align="right" className="md-focus-smooth">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -145,8 +145,8 @@ function ProductRow({
   isDeleting: boolean;
 }) {
   return (
-    <TableRow>
-      <TableCell className="font-medium">
+    <TableRow className="md-interactive-smooth md-focus-smooth">
+      <TableCell className="font-medium md-motion-smooth">
         <div className="truncate max-w-[120px]">{product.name}</div>
       </TableCell>
       <TableCell>
@@ -199,7 +199,7 @@ function ProductRow({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex items-center justify-center"
+                className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
                 title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
               >
                 <Printer className="h-3 w-3" />
@@ -210,7 +210,7 @@ function ProductRow({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 flex items-center justify-center"
+            className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
             onClick={() => onEdit(product)}
           >
             <Edit className="h-3 w-3" />
@@ -221,7 +221,7 @@ function ProductRow({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex items-center justify-center"
+                className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
                 disabled={isDeleting}
               >
                 <Trash className="h-3 w-3" />

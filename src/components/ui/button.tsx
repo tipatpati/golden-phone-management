@@ -6,22 +6,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden md-state-change",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden md-orchestrated-change md-focus-smooth",
   {
     variants: {
       variant: {
-        filled: "bg-primary text-primary-foreground md-interactive hover:shadow-lg active:shadow-sm",
-        "filled-tonal": "bg-primary-container text-on-primary-container md-interactive hover:shadow-md active:shadow-sm",
-        elevated: "bg-surface-container-low text-primary md-interactive hover:shadow-lg active:shadow-sm border border-border",
-        outlined: "border border-border bg-background text-primary md-state-layer",
-        text: "text-primary md-state-layer",
-        destructive: "bg-destructive text-destructive-foreground md-interactive hover:shadow-lg active:shadow-sm",
+        filled: "bg-primary text-primary-foreground md-interactive-smooth md-elevation-smooth hover:md-elevation-2 active:md-elevation-1 md-ripple",
+        "filled-tonal": "bg-primary-container text-on-primary-container md-interactive-smooth md-elevation-smooth hover:md-elevation-2 active:md-elevation-1",
+        elevated: "bg-surface-container-low text-primary md-interactive-smooth md-elevation-2 hover:md-elevation-3 active:md-elevation-1 border border-border",
+        outlined: "border border-border bg-background text-primary md-state-layer-refined",
+        text: "text-primary md-state-layer-refined",
+        destructive: "bg-destructive text-destructive-foreground md-interactive-smooth md-elevation-smooth hover:md-elevation-2 active:md-elevation-1",
         // Legacy variants for compatibility
-        default: "bg-primary text-primary-foreground md-interactive hover:shadow-lg active:shadow-sm",
-        outline: "border border-border bg-background text-primary md-state-layer",
-        secondary: "bg-secondary-container text-on-secondary-container md-interactive hover:shadow-md active:shadow-sm",
-        ghost: "text-primary md-state-layer",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-primary text-primary-foreground md-interactive-smooth md-elevation-smooth hover:md-elevation-2 active:md-elevation-1",
+        outline: "border border-border bg-background text-primary md-state-layer-refined",
+        secondary: "bg-secondary-container text-on-secondary-container md-interactive-smooth md-elevation-smooth hover:md-elevation-2 active:md-elevation-1",
+        ghost: "text-primary md-state-layer-refined",
+        link: "text-primary underline-offset-4 hover:underline md-motion-smooth",
       },
       size: {
         default: "h-10 px-6 py-2",  /* 40dp height, 24dp horizontal padding */

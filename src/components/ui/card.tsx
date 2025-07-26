@@ -14,13 +14,13 @@ const Card = React.forwardRef<
     ref={ref}
     className={cn(
       // Base Material Design Card styles
-      "rounded-xl bg-surface-container text-on-surface overflow-hidden md-enter",
+      "rounded-xl bg-surface-container text-on-surface overflow-hidden md-enter-refined md-elevation-smooth",
       // Variant styles
-      variant === 'elevated' && "bg-surface-container-low shadow-md hover:shadow-lg",
+      variant === 'elevated' && "md-elevation-1 hover:md-elevation-3",
       variant === 'filled' && "bg-surface-container-highest",
       variant === 'outlined' && "border border-border bg-surface",
       // Interactive states
-      interactive && "cursor-pointer md-interactive md-state-layer",
+      interactive && "cursor-pointer md-interactive-smooth md-state-layer-refined md-focus-smooth",
       // State layer for interactions
       interactive && "relative overflow-hidden",
       className
