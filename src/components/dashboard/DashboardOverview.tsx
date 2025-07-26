@@ -96,17 +96,18 @@ export function DashboardOverview() {
       {overviewData.map((item, index) => (
         <Card 
           key={index} 
-          className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+          variant="elevated"
+          interactive={true}
           onClick={() => handleCardClick(item.title)}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">{item.title}</CardTitle>
-            <div className={`rounded-full bg-gradient-to-br ${item.gradient} p-2 sm:p-2.5 shadow-md flex-shrink-0`}>
-              <item.icon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle variant="subtitle" className="text-on-surface-variant">{item.title}</CardTitle>
+            <div className={`rounded-full bg-primary p-3 shadow-sm`}>
+              <item.icon className="h-5 w-5 text-primary-foreground" />
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">{item.value}</div>
+          <CardContent>
+            <div className="text-3xl font-semibold text-on-surface mb-2">{item.value}</div>
             <div className="flex items-center text-xs">
               {typeof item.change === 'string' && item.change.includes('%') ? (
                 <>

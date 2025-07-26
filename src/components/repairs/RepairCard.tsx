@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Wrench, DollarSign, AlertTriangle } from "lucide-react";
@@ -85,11 +85,11 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
 
   return (
     <>
-      <Card className="card-glow hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <h3 className="font-semibold text-lg">{repair.repairNumber || repair.id}</h3>
+      <Card variant="elevated" interactive={false}>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <CardTitle variant="title">{repair.repairNumber || repair.id}</CardTitle>
               <div className="flex gap-2">
                 <Badge className={getStatusColor(repair.status)}>
                   {getStatusText(repair.status)}
