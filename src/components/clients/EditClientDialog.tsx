@@ -54,11 +54,11 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto md-form-enter">
-        <DialogHeader className="md-form-stagger">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
           <DialogTitle>Edit Client</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 md-form-stagger">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="type">Client Type</Label>
@@ -96,7 +96,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                   value={formData.first_name}
                   onChange={(e) => handleInputChange("first_name", e.target.value)}
                   required
-                  className="md-focus-smooth"
                 />
               </div>
               <div>
@@ -106,7 +105,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                   value={formData.last_name}
                   onChange={(e) => handleInputChange("last_name", e.target.value)}
                   required
-                  className="md-focus-smooth"
                 />
               </div>
             </div>
@@ -119,7 +117,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                   value={formData.company_name}
                   onChange={(e) => handleInputChange("company_name", e.target.value)}
                   required
-                  className="md-focus-smooth"
                 />
               </div>
               <div>
@@ -128,7 +125,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                   id="contact_person"
                   value={formData.contact_person}
                   onChange={(e) => handleInputChange("contact_person", e.target.value)}
-                  className="md-focus-smooth"
                 />
               </div>
             </div>
@@ -142,7 +138,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className="md-focus-smooth"
               />
             </div>
             <div>
@@ -151,7 +146,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
-                className="md-focus-smooth"
               />
             </div>
           </div>
@@ -163,7 +157,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.address}
               onChange={(e) => handleInputChange("address", e.target.value)}
               rows={2}
-              className="md-focus-smooth"
             />
           </div>
 
@@ -174,7 +167,6 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                 id="tax_id"
                 value={formData.tax_id}
                 onChange={(e) => handleInputChange("tax_id", e.target.value)}
-                className="md-focus-smooth"
               />
             </div>
           )}
@@ -186,15 +178,14 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
               value={formData.notes}
               onChange={(e) => handleInputChange("notes", e.target.value)}
               rows={3}
-              className="md-focus-smooth"
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="md-interactive-smooth">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={updateClient.isPending} className="md-interactive-smooth">
+            <Button type="submit" disabled={updateClient.isPending}>
               {updateClient.isPending ? "Updating..." : "Update Client"}
             </Button>
           </div>
