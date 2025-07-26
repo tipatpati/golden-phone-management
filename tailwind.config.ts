@@ -23,6 +23,20 @@ export default {
 				title: ['Sora', 'ui-sans-serif', 'system-ui'],
 			},
 			spacing: {
+				'1': 'var(--spacing-1)',    /* 4dp */
+				'2': 'var(--spacing-2)',    /* 8dp */
+				'3': 'var(--spacing-3)',    /* 12dp */
+				'4': 'var(--spacing-4)',    /* 16dp */
+				'5': 'var(--spacing-5)',    /* 20dp */
+				'6': 'var(--spacing-6)',    /* 24dp */
+				'8': 'var(--spacing-8)',    /* 32dp */
+				'10': 'var(--spacing-10)',  /* 40dp */
+				'12': 'var(--spacing-12)',  /* 48dp */
+				'14': 'var(--spacing-14)',  /* 56dp */
+				'16': 'var(--spacing-16)',  /* 64dp */
+				'20': 'var(--spacing-20)',  /* 80dp */
+				'24': 'var(--spacing-24)',  /* 96dp */
+				// Legacy compatibility
 				'xs': 'var(--spacing-xs)',
 				'sm': 'var(--spacing-sm)', 
 				'md': 'var(--spacing-md)',

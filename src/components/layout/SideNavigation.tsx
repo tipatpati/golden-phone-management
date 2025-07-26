@@ -126,8 +126,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
             <Logo size={112} className="mx-auto max-h-12 max-w-[140px]" />
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-3 sm:p-4">
-            <ul className="space-y-1">
+          <nav className="flex-1 overflow-y-auto p-4">  {/* 16dp */}
+            <ul className="space-y-2">  {/* 8dp gaps */}
               {filteredNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
@@ -151,7 +151,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
             </ul>
           </nav>
 
-          <div className="border-t border-border p-3 sm:p-4">
+          <div className="border-t border-border p-4">  {/* 16dp */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                 <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">

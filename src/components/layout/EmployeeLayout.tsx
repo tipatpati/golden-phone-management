@@ -19,7 +19,7 @@ export function EmployeeLayout({ children, userRole }: EmployeeLayoutProps) {
       
       <div className={`flex-1 min-w-0 transition-all duration-200 ${isMobile ? "pl-0" : "pl-64"}`}>
         <Header />
-        <main className="w-full px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full overflow-x-hidden">
+        <main className="w-full p-4 sm:p-6 md:p-8 max-w-full overflow-x-hidden">  {/* 16dp, 24dp, 32dp */}
           <div className="max-w-full overflow-x-hidden">
             {children}
           </div>

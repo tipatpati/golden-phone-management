@@ -27,7 +27,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <SideNavigation isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         
         <div className={`flex-1 min-w-0 transition-all duration-200 ${isMobile ? "pl-0" : "pl-64"}`}>
-          <main className="w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 flex justify-center">
+          <main className="w-full p-4 sm:p-6 lg:p-8 flex justify-center">  {/* 16dp, 24dp, 32dp */}
             <div className="w-full max-w-7xl mx-auto">
               {children}
             </div>

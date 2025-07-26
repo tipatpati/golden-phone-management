@@ -79,14 +79,29 @@
     --glass-bg: 255 255 255 / 0.1;
     --glass-border: 255 255 255 / 0.2;
 
-    /* Design System Tokens */
-    --spacing-xs: 0.25rem;    /* 4px */
-    --spacing-sm: 0.5rem;     /* 8px */
-    --spacing-md: 0.75rem;    /* 12px */
-    --spacing-lg: 1rem;       /* 16px */
-    --spacing-xl: 1.5rem;     /* 24px */
-    --spacing-2xl: 2rem;      /* 32px */
-    --spacing-3xl: 3rem;      /* 48px */
+    /* Material Design 8dp Grid System */
+    --spacing-1: 0.25rem;    /* 4dp */
+    --spacing-2: 0.5rem;     /* 8dp */
+    --spacing-3: 0.75rem;    /* 12dp */
+    --spacing-4: 1rem;       /* 16dp */
+    --spacing-5: 1.25rem;    /* 20dp */
+    --spacing-6: 1.5rem;     /* 24dp */
+    --spacing-8: 2rem;       /* 32dp */
+    --spacing-10: 2.5rem;    /* 40dp */
+    --spacing-12: 3rem;      /* 48dp */
+    --spacing-14: 3.5rem;    /* 56dp */
+    --spacing-16: 4rem;      /* 64dp */
+    --spacing-20: 5rem;      /* 80dp */
+    --spacing-24: 6rem;      /* 96dp */
+
+    /* Legacy spacing (kept for compatibility) */
+    --spacing-xs: var(--spacing-1);
+    --spacing-sm: var(--spacing-2);
+    --spacing-md: var(--spacing-3);
+    --spacing-lg: var(--spacing-4);
+    --spacing-xl: var(--spacing-6);
+    --spacing-2xl: var(--spacing-8);
+    --spacing-3xl: var(--spacing-12);
 
     --font-size-xs: 0.75rem;   /* 12px */
     --font-size-sm: 0.875rem;  /* 14px */
@@ -253,21 +268,50 @@
     overflow-x: hidden;
   }
 
-  /* Enhanced responsive utilities */
+  /* Material Design 8dp Grid Layout Utilities */
+  .md-padding-sm {
+    @apply p-2;  /* 8dp */
+  }
+  
+  .md-padding {
+    @apply p-4;  /* 16dp */
+  }
+  
+  .md-padding-lg {
+    @apply p-6;  /* 24dp */
+  }
+  
+  .md-padding-xl {
+    @apply p-8;  /* 32dp */
+  }
+  
+  .md-margin {
+    @apply m-4;  /* 16dp */
+  }
+  
+  .md-gap {
+    @apply gap-4;  /* 16dp */
+  }
+  
+  .md-gap-sm {
+    @apply gap-2;  /* 8dp */
+  }
+  
+  .md-gap-lg {
+    @apply gap-6;  /* 24dp */
+  }
+
+  /* Enhanced responsive utilities with 8dp grid */
   .responsive-padding {
-    @apply px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4;
+    @apply p-4 sm:p-6 md:p-8;  /* 16dp, 24dp, 32dp */
   }
 
   .responsive-margin {
-    @apply mx-2 my-2 sm:mx-4 sm:my-3 md:mx-6 md:my-4;
+    @apply m-2 sm:m-4 md:m-6;  /* 8dp, 16dp, 24dp */
   }
 
   .responsive-gap {
-    @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6;
-  }
-
-  .responsive-text {
-    @apply text-sm sm:text-base md:text-lg;
+    @apply gap-2 sm:gap-4 md:gap-6 lg:gap-8;  /* 8dp, 16dp, 24dp, 32dp */
   }
 
   /* Material Design Button Styles */
@@ -390,23 +434,32 @@
   }
   
   /* Standardized Input Styles */
-  .standard-input {
-    font-size: var(--font-size-base);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--radius);
-    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
-  }
+/* Material Design 8dp Grid Components */
+.md-card {
+  @apply p-6 rounded-lg gap-4;  /* 24dp padding, 16dp gap */
+  box-shadow: var(--elevation-1);
+}
 
-  .standard-card {
-    padding: var(--spacing-xl);
-    border-radius: calc(var(--radius) * 2);
-    gap: var(--spacing-lg);
-  }
+.md-section {
+  @apply mb-8 gap-4;  /* 32dp bottom margin, 16dp gap */
+}
 
-  .standard-section {
-    margin-bottom: var(--spacing-2xl);
-    gap: var(--spacing-lg);
-  }
+.md-list-item {
+  @apply py-3 px-4;  /* 12dp vertical, 16dp horizontal */
+}
+
+/* Responsive grid improvements with 8dp grid */
+.responsive-grid {
+  @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;  /* 16dp gaps */
+}
+
+.responsive-grid-2 {
+  @apply grid gap-6 grid-cols-1 md:grid-cols-2;  /* 24dp gaps */
+}
+
+.responsive-grid-3 {
+  @apply grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;  /* 32dp gaps */
+}
 
   .glow-button:hover {
     background: hsl(var(--button-blue-hover)); /* Golden background on hover */
