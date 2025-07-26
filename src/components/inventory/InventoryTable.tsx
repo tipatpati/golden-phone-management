@@ -96,14 +96,14 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[120px] whitespace-nowrap">Product</TableHead>
-                <TableHead className="min-w-[100px] whitespace-nowrap">Serial/IMEI</TableHead>
-                <TableHead className="hidden sm:table-cell min-w-[80px] whitespace-nowrap">Category</TableHead>
-                <TableHead className="hidden md:table-cell min-w-[80px] whitespace-nowrap">Type</TableHead>
-                <TableHead className="text-right min-w-[80px] whitespace-nowrap">Price</TableHead>
-                <TableHead className="text-right min-w-[60px] whitespace-nowrap">Stock</TableHead>
-                <TableHead className="text-right min-w-[100px] whitespace-nowrap">Actions</TableHead>
+              <TableRow interactive={false}>
+                <TableHead sortable sortDirection={null}>Product</TableHead>
+                <TableHead>Serial/IMEI</TableHead>
+                <TableHead className="hidden sm:table-cell">Category</TableHead>
+                <TableHead className="hidden md:table-cell">Type</TableHead>
+                <TableHead align="right" sortable>Price</TableHead>
+                <TableHead align="right" sortable>Stock</TableHead>
+                <TableHead align="right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -145,17 +145,17 @@ function ProductRow({
   isDeleting: boolean;
 }) {
   return (
-    <TableRow key={product.id}>
+    <TableRow>
       <TableCell className="font-medium">
-        <div className="truncate max-w-[120px] text-sm">{product.name}</div>
+        <div className="truncate max-w-[120px]">{product.name}</div>
       </TableCell>
       <TableCell>
-        <div className="truncate max-w-[100px] text-xs font-mono">
+        <div className="truncate max-w-[100px] font-mono text-sm">
           {product.serial_numbers?.[0] || product.id.slice(0, 8)}
         </div>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
-        <span className="text-sm">{product.category_name || product.category?.name}</span>
+        <span>{product.category_name || product.category?.name}</span>
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {product.has_serial ? (
@@ -170,18 +170,18 @@ function ProductRow({
           </Badge>
         )}
       </TableCell>
-      <TableCell className="text-right">
-        <div className="text-sm font-medium">
+      <TableCell align="right">
+        <div className="font-medium">
           ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
         </div>
       </TableCell>
-      <TableCell className="text-right">
-        <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"} className="text-xs">
+      <TableCell align="right">
+        <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"}>
           {product.stock}
         </Badge>
       </TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end items-center gap-1">
+      <TableCell align="right">
+        <div className="flex justify-end items-center gap-2">
           <BarcodePrintDialog
             productName={product.name}
             barcode={product.barcode || undefined}

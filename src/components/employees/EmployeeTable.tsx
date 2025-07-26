@@ -81,16 +81,16 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[120px]">Name</TableHead>
-              <TableHead className="min-w-[200px]">Email</TableHead>
-              <TableHead className="min-w-[100px]">Role</TableHead>
-              <TableHead className="min-w-[120px] hidden sm:table-cell">Department</TableHead>
-              <TableHead className="min-w-[120px] hidden md:table-cell">Position</TableHead>
-              <TableHead className="min-w-[80px]">Status</TableHead>
-              <TableHead className="min-w-[100px] hidden lg:table-cell">Hire Date</TableHead>
-              <TableHead className="min-w-[80px] hidden lg:table-cell">Salary</TableHead>
-              <TableHead className="min-w-[80px]">Actions</TableHead>
+            <TableRow interactive={false}>
+              <TableHead sortable>Name</TableHead>
+              <TableHead sortable>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="hidden sm:table-cell">Department</TableHead>
+              <TableHead className="hidden md:table-cell">Position</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden lg:table-cell" align="right">Hire Date</TableHead>
+              <TableHead className="hidden lg:table-cell" align="right">Salary</TableHead>
+              <TableHead align="right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -124,14 +124,14 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
                     {employee.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden lg:table-cell text-sm">
+                <TableCell className="hidden lg:table-cell" align="right">
                   {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
                 </TableCell>
-                <TableCell className="hidden lg:table-cell text-sm">
+                <TableCell className="hidden lg:table-cell" align="right">
                   {employee.salary ? `€${employee.salary.toLocaleString()}` : "-"}
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
+                <TableCell align="right">
+                  <div className="flex items-center justify-end gap-2">
                     <Button
                       variant="ghost"
                       size="sm"

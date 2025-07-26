@@ -9,7 +9,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm border-collapse", className)}
       {...props}
     />
   </div>
@@ -20,7 +20,11 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead 
+    ref={ref} 
+    className={cn("bg-surface-container border-b border-border", className)} 
+    {...props} 
+  />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -53,12 +57,16 @@ TableFooter.displayName = "TableFooter"
 
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableRowElement> & {
+    interactive?: boolean
+  }
+>(({ className, interactive = true, ...props }, ref) => (
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "border-b border-border h-14 transition-all duration-150",
+      interactive && "hover:bg-surface-container-high cursor-pointer",
+      "data-[state=selected]:bg-primary-container",
       className
     )}
     {...props}
@@ -68,26 +76,72 @@ TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.ThHTMLAttributes<HTMLTableCellElement> & {
+    sortable?: boolean
+    sortDirection?: 'asc' | 'desc' | null
+    align?: 'left' | 'center' | 'right'
+  }
+>(({ className, sortable = false, sortDirection = null, align = 'left', children, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      "h-14 px-4 font-medium text-sm text-on-surface-variant border-b border-border bg-surface-container",
+      align === 'left' && "text-left",
+      align === 'center' && "text-center", 
+      align === 'right' && "text-right",
+      sortable && "cursor-pointer hover:bg-surface-container-high select-none",
+      "[&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
-  />
+  >
+    <div className="flex items-center gap-2">
+      {children}
+      {sortable && (
+        <div className="flex flex-col">
+          <svg
+            className={cn(
+              "w-3 h-3 transition-colors",
+              sortDirection === 'asc' ? "text-primary" : "text-on-surface-variant opacity-50"
+            )}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+          </svg>
+          <svg
+            className={cn(
+              "w-3 h-3 transition-colors -mt-1",
+              sortDirection === 'desc' ? "text-primary" : "text-on-surface-variant opacity-50"
+            )}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </div>
+      )}
+    </div>
+  </th>
 ))
 TableHead.displayName = "TableHead"
 
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.TdHTMLAttributes<HTMLTableCellElement> & {
+    align?: 'left' | 'center' | 'right'
+  }
+>(({ className, align = 'left', ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn(
+      "px-4 py-3 align-middle text-sm text-on-surface",
+      align === 'left' && "text-left",
+      align === 'center' && "text-center",
+      align === 'right' && "text-right",
+      "[&:has([role=checkbox])]:pr-0", 
+      className
+    )}
     {...props}
   />
 ))
