@@ -4,34 +4,69 @@
 
 @layer base {
   :root {
+    /* Material Design 3 Color Tokens */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 11 10% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 11 10% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 11 10% 14%;
 
-    --primary: 221 83% 40%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 230 100% 75%;
+    /* Material Design 3 Primary Colors - Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 217 91% 95%;
+    --on-primary-container: 217 91% 10%;
 
-    --secondary: 215 19% 35%;
-    --secondary-foreground: 210 40% 98%;
+    /* Material Design 3 Secondary Colors */
+    --secondary: 258 25% 25%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-container: 258 25% 90%;
+    --on-secondary-container: 258 25% 10%;
 
-    --accent: 172 92% 32%;
-    --accent-foreground: 210 40% 98%;
+    /* Material Design 3 Tertiary Colors */
+    --tertiary: 45 100% 51%;
+    --tertiary-foreground: 0 0% 0%;
+    --tertiary-container: 45 100% 95%;
+    --on-tertiary-container: 45 100% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Material Design 3 Surface Colors */
+    --surface: 0 0% 99%;
+    --surface-dim: 0 0% 95%;
+    --surface-bright: 0 0% 100%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 0 0% 97%;
+    --surface-container: 0 0% 95%;
+    --surface-container-high: 0 0% 92%;
+    --surface-container-highest: 0 0% 90%;
+    --on-surface: 11 10% 14%;
+    --on-surface-variant: 47 9% 43%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Legacy compatibility */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 47 9% 43%;
+    --destructive: 5 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 84%;
+    --input: 240 5% 84%;
+    --ring: 217 91% 60%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 40%;
+    /* Material Design 3 Motion */
+    --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);
+    --motion-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --motion-decelerated: cubic-bezier(0, 0, 0.2, 1);
+    --motion-accelerated: cubic-bezier(0.4, 0, 1, 1);
+
+    /* Material Design 3 Elevation Shadows */
+    --elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    --elevation-2: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+    --elevation-3: 0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+    --elevation-4: 0px 2px 3px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+    --elevation-5: 0px 4px 4px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 
     --radius: 0.5rem;
 
@@ -235,22 +270,19 @@
     @apply text-sm sm:text-base md:text-lg;
   }
 
-  /* Glowing Button Effects */
-  .letter-spacing-wider {
-    letter-spacing: 0.1em;
-  }
-
-  .letter-spacing-widest {
-    letter-spacing: 0.25em;
-  }
-
-  .hover\:letter-spacing-widest:hover {
-    letter-spacing: 0.25em;
-  }
-
-  /* Standardized Button Styles */
-  .glow-button {
+  /* Material Design Button Styles */
+  .material-button {
     position: relative;
+    border-radius: 20px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.1px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .material-input {
+    border-radius: 4px 4px 0 0;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
 /* Aurora Background Effect */
@@ -319,44 +351,42 @@
   }
 }
 
-  .glow-button {
-    background: hsl(var(--button-blue)); /* Blue background */
-    color: hsl(var(--button-text)); /* White text */
-    text-decoration: none;
-    text-transform: uppercase;
-    font-size: var(--font-size-xs);
-    letter-spacing: 0.1em;
-    font-weight: 400;
-    padding: var(--spacing-md) var(--spacing-xl);
-    transition: all 0.3s ease;
-    font-family: 'Sora', ui-sans-serif, system-ui;
-    border: 1px solid hsl(var(--button-border));
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
-    box-sizing: border-box;
-    border-radius: var(--radius);
+  /* Material Design Elevation Classes */
+  .elevation-1 { box-shadow: var(--elevation-1); }
+  .elevation-2 { box-shadow: var(--elevation-2); }
+  .elevation-3 { box-shadow: var(--elevation-3); }
+  .elevation-4 { box-shadow: var(--elevation-4); }
+  .elevation-5 { box-shadow: var(--elevation-5); }
+
+  /* Material Design State Layers */
+  .state-layer {
+    position: relative;
+    overflow: hidden;
   }
 
-  .glow-button-sm {
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-sm) var(--spacing-lg);
-    min-height: calc(var(--spacing-xl) + var(--spacing-md));
+  .state-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
   }
 
-  .glow-button-lg {
-    font-size: var(--font-size-lg);
-    padding: var(--spacing-lg) var(--spacing-2xl);
-    min-height: calc(var(--spacing-3xl) + var(--spacing-sm));
+  .state-layer:hover::before {
+    opacity: 0.08;
   }
 
-  .glow-button-icon {
-    padding: var(--spacing-md);
-    min-width: calc(var(--spacing-2xl) + var(--spacing-md));
-    min-height: calc(var(--spacing-2xl) + var(--spacing-md));
+  .state-layer:focus-visible::before {
+    opacity: 0.12;
+  }
+
+  .state-layer:active::before {
+    opacity: 0.12;
   }
   
   /* Standardized Input Styles */

@@ -48,12 +48,34 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					container: 'hsl(var(--primary-container))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					container: 'hsl(var(--secondary-container))'
 				},
+				tertiary: {
+					DEFAULT: 'hsl(var(--tertiary))',
+					foreground: 'hsl(var(--tertiary-foreground))',
+					container: 'hsl(var(--tertiary-container))'
+				},
+				surface: {
+					DEFAULT: 'hsl(var(--surface))',
+					dim: 'hsl(var(--surface-dim))',
+					bright: 'hsl(var(--surface-bright))',
+					'container-lowest': 'hsl(var(--surface-container-lowest))',
+					'container-low': 'hsl(var(--surface-container-low))',
+					container: 'hsl(var(--surface-container))',
+					'container-high': 'hsl(var(--surface-container-high))',
+					'container-highest': 'hsl(var(--surface-container-highest))'
+				},
+				'on-surface': 'hsl(var(--on-surface))',
+				'on-surface-variant': 'hsl(var(--on-surface-variant))',
+				'on-primary-container': 'hsl(var(--on-primary-container))',
+				'on-secondary-container': 'hsl(var(--on-secondary-container))',
+				'on-tertiary-container': 'hsl(var(--on-tertiary-container))',
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'

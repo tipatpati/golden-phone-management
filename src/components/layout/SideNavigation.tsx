@@ -116,13 +116,14 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
       {/* Sidebar navigation */}
       <aside
         className={cn(
-          "bg-sidebar fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out shadow-lg",
+          "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out",
           isMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
+        style={{ boxShadow: 'var(--elevation-3)' }}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-14 sm:h-16 items-center justify-center border-b border-border px-4">
-            <Logo size={112} className="mx-auto max-h-10 sm:max-h-12 max-w-[120px] sm:max-w-[140px]" />
+          <div className="flex h-16 items-center justify-center border-b border-border px-4">
+            <Logo size={112} className="mx-auto max-h-12 max-w-[140px]" />
           </div>
 
           <nav className="flex-1 overflow-y-auto p-3 sm:p-4">
@@ -134,14 +135,14 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
                     <Link
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-2 sm:gap-3 rounded-md px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-all duration-200 relative overflow-hidden",
                         isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:text-yellow-800"
+                          ? "bg-primary-container text-on-primary-container shadow-sm"
+                          : "text-on-surface hover:bg-primary/5 hover:text-primary"
                       )}
                       onClick={() => isMobile && setMenuOpen(false)}
                     >
-                      <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span className="truncate">{item.title}</span>
                     </Link>
                   </li>
