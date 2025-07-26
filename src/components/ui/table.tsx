@@ -64,8 +64,8 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-border h-14 transition-all duration-150",
-      interactive && "hover:bg-surface-container-high cursor-pointer",
+      "border-b border-border h-14 md-state-change",
+      interactive && "hover:bg-surface-container-high cursor-pointer md-state-layer",
       "data-[state=selected]:bg-primary-container",
       className
     )}
@@ -85,11 +85,11 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-14 px-4 font-medium text-sm text-on-surface-variant border-b border-border bg-surface-container",
+      "h-14 px-4 font-medium text-sm text-on-surface-variant border-b border-border bg-surface-container md-state-change",
       align === 'left' && "text-left",
       align === 'center' && "text-center", 
       align === 'right' && "text-right",
-      sortable && "cursor-pointer hover:bg-surface-container-high select-none",
+      sortable && "cursor-pointer hover:bg-surface-container-high select-none md-state-layer",
       "[&:has([role=checkbox])]:pr-0",
       className
     )}
@@ -101,7 +101,7 @@ const TableHead = React.forwardRef<
         <div className="flex flex-col">
           <svg
             className={cn(
-              "w-3 h-3 transition-colors",
+              "w-3 h-3 md-motion-short",
               sortDirection === 'asc' ? "text-primary" : "text-on-surface-variant opacity-50"
             )}
             fill="currentColor"
@@ -111,7 +111,7 @@ const TableHead = React.forwardRef<
           </svg>
           <svg
             className={cn(
-              "w-3 h-3 transition-colors -mt-1",
+              "w-3 h-3 md-motion-short -mt-1",
               sortDirection === 'desc' ? "text-primary" : "text-on-surface-variant opacity-50"
             )}
             fill="currentColor"

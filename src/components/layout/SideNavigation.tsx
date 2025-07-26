@@ -116,7 +116,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
       {/* Sidebar navigation */}
       <aside
         className={cn(
-          "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border transition-transform duration-200 ease-in-out",
+          "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border md-motion-emphasized",
           isMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
         style={{ boxShadow: 'var(--elevation-3)' }}
@@ -135,7 +135,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
                     <Link
                       to={item.href}
                       className={cn(
-                        "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-all duration-200 relative overflow-hidden",
+                        "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium md-state-change md-state-layer relative overflow-hidden",
                         isActive
                           ? "bg-primary-container text-on-primary-container shadow-sm"
                           : "text-on-surface hover:bg-primary/5 hover:text-primary"

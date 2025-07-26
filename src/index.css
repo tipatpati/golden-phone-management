@@ -55,11 +55,28 @@
     --input: 240 5% 84%;
     --ring: 217 91% 60%;
 
-    /* Material Design 3 Motion */
-    --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);
-    --motion-standard: cubic-bezier(0.4, 0, 0.2, 1);
-    --motion-decelerated: cubic-bezier(0, 0, 0.2, 1);
-    --motion-accelerated: cubic-bezier(0.4, 0, 1, 1);
+    /* Material Design 3 Motion System */
+    --motion-duration-short-1: 50ms;      /* 50ms for simple transitions */
+    --motion-duration-short-2: 100ms;     /* 100ms for simple state changes */
+    --motion-duration-short-3: 150ms;     /* 150ms for small elements */
+    --motion-duration-short-4: 200ms;     /* 200ms for medium elements */
+    --motion-duration-medium-1: 250ms;    /* 250ms for medium complexity */
+    --motion-duration-medium-2: 300ms;    /* 300ms for detailed transitions */
+    --motion-duration-medium-3: 350ms;    /* 350ms for complex elements */
+    --motion-duration-medium-4: 400ms;    /* 400ms for large elements */
+    --motion-duration-long-1: 450ms;      /* 450ms for complex transitions */
+    --motion-duration-long-2: 500ms;      /* 500ms for very complex animations */
+    --motion-duration-long-3: 550ms;      /* 550ms for extensive animations */
+    --motion-duration-long-4: 600ms;      /* 600ms for page transitions */
+
+    /* Material Design 3 Easing Curves */
+    --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);          /* Emphasized - bold, confident */
+    --motion-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1); /* Enter animations */
+    --motion-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);  /* Exit animations */
+    --motion-standard: cubic-bezier(0.2, 0, 0, 1);            /* Standard - smooth, natural */
+    --motion-standard-decelerate: cubic-bezier(0, 0, 0, 1);   /* Enter without emphasis */
+    --motion-standard-accelerate: cubic-bezier(0.3, 0, 1, 1); /* Exit without emphasis */
+    --motion-linear: cubic-bezier(0, 0, 1, 1);                /* Linear for continuous animations */
 
     /* Material Design 3 Elevation Shadows */
     --elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
@@ -314,19 +331,84 @@
     @apply gap-2 sm:gap-4 md:gap-6 lg:gap-8;  /* 8dp, 16dp, 24dp, 32dp */
   }
 
-  /* Material Design Button Styles */
-  .material-button {
-    position: relative;
-    border-radius: 20px;
-    font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0.1px;
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Material Design Motion Utilities */
+  .md-motion-emphasized {
+    transition: all var(--motion-duration-medium-2) var(--motion-emphasized);
   }
-  
-  .material-input {
-    border-radius: 4px 4px 0 0;
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  .md-motion-standard {
+    transition: all var(--motion-duration-short-4) var(--motion-standard);
+  }
+
+  .md-motion-short {
+    transition: all var(--motion-duration-short-2) var(--motion-standard);
+  }
+
+  .md-motion-medium {
+    transition: all var(--motion-duration-medium-2) var(--motion-standard);
+  }
+
+  .md-motion-long {
+    transition: all var(--motion-duration-long-2) var(--motion-emphasized);
+  }
+
+  /* State Change Animations */
+  .md-state-change {
+    transition: 
+      background-color var(--motion-duration-short-2) var(--motion-standard),
+      color var(--motion-duration-short-2) var(--motion-standard),
+      border-color var(--motion-duration-short-2) var(--motion-standard),
+      box-shadow var(--motion-duration-short-4) var(--motion-emphasized);
+  }
+
+  /* Interactive Element Animations */
+  .md-interactive {
+    transition: 
+      transform var(--motion-duration-short-2) var(--motion-standard),
+      box-shadow var(--motion-duration-short-4) var(--motion-emphasized),
+      background-color var(--motion-duration-short-1) var(--motion-standard);
+  }
+
+  .md-interactive:hover {
+    transform: translateY(-1px);
+  }
+
+  .md-interactive:active {
+    transform: translateY(0);
+    transition-duration: var(--motion-duration-short-1);
+  }
+
+  /* Material Design State Layers with Proper Animation */
+  .md-state-layer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .md-state-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--motion-duration-short-2) var(--motion-standard);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .md-state-layer:hover::before {
+    opacity: 0.08;
+  }
+
+  .md-state-layer:focus-visible::before {
+    opacity: 0.12;
+  }
+
+  .md-state-layer:active::before {
+    opacity: 0.12;
+    transition-duration: var(--motion-duration-short-1);
   }
 
 /* Aurora Background Effect */
@@ -395,42 +477,39 @@
   }
 }
 
-  /* Material Design Elevation Classes */
-  .elevation-1 { box-shadow: var(--elevation-1); }
-  .elevation-2 { box-shadow: var(--elevation-2); }
-  .elevation-3 { box-shadow: var(--elevation-3); }
-  .elevation-4 { box-shadow: var(--elevation-4); }
-  .elevation-5 { box-shadow: var(--elevation-5); }
-
-  /* Material Design State Layers */
-  .state-layer {
-    position: relative;
-    overflow: hidden;
+  /* Enter Animations */
+  .md-enter {
+    animation: md-fade-in var(--motion-duration-medium-2) var(--motion-emphasized-decelerate);
   }
 
-  .state-layer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: currentColor;
-    opacity: 0;
-    transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
+  .md-enter-scale {
+    animation: md-scale-in var(--motion-duration-medium-1) var(--motion-emphasized-decelerate);
   }
 
-  .state-layer:hover::before {
-    opacity: 0.08;
+  .md-enter-slide-up {
+    animation: md-slide-up var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
   }
 
-  .state-layer:focus-visible::before {
-    opacity: 0.12;
+  .md-enter-slide-down {
+    animation: md-slide-down var(--motion-duration-medium-3) var(--motion-emphasized-decelerate);
   }
 
-  .state-layer:active::before {
-    opacity: 0.12;
+  /* Exit Animations */
+  .md-exit {
+    animation: md-fade-out var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
+  }
+
+  .md-exit-scale {
+    animation: md-scale-out var(--motion-duration-short-4) var(--motion-emphasized-accelerate);
+  }
+
+  /* Shared Element Transitions */
+  .md-shared-element {
+    transition: 
+      transform var(--motion-duration-long-2) var(--motion-emphasized),
+      width var(--motion-duration-long-2) var(--motion-emphasized),
+      height var(--motion-duration-long-2) var(--motion-emphasized),
+      border-radius var(--motion-duration-long-2) var(--motion-emphasized);
   }
   
   /* Standardized Input Styles */
@@ -544,7 +623,70 @@
   }
 }
 
-/* Enhanced animations for better UX */
+/* Material Design Keyframes */
+@keyframes md-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes md-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes md-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes md-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced animations for better UX - Legacy support */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -565,14 +707,6 @@
     opacity: 1;
     transform: scale(1);
   }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-.animate-fade-in-scale {
-  animation: fadeInScale 0.2s ease-out;
 }
 
 /* Responsive grid improvements */

@@ -6,21 +6,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden md-state-change",
   {
     variants: {
       variant: {
-        filled: "bg-primary text-primary-foreground shadow-md hover:shadow-lg active:shadow-sm",
-        "filled-tonal": "bg-primary-container text-on-primary-container shadow-sm hover:shadow-md active:shadow-sm",
-        elevated: "bg-surface-container-low text-primary shadow-md hover:shadow-lg active:shadow-sm border border-border",
-        outlined: "border border-border bg-background text-primary hover:bg-primary/5 active:bg-primary/10",
-        text: "text-primary hover:bg-primary/5 active:bg-primary/10",
-        destructive: "bg-destructive text-destructive-foreground shadow-md hover:shadow-lg active:shadow-sm",
+        filled: "bg-primary text-primary-foreground md-interactive hover:shadow-lg active:shadow-sm",
+        "filled-tonal": "bg-primary-container text-on-primary-container md-interactive hover:shadow-md active:shadow-sm",
+        elevated: "bg-surface-container-low text-primary md-interactive hover:shadow-lg active:shadow-sm border border-border",
+        outlined: "border border-border bg-background text-primary md-state-layer",
+        text: "text-primary md-state-layer",
+        destructive: "bg-destructive text-destructive-foreground md-interactive hover:shadow-lg active:shadow-sm",
         // Legacy variants for compatibility
-        default: "bg-primary text-primary-foreground shadow-md hover:shadow-lg active:shadow-sm",
-        outline: "border border-border bg-background text-primary hover:bg-primary/5 active:bg-primary/10", // Same as outlined for backward compatibility
-        secondary: "bg-secondary-container text-on-secondary-container shadow-sm hover:shadow-md active:shadow-sm",
-        ghost: "text-primary hover:bg-primary/5 active:bg-primary/10",
+        default: "bg-primary text-primary-foreground md-interactive hover:shadow-lg active:shadow-sm",
+        outline: "border border-border bg-background text-primary md-state-layer",
+        secondary: "bg-secondary-container text-on-secondary-container md-interactive hover:shadow-md active:shadow-sm",
+        ghost: "text-primary md-state-layer",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

@@ -22,8 +22,17 @@ export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
 
   return (
     <div className="space-y-4">
-      {repairs.map((repair) => (
-        <RepairCard key={repair.id} repair={repair} />
+      {repairs.map((repair, index) => (
+        <div 
+          key={repair.id} 
+          className="md-enter"
+          style={{
+            animationDelay: `${index * 50}ms`,
+            animationFillMode: 'both'
+          }}
+        >
+          <RepairCard repair={repair} />
+        </div>
       ))}
     </div>
   );
