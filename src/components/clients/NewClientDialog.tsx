@@ -68,126 +68,139 @@ export function NewClientDialog() {
           Add Client
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl md-form-enter">
+        <DialogHeader className="md-form-stagger">
           <DialogTitle>Add New Client</DialogTitle>
         </DialogHeader>
         
-        <Tabs value={clientType} onValueChange={(value) => setClientType(value as 'individual' | 'business')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="individual">Individual (B2C)</TabsTrigger>
-            <TabsTrigger value="business">Business (B2B)</TabsTrigger>
-          </TabsList>
-          
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <TabsContent value="individual" className="space-y-4">
+        <div className="md-form-stagger">
+          <Tabs value={clientType} onValueChange={(value) => setClientType(value as 'individual' | 'business')}>
+            <TabsList className="grid w-full grid-cols-2 md-tab-transition">
+              <TabsTrigger value="individual" className="md-interactive-smooth">Individual (B2C)</TabsTrigger>
+              <TabsTrigger value="business" className="md-interactive-smooth">Business (B2B)</TabsTrigger>
+            </TabsList>
+            
+            <form onSubmit={handleSubmit} className="space-y-4 mt-4 md-form-stagger">
+              <TabsContent value="individual" className="space-y-4 md-tab-transition">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name *</Label>
+                    <Input
+                      id="first_name"
+                      value={formData.first_name}
+                      onChange={(e) => updateFormData('first_name', e.target.value)}
+                      required
+                      className="md-focus-smooth"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name *</Label>
+                    <Input
+                      id="last_name"
+                      value={formData.last_name}
+                      onChange={(e) => updateFormData('last_name', e.target.value)}
+                      required
+                      className="md-focus-smooth"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="business" className="space-y-4 md-tab-transition">
+                <div className="space-y-2">
+                  <Label htmlFor="company_name">Company Name *</Label>
+                  <Input
+                    id="company_name"
+                    value={formData.company_name}
+                    onChange={(e) => updateFormData('company_name', e.target.value)}
+                    required
+                    className="md-focus-smooth"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person">Contact Person</Label>
+                  <Input
+                    id="contact_person"
+                    value={formData.contact_person}
+                    onChange={(e) => updateFormData('contact_person', e.target.value)}
+                    className="md-focus-smooth"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tax_id">Tax ID</Label>
+                  <Input
+                    id="tax_id"
+                    value={formData.tax_id}
+                    onChange={(e) => updateFormData('tax_id', e.target.value)}
+                    className="md-focus-smooth"
+                  />
+                </div>
+              </TabsContent>
+
+              {/* Common fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => updateFormData('first_name', e.target.value)}
-                    required
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => updateFormData('email', e.target.value)}
+                    className="md-focus-smooth"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Label htmlFor="phone">Phone</Label>
                   <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => updateFormData('last_name', e.target.value)}
-                    required
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => updateFormData('phone', e.target.value)}
+                    className="md-focus-smooth"
                   />
                 </div>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="business" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name *</Label>
-                <Input
-                  id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => updateFormData('company_name', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact_person">Contact Person</Label>
-                <Input
-                  id="contact_person"
-                  value={formData.contact_person}
-                  onChange={(e) => updateFormData('contact_person', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tax_id">Tax ID</Label>
-                <Input
-                  id="tax_id"
-                  value={formData.tax_id}
-                  onChange={(e) => updateFormData('tax_id', e.target.value)}
-                />
-              </div>
-            </TabsContent>
 
-            {/* Common fields */}
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="address">Address</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData('email', e.target.value)}
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => updateFormData('address', e.target.value)}
+                  className="md-focus-smooth"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => updateFormData('notes', e.target.value)}
+                  placeholder="Additional notes..."
+                  className="md-focus-smooth"
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => updateFormData('address', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => updateFormData('notes', e.target.value)}
-                placeholder="Additional notes..."
-              />
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={createClient.isPending}
-              >
-                {createClient.isPending ? "Creating..." : "Create Client"}
-              </Button>
-            </div>
-          </form>
-        </Tabs>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setOpen(false)}
+                  className="md-interactive-smooth"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createClient.isPending}
+                  className="md-interactive-smooth"
+                >
+                  {createClient.isPending ? "Creating..." : "Create Client"}
+                </Button>
+              </div>
+            </form>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );
