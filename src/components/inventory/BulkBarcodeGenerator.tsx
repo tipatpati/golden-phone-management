@@ -89,7 +89,8 @@ export function BulkBarcodeGenerator() {
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2 text-center justify-center">
           <Barcode className="h-4 w-4 flex-shrink-0" />
-          Generate Missing Barcodes
+          <span className="hidden sm:inline">Generate Missing Barcodes</span>
+          <span className="sm:hidden">Generate</span>
           {productsWithoutBarcodes.length > 0 && (
             <Badge variant="secondary" className="ml-1">
               {productsWithoutBarcodes.length}
