@@ -20,6 +20,7 @@ import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
 import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { useSuppliers } from "@/services/useSuppliers";
+import { cn } from "@/lib/utils";
 
 interface SuppliersTableProps {
   searchTerm: string;
@@ -53,10 +54,10 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Contact Person</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Supplier</TableHead>
+              <TableHead className="hidden sm:table-cell">Contact</TableHead>
+              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden lg:table-cell">Phone</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
@@ -71,17 +72,27 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
             ) : (
               filteredSuppliers.map((supplier) => (
                 <TableRow key={supplier.id}>
-                  <TableCell className="font-medium">{supplier.name}</TableCell>
-                  <TableCell>{supplier.contact_person || "—"}</TableCell>
-                  <TableCell>{supplier.email || "—"}</TableCell>
-                  <TableCell>{supplier.phone || "—"}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col gap-1">
+                      <div className="truncate">{supplier.name}</div>
+                      <div className="text-xs text-muted-foreground sm:hidden">
+                        {supplier.contact_person && `${supplier.contact_person}`}
+                        {supplier.email && ` • ${supplier.email}`}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">{supplier.contact_person || "—"}</TableCell>
+                  <TableCell className="hidden md:table-cell">{supplier.email || "—"}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{supplier.phone || "—"}</TableCell>
                   <TableCell>
                     <Badge 
                       variant={supplier.status === 'active' ? 'default' : 'secondary'}
-                      className={supplier.status === 'active' 
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                      }
+                      className={cn(
+                        "text-xs",
+                        supplier.status === 'active' 
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                      )}
                     >
                       {supplier.status}
                     </Badge>
@@ -89,7 +100,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

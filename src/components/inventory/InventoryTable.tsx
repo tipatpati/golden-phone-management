@@ -147,11 +147,21 @@ function ProductRow({
   return (
     <TableRow className="md-interactive-smooth md-focus-smooth">
       <TableCell className="font-medium md-motion-smooth">
-        <div className="truncate max-w-[120px]">{product.name}</div>
+        <div className="flex flex-col gap-1">
+          <div className="truncate max-w-[120px] sm:max-w-none">{product.name}</div>
+          <div className="text-xs text-muted-foreground sm:hidden">
+            ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+          </div>
+        </div>
       </TableCell>
       <TableCell>
-        <div className="truncate max-w-[100px] font-mono text-sm">
-          {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+        <div className="flex flex-col gap-1">
+          <div className="truncate max-w-[100px] font-mono text-xs sm:text-sm">
+            {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+          </div>
+          <div className="text-xs text-muted-foreground sm:hidden">
+            Stock: {product.stock}
+          </div>
         </div>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
@@ -181,7 +191,7 @@ function ProductRow({
         </Badge>
       </TableCell>
       <TableCell align="right">
-        <div className="flex justify-end items-center gap-2">
+        <div className="flex justify-end items-center gap-1 sm:gap-2">
           <BarcodePrintDialog
             productName={product.name}
             barcode={product.barcode || undefined}
@@ -199,7 +209,7 @@ function ProductRow({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
+                className="h-6 w-6 sm:h-8 sm:w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
                 title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
               >
                 <Printer className="h-3 w-3" />
@@ -210,7 +220,7 @@ function ProductRow({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
+            className="h-6 w-6 sm:h-8 sm:w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
             onClick={() => onEdit(product)}
           >
             <Edit className="h-3 w-3" />
@@ -221,7 +231,7 @@ function ProductRow({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
+                className="h-6 w-6 sm:h-8 sm:w-8 flex items-center justify-center md-interactive-smooth md-focus-smooth"
                 disabled={isDeleting}
               >
                 <Trash className="h-3 w-3" />

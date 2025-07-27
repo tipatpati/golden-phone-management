@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSupplierTransactions } from "@/services/useSupplierTransactions";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface TransactionsTableProps {
   searchTerm: string;
@@ -72,11 +73,11 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Transaction #</TableHead>
-            <TableHead>Supplier</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Transaction</TableHead>
+            <TableHead className="hidden sm:table-cell">Supplier</TableHead>
+            <TableHead className="hidden md:table-cell">Type</TableHead>
             <TableHead>Amount</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead className="hidden lg:table-cell">Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-12"></TableHead>
           </TableRow>
@@ -92,29 +93,44 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
             filteredTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell className="font-medium">
-                  {transaction.transaction_number}
+                  <div className="flex flex-col gap-1">
+                    <div className="truncate">{transaction.transaction_number}</div>
+                    <div className="text-xs text-muted-foreground sm:hidden">
+                      {transaction.suppliers?.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground md:hidden">
+                      <Badge className={cn("text-xs", getTypeColor(transaction.type))}>
+                        {transaction.type}
+                      </Badge>
+                    </div>
+                  </div>
                 </TableCell>
-                <TableCell>{transaction.suppliers?.name || "—"}</TableCell>
-                <TableCell>
-                  <Badge className={getTypeColor(transaction.type)}>
+                <TableCell className="hidden sm:table-cell">{transaction.suppliers?.name || "—"}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <Badge className={cn("text-xs", getTypeColor(transaction.type))}>
                     {transaction.type}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  ${transaction.total_amount.toFixed(2)}
+                  <div className="flex flex-col gap-1">
+                    <div className="font-medium">${transaction.total_amount.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground lg:hidden">
+                      {format(new Date(transaction.transaction_date), "MMM dd, yyyy")}
+                    </div>
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell">
                   {format(new Date(transaction.transaction_date), "MMM dd, yyyy")}
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(transaction.status)}>
+                  <Badge className={cn("text-xs", getStatusColor(transaction.status))}>
                     {transaction.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

@@ -82,14 +82,14 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
         <Table>
           <TableHeader>
             <TableRow interactive={false}>
-              <TableHead sortable>Name</TableHead>
-              <TableHead sortable>Email</TableHead>
+              <TableHead sortable>Employee</TableHead>
+              <TableHead sortable className="hidden sm:table-cell">Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead className="hidden sm:table-cell">Department</TableHead>
-              <TableHead className="hidden md:table-cell">Position</TableHead>
+              <TableHead className="hidden md:table-cell">Department</TableHead>
+              <TableHead className="hidden lg:table-cell">Position</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="hidden lg:table-cell" align="right">Hire Date</TableHead>
-              <TableHead className="hidden lg:table-cell" align="right">Salary</TableHead>
+              <TableHead className="hidden xl:table-cell" align="right">Hire Date</TableHead>
+              <TableHead className="hidden xl:table-cell" align="right">Salary</TableHead>
               <TableHead align="right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -97,14 +97,18 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
             {employees.map((employee) => (
               <TableRow key={employee.id}>
                 <TableCell className="font-medium text-sm">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-1">
                     <span>{employee.first_name} {employee.last_name}</span>
-                    <span className="text-xs text-muted-foreground sm:hidden">
-                      {employee.department || "No dept"}
-                    </span>
+                    <div className="text-xs text-muted-foreground sm:hidden">
+                      {employee.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground md:hidden">
+                      {employee.department && `${employee.department}`}
+                      {employee.position && ` • ${employee.position}`}
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="text-sm hidden sm:table-cell">
                   <div className="flex flex-col">
                     <span>{employee.email}</span>
                     <span className="text-xs text-muted-foreground md:hidden">
@@ -117,26 +121,26 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
                     {getRoleName(employee.profiles?.role || "salesperson")}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell text-sm">{employee.department || "-"}</TableCell>
-                <TableCell className="hidden md:table-cell text-sm">{employee.position || "-"}</TableCell>
+                <TableCell className="hidden md:table-cell text-sm">{employee.department || "-"}</TableCell>
+                <TableCell className="hidden lg:table-cell text-sm">{employee.position || "-"}</TableCell>
                 <TableCell>
                   <Badge className={`${getStatusColor(employee.status)} text-xs`}>
                     {employee.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden lg:table-cell" align="right">
+                <TableCell className="hidden xl:table-cell" align="right">
                   {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : "-"}
                 </TableCell>
-                <TableCell className="hidden lg:table-cell" align="right">
+                <TableCell className="hidden xl:table-cell" align="right">
                   {employee.salary ? `€${employee.salary.toLocaleString()}` : "-"}
                 </TableCell>
                 <TableCell align="right">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-1 sm:gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onEdit(employee)}
-                      className="h-8 w-8 p-0"
+                      className="h-6 w-6 sm:h-8 sm:w-8 p-0"
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>
@@ -144,7 +148,7 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
                       variant="ghost"
                       size="sm"
                       onClick={() => setDeleteEmployee(employee)}
-                      className="h-8 w-8 p-0"
+                      className="h-6 w-6 sm:h-8 sm:w-8 p-0"
                     >
                       <Trash2 className="h-3 w-3 text-red-600" />
                     </Button>

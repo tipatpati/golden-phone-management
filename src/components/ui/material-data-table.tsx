@@ -74,7 +74,7 @@ export function MaterialDataTable<T>({
   }
 
   return (
-    <Card className={cn("overflow-hidden", className)}>
+    <Card className={cn("overflow-hidden md-elevation-1 md-elevation-smooth hover:md-elevation-2", className)}>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -87,6 +87,7 @@ export function MaterialDataTable<T>({
                   sortDirection={getSortDirection(column.key)}
                   onClick={column.sortable ? () => handleSort(column.key) : undefined}
                   style={{ width: column.width }}
+                  className="md-focus-smooth"
                 >
                   {column.header}
                 </TableHead>
@@ -106,12 +107,13 @@ export function MaterialDataTable<T>({
                   key={getRowKey ? getRowKey(item) : index}
                   onClick={onRowClick ? () => onRowClick(item) : undefined}
                   interactive={!!onRowClick}
+                  className="md-interactive-smooth md-focus-smooth"
                 >
                   {columns.map((column) => (
                     <td
                       key={String(column.key)}
                       className={cn(
-                        "px-4 py-3 align-middle text-sm text-on-surface",
+                        "px-2 sm:px-4 py-2 sm:py-3 align-middle text-xs sm:text-sm text-on-surface",
                         column.align === 'center' && "text-center",
                         column.align === 'right' && "text-right",
                         !column.align && "text-left"

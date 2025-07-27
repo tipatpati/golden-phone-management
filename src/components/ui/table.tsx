@@ -9,7 +9,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm border-collapse", className)}
+      className={cn("w-full caption-bottom text-sm border-collapse min-w-[640px] sm:min-w-full", className)}
       {...props}
     />
   </div>
@@ -64,7 +64,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-border h-14 md-orchestrated-change",
+      "border-b border-border h-12 sm:h-14 md-orchestrated-change",
       interactive && "hover:bg-surface-container-high cursor-pointer md-state-layer-refined md-focus-smooth",
       "data-[state=selected]:bg-primary-container",
       className
@@ -85,7 +85,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-14 px-4 font-medium text-sm text-on-surface-variant border-b border-border bg-surface-container md-orchestrated-change md-focus-smooth",
+      "h-12 sm:h-14 px-2 sm:px-4 font-medium text-xs sm:text-sm text-on-surface-variant border-b border-border bg-surface-container md-orchestrated-change md-focus-smooth",
       align === 'left' && "text-left",
       align === 'center' && "text-center", 
       align === 'right' && "text-right",
@@ -135,7 +135,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-4 py-3 align-middle text-sm text-on-surface",
+      "px-2 sm:px-4 py-2 sm:py-3 align-middle text-xs sm:text-sm text-on-surface",
       align === 'left' && "text-left",
       align === 'center' && "text-center",
       align === 'right' && "text-right",

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface DataTablePaginationProps {
   pageIndex: number
@@ -27,17 +28,18 @@ export function DataTablePagination({
   onPageSizeChange,
   className,
 }: DataTablePaginationProps) {
+  const isMobile = useIsMobile()
   const startItem = pageIndex * pageSize + 1
   const endItem = Math.min((pageIndex + 1) * pageSize, totalItems)
 
   return (
     <div className={cn(
-      "flex items-center justify-between p-4 bg-surface border-t border-border",
+      "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-surface border-t border-border",
       className
     )}>
       {/* Rows per page selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-on-surface-variant">Rows per page:</span>
+      <div className="flex items-center gap-2 order-2 sm:order-1">
+        <span className="text-sm text-on-surface-variant whitespace-nowrap">Rows per page:</span>
         <Select
           value={pageSize.toString()}
           onValueChange={(value) => onPageSizeChange(Number(value))}
@@ -56,9 +58,9 @@ export function DataTablePagination({
       </div>
 
       {/* Page info and navigation */}
-      <div className="flex items-center gap-6">
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 order-1 sm:order-2 w-full sm:w-auto">
         {/* Page info */}
-        <span className="text-sm text-on-surface-variant">
+        <span className="text-sm text-on-surface-variant whitespace-nowrap">
           {startItem}-{endItem} of {totalItems}
         </span>
 
@@ -83,18 +85,19 @@ export function DataTablePagination({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           
-          {/* Page numbers - show current and surrounding pages */}
+          {/* Page numbers - responsive display */}
           <div className="flex items-center gap-1 mx-2">
-            {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
+            {Array.from({ length: Math.min(isMobile ? 3 : 5, pageCount) }, (_, i) => {
               let pageNumber: number
-              if (pageCount <= 5) {
+              const maxVisible = isMobile ? 3 : 5
+              if (pageCount <= maxVisible) {
                 pageNumber = i
-              } else if (pageIndex <= 2) {
+              } else if (pageIndex <= Math.floor(maxVisible / 2)) {
                 pageNumber = i
-              } else if (pageIndex >= pageCount - 3) {
-                pageNumber = pageCount - 5 + i
+              } else if (pageIndex >= pageCount - Math.ceil(maxVisible / 2)) {
+                pageNumber = pageCount - maxVisible + i
               } else {
-                pageNumber = pageIndex - 2 + i
+                pageNumber = pageIndex - Math.floor(maxVisible / 2) + i
               }
 
               return (
