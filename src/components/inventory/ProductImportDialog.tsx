@@ -163,8 +163,7 @@ export function ProductImportDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" onClick={resetDialog} className="text-center justify-center">
           <Upload className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Import Products</span>
-          <span className="sm:hidden">Import</span>
+          Import Products
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

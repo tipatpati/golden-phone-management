@@ -66,8 +66,7 @@ export function ProductExportDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="text-center justify-center">
           <Download className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Export Products</span>
-          <span className="sm:hidden">Export</span>
+          Export Products
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
