@@ -1,8 +1,6 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { useProducts } from "@/services/useProducts";
 
@@ -21,17 +19,8 @@ interface ProductFormFieldsProps {
   setStock: (value: string) => void;
   threshold: string;
   setThreshold: (value: string) => void;
-  barcode: string;
-  setBarcode: (value: string) => void;
-  hasSerial?: boolean;
-  setHasSerial?: (value: boolean) => void;
-  serialNumbers?: string[];
-  setSerialNumbers?: (value: string[]) => void;
   categories?: { id: number; name: string; }[];
-  imeiSerial?: string;
-  setImeiSerial?: (value: string) => void;
-  batteryLevel?: string;
-  setBatteryLevel?: (value: string) => void;
+  requiresSerial?: boolean;
 }
 
 // Category mapping - you'll need to adjust these IDs based on your Django backend
@@ -50,10 +39,8 @@ export function ProductFormFields({
   maxPrice, setMaxPrice,
   stock, setStock,
   threshold, setThreshold,
-  barcode, setBarcode,
   categories,
-  imeiSerial, setImeiSerial,
-  batteryLevel, setBatteryLevel
+  requiresSerial = true
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
   
@@ -70,7 +57,7 @@ export function ProductFormFields({
             value={name}
             onChange={setName}
             suggestions={existingProductNames}
-            placeholder="iPhone 13 Pro"
+            placeholder="iPhone 13 Pro Max"
           />
         </div>
         
@@ -86,7 +73,7 @@ export function ProductFormFields({
             <option value="">Select a category</option>
             {categoryOptions.map((cat) => (
               <option key={cat.id} value={cat.id.toString()}>
-                {cat.name}
+                {cat.name} {cat.id === 2 ? "(Serial optional)" : "(Serial required)"}
               </option>
             ))}
           </select>
@@ -135,15 +122,18 @@ export function ProductFormFields({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="product-stock">Initial Stock *</Label>
+          <Label htmlFor="product-stock">Stock (Auto-calculated) *</Label>
           <Input 
             id="product-stock" 
             type="number" 
             min="0" 
             value={stock} 
-            onChange={(e) => setStock(e.target.value)} 
-            required 
+            readOnly
+            className="bg-muted"
           />
+          <p className="text-xs text-muted-foreground">
+            Stock is automatically calculated from the number of IMEI/Serial entries
+          </p>
         </div>
         
         <div className="space-y-2">
@@ -157,42 +147,15 @@ export function ProductFormFields({
             required 
           />
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="imei-serial">IMEI/Serial Number *</Label>
-          <Input 
-            id="imei-serial" 
-            value={imeiSerial || ""} 
-            onChange={(e) => setImeiSerial?.(e.target.value)} 
-            placeholder="351234567890123" 
-            required 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="battery-level">Battery Level (%)</Label>
-          <Input 
-            id="battery-level" 
-            type="number" 
-            min="0"
-            max="100"
-            value={batteryLevel || ""} 
-            onChange={(e) => setBatteryLevel?.(e.target.value)} 
-            placeholder="85" 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="product-barcode">Generated Barcode</Label>
-          <Input 
-            id="product-barcode" 
-            value={barcode} 
-            onChange={(e) => setBarcode(e.target.value)} 
-            placeholder="Auto-generated from IMEI/Serial"
-            readOnly
-          />
-        </div>
       </div>
+      
+      {!requiresSerial && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> This category allows products without serial numbers. You can leave the serial numbers field empty if needed.
+          </p>
+        </div>
+      )}
     </>
   );
 }

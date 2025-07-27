@@ -173,15 +173,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setStock={setStock}
               threshold={threshold}
               setThreshold={setThreshold}
-              barcode={barcode}
-              setBarcode={setBarcode}
-              hasSerial={hasSerial}
-              setHasSerial={setHasSerial}
               categories={categories}
-              imeiSerial={imeiSerial}
-              setImeiSerial={setImeiSerial}
-              batteryLevel={batteryLevel}
-              setBatteryLevel={setBatteryLevel}
             />
             
             {hasSerial && (

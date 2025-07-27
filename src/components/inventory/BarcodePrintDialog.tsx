@@ -17,6 +17,7 @@ interface BarcodePrintDialogProps {
   specifications?: string;
   companyName?: string;
   serialNumbers?: string[];
+  serialEntries?: any[];
   trigger?: React.ReactNode;
   onBarcodeGenerated?: (barcode: string) => void;
 }
@@ -28,6 +29,7 @@ export function BarcodePrintDialog({
   specifications,
   companyName = "GOLDEN PHONE SRL",
   serialNumbers,
+  serialEntries,
   trigger,
   onBarcodeGenerated
 }: BarcodePrintDialogProps) {
