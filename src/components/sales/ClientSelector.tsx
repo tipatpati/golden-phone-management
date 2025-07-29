@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useClients } from "@/services/useClients";
+import { NewClientDialogInSales } from "./NewClientDialogInSales";
 
 type ClientSelectorProps = {
   selectedClient: any;
@@ -70,6 +71,26 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {clientSearch && clients.length === 0 && (
+            <div className="border rounded-md p-3 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">No clients found for "{clientSearch}"</p>
+              <NewClientDialogInSales 
+                onClientCreated={(newClient) => {
+                  onClientSelect(newClient);
+                  setClientSearch("");
+                }}
+              />
+            </div>
+          )}
+          {!clientSearch && (
+            <div className="flex justify-center mt-2">
+              <NewClientDialogInSales 
+                onClientCreated={(newClient) => {
+                  onClientSelect(newClient);
+                }}
+              />
             </div>
           )}
         </div>

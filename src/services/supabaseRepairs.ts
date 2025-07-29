@@ -44,7 +44,8 @@ export type RepairPart = {
   total_cost: number;
   product?: {
     id: string;
-    name: string;
+    brand: string;
+    model: string;
   };
 };
 
@@ -84,7 +85,7 @@ export const supabaseRepairsApi = {
           quantity,
           unit_cost,
           total_cost,
-          product:products(id, name)
+          product:products(id, brand, model)
         )
       `);
     
@@ -118,7 +119,7 @@ export const supabaseRepairsApi = {
           quantity,
           unit_cost,
           total_cost,
-          product:products(id, name)
+          product:products(id, brand, model)
         )
       `)
       .eq('id', id)
