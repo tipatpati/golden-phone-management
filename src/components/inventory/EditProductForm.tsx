@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -22,7 +21,9 @@ interface EditProductFormProps {
 export function EditProductForm({ product, onCancel, onSuccess }: EditProductFormProps) {
   console.log('EditProductForm rendering with product:', product);
   
-  const [name, setName] = useState(product.name || "");
+  const [brand, setBrand] = useState(product.brand || "");
+  const [model, setModel] = useState(product.model || "");
+  const [year, setYear] = useState(product.year?.toString() || "");
   const [categoryId, setCategoryId] = useState(product.category_id?.toString() || "");
   const [price, setPrice] = useState(product.price?.toString() || "");
   const [minPrice, setMinPrice] = useState(product.min_price?.toString() || "");
@@ -53,18 +54,18 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
 
-  // Auto-generate barcode when IMEI/Serial or battery changes
+  // Auto-generate barcode when brand + model or battery changes
   useEffect(() => {
-    if (imeiSerial.trim()) {
+    if (brand.trim() && model.trim()) {
       const battery = batteryLevel ? parseInt(batteryLevel) : 0;
-      const generatedBarcode = generateSKUBasedBarcode(imeiSerial.trim(), product.id, battery);
+      const generatedBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, battery);
       setBarcode(generatedBarcode);
     }
-  }, [imeiSerial, batteryLevel, product.id]);
+  }, [brand, model, batteryLevel, product.id]);
 
   const generateNewBarcode = () => {
-    if (!imeiSerial.trim()) {
-      toast.error("Please enter IMEI/Serial number first");
+    if (!brand.trim() || !model.trim()) {
+      toast.error("Please enter brand and model first");
       return;
     }
 
@@ -76,18 +77,18 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
       return;
     }
 
-    const newBarcode = generateSKUBasedBarcode(imeiSerial.trim(), product.id, battery);
+    const newBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, battery);
     setBarcode(newBarcode);
     toast.success("New barcode generated");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with data:', { name, categoryId, price, stock, threshold });
+    console.log('Submitting form with data:', { brand, model, year, categoryId, price, stock, threshold });
     
-    // Mandatory IMEI/Serial validation
-    if (!imeiSerial.trim()) {
-      toast.error("IMEI/Serial number is required for barcode generation");
+    // Mandatory brand and model validation
+    if (!brand.trim() || !model.trim()) {
+      toast.error("Brand and model are required");
       return;
     }
 
@@ -99,7 +100,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
 
     // Validate that a barcode exists
     if (!barcode) {
-      toast.error("Barcode is required and must be generated from IMEI/Serial number");
+      toast.error("Barcode is required and must be generated from brand and model");
       return;
     }
     
@@ -125,7 +126,9 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         : [];
         
       const updatedProduct = {
-        name,
+        brand,
+        model,
+        year: year ? parseInt(year) : undefined,
         category_id: parseInt(categoryId),
         price: parseFloat(price),
         min_price: parseFloat(minPrice),
@@ -148,19 +151,23 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
     }
   };
 
-  console.log('Rendering form with state:', { name, categoryId, price, stock, threshold });
+  console.log('Rendering form with state:', { brand, model, year, categoryId, price, stock, threshold });
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Edit Product: {product.name}</CardTitle>
+          <CardTitle>Edit Product: {product.brand} {product.model}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <ProductFormFields
-              name={name}
-              setName={setName}
+              brand={brand}
+              setBrand={setBrand}
+              model={model}
+              setModel={setModel}
+              year={year}
+              setYear={setYear}
               category={categoryId}
               setCategory={setCategoryId}
               price={price}

@@ -12,7 +12,9 @@ import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
-  const [name, setName] = useState("");
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -32,7 +34,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     e.preventDefault();
     
     // Validation
-    if (!name || !category || !price || !minPrice || !maxPrice || !threshold) {
+    if (!brand || !model || !category || !price || !minPrice || !maxPrice || !threshold) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -84,10 +86,12 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
 
     // Collect colors for product name enhancement
     const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
-    const enhancedName = colors.length > 0 ? `${name} (${colors.join(', ')})` : name;
+    const enhancedBrand = colors.length > 0 ? `${brand} (${colors.join(', ')})` : brand;
     
     const newProduct = {
-      name: enhancedName,
+      brand: enhancedBrand,
+      model,
+      year: year ? parseInt(year) : undefined,
       category_id: parseInt(category),
       price: parseFloat(price),
       min_price: parseFloat(minPrice),
@@ -98,7 +102,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
       ),
-      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : undefined,
+      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${brand} ${model}`, undefined, 0),
       serial_entries: serialEntries // For potential future use
     };
     
@@ -128,7 +132,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     <>
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
-          productName={createdProduct.name}
+          productName={`${createdProduct.brand} ${createdProduct.model}`}
           barcode={createdProduct.barcode}
           price={createdProduct.price}
           serialEntries={createdProduct.serialEntries}
@@ -166,8 +170,12 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <ProductFormFields
-            name={name}
-            setName={setName}
+            brand={brand}
+            setBrand={setBrand}
+            model={model}
+            setModel={setModel}
+            year={year}
+            setYear={setYear}
             category={category}
             setCategory={setCategory}
             price={price}

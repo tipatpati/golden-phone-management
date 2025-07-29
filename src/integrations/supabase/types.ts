@@ -204,6 +204,7 @@ export type Database = {
       products: {
         Row: {
           barcode: string | null
+          brand: string
           category_id: number | null
           created_at: string | null
           description: string | null
@@ -211,16 +212,18 @@ export type Database = {
           id: string
           max_price: number | null
           min_price: number | null
-          name: string
+          model: string
           price: number
           serial_numbers: string[] | null
           stock: number
           supplier: string | null
           threshold: number
           updated_at: string | null
+          year: number | null
         }
         Insert: {
           barcode?: string | null
+          brand: string
           category_id?: number | null
           created_at?: string | null
           description?: string | null
@@ -228,16 +231,18 @@ export type Database = {
           id?: string
           max_price?: number | null
           min_price?: number | null
-          name: string
+          model: string
           price: number
           serial_numbers?: string[] | null
           stock?: number
           supplier?: string | null
           threshold?: number
           updated_at?: string | null
+          year?: number | null
         }
         Update: {
           barcode?: string | null
+          brand?: string
           category_id?: number | null
           created_at?: string | null
           description?: string | null
@@ -245,13 +250,14 @@ export type Database = {
           id?: string
           max_price?: number | null
           min_price?: number | null
-          name?: string
+          model?: string
           price?: number
           serial_numbers?: string[] | null
           stock?: number
           supplier?: string | null
           threshold?: number
           updated_at?: string | null
+          year?: number | null
         }
         Relationships: [
           {

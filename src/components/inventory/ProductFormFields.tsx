@@ -2,11 +2,16 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProducts } from "@/services/useProducts";
 
 interface ProductFormFieldsProps {
-  name: string;
-  setName: (value: string) => void;
+  brand: string;
+  setBrand: (value: string) => void;
+  model: string;
+  setModel: (value: string) => void;
+  year: string;
+  setYear: (value: string) => void;
   category: string;
   setCategory: (value: string) => void;
   price: string;
@@ -32,7 +37,9 @@ const CATEGORY_OPTIONS = [
 ];
 
 export function ProductFormFields({
-  name, setName,
+  brand, setBrand,
+  model, setModel,
+  year, setYear,
   category, setCategory,
   price, setPrice,
   minPrice, setMinPrice,
@@ -44,20 +51,44 @@ export function ProductFormFields({
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
   
-  // Get existing product names for autocomplete
+  // Get existing products for autocomplete
   const { data: allProducts = [] } = useProducts("");
-  const existingProductNames = allProducts.map(product => product.name);
+  const existingBrands = [...new Set(allProducts.map(product => product.brand))].filter(Boolean);
+  const existingModels = [...new Set(allProducts.map(product => product.model))].filter(Boolean);
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="product-name">Product Name *</Label>
+          <Label htmlFor="product-brand">Brand *</Label>
           <AutocompleteInput
-            value={name}
-            onChange={setName}
-            suggestions={existingProductNames}
-            placeholder="iPhone 13 Pro Max"
+            value={brand}
+            onChange={setBrand}
+            suggestions={existingBrands}
+            placeholder="Apple, Samsung, Google..."
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-model">Model *</Label>
+          <AutocompleteInput
+            value={model}
+            onChange={setModel}
+            suggestions={existingModels}
+            placeholder="iPhone 13 Pro Max, Galaxy S23..."
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-year">Year (optional)</Label>
+          <Input
+            id="product-year"
+            type="number"
+            min="1900"
+            max="2099"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            placeholder="2024"
           />
         </div>
         

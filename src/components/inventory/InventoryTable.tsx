@@ -75,13 +75,14 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
       {/* Table Header - Hidden on mobile */}
       <div className="bg-surface-container border-b border-outline hidden md:block">
         <div className="grid grid-cols-12 gap-2 lg:gap-4 px-3 lg:px-4 py-3 text-sm font-medium text-on-surface-variant">
-          <div className="col-span-3 lg:col-span-2">Product</div>
+          <div className="col-span-2">Brand</div>
+          <div className="col-span-2">Model</div>
+          <div className="col-span-1">Year</div>
           <div className="col-span-2">Serial/IMEI</div>
-          <div className="col-span-2">Category</div>
-          <div className="col-span-1">Type</div>
+          <div className="col-span-1">Category</div>
           <div className="col-span-1 text-right">Price</div>
           <div className="col-span-1 text-right">Stock</div>
-          <div className="col-span-2 lg:col-span-1 text-right">Actions</div>
+          <div className="col-span-2 text-right">Actions</div>
         </div>
       </div>
 
@@ -115,9 +116,19 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
     <>
       {/* Desktop Layout */}
       <div className="hidden md:grid grid-cols-12 gap-2 lg:gap-4 px-3 lg:px-4 py-3 hover:bg-surface-container-high transition-colors">
-        {/* Product Name */}
-        <div className="col-span-3 lg:col-span-2">
-          <div className="font-medium text-on-surface truncate">{product.name}</div>
+        {/* Brand */}
+        <div className="col-span-2">
+          <div className="font-medium text-on-surface truncate">{product.brand}</div>
+        </div>
+
+        {/* Model */}
+        <div className="col-span-2">
+          <div className="font-medium text-on-surface truncate">{product.model}</div>
+        </div>
+
+        {/* Year */}
+        <div className="col-span-1">
+          <div className="text-on-surface text-sm truncate">{product.year || 'N/A'}</div>
         </div>
 
         {/* Serial/IMEI */}
@@ -128,29 +139,14 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
         </div>
 
         {/* Category */}
-        <div className="col-span-2">
-          <span className="text-on-surface text-sm truncate">{product.category_name || product.category?.name}</span>
-        </div>
-
-        {/* Type */}
         <div className="col-span-1">
-          {product.has_serial ? (
-            <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
-              <Smartphone className="h-3 w-3" />
-              <span className="hidden lg:inline">IMEI</span>
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
-              <Barcode className="h-3 w-3" />
-              <span className="hidden lg:inline">Standard</span>
-            </Badge>
-          )}
+          <span className="text-on-surface text-sm truncate">{product.category_name || product.category?.name}</span>
         </div>
 
         {/* Price */}
         <div className="col-span-1 text-right">
           <div className="font-medium text-on-surface text-sm">
-            ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+            €{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
           </div>
         </div>
 
@@ -162,9 +158,9 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
         </div>
 
         {/* Actions */}
-        <div className="col-span-2 lg:col-span-1 flex justify-end items-center gap-1">
+        <div className="col-span-2 flex justify-end items-center gap-1">
           <BarcodePrintDialog
-            productName={product.name}
+            productName={`${product.brand} ${product.model}`}
             barcode={product.barcode || undefined}
             price={product.price}
             specifications={product.description}
@@ -211,7 +207,7 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Product</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                  Are you sure you want to delete "{product.brand} {product.model}"? This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -232,14 +228,14 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
       <div className="md:hidden p-4 hover:bg-surface-container-high transition-colors">
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-on-surface text-base truncate">{product.name}</h3>
+            <h3 className="font-medium text-on-surface text-base truncate">{product.brand} {product.model}</h3>
             <p className="text-sm text-on-surface-variant font-mono mt-1">
               {product.serial_numbers?.[0] || product.id.slice(0, 8)}
             </p>
           </div>
           <div className="flex items-center gap-1 ml-2">
             <BarcodePrintDialog
-              productName={product.name}
+              productName={`${product.brand} ${product.model}`}
               barcode={product.barcode || undefined}
               price={product.price}
               specifications={product.description}
@@ -286,7 +282,7 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Product</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                    Are you sure you want to delete "{product.brand} {product.model}"? This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -305,31 +301,21 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
         
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
+            <span className="text-on-surface-variant">Year:</span>
+            <p className="text-on-surface font-medium truncate">
+              {product.year || 'N/A'}
+            </p>
+          </div>
+          <div>
             <span className="text-on-surface-variant">Category:</span>
             <p className="text-on-surface font-medium truncate">
               {product.category_name || product.category?.name || 'N/A'}
             </p>
           </div>
           <div>
-            <span className="text-on-surface-variant">Type:</span>
-            <div className="mt-1">
-              {product.has_serial ? (
-                <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
-                  <Smartphone className="h-3 w-3" />
-                  <span>IMEI</span>
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
-                  <Barcode className="h-3 w-3" />
-                  <span>Standard</span>
-                </Badge>
-              )}
-            </div>
-          </div>
-          <div>
             <span className="text-on-surface-variant">Price:</span>
             <p className="text-on-surface font-medium text-base">
-              ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+              €{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
             </p>
           </div>
           <div>
