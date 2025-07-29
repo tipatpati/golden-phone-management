@@ -78,7 +78,8 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
           <div className="col-span-2">Brand</div>
           <div className="col-span-2">Model</div>
           <div className="col-span-1">Year</div>
-          <div className="col-span-2">Serial/IMEI</div>
+          <div className="col-span-1">Serial/IMEI</div>
+          <div className="col-span-1">Battery</div>
           <div className="col-span-1">Category</div>
           <div className="col-span-1 text-right">Price</div>
           <div className="col-span-1 text-right">Stock</div>
@@ -132,9 +133,22 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
         </div>
 
         {/* Serial/IMEI */}
-        <div className="col-span-2">
+        <div className="col-span-1">
           <div className="font-mono text-xs lg:text-sm text-on-surface truncate">
             {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+          </div>
+        </div>
+
+        {/* Battery Level */}
+        <div className="col-span-1">
+          <div className="text-on-surface text-sm">
+            {product.battery_level ? (
+              <Badge variant={product.battery_level > 80 ? "outline" : product.battery_level > 50 ? "secondary" : "destructive"}>
+                {product.battery_level}%
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">N/A</span>
+            )}
           </div>
         </div>
 
@@ -311,6 +325,18 @@ function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: Product
             <p className="text-on-surface font-medium truncate">
               {product.category_name || product.category?.name || 'N/A'}
             </p>
+          </div>
+          <div>
+            <span className="text-on-surface-variant">Battery:</span>
+            <div className="mt-1">
+              {product.battery_level ? (
+                <Badge variant={product.battery_level > 80 ? "outline" : product.battery_level > 50 ? "secondary" : "destructive"}>
+                  {product.battery_level}%
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground">N/A</span>
+              )}
+            </div>
           </div>
           <div>
             <span className="text-on-surface-variant">Price:</span>

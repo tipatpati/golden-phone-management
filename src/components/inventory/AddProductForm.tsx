@@ -21,6 +21,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [maxPrice, setMaxPrice] = useState("");
   const [stock, setStock] = useState("0");
   const [threshold, setThreshold] = useState("5");
+  const [batteryLevel, setBatteryLevel] = useState("85");
   const [serialNumbers, setSerialNumbers] = useState("");
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -98,6 +99,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       max_price: parseFloat(maxPrice),
       stock: parseInt(stock),
       threshold: parseInt(threshold),
+      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined,
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
@@ -188,6 +190,8 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
             setStock={setStock}
             threshold={threshold}
             setThreshold={setThreshold}
+            batteryLevel={batteryLevel}
+            setBatteryLevel={setBatteryLevel}
             requiresSerial={requiresSerial}
           />
           

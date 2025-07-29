@@ -43,13 +43,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
     }
     return "";
   });
-  const [batteryLevel, setBatteryLevel] = useState(() => {
-    if (product.serial_numbers?.length > 0) {
-      const { batteryLevel } = parseSerialWithBattery(product.serial_numbers[0]);
-      return batteryLevel?.toString() || "";
-    }
-    return "";
-  });
+  const [batteryLevel, setBatteryLevel] = useState(product.battery_level?.toString() || "");
 
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
@@ -135,6 +129,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
         max_price: parseFloat(maxPrice),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
+        battery_level: batteryLevel ? parseInt(batteryLevel) : undefined,
         barcode: barcode || undefined,
         has_serial: hasSerial,
         serial_numbers: hasSerial ? serialArray : undefined,
@@ -180,6 +175,8 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
               setStock={setStock}
               threshold={threshold}
               setThreshold={setThreshold}
+              batteryLevel={batteryLevel}
+              setBatteryLevel={setBatteryLevel}
               categories={categories}
             />
             

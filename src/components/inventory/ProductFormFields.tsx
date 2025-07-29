@@ -24,6 +24,8 @@ interface ProductFormFieldsProps {
   setStock: (value: string) => void;
   threshold: string;
   setThreshold: (value: string) => void;
+  batteryLevel: string;
+  setBatteryLevel: (value: string) => void;
   categories?: { id: number; name: string; }[];
   requiresSerial?: boolean;
 }
@@ -46,6 +48,7 @@ export function ProductFormFields({
   maxPrice, setMaxPrice,
   stock, setStock,
   threshold, setThreshold,
+  batteryLevel, setBatteryLevel,
   categories,
   requiresSerial = true
 }: ProductFormFieldsProps) {
@@ -177,6 +180,23 @@ export function ProductFormFields({
             onChange={(e) => setThreshold(e.target.value)} 
             required 
           />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="product-battery-level">Battery Level (%) *</Label>
+          <Input 
+            id="product-battery-level" 
+            type="number" 
+            min="0"
+            max="100" 
+            value={batteryLevel} 
+            onChange={(e) => setBatteryLevel(e.target.value)} 
+            placeholder="85" 
+            required 
+          />
+          <p className="text-xs text-muted-foreground">
+            Enter the current battery level (0-100%)
+          </p>
         </div>
       </div>
       
