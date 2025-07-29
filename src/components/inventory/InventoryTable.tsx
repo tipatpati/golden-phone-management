@@ -101,7 +101,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
                 <TableHead className="md-focus-smooth">Serial/IMEI</TableHead>
                 <TableHead className="hidden sm:table-cell md-focus-smooth">Category</TableHead>
                 <TableHead className="hidden md:table-cell md-focus-smooth">Type</TableHead>
-                <TableHead align="right" sortable className="md-focus-smooth">Price</TableHead>
+                <TableHead align="right" sortable className="hidden sm:table-cell md-focus-smooth">Price</TableHead>
                 <TableHead align="right" sortable className="md-focus-smooth">Stock</TableHead>
                 <TableHead align="right" className="md-focus-smooth">Actions</TableHead>
               </TableRow>
@@ -180,7 +180,7 @@ function ProductRow({
           </Badge>
         )}
       </TableCell>
-      <TableCell align="right">
+      <TableCell align="right" className="hidden sm:table-cell">
         <div className="font-medium">
           ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
         </div>
