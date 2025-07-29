@@ -74,7 +74,7 @@ export function ProductRecommendations({
           >
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h4 className="font-medium text-sm">{product.name}</h4>
+                <h4 className="font-medium text-sm">{product.brand} {product.model}</h4>
                 <Badge variant="secondary" className="text-xs">
                   {product.recommendation_type}
                 </Badge>

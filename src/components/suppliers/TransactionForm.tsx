@@ -213,7 +213,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                   <SelectContent className="bg-background border shadow-lg">
                     {products?.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
-                        {product.name} - {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+                        {product.brand} {product.model} - {product.serial_numbers?.[0] || product.id.slice(0, 8)}
                       </SelectItem>
                     ))}
                   </SelectContent>

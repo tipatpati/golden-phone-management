@@ -38,7 +38,9 @@ export type SaleItem = {
   serial_number?: string;
   product?: {
     id: string;
-    name: string;
+    brand: string;
+    model: string;
+    year?: number;
   };
 };
 

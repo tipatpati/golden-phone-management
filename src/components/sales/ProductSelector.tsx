@@ -19,7 +19,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   
   // Get existing product names for autocomplete
-  const existingProductNames = allProducts.map(product => product.name);
+  const existingProductNames = allProducts.map(product => `${product.brand} ${product.model}`);
 
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
@@ -72,7 +72,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
               className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors"
               onClick={() => handleProductSelect(product)}
             >
-              <div className="font-medium text-sm">{product.name}</div>
+              <div className="font-medium text-sm">{product.brand} {product.model}</div>
               <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
                 <span>
                   {product.serial_numbers?.[0] ? 

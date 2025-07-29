@@ -60,7 +60,7 @@ export function SaleCard({ sale }: SaleCardProps) {
             <div className="text-sm space-y-1">
               {sale.sale_items?.slice(0, 2).map((item, index) => (
                 <div key={index} className="text-gray-700 font-medium">
-                  {item.quantity}× {item.product?.name || "Product"}
+                  {item.quantity}× {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}
                 </div>
               )) || <div className="text-muted-foreground">No items</div>}
               {sale.sale_items && sale.sale_items.length > 2 && (

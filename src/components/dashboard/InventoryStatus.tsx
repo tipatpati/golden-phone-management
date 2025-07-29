@@ -58,7 +58,7 @@ export function InventoryStatus() {
                 <div key={item.id} className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium truncate">{item.name}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate">{`${item.brand} ${item.model}`}</p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {item.serial_numbers && item.serial_numbers.length > 0 ? 
                           `Serial: ${item.serial_numbers[0]}` : 

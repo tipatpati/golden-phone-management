@@ -164,14 +164,14 @@ export const SalesOverview = React.memo(() => {
   // Top products calculation
   const productSales = allSales.flatMap(sale => sale.sale_items || []);
   const productRevenue = productSales.reduce((acc, item) => {
-    const productName = item.product?.name || 'Unknown Product';
+    const productName = item.product ? `${item.product.brand} ${item.product.model}` : 'Unknown Product';
     acc[productName] = (acc[productName] || 0) + item.total_price;
     return acc;
   }, {} as Record<string, number>);
   const topProducts = Object.entries(productRevenue).sort(([, a], [, b]) => b - a).slice(0, 3).map(([name, revenue]) => ({
     name,
     revenue,
-    sold: productSales.filter(item => item.product?.name === name).reduce((sum, item) => sum + item.quantity, 0)
+    sold: productSales.filter(item => item.product ? `${item.product.brand} ${item.product.model}` === name : false).reduce((sum, item) => sum + item.quantity, 0)
   }));
   return <ErrorBoundary>
       {isLoading ? <div className="space-y-6">

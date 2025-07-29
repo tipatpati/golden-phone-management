@@ -39,7 +39,7 @@ export function BulkBarcodeGenerator() {
       
       try {
         if (!product.serial_numbers?.[0]) {
-          console.warn(`Skipping ${product.name}: No IMEI/Serial number available`);
+          console.warn(`Skipping ${product.brand} ${product.model}: No IMEI/Serial number available`);
           errorCount++;
           continue;
         }
@@ -57,7 +57,7 @@ export function BulkBarcodeGenerator() {
         
         successCount++;
       } catch (error) {
-        console.error(`Failed to generate barcode for ${product.name}:`, error);
+        console.error(`Failed to generate barcode for ${product.brand} ${product.model}:`, error);
         errorCount++;
       }
       
@@ -127,7 +127,7 @@ export function BulkBarcodeGenerator() {
                 <div className="max-h-40 overflow-y-auto space-y-1 bg-muted/30 rounded p-3">
                   {productsWithoutBarcodes.slice(0, 10).map(product => (
                     <div key={product.id} className="flex items-center justify-between text-xs">
-                      <span className="truncate">{product.name}</span>
+                      <span className="truncate">{product.brand} {product.model}</span>
                       <Badge variant="outline" className="text-xs">
                         {product.serial_numbers?.[0] || product.id.slice(0, 8)}
                       </Badge>

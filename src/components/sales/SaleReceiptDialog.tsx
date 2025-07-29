@@ -64,7 +64,7 @@ export function SaleReceiptDialog({ sale }: SaleReceiptDialogProps) {
             <div className="space-y-1">
               {sale.sale_items?.map((item, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span>{item.quantity}× {item.product?.name || "Product"}</span>
+                  <span>{item.quantity}× {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}</span>
                   <span>${item.total_price.toFixed(2)}</span>
                 </div>
               )) || <p className="text-muted-foreground text-xs">No items</p>}
