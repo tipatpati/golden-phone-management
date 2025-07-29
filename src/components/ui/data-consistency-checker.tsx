@@ -28,11 +28,11 @@ export function DataConsistencyChecker() {
       // Check for category mismatches
       const { data: products } = await supabase
         .from('products')
-        .select('id, name, category_id, category:categories(name)')
+        .select('id, brand, model, category_id, category:categories(name)')
         .not('category', 'is', null);
 
       products?.forEach(product => {
-        const productName = product.name.toLowerCase();
+        const productName = `${product.brand} ${product.model}`.toLowerCase();
         const categoryName = (product.category as any)?.name?.toLowerCase();
         
         if (productName.includes('dell') || productName.includes('laptop') || productName.includes('xps')) {
@@ -41,7 +41,7 @@ export function DataConsistencyChecker() {
               id: `category_${product.id}`,
               type: 'category_mismatch',
               table: 'products',
-              description: `Product "${product.name}" appears to be a computer but is categorized as "${categoryName}"`,
+              description: `Product "${product.brand} ${product.model}" appears to be a computer but is categorized as "${categoryName}"`,
               recordId: product.id,
               severity: 'medium'
             });
@@ -52,7 +52,7 @@ export function DataConsistencyChecker() {
       // Check for missing serial numbers
       const { data: serialProducts } = await supabase
         .from('products')
-        .select('id, name, has_serial, serial_numbers')
+        .select('id, brand, model, has_serial, serial_numbers')
         .eq('has_serial', true);
 
       serialProducts?.forEach(product => {
@@ -61,7 +61,7 @@ export function DataConsistencyChecker() {
             id: `serial_${product.id}`,
             type: 'missing_serial_numbers',
             table: 'products',
-            description: `Product "${product.name}" is marked as having serial numbers but none are recorded`,
+            description: `Product "${product.brand} ${product.model}" is marked as having serial numbers but none are recorded`,
             recordId: product.id,
             severity: 'low'
           });
@@ -71,7 +71,7 @@ export function DataConsistencyChecker() {
       // Check for invalid price ranges
       const { data: priceProducts } = await supabase
         .from('products')
-        .select('id, name, price, min_price, max_price');
+        .select('id, brand, model, price, min_price, max_price');
 
       priceProducts?.forEach(product => {
         if (product.min_price && product.max_price && product.min_price > product.max_price) {
@@ -79,7 +79,7 @@ export function DataConsistencyChecker() {
             id: `price_${product.id}`,
             type: 'invalid_price_range',
             table: 'products',
-            description: `Product "${product.name}" has min_price (${product.min_price}) greater than max_price (${product.max_price})`,
+            description: `Product "${product.brand} ${product.model}" has min_price (${product.min_price}) greater than max_price (${product.max_price})`,
             recordId: product.id,
             severity: 'high'
           });
@@ -90,7 +90,7 @@ export function DataConsistencyChecker() {
             id: `price_range_${product.id}`,
             type: 'invalid_price_range',
             table: 'products',
-            description: `Product "${product.name}" current price (${product.price}) is outside the defined range`,
+            description: `Product "${product.brand} ${product.model}" current price (${product.price}) is outside the defined range`,
             recordId: product.id,
             severity: 'medium'
           });
