@@ -72,16 +72,16 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
 
   return (
     <div className="bg-surface rounded-xl border border-outline overflow-hidden">
-      {/* Table Header */}
-      <div className="bg-surface-container border-b border-outline">
-        <div className="grid grid-cols-12 gap-4 px-4 py-3 text-sm font-medium text-on-surface-variant">
-          <div className="col-span-3">Product</div>
+      {/* Table Header - Hidden on mobile */}
+      <div className="bg-surface-container border-b border-outline hidden md:block">
+        <div className="grid grid-cols-12 gap-2 lg:gap-4 px-3 lg:px-4 py-3 text-sm font-medium text-on-surface-variant">
+          <div className="col-span-3 lg:col-span-2">Product</div>
           <div className="col-span-2">Serial/IMEI</div>
-          <div className="col-span-2 hidden sm:block">Category</div>
-          <div className="col-span-1 hidden md:block">Type</div>
-          <div className="col-span-1 hidden sm:block text-right">Price</div>
+          <div className="col-span-2">Category</div>
+          <div className="col-span-1">Type</div>
+          <div className="col-span-1 text-right">Price</div>
           <div className="col-span-1 text-right">Stock</div>
-          <div className="col-span-2 text-right">Actions</div>
+          <div className="col-span-2 lg:col-span-1 text-right">Actions</div>
         </div>
       </div>
 
@@ -112,124 +112,236 @@ interface ProductRowProps {
 
 function ProductRow({ product, onEdit, onDelete, onUpdate, isDeleting }: ProductRowProps) {
   return (
-    <div className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-surface-container-high transition-colors">
-      {/* Product Name */}
-      <div className="col-span-3">
-        <div className="font-medium text-on-surface truncate">{product.name}</div>
-        <div className="text-xs text-on-surface-variant sm:hidden">
-          ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+    <>
+      {/* Desktop Layout */}
+      <div className="hidden md:grid grid-cols-12 gap-2 lg:gap-4 px-3 lg:px-4 py-3 hover:bg-surface-container-high transition-colors">
+        {/* Product Name */}
+        <div className="col-span-3 lg:col-span-2">
+          <div className="font-medium text-on-surface truncate">{product.name}</div>
         </div>
-      </div>
 
-      {/* Serial/IMEI */}
-      <div className="col-span-2">
-        <div className="font-mono text-xs text-on-surface truncate">
-          {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+        {/* Serial/IMEI */}
+        <div className="col-span-2">
+          <div className="font-mono text-xs lg:text-sm text-on-surface truncate">
+            {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+          </div>
         </div>
-        <div className="text-xs text-on-surface-variant sm:hidden">
-          Stock: {product.stock}
+
+        {/* Category */}
+        <div className="col-span-2">
+          <span className="text-on-surface text-sm truncate">{product.category_name || product.category?.name}</span>
         </div>
-      </div>
 
-      {/* Category */}
-      <div className="col-span-2 hidden sm:block">
-        <span className="text-on-surface">{product.category_name || product.category?.name}</span>
-      </div>
+        {/* Type */}
+        <div className="col-span-1">
+          {product.has_serial ? (
+            <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
+              <Smartphone className="h-3 w-3" />
+              <span className="hidden lg:inline">IMEI</span>
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
+              <Barcode className="h-3 w-3" />
+              <span className="hidden lg:inline">Standard</span>
+            </Badge>
+          )}
+        </div>
 
-      {/* Type */}
-      <div className="col-span-1 hidden md:block">
-        {product.has_serial ? (
-          <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
-            <Smartphone className="h-3 w-3" />
-            <span className="hidden lg:inline">IMEI</span>
+        {/* Price */}
+        <div className="col-span-1 text-right">
+          <div className="font-medium text-on-surface text-sm">
+            ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+          </div>
+        </div>
+
+        {/* Stock */}
+        <div className="col-span-1 text-right">
+          <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"}>
+            {product.stock}
           </Badge>
-        ) : (
-          <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
-            <Barcode className="h-3 w-3" />
-            <span className="hidden lg:inline">Standard</span>
-          </Badge>
-        )}
-      </div>
+        </div>
 
-      {/* Price */}
-      <div className="col-span-1 hidden sm:block text-right">
-        <div className="font-medium text-on-surface">
-          ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+        {/* Actions */}
+        <div className="col-span-2 lg:col-span-1 flex justify-end items-center gap-1">
+          <BarcodePrintDialog
+            productName={product.name}
+            barcode={product.barcode || undefined}
+            price={product.price}
+            specifications={product.description}
+            serialNumbers={product.serial_numbers}
+            onBarcodeGenerated={(newBarcode) => {
+              onUpdate.mutate({
+                id: product.id,
+                product: { barcode: newBarcode }
+              });
+            }}
+            trigger={
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 w-8 p-0"
+                title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+            }
+          />
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => onEdit(product)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                disabled={isDeleting}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(product)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
-      {/* Stock */}
-      <div className="col-span-1 text-right">
-        <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"}>
-          {product.stock}
-        </Badge>
-      </div>
-
-      {/* Actions */}
-      <div className="col-span-2 flex justify-end items-center gap-1">
-        <BarcodePrintDialog
-          productName={product.name}
-          barcode={product.barcode || undefined}
-          price={product.price}
-          specifications={product.description}
-          serialNumbers={product.serial_numbers}
-          onBarcodeGenerated={(newBarcode) => {
-            onUpdate.mutate({
-              id: product.id,
-              product: { barcode: newBarcode }
-            });
-          }}
-          trigger={
+      {/* Mobile Layout */}
+      <div className="md:hidden p-4 hover:bg-surface-container-high transition-colors">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-on-surface text-base truncate">{product.name}</h3>
+            <p className="text-sm text-on-surface-variant font-mono mt-1">
+              {product.serial_numbers?.[0] || product.id.slice(0, 8)}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 ml-2">
+            <BarcodePrintDialog
+              productName={product.name}
+              barcode={product.barcode || undefined}
+              price={product.price}
+              specifications={product.description}
+              serialNumbers={product.serial_numbers}
+              onBarcodeGenerated={(newBarcode) => {
+                onUpdate.mutate({
+                  id: product.id,
+                  product: { barcode: newBarcode }
+                });
+              }}
+              trigger={
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
+                >
+                  <Printer className="h-4 w-4" />
+                </Button>
+              }
+            />
+            
             <Button 
               variant="ghost" 
               size="sm"
               className="h-8 w-8 p-0"
-              title={product.barcode ? "Print Product Sticker" : "Generate Barcode & Print Sticker"}
+              onClick={() => onEdit(product)}
             >
-              <Printer className="h-4 w-4" />
+              <Edit className="h-4 w-4" />
             </Button>
-          }
-        />
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  disabled={isDeleting}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(product)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
         
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => onEdit(product)}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              disabled={isDeleting}
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Product</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete "{product.name}"? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(product)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-on-surface-variant">Category:</span>
+            <p className="text-on-surface font-medium truncate">
+              {product.category_name || product.category?.name || 'N/A'}
+            </p>
+          </div>
+          <div>
+            <span className="text-on-surface-variant">Type:</span>
+            <div className="mt-1">
+              {product.has_serial ? (
+                <Badge variant="secondary" className="flex items-center gap-1 text-xs w-fit">
+                  <Smartphone className="h-3 w-3" />
+                  <span>IMEI</span>
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="flex items-center gap-1 text-xs w-fit">
+                  <Barcode className="h-3 w-3" />
+                  <span>Standard</span>
+                </Badge>
+              )}
+            </div>
+          </div>
+          <div>
+            <span className="text-on-surface-variant">Price:</span>
+            <p className="text-on-surface font-medium text-base">
+              ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
+            </p>
+          </div>
+          <div>
+            <span className="text-on-surface-variant">Stock:</span>
+            <div className="mt-1">
+              <Badge variant={product.stock <= product.threshold ? "destructive" : "outline"}>
+                {product.stock}
+              </Badge>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
