@@ -46,7 +46,7 @@ export type CreateProductData = {
 
 export const supabaseProductApi = {
   async getProducts(searchTerm: string = '') {
-    console.log('Fetching products from Supabase...');
+    console.log('Fetching products from Supabase with search term:', searchTerm);
     
     let query = supabase
       .from('products')
@@ -56,8 +56,12 @@ export const supabaseProductApi = {
       `);
     
     if (searchTerm) {
-      // Search by brand, model, year, serial numbers array, and barcode
-      query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,year.eq.${parseInt(searchTerm) || 0},barcode.ilike.%${searchTerm}%,serial_numbers.cs.{${searchTerm}}`);
+      const search = searchTerm.trim();
+      console.log('Applying search filter for:', search);
+      
+      // Search across brand, model, barcode, and serial numbers
+      // Also search for combined brand + model
+      query = query.or(`brand.ilike.%${search}%,model.ilike.%${search}%,barcode.ilike.%${search}%`);
     }
     
     const { data, error } = await query.order('created_at', { ascending: false });
@@ -67,13 +71,49 @@ export const supabaseProductApi = {
       throw error;
     }
     
+    console.log('Raw data from Supabase:', data);
+    
+    // If we have a search term, also do client-side filtering for combined brand+model matches
+    let filteredData = data || [];
+    
+    if (searchTerm && filteredData.length === 0) {
+      // Try a broader search without the term
+      console.log('No results found, trying broader search...');
+      const { data: allData } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(id, name)
+        `)
+        .order('created_at', { ascending: false });
+      
+      // Filter client-side for combined brand+model matches
+      const search = searchTerm.toLowerCase().trim();
+      filteredData = allData?.filter(product => {
+        const brandModel = `${product.brand} ${product.model}`.toLowerCase();
+        const brand = product.brand?.toLowerCase() || '';
+        const model = product.model?.toLowerCase() || '';
+        const barcode = product.barcode?.toLowerCase() || '';
+        
+        return brandModel.includes(search) || 
+               brand.includes(search) || 
+               model.includes(search) || 
+               barcode.includes(search) ||
+               (product.serial_numbers && product.serial_numbers.some(serial => 
+                 serial.toLowerCase().includes(search)
+               ));
+      }) || [];
+      
+      console.log('Client-side filtered results:', filteredData);
+    }
+    
     // Transform the data to match the expected format
-    const transformedData = data?.map(product => ({
+    const transformedData = filteredData.map(product => ({
       ...product,
       category_name: product.category?.name,
-    })) || [];
+    }));
     
-    console.log('Products fetched successfully:', transformedData);
+    console.log('Final transformed data:', transformedData);
     return transformedData;
   },
 
