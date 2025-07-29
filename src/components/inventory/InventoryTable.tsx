@@ -93,17 +93,17 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
   return (
     <div className="w-full">
       <div className="rounded-xl border overflow-hidden md-elevation-1 md-elevation-smooth hover:md-elevation-2">
-        <div className="relative w-full overflow-x-auto">{/* Moved overflow container here */}
-          <Table className="min-w-[640px] sm:min-w-full">{/* Add min-width constraint here */}
+        <div className="relative w-full overflow-x-auto">
+          <Table className="min-w-[640px] sm:min-w-full table-fixed">
             <TableHeader>
               <TableRow interactive={false}>
-                <TableHead sortable sortDirection={null} className="md-focus-smooth">Product</TableHead>
-                <TableHead className="md-focus-smooth">Serial/IMEI</TableHead>
-                <TableHead className="hidden sm:table-cell md-focus-smooth">Category</TableHead>
-                <TableHead className="hidden md:table-cell md-focus-smooth">Type</TableHead>
-                <TableHead align="right" sortable className="hidden sm:table-cell md-focus-smooth">Price</TableHead>
-                <TableHead align="right" sortable className="md-focus-smooth">Stock</TableHead>
-                <TableHead align="right" className="md-focus-smooth">Actions</TableHead>
+                <TableHead sortable sortDirection={null} className="md-focus-smooth w-[180px]">Product</TableHead>
+                <TableHead className="md-focus-smooth w-[120px]">Serial/IMEI</TableHead>
+                <TableHead className="hidden sm:table-cell md-focus-smooth w-[100px]">Category</TableHead>
+                <TableHead className="hidden md:table-cell md-focus-smooth w-[80px]">Type</TableHead>
+                <TableHead align="right" sortable className="hidden sm:table-cell md-focus-smooth w-[100px]">Price</TableHead>
+                <TableHead align="right" sortable className="md-focus-smooth w-[80px]">Stock</TableHead>
+                <TableHead align="right" className="md-focus-smooth w-[120px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
