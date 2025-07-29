@@ -96,7 +96,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
         <Table className="w-full">
           <TableHeader>
             <TableRow interactive={false}>
-              <TableHead sortable sortDirection={null} className="md-focus-smooth">Product</TableHead>
+              <TableHead sortable sortDirection={null} className="md-focus-smooth pl-0">Product</TableHead>
               <TableHead className="md-focus-smooth">Serial/IMEI</TableHead>
               <TableHead className="hidden sm:table-cell md-focus-smooth">Category</TableHead>
               <TableHead className="hidden md:table-cell md-focus-smooth">Type</TableHead>
@@ -144,7 +144,7 @@ function ProductRow({
 }) {
   return (
     <TableRow className="md-interactive-smooth md-focus-smooth">{/* Row has exactly 7 cells */}
-      <TableCell className="font-medium md-motion-smooth">
+      <TableCell className="font-medium md-motion-smooth pl-0">
         <div className="flex flex-col gap-1">
           <div className="truncate max-w-[120px] sm:max-w-none">{product.name}</div>
           <div className="text-xs text-muted-foreground sm:hidden">
