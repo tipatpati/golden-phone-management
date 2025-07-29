@@ -93,8 +93,8 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
   return (
     <div className="w-full">
       <div className="rounded-xl border overflow-hidden md-elevation-1 md-elevation-smooth hover:md-elevation-2">
-        <div className="overflow-x-auto">
-          <Table>
+        <div className="relative w-full overflow-x-auto">{/* Moved overflow container here */}
+          <Table className="min-w-[640px] sm:min-w-full">{/* Add min-width constraint here */}
             <TableHeader>
               <TableRow interactive={false}>
                 <TableHead sortable sortDirection={null} className="md-focus-smooth">Product</TableHead>
