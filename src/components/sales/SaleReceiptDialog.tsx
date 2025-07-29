@@ -8,9 +8,11 @@ import { format } from "date-fns";
 
 interface SaleReceiptDialogProps {
   sale: Sale;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SaleReceiptDialog({ sale }: SaleReceiptDialogProps) {
+export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
   const getClientName = (client: any) => {
     if (!client) return "Walk-in Customer";
     return client.type === "business" 
@@ -23,12 +25,15 @@ export function SaleReceiptDialog({ sale }: SaleReceiptDialogProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-          <Receipt className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* Only show trigger if not controlled externally */}
+      {!open && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+            <Receipt className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Sale Receipt</DialogTitle>

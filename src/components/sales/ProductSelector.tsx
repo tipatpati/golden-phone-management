@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useProducts } from "@/services/useProducts";
+import { supabaseProductApi } from "@/services/supabaseProducts";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
@@ -23,7 +24,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
 
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
-      setProductSearch(result);
+      handleBarcodeScanned(result);
     }
   });
 
@@ -39,8 +40,28 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
     setProductSearch("");
   };
 
-  const handleBarcodeScanned = (barcode: string) => {
+  const handleBarcodeScanned = async (barcode: string) => {
+    console.log('Barcode scanned:', barcode);
     setProductSearch(barcode);
+    
+    try {
+      // Try to find and automatically add the product using the API
+      const scannedProducts = await supabaseProductApi.getProducts(barcode);
+      
+      // If we find exactly one product, add it automatically
+      if (scannedProducts && scannedProducts.length === 1) {
+        console.log('Auto-adding scanned product:', scannedProducts[0]);
+        onProductAdd(scannedProducts[0]);
+        setProductSearch(""); // Clear search after adding
+      }
+      // If multiple products found, let user choose from the search results
+      else if (scannedProducts && scannedProducts.length > 1) {
+        console.log(`Found ${scannedProducts.length} products for barcode, showing options`);
+      }
+      // If no products found, search will remain and show "No products found" message
+    } catch (error) {
+      console.error('Error searching for scanned product:', error);
+    }
   };
 
   return (

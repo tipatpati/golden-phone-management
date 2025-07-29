@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Scan } from "lucide-react";
+import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
+import { supabaseProductApi } from "@/services/supabaseProducts";
 import { useCreateSale } from "@/services/useSales";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientSelector } from "./ClientSelector";
@@ -13,6 +15,8 @@ import { ProductSelector } from "./ProductSelector";
 import { ProductRecommendations } from "./ProductRecommendations";
 import { SaleItemsList } from "./SaleItemsList";
 import { SaleTotals } from "./SaleTotals";
+import { SaleReceiptDialog } from "./SaleReceiptDialog";
+import { toast } from "@/components/ui/sonner";
 
 type SaleItem = {
   product_id: string;
@@ -30,6 +34,8 @@ export function NewSaleDialog() {
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [createdSale, setCreatedSale] = useState<any>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const createSale = useCreateSale();
   const { user } = useAuth();
@@ -52,7 +58,7 @@ export function NewSaleDialog() {
         ...items,
         {
           product_id: product.id,
-          product_name: product.name,
+          product_name: `${product.brand} ${product.model}`,
           quantity: 1,
           unit_price: product.price,
           min_price: product.min_price,
@@ -132,7 +138,7 @@ export function NewSaleDialog() {
 
     try {
       console.log('Submitting sale with user ID:', user.id);
-      await createSale.mutateAsync({
+      const createdSaleData = await createSale.mutateAsync({
         client_id: selectedClient?.id,
         salesperson_id: user.id,
         payment_method: paymentMethod as any,
@@ -145,14 +151,43 @@ export function NewSaleDialog() {
         }))
       });
       
+      // Store the created sale and show receipt
+      setCreatedSale(createdSaleData);
+      setShowReceipt(true);
+      
       // Reset form
       setSelectedClient(null);
       setSaleItems([]);
       setPaymentMethod("");
       setNotes("");
       setOpen(false);
+      
+      toast.success("Sale created successfully! Receipt is ready to print.");
     } catch (error) {
       console.error('Error creating sale:', error);
+      toast.error("Failed to create sale. Please try again.");
+    }
+  };
+
+  // Handle direct barcode scanning for quick product addition
+  const handleDirectBarcodeScanned = async (barcode: string) => {
+    console.log('Direct barcode scanned:', barcode);
+    
+    try {
+      const scannedProducts = await supabaseProductApi.getProducts(barcode);
+      
+      if (scannedProducts && scannedProducts.length === 1) {
+        console.log('Auto-adding scanned product:', scannedProducts[0]);
+        addProduct(scannedProducts[0]);
+        toast.success(`Added ${scannedProducts[0].brand} ${scannedProducts[0].model} to sale`);
+      } else if (scannedProducts && scannedProducts.length > 1) {
+        toast.error(`Multiple products found for barcode ${barcode}. Please use the product search to select the correct one.`);
+      } else {
+        toast.error(`No product found for barcode ${barcode}`);
+      }
+    } catch (error) {
+      console.error('Error searching for scanned product:', error);
+      toast.error('Error scanning barcode. Please try again.');
     }
   };
 
@@ -170,6 +205,23 @@ export function NewSaleDialog() {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          {/* Quick Barcode Scanner */}
+          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border">
+            <div>
+              <h3 className="font-medium text-blue-900">Quick Scan</h3>
+              <p className="text-sm text-blue-700">Scan product barcodes to add them instantly</p>
+            </div>
+            <BarcodeScannerTrigger
+              onScan={handleDirectBarcodeScanned}
+              variant="default"
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Scan className="h-4 w-4 mr-2" />
+              Scan Barcode
+            </BarcodeScannerTrigger>
+          </div>
+
           {/* Client and Product Selection - Side by side on larger screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <ClientSelector
@@ -246,6 +298,15 @@ export function NewSaleDialog() {
           </div>
         </form>
       </DialogContent>
+      
+      {/* Auto-show receipt dialog after sale creation */}
+      {createdSale && showReceipt && (
+        <SaleReceiptDialog 
+          sale={createdSale}
+          open={showReceipt}
+          onOpenChange={setShowReceipt}
+        />
+      )}
     </Dialog>
   );
 }
