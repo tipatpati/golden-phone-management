@@ -196,20 +196,20 @@ export function NewSaleDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          New Sale
+          Nuova Vendita
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
-          <DialogTitle>Create New Sale</DialogTitle>
+          <DialogTitle>Crea Nuova Vendita</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Quick Barcode Scanner */}
           <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border">
             <div>
-              <h3 className="font-medium text-blue-900">Quick Scan</h3>
-              <p className="text-sm text-blue-700">Scan product barcodes to add them instantly</p>
+              <h3 className="font-medium text-blue-900">Scansione Rapida</h3>
+              <p className="text-sm text-blue-700">Scansiona i codici a barre dei prodotti per aggiungerli istantaneamente</p>
             </div>
             <BarcodeScannerTrigger
               onScan={handleDirectBarcodeScanned}
@@ -218,7 +218,7 @@ export function NewSaleDialog() {
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Scan className="h-4 w-4 mr-2" />
-              Scan Barcode
+              Scansiona Codice
             </BarcodeScannerTrigger>
           </div>
 
@@ -252,24 +252,24 @@ export function NewSaleDialog() {
           {/* Payment Method and Notes - Side by side on larger screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label>Payment Method *</Label>
+              <Label>Metodo di Pagamento *</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select payment method" />
+                  <SelectValue placeholder="Seleziona metodo di pagamento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="card">Card</SelectItem>
-                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="cash">Contanti</SelectItem>
+                  <SelectItem value="card">Carta</SelectItem>
+                  <SelectItem value="bank_transfer">Bonifico Bancario</SelectItem>
+                  <SelectItem value="other">Altro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>Note</Label>
               <Textarea
-                placeholder="Additional notes..."
+                placeholder="Note aggiuntive..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[2.5rem]"
@@ -286,14 +286,14 @@ export function NewSaleDialog() {
               onClick={() => setOpen(false)}
               className="w-full sm:w-auto"
             >
-              Cancel
+              Annulla
             </Button>
             <Button 
               type="submit" 
               disabled={!isFormValid || createSale.isPending}
               className="w-full sm:w-auto sm:flex-1"
             >
-              {createSale.isPending ? "Creating..." : "Create Sale"}
+              {createSale.isPending ? "Creazione..." : "Crea Vendita"}
             </Button>
           </div>
         </form>

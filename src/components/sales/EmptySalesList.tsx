@@ -17,12 +17,12 @@ export function EmptySalesList({ searchTerm }: EmptySalesListProps) {
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold text-gray-900">
-              {searchTerm ? "No sales found" : "No sales yet"}
+              {searchTerm ? "Nessuna vendita trovata" : "Nessuna vendita ancora"}
             </h3>
             <p className="text-muted-foreground text-base max-w-md mx-auto">
               {searchTerm 
-                ? "Try adjusting your search criteria or clear the search to see all sales." 
-                : "Get started by creating your first sale transaction."
+                ? "Prova a modificare i criteri di ricerca o cancella la ricerca per vedere tutte le vendite." 
+                : "Inizia creando la tua prima transazione di vendita."
               }
             </p>
           </div>

@@ -7,10 +7,10 @@ export function SalesHeader() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6">
         <div className="space-y-2 sm:space-y-3">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Sales Management
+            Gestione Vendite
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base lg:text-lg max-w-2xl">
-            Manage sales transactions, process refunds, and track performance with comprehensive analytics.
+            Gestisci le transazioni di vendita, elabora i rimborsi e monitora le prestazioni con analisi complete.
           </p>
         </div>
         <div className="flex-shrink-0">

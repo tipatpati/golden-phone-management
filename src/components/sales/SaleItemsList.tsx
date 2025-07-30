@@ -47,7 +47,7 @@ export function SaleItemsList({
 
   return (
     <div className="space-y-4">
-      <Label>Sale Items</Label>
+      <Label>Articoli Vendita</Label>
       <div className="space-y-2">
         {saleItems.map((item) => (
           <div key={item.product_id} className="border rounded-md p-3">
@@ -64,7 +64,7 @@ export function SaleItemsList({
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-xs">Quantity</Label>
+                <Label className="text-xs">Quantità</Label>
                 {(() => {
                   const availableStock = getProductStock(item.product_id);
                   const hasStockWarning = item.quantity > availableStock;
@@ -72,7 +72,7 @@ export function SaleItemsList({
                   return (
                     <>
                       <div className="text-xs text-muted-foreground mb-1">
-                        Available: {availableStock}
+                        Disponibile: {availableStock}
                       </div>
                       <Input
                         type="number"
@@ -86,7 +86,7 @@ export function SaleItemsList({
                         <div className="flex items-center gap-1 mt-1">
                           <AlertTriangle className="h-3 w-3 text-red-500" />
                           <span className="text-xs text-red-500">
-                            Exceeds available stock by {item.quantity - availableStock}
+                            Supera la scorta disponibile di {item.quantity - availableStock}
                           </span>
                         </div>
                       )}
@@ -95,7 +95,7 @@ export function SaleItemsList({
                 })()}
               </div>
               <div>
-                <Label className="text-xs">Unit Price</Label>
+                <Label className="text-xs">Prezzo Unitario</Label>
                 {item.min_price && item.max_price && (
                   <div className="text-xs text-muted-foreground mb-1">
                     Range: ${item.min_price} - ${item.max_price}
@@ -118,21 +118,21 @@ export function SaleItemsList({
                 {item.min_price && item.max_price && 
                  (item.unit_price < item.min_price || item.unit_price > item.max_price) && (
                   <div className="text-xs text-red-500 mt-1">
-                    Price must be between ${item.min_price} - ${item.max_price}
+                    Il prezzo deve essere tra ${item.min_price} - ${item.max_price}
                   </div>
                 )}
               </div>
               <div>
-                <Label className="text-xs">Serial Number</Label>
+                <Label className="text-xs">Numero di Serie</Label>
                 <Input
-                  placeholder="Optional"
+                  placeholder="Opzionale"
                   value={item.serial_number || ""}
                   onChange={(e) => onSerialNumberUpdate(item.product_id, e.target.value)}
                 />
               </div>
             </div>
             <div className="text-right mt-2 font-medium">
-              Total: ${(item.unit_price * item.quantity).toFixed(2)}
+              Totale: ${(item.unit_price * item.quantity).toFixed(2)}
             </div>
           </div>
         ))}
