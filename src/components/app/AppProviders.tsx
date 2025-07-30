@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { SecurityProvider } from "@/components/security/SecurityProvider";
+// import { SecurityProvider } from "@/components/security/SecurityProvider"; // Disabled
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -31,30 +31,13 @@ export function AppProviders({ children, includeAuth = false }: AppProvidersProp
     children
   );
 
-  // Detect preview environment
-  const isPreview = typeof window !== 'undefined' && (
-    window.location.hostname.includes('lovable.app') || 
-    window.location.hostname.includes('localhost') ||
-    window !== window.top
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* Only wrap with SecurityProvider in production environments */}
-        {isPreview ? (
-          <>
-            {content}
-            <Toaster />
-            <Sonner />
-          </>
-        ) : (
-          <SecurityProvider>
-            {content}
-            <Toaster />
-            <Sonner />
-          </SecurityProvider>
-        )}
+        {/* SecurityProvider completely disabled for all environments */}
+        {content}
+        <Toaster />
+        <Sonner />
       </TooltipProvider>
     </QueryClientProvider>
   );
