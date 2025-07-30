@@ -92,10 +92,10 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">
-          IMEI/Serial Numbers with Battery Level and Color *
+          Numeri IMEI/Seriali con Livello Batteria e Colore *
         </Label>
         <div className="text-sm text-muted-foreground">
-          Stock: {validEntriesCount}
+          Scorta: {validEntriesCount}
         </div>
       </div>
       
@@ -106,7 +106,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
             <div className="lg:hidden space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-muted-foreground">
-                  Unit #{index + 1}
+                  Unità #{index + 1}
                 </span>
                 {entries.length > 1 && (
                   <Button
@@ -124,7 +124,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
               <div className="space-y-3">
                 <div>
                   <Label htmlFor={`serial-mobile-${entry.id}`} className="text-xs">
-                    IMEI/Serial Number
+                    Numero IMEI/Seriale
                   </Label>
                   <Input
                     id={`serial-mobile-${entry.id}`}
@@ -138,7 +138,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs">
-                      Battery %
+                      Batteria %
                     </Label>
                     <Input
                       id={`battery-mobile-${entry.id}`}
@@ -154,14 +154,14 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   
                   <div>
                     <Label htmlFor={`color-mobile-${entry.id}`} className="text-xs">
-                      Color
+                      Colore
                     </Label>
                     <Select 
                       value={entry.color} 
                       onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                     >
                       <SelectTrigger className="text-sm h-9">
-                        <SelectValue placeholder="Select color" />
+                        <SelectValue placeholder="Seleziona colore" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
                         {COLOR_OPTIONS.map(color => (
@@ -184,7 +184,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
               
               <div className="col-span-5">
                 <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
-                  IMEI/Serial Number
+                  Numero IMEI/Seriale
                 </Label>
                 <Input
                   id={`serial-desktop-${entry.id}`}
@@ -197,7 +197,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
               
               <div className="col-span-2">
                 <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs">
-                  Battery %
+                  Batteria %
                 </Label>
                 <Input
                   id={`battery-desktop-${entry.id}`}
@@ -213,14 +213,14 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
               
               <div className="col-span-3">
                 <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs">
-                  Color
+                  Colore
                 </Label>
                 <Select 
                   value={entry.color} 
                   onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                 >
                   <SelectTrigger className="text-sm h-9">
-                    <SelectValue placeholder="Select color" />
+                    <SelectValue placeholder="Seleziona colore" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
                     {COLOR_OPTIONS.map(color => (
@@ -257,11 +257,11 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
         className="w-full"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Another Unit
+        Aggiungi Altra Unità
       </Button>
       
       <p className="text-xs text-muted-foreground">
-        Add individual units with their IMEI/Serial numbers, battery levels, and colors. Stock will automatically be calculated based on the number of valid entries.
+        Aggiungi singole unità con i loro numeri IMEI/Seriali, livelli di batteria e colori. La scorta verrà calcolata automaticamente in base al numero di voci valide.
       </p>
     </div>
   );
