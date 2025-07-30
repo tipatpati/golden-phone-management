@@ -127,7 +127,66 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
         </DialogHeader>
         
         <div className="space-y-4 text-sm">
-          <div id="receipt-content">
+          <div className="text-center border-b pb-4">
+            <h3 className="font-bold text-lg">Sales Receipt</h3>
+            <p className="text-muted-foreground">Sale #{sale.sale_number}</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="font-medium">Date:</span>
+              <span>{format(new Date(sale.sale_date), "MMM dd, yyyy HH:mm")}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Customer:</span>
+              <span>{getClientName(sale.client)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Salesperson:</span>
+              <span>{sale.salesperson?.username || "Unknown"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Payment:</span>
+              <span className="capitalize">{sale.payment_method.replace('_', ' ')}</span>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-2">Items:</h4>
+            <div className="space-y-1">
+              {sale.sale_items?.map((item, index) => (
+                <div key={index} className="flex justify-between text-xs">
+                  <span>{item.quantity}× {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}</span>
+                  <span>${item.total_price.toFixed(2)}</span>
+                </div>
+              )) || <p className="text-muted-foreground text-xs">No items</p>}
+            </div>
+          </div>
+
+          <div className="border-t pt-4 space-y-1">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>${sale.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax:</span>
+              <span>${sale.tax_amount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between font-bold">
+              <span>Total:</span>
+              <span>${sale.total_amount.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {sale.notes && (
+            <div className="border-t pt-4">
+              <span className="font-medium">Notes:</span>
+              <p className="text-muted-foreground mt-1">{sale.notes}</p>
+            </div>
+          )}
+
+          {/* Hidden receipt content for printing */}
+          <div id="receipt-content" style={{display: 'none'}}>
             <div className="receipt-header">
               <div className="receipt-title">SALES RECEIPT</div>
               <div className="receipt-number">#{sale.sale_number}</div>
