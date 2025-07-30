@@ -229,9 +229,9 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
                     });
                   }}
                   trigger={
-                    <div className="flex items-center justify-center p-2 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
-                      <Printer className="h-4 w-4 text-primary" />
-                    </div>
+                     <div className="flex items-center justify-center p-2 rounded-md bg-green-100 hover:bg-green-200 transition-colors">
+                       <Printer className="h-4 w-4 text-green-700" />
+                     </div>
                   }
                 />,
                 label: "Print",
