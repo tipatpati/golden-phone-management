@@ -58,7 +58,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
     <Dialog>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="h-9 px-3 font-medium">
             <Eye className="h-4 w-4 mr-2" />
             View Details
           </Button>

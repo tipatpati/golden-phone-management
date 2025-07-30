@@ -183,11 +183,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
               ]}
             />
             {/* View Details Button positioned outside the card */}
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-3 right-3">
               <SaleDetailsDialog 
                 sale={sale} 
                 trigger={
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary border border-border/50 bg-background/80 backdrop-blur-sm shadow-sm"
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
                 }

@@ -1,7 +1,9 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Eye } from "lucide-react";
 import { EditSaleDialog } from "./EditSaleDialog";
 import { DeleteSaleDialog } from "./DeleteSaleDialog";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
@@ -85,8 +87,16 @@ export function SaleCard({ sale }: SaleCardProps) {
             <Badge variant={getStatusColor(sale.status)} className="text-xs font-semibold px-3 py-1">
               {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
             </Badge>
-            <div className="flex gap-1">
-              <SaleDetailsDialog sale={sale} />
+            <div className="flex gap-2">
+              <SaleDetailsDialog 
+                sale={sale} 
+                trigger={
+                  <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
+                    <Eye className="h-3 w-3 mr-1.5" />
+                    View
+                  </Button>
+                }
+              />
               <SaleReceiptDialog sale={sale} />
               <EditSaleDialog sale={sale} />
               <DeleteSaleDialog sale={sale} />
