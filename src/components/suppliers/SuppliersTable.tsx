@@ -1,26 +1,11 @@
 import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Edit, Trash2, Mail } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Building, Mail, Phone, Edit2, Trash2, MessageCircle } from "lucide-react";
+import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState } from "@/components/common";
 import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
 import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { useSuppliers } from "@/services/useSuppliers";
-import { cn } from "@/lib/utils";
 
 interface SuppliersTableProps {
   searchTerm: string;
@@ -30,6 +15,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [deletingSupplier, setDeletingSupplier] = useState<any>(null);
   const [contactingSupplier, setContactingSupplier] = useState<any>(null);
+  const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog();
   const { data: suppliers, isLoading } = useSuppliers();
 
   const filteredSuppliers = suppliers?.filter((supplier) =>
@@ -38,104 +24,172 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  const handleDeleteSupplier = (supplier: any) => {
+    showConfirmDialog({
+      item: supplier,
+      title: "Delete Supplier",
+      message: `Are you sure you want to delete "${supplier.name}"? This action cannot be undone.`,
+      onConfirm: () => setDeletingSupplier(supplier)
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === 'active' ? 'default' : 'secondary';
+  };
+
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-12 bg-muted rounded animate-pulse" />
-        ))}
-      </div>
-    );
+    return <LoadingState message="Loading suppliers..." />;
   }
+
+  // Define table columns for desktop view
+  const columns = [
+    {
+      key: 'name' as keyof any,
+      header: 'Supplier',
+      render: (value: string, supplier: any) => (
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-full bg-blue-100">
+            <Building className="h-4 w-4 text-blue-600" />
+          </div>
+          <div>
+            <div className="font-medium">{value}</div>
+            {supplier.contact_person && (
+              <div className="text-sm text-muted-foreground">
+                Contact: {supplier.contact_person}
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'email' as keyof any,
+      header: 'Contact',
+      render: (value: any, supplier: any) => (
+        <div className="space-y-1">
+          {supplier.email && (
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-3 w-3 text-muted-foreground" />
+              {supplier.email}
+            </div>
+          )}
+          {supplier.phone && (
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="h-3 w-3 text-muted-foreground" />
+              {supplier.phone}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'status' as keyof any,
+      header: 'Status',
+      render: (value: string) => (
+        <Badge variant={getStatusColor(value)}>
+          {value.charAt(0).toUpperCase() + value.slice(1)}
+        </Badge>
+      )
+    }
+  ];
+
+  // Define actions
+  const actions = [
+    {
+      icon: <MessageCircle className="h-4 w-4" />,
+      label: "Contact",
+      onClick: (supplier: any) => setContactingSupplier(supplier)
+    },
+    {
+      icon: <Edit2 className="h-4 w-4" />,
+      label: "Edit",
+      onClick: (supplier: any) => setEditingSupplier(supplier)
+    },
+    {
+      icon: <Trash2 className="h-4 w-4" />,
+      label: "Delete",
+      onClick: handleDeleteSupplier,
+      variant: "destructive" as const
+    }
+  ];
 
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Supplier</TableHead>
-              <TableHead className="hidden sm:table-cell">Contact</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="hidden lg:table-cell">Phone</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-12"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredSuppliers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No suppliers found
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredSuppliers.map((supplier) => (
-                <TableRow key={supplier.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex flex-col gap-1">
-                      <div className="truncate">{supplier.name}</div>
-                      <div className="text-xs text-muted-foreground sm:hidden">
-                        {supplier.contact_person && `${supplier.contact_person}`}
-                        {supplier.email && ` • ${supplier.email}`}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">{supplier.contact_person || "—"}</TableCell>
-                  <TableCell className="hidden md:table-cell">{supplier.email || "—"}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{supplier.phone || "—"}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={supplier.status === 'active' ? 'default' : 'secondary'}
-                      className={cn(
-                        "text-xs",
-                        supplier.status === 'active' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                      )}
-                    >
-                      {supplier.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-                        <DropdownMenuItem 
-                          onClick={() => setContactingSupplier(supplier)}
-                          className="cursor-pointer"
-                          disabled={!supplier.email}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Contact
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setEditingSupplier(supplier)}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setDeletingSupplier(supplier)}
-                          className="cursor-pointer text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      {/* Desktop Table Layout */}
+      <div className="hidden lg:block">
+        <DataTable
+          data={filteredSuppliers}
+          columns={columns}
+          actions={actions}
+          getRowKey={(supplier) => supplier.id}
+        />
       </div>
+
+      {/* Mobile Card Layout */}
+      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1">
+        {filteredSuppliers.map((supplier) => (
+          <DataCard
+            key={supplier.id}
+            title={supplier.name}
+            subtitle={supplier.contact_person}
+            icon={<Building className="h-5 w-5 text-blue-600" />}
+            badge={{
+              text: supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1),
+              variant: getStatusColor(supplier.status) as any
+            }}
+            fields={[
+              ...(supplier.email ? [{
+                label: "Email",
+                value: (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    {supplier.email}
+                  </div>
+                )
+              }] : []),
+              ...(supplier.phone ? [{
+                label: "Phone",
+                value: (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-3 w-3 text-muted-foreground" />
+                    {supplier.phone}
+                  </div>
+                )
+              }] : [])
+            ]}
+            actions={[
+              {
+                icon: <MessageCircle className="h-3 w-3 mr-1" />,
+                label: "Contact",
+                onClick: () => setContactingSupplier(supplier)
+              },
+              {
+                icon: <Edit2 className="h-3 w-3 mr-1" />,
+                label: "Edit",
+                onClick: () => setEditingSupplier(supplier)
+              },
+              {
+                icon: <Trash2 className="h-3 w-3 mr-1" />,
+                label: "Delete",
+                onClick: () => handleDeleteSupplier(supplier),
+                variant: "outline",
+                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+              }
+            ]}
+          />
+        ))}
+      </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={dialogState.isOpen}
+        onClose={hideConfirmDialog}
+        onConfirm={confirmAction}
+        title={dialogState.title}
+        message={dialogState.message}
+        variant="destructive"
+        confirmText="Delete"
+      />
 
       <EditSupplierDialog
         supplier={editingSupplier}
