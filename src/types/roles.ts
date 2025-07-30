@@ -13,9 +13,24 @@ export interface RoleConfig {
 }
 
 export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
+  super_admin: {
+    name: "Super Amministratore",
+    description: "Accesso completo a tutte le funzionalità incluse quelle finanziarie",
+    features: [
+      "gestione_completa_inventario",
+      "analisi_e_report_completi", 
+      "gestione_utenti",
+      "impostazioni_sistema",
+      "gestione_vendite",
+      "gestione_riparazioni",
+      "gestione_clienti",
+      "gestione_finanziaria"
+    ],
+    permissions: ["*"]
+  },
   admin: {
-    name: "Proprietario",
-    description: "Accesso completo a tutte le funzionalità del sistema",
+    name: "Amministratore",
+    description: "Accesso completo a tutte le funzionalità del sistema (escluse finanze)",
     features: [
       "gestione_completa_inventario",
       "analisi_e_report_completi", 

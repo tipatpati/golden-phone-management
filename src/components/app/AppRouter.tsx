@@ -42,7 +42,7 @@ export function AppRouter() {
         {/* Root route - login if not authenticated, main app if authenticated */}
         <Route path="/" element={
           isLoggedIn ? (
-            effectiveRole === 'admin' ? (
+            effectiveRole === 'super_admin' ? (
               <ProtectedRoute>
                 <TabletLayout userRole={effectiveRole}>
                   <Suspense fallback={<PageLoader />}>
@@ -73,8 +73,8 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
-            {/* Admin users get full admin interface */}
-            {effectiveRole === 'admin' ? (
+            {/* Super Admin users get full admin interface including Finances */}
+            {effectiveRole === 'super_admin' ? (
               <>
                 <Route path="/sales" element={
                   <ProtectedRoute>
@@ -126,6 +126,91 @@ export function AppRouter() {
                     <TabletLayout userRole={effectiveRole}>
                       <Suspense fallback={<PageLoader />}>
                         <Finances />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/reports" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <div className="min-h-[80vh] flex items-center justify-center">
+                        <h1 className="text-2xl">Reports Module - Coming Soon</h1>
+                      </div>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/employees" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <EmployeeManagement />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/documentation" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Documentation />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <div className="min-h-[80vh] flex items-center justify-center">
+                        <h1 className="text-2xl">Settings Module - Coming Soon</h1>
+                      </div>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+              </>
+            ) : effectiveRole === 'admin' ? (
+              /* Admin interface without Finances */
+              <>
+                <Route path="/sales" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Sales />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/clients" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Clients />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/inventory" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Inventory />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/suppliers" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Suppliers />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/repairs" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Repairs />
                       </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
@@ -219,6 +304,7 @@ export function AppRouter() {
             <Route path="/inventory" element={<Navigate to="/" replace />} />
             <Route path="/suppliers" element={<Navigate to="/" replace />} />
             <Route path="/repairs" element={<Navigate to="/" replace />} />
+            <Route path="/finances" element={<Navigate to="/" replace />} />
             <Route path="/reports" element={<Navigate to="/" replace />} />
             <Route path="/settings" element={<Navigate to="/" replace />} />
           </>
