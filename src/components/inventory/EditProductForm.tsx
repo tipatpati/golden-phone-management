@@ -11,6 +11,7 @@ import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { RefreshCw } from "lucide-react";
+import { log } from "@/utils/logger";
 
 interface EditProductFormProps {
   product: Product;
@@ -19,7 +20,7 @@ interface EditProductFormProps {
 }
 
 export function EditProductForm({ product, onCancel, onSuccess }: EditProductFormProps) {
-  console.log('EditProductForm rendering with product:', product);
+  log.debug('EditProductForm rendering', { productId: product.id }, 'EditProductForm');
   
   const [brand, setBrand] = useState(product.brand || "");
   const [model, setModel] = useState(product.model || "");
@@ -78,7 +79,7 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with data:', { brand, model, year, categoryId, price, stock, threshold });
+    log.debug('Submitting product update', { brand, model, year, categoryId, price, stock, threshold }, 'EditProductForm');
     
     // Mandatory brand and model validation
     if (!brand.trim() || !model.trim()) {
@@ -142,11 +143,11 @@ export function EditProductForm({ product, onCancel, onSuccess }: EditProductFor
       
       onSuccess();
     } catch (error) {
-      console.error('Update error:', error);
+      log.error('Product update failed', error, 'EditProductForm');
     }
   };
 
-  console.log('Rendering form with state:', { brand, model, year, categoryId, price, stock, threshold });
+  log.debug('Rendering form', { brand, model, year }, 'EditProductForm');
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">

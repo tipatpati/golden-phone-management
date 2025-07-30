@@ -10,7 +10,9 @@ import { toast } from "@/components/ui/sonner";
 import { LogIn, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
-import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
+import { validation } from "@/utils/validation";
+import { log } from "@/utils/logger";
+import { enhancedRateLimiter } from "@/utils/securityEnhancements";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -30,21 +32,38 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Sanitize inputs
-    const sanitizedEmail = sanitizeEmail(email);
-    const sanitizedPassword = sanitizeInput(password);
+    // Check rate limiting
+    const rateLimitCheck = enhancedRateLimiter.checkAuth(email);
+    if (!rateLimitCheck.allowed) {
+      toast.error("Too many attempts", {
+        description: `Please wait ${rateLimitCheck.retryAfter} seconds before trying again`
+      });
+      return;
+    }
     
-    if (!sanitizedEmail || !sanitizedPassword) {
-      toast.error("Inserisci email e password valide");
+    // Validate inputs using centralized validation
+    const emailValidation = validation.email(email);
+    const passwordValidation = validation.password(password);
+    
+    if (!emailValidation.isValid) {
+      toast.error("Invalid email", { description: emailValidation.error });
+      return;
+    }
+    
+    if (!passwordValidation.isValid) {
+      toast.error("Invalid password", { description: passwordValidation.error });
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await login(sanitizedEmail, sanitizedPassword);
+      await login(emailValidation.sanitizedValue, passwordValidation.sanitizedValue);
+      log.info('User login from basic form', { email: emailValidation.sanitizedValue }, 'LoginForm');
       onLoginSuccess();
     } catch (error) {
+      // Record failed attempt
+      enhancedRateLimiter.recordFailedAuth(email);
       // Error is already shown by the auth service
     } finally {
       setIsLoading(false);
@@ -54,30 +73,51 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Sanitize inputs
-    const sanitizedEmail = sanitizeEmail(email);
-    const sanitizedPassword = sanitizeInput(password);
-    const sanitizedUsername = sanitizeInput(username);
-    
-    if (!sanitizedEmail || !sanitizedPassword) {
-      toast.error("Inserisci email e password valide");
+    // Check rate limiting
+    const rateLimitCheck = enhancedRateLimiter.checkAuth(email);
+    if (!rateLimitCheck.allowed) {
+      toast.error("Too many attempts", {
+        description: `Please wait ${rateLimitCheck.retryAfter} seconds before trying again`
+      });
       return;
     }
     
-    // Basic password strength check
-    if (sanitizedPassword.length < 6) {
-      toast.error("La password deve essere di almeno 6 caratteri");
+    // Validate inputs using centralized validation
+    const emailValidation = validation.email(email);
+    const passwordValidation = validation.password(password, { isSignup: true });
+    const usernameValidation = validation.username(username);
+    
+    if (!emailValidation.isValid) {
+      toast.error("Invalid email", { description: emailValidation.error });
+      return;
+    }
+    
+    if (!passwordValidation.isValid) {
+      toast.error("Invalid password", { description: passwordValidation.error });
+      return;
+    }
+    
+    if (!usernameValidation.isValid) {
+      toast.error("Invalid username", { description: usernameValidation.error });
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await signup(sanitizedEmail, sanitizedPassword, sanitizedUsername, selectedRole);
+      await signup(
+        emailValidation.sanitizedValue, 
+        passwordValidation.sanitizedValue, 
+        usernameValidation.sanitizedValue, 
+        selectedRole
+      );
+      log.info('User signup from basic form', { email: emailValidation.sanitizedValue, role: selectedRole }, 'LoginForm');
       // After successful signup, switch to login tab
       setActiveTab("login");
       setPassword(""); // Clear password for security
     } catch (error) {
+      // Record failed attempt
+      enhancedRateLimiter.recordFailedAuth(email);
       // Error is already shown by the auth service
     } finally {
       setIsLoading(false);
@@ -112,7 +152,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Inserisci la tua email"
                     maxLength={254}
                     required
@@ -165,7 +205,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="signup-username"
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(sanitizeInput(e.target.value))}
+                    onChange={(e) => setUsername(e.target.value)}
                     placeholder="Inserisci un nome utente"
                     maxLength={50}
                   />
@@ -177,7 +217,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     id="signup-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Inserisci la tua email"
                     maxLength={254}
                     required

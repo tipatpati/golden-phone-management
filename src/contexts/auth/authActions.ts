@@ -2,10 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
-import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
+import { validation } from "@/utils/validation";
 import { logFailedAuthAttempt } from "@/utils/securityAudit";
 import { handleSecurityError } from "@/utils/securityEnhancements";
 import { User } from "@supabase/supabase-js";
+import { log } from "@/utils/logger";
 
 interface AuthActionsParams {
   user: User | null;
@@ -41,9 +42,10 @@ export function createAuthActions(params: AuthActionsParams) {
         setInterfaceRole(role);
       }
       
+      log.info('Role updated successfully', { targetUserId, role }, 'AuthActions');
       toast.success(`Role updated to ${role}`);
     } catch (error: any) {
-      console.error('Error updating user role:', error);
+      log.error('Error updating user role', { error: error.message, targetUserId, role }, 'AuthActions');
       toast.error('Failed to update role', {
         description: error.message || 'Only admins can change user roles'
       });
@@ -52,36 +54,42 @@ export function createAuthActions(params: AuthActionsParams) {
   };
 
   const login = async (email: string, password: string) => {
-    // Sanitize inputs
-    const sanitizedEmail = sanitizeEmail(email);
-    const sanitizedPassword = sanitizeInput(password);
+    // Validate and sanitize inputs using centralized validation
+    const emailValidation = validation.email(email);
+    const passwordValidation = validation.password(password);
     
     try {
-      if (!sanitizedEmail || !sanitizedPassword) {
-        toast.error('Invalid email or password format');
-        throw new Error('Invalid credentials format');
+      if (!emailValidation.isValid) {
+        toast.error('Invalid email', { description: emailValidation.error });
+        throw new Error('Invalid email format');
+      }
+      
+      if (!passwordValidation.isValid) {
+        toast.error('Invalid password', { description: passwordValidation.error });
+        throw new Error('Invalid password format');
       }
       
       // Use Supabase auth for all users now
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
-        password: sanitizedPassword,
+        email: emailValidation.sanitizedValue,
+        password: passwordValidation.sanitizedValue,
       });
       
       if (error) {
         throw error;
       }
       
+      log.info('User login successful', { email: emailValidation.sanitizedValue }, 'AuthActions');
       toast.success('Successfully logged in');
       
       // Don't force a page reload - let React Router handle navigation
       // React Router will automatically redirect based on authentication state
       
     } catch (error: any) {
-      console.error('Login failed:', error);
+      log.error('Login failed', { error: error.message, email: emailValidation.sanitizedValue }, 'AuthActions');
       
       // Log failed auth attempt for security monitoring
-      const emailToLog = sanitizedEmail || email;
+      const emailToLog = emailValidation.sanitizedValue || email;
       await logFailedAuthAttempt(emailToLog, error.message || 'Authentication failed');
       
       toast.error('Login failed', {
@@ -93,25 +101,30 @@ export function createAuthActions(params: AuthActionsParams) {
 
   const signup = async (email: string, password: string, username?: string, role: UserRole = 'salesperson') => {
     try {
-      // Sanitize inputs
-      const sanitizedEmail = sanitizeEmail(email);
-      const sanitizedPassword = sanitizeInput(password);
-      const sanitizedUsername = username ? sanitizeInput(username) : sanitizedEmail.split('@')[0];
+      // Validate and sanitize inputs using centralized validation
+      const emailValidation = validation.email(email);
+      const passwordValidation = validation.password(password, { isSignup: true });
+      const usernameValidation = validation.username(username || email.split('@')[0]);
       
-      if (!sanitizedEmail || !sanitizedPassword) {
-        toast.error('Invalid email or password format');
-        throw new Error('Invalid credentials format');
+      if (!emailValidation.isValid) {
+        toast.error('Invalid email', { description: emailValidation.error });
+        throw new Error('Invalid email format');
+      }
+      
+      if (!passwordValidation.isValid) {
+        toast.error('Invalid password', { description: passwordValidation.error });
+        throw new Error('Invalid password format');
       }
       
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
-        email: sanitizedEmail,
-        password: sanitizedPassword,
+        email: emailValidation.sanitizedValue,
+        password: passwordValidation.sanitizedValue,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            username: sanitizedUsername,
+            username: usernameValidation.sanitizedValue,
             role: role,
           }
         }
@@ -122,13 +135,15 @@ export function createAuthActions(params: AuthActionsParams) {
       }
       
       if (data.user && !data.session) {
+        log.info('User signup initiated, email confirmation required', { email: emailValidation.sanitizedValue }, 'AuthActions');
         toast.success('Check your email for confirmation link');
       } else {
+        log.info('User signup completed', { email: emailValidation.sanitizedValue }, 'AuthActions');
         toast.success('Account created successfully');
         // Let React Router handle navigation automatically
       }
     } catch (error: any) {
-      console.error('Signup failed:', error);
+      log.error('Signup failed', { error: error.message }, 'AuthActions');
       toast.error('Signup failed', {
         description: error.message || 'Please try again'
       });
@@ -138,7 +153,7 @@ export function createAuthActions(params: AuthActionsParams) {
 
   const logout = async () => {
     try {
-      console.log('Logout initiated...');
+      log.debug('Logout initiated...', null, 'AuthActions');
       
       // Clear local state first to prevent UI issues
       setUser(null);
@@ -155,11 +170,12 @@ export function createAuthActions(params: AuthActionsParams) {
         throw error;
       }
       
+      log.info('User logout successful', null, 'AuthActions');
       toast.success('Logged out successfully');
       // Let React Router handle navigation automatically
       
     } catch (error: any) {
-      console.error('Logout failed:', error);
+      log.error('Logout failed', error, 'AuthActions');
       
       // Even if logout fails, clear local state and redirect
       setUser(null);
@@ -174,7 +190,7 @@ export function createAuthActions(params: AuthActionsParams) {
   };
 
   const checkAuthStatus = () => {
-    console.log('Auth status check triggered');
+    log.debug('Auth status check triggered', null, 'AuthActions');
   };
 
   return {

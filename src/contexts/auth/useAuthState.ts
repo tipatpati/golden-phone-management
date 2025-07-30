@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { UserRole } from "@/types/roles";
 import { supabase } from "@/integrations/supabase/client";
+import { log } from "@/utils/logger";
 
 export function useAuthState() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,7 +15,7 @@ export function useAuthState() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching user profile for:', userId);
+      log.debug('Fetching user profile', { userId }, 'AuthState');
       
       // Use Promise.race for timeout functionality  
       const timeoutPromise = new Promise((_, reject) => {
@@ -32,19 +33,19 @@ export function useAuthState() {
         timeoutPromise
       ]) as any;
       
-      if (profileError) {
-        console.error('Error fetching user profile:', profileError);
-        // STRICT AUTH: No fallback admin roles - force logout on profile errors
-        console.warn('Profile not found or error occurred. User must have valid profile.');
-        await supabase.auth.signOut();
-        setUserRole(null);
+        if (profileError) {
+          log.error('Error fetching user profile', profileError, 'AuthState');
+          // STRICT AUTH: No fallback admin roles - force logout on profile errors
+          log.warn('Profile not found or error occurred. User must have valid profile.', null, 'AuthState');
+          await supabase.auth.signOut();
+          setUserRole(null);
         setInterfaceRole(null);
         setUsername(null);
         return;
       }
       
-      if (!profile) {
-        console.error('No profile found for authenticated user');
+        if (!profile) {
+          log.error('No profile found for authenticated user', null, 'AuthState');
         // STRICT AUTH: No profile = no access
         await supabase.auth.signOut();
         setUserRole(null);
@@ -53,8 +54,8 @@ export function useAuthState() {
         return;
       }
       
-      // Valid profile found - set user data
-      console.log('User profile fetched:', profile);
+        // Valid profile found - set user data
+        log.info('User profile fetched successfully', { role: profile.role, username: profile.username }, 'AuthState');
       setUserRole(profile.role as UserRole);
       setInterfaceRole(profile.role as UserRole);
       setUsername(profile.username || profile.role);
@@ -76,18 +77,18 @@ export function useAuthState() {
           employeeTimeoutPromise
         ]) as any;
         
-        if (employee) {
-          console.log('User is also an employee:', employee);
+          if (employee) {
+            log.debug('User is also an employee', { position: employee.position }, 'AuthState');
           // Could set additional employee-specific data here if needed
         }
       } catch (error) {
-        // Employee data is optional - don't fail auth for this
-        console.log('User is not an employee or error fetching employee data:', error);
+          // Employee data is optional - don't fail auth for this
+          log.debug('User is not an employee or error fetching employee data', error, 'AuthState');
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      log.error('Error fetching user profile', error, 'AuthState');
       // STRICT AUTH: On any error, sign out and clear state
-      console.warn('Authentication error occurred. Signing out user.');
+      log.warn('Authentication error occurred. Signing out user.', null, 'AuthState');
       await supabase.auth.signOut();
       setUserRole(null);
       setInterfaceRole(null);
@@ -102,7 +103,7 @@ export function useAuthState() {
     // Strict timeout to prevent infinite loading - no fallback roles
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
-        console.warn('Auth initialization timeout, completing initialization without auth');
+        log.warn('Auth initialization timeout, completing initialization without auth', null, 'AuthState');
         // STRICT AUTH: Just mark as initialized, don't assign roles
         setIsInitialized(true);
       }
@@ -115,7 +116,7 @@ export function useAuthState() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Supabase auth state changed:', event, session?.user?.id || 'NO_USER');
+        log.debug('Supabase auth state changed', { event, hasUser: !!session?.user }, 'AuthState');
         
         if (!mounted) return;
 
@@ -123,19 +124,19 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('User found, fetching profile...');
+          log.debug('User found, fetching profile...', null, 'AuthState');
           setTimeout(() => {
             if (mounted) {
               fetchUserProfile(session.user.id).finally(() => {
                 if (mounted) {
-                  console.log('Setting initialized to true (with user)');
+                  log.debug('Setting initialized to true (with user)', null, 'AuthState');
                   setIsInitialized(true);
                 }
               });
             }
           }, 0);
         } else {
-          console.log('No user, setting initialized to true');
+          log.debug('No user, setting initialized to true', null, 'AuthState');
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
@@ -147,24 +148,24 @@ export function useAuthState() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
-      console.log('Initial session check:', session?.user?.id || 'NO_USER');
+      log.debug('Initial session check', { hasUser: !!session?.user }, 'AuthState');
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        console.log('Initial user found, fetching profile...');
+        log.debug('Initial user found, fetching profile...', null, 'AuthState');
         setTimeout(() => {
           if (mounted) {
             fetchUserProfile(session.user.id).finally(() => {
               if (mounted) {
-                console.log('Setting initialized to true (initial with user)');
+                log.debug('Setting initialized to true (initial with user)', null, 'AuthState');
                 setIsInitialized(true);
               }
             });
           }
         }, 0);
       } else {
-        console.log('No initial user, setting initialized to true');
+        log.debug('No initial user, setting initialized to true', null, 'AuthState');
         setIsInitialized(true);
       }
     });
