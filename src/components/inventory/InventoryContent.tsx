@@ -27,13 +27,14 @@ export function InventoryContent({
     setViewMode(newViewMode);
   };
 
-  if (showAddProduct) {
-    return (
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <AddProductForm onCancel={onCancelAddProduct} />
-      </div>
-    );
-  }
+  // AddProductForm is now a dialog, no need for inline mode
+  // if (showAddProduct) {
+  //   return (
+  //     <div className="bg-muted/50 p-4 rounded-lg">
+  //       <AddProductForm />
+  //     </div>
+  //   );
+  // }
 
   return (
     <>

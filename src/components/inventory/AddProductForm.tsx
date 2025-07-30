@@ -1,52 +1,85 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Smartphone, Printer } from "lucide-react";
+import { BaseDialog, FormField } from "@/components/common";
+import { useForm } from "@/hooks/useForm";
+import { CreateProductSchema } from "@/schemas/validation";
 import { useCreateProduct } from "@/services/useProducts";
-import { toast } from "@/components/ui/sonner";
-import { Smartphone, Barcode, RefreshCw, Printer } from "lucide-react";
-import { ProductFormFields, CATEGORY_OPTIONS } from "./ProductFormFields";
 import { SerialNumbersInput } from "./SerialNumbersInput";
 import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, validateSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { useProducts } from "@/services/useProducts";
 import { logger } from "@/utils/logger";
 
-export function AddProductForm({ onCancel }: { onCancel: () => void }) {
-  const [brand, setBrand] = useState("");
-  const [model, setModel] = useState("");
-  const [year, setYear] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [stock, setStock] = useState("0");
-  const [threshold, setThreshold] = useState("5");
-  const [batteryLevel, setBatteryLevel] = useState("85");
+// Category mapping
+const CATEGORY_OPTIONS = [
+  { id: 1, name: "Phones" },
+  { id: 2, name: "Accessories" },
+  { id: 3, name: "Spare Parts" },
+  { id: 4, name: "Protection" },
+];
+
+interface ProductFormData {
+  brand: string;
+  model: string;
+  year?: number;
+  category_id: number;
+  price: number;
+  min_price: number;
+  max_price: number;
+  stock: number;
+  threshold: number;
+  battery_level?: number;
+  has_serial: boolean;
+  serial_numbers?: string[];
+  barcode?: string;
+}
+
+export function AddProductForm() {
+  const [open, setOpen] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState("");
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
-
-  // Clear any persistent states on component mount
-  React.useEffect(() => {
-    setCreatedProduct(null);
-    setShowPrintDialog(false);
-  }, []);
-
+  
   const createProduct = useCreateProduct();
+  const { data: allProducts = [] } = useProducts("");
+  
+  // Get existing products for autocomplete
+  const existingBrands = [...new Set((allProducts as any[]).map(product => product.brand))].filter(Boolean);
+  const existingModels = [...new Set((allProducts as any[]).map(product => product.model))].filter(Boolean);
+
+  // Form with validation - using individual state since we have complex custom validation
+  const [formData, setFormData] = useState({
+    brand: '',
+    model: '',
+    year: '',
+    category_id: '',
+    price: '',
+    min_price: '',
+    max_price: '',
+    stock: 0,
+    threshold: '5',
+    battery_level: '85',
+    has_serial: true,
+  });
+
+  const updateField = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   // Check if category requires serial numbers (accessories are optional)
-  const requiresSerial = category !== "2"; // Accessories category ID is 2
+  const requiresSerial = formData.category_id !== "2";
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     // Validation
-    if (!brand || !model || !category || !price || !minPrice || !maxPrice || !threshold) {
+    if (!formData.brand || !formData.model || !formData.category_id || !formData.price || !formData.min_price || !formData.max_price || !formData.threshold) {
       toast.error("Compila tutti i campi obbligatori");
       return;
     }
-
     // Parse serial numbers with battery and color
     const serialLines = serialNumbers.split('\n').map(line => line.trim()).filter(line => line !== "");
     
@@ -66,9 +99,9 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     }
     
     // Validate price range
-    const priceNum = parseFloat(price);
-    const minPriceNum = parseFloat(minPrice);
-    const maxPriceNum = parseFloat(maxPrice);
+    const priceNum = parseFloat(formData.price);
+    const minPriceNum = parseFloat(formData.min_price);
+    const maxPriceNum = parseFloat(formData.max_price);
     
     if (minPriceNum >= maxPriceNum) {
       toast.error("Il prezzo minimo deve essere inferiore al prezzo massimo");
@@ -94,28 +127,28 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
 
     // Collect colors for product name enhancement
     const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
-    const enhancedBrand = colors.length > 0 ? `${brand} (${colors.join(', ')})` : brand;
+    const enhancedBrand = colors.length > 0 ? `${formData.brand} (${colors.join(', ')})` : formData.brand;
     
     // Set stock to match number of serial entries (each serial = 1 unit of stock)
-    const actualStock = serialEntries.length > 0 ? serialEntries.length : parseInt(stock);
+    const actualStock = serialEntries.length > 0 ? serialEntries.length : formData.stock;
     
     const newProduct = {
       brand: enhancedBrand,
-      model,
-      year: year ? parseInt(year) : undefined,
-      category_id: parseInt(category),
-      price: parseFloat(price),
-      min_price: parseFloat(minPrice),
-      max_price: parseFloat(maxPrice),
-      stock: actualStock, // Stock matches serial entries count
-      threshold: parseInt(threshold),
-      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined, // Default battery level for category
+      model: formData.model,
+      year: formData.year ? parseInt(formData.year) : undefined,
+      category_id: parseInt(formData.category_id),
+      price: priceNum,
+      min_price: minPriceNum,
+      max_price: maxPriceNum,
+      stock: actualStock,
+      threshold: parseInt(formData.threshold),
+      battery_level: parseInt(formData.battery_level),
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
       ),
-      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${brand} ${model}`, undefined, 0),
-      serial_entries: serialEntries // Store individual entries for inventory tracking
+      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${formData.brand} ${formData.model}`, undefined, 0),
+      serial_entries: serialEntries
     };
     
     logger.debug('Submitting product', { 
@@ -123,47 +156,57 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       serialEntriesCount: serialEntries.length 
     }, 'AddProductForm');
     
-    createProduct.mutate(newProduct, {
-      onSuccess: (data) => {
-        // Clear form state first
-        setBrand("");
-        setModel("");
-        setYear("");
-        setCategory("");
-        setPrice("");
-        setMinPrice("");
-        setMaxPrice("");
-        setStock("0");
-        setThreshold("5");
-        setBatteryLevel("85");
-        setSerialNumbers("");
-        
-        // Then handle the created product
-        handleProductCreated({ ...newProduct, id: data?.id, serialEntries });
-      },
-      onError: (error) => {
-        logger.error('Product creation failed', error, 'AddProductForm');
-        toast.error(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+    return new Promise((resolve, reject) => {
+      createProduct.mutate(newProduct, {
+        onSuccess: (data) => {
+          // Handle the created product
+          handleProductCreated({ ...newProduct, id: data?.id, serialEntries });
+          setOpen(false);
+          // Reset form
+          setFormData({
+            brand: '',
+            model: '',
+            year: '',
+            category_id: '',
+            price: '',
+            min_price: '',
+            max_price: '',
+            stock: 0,
+            threshold: '5',
+            battery_level: '85',
+            has_serial: true,
+          });
+          setSerialNumbers("");
+          resolve(data);
+        },
+        onError: (error) => {
+          logger.error('Product creation failed', error, 'AddProductForm');
+          reject(error);
+        }
+      });
     });
   };
 
-  const handlePrintDialogClose = () => {
-    setShowPrintDialog(false);
-    setCreatedProduct(null);
-    onCancel(); // Close the form after printing
-  };
-
-  // Handle successful product creation
   const handleProductCreated = (data: any) => {
     toast.success(`Product added successfully with ${data.serialEntries?.length || 1} serial entries`);
     setCreatedProduct({ ...data, serialEntries: data.serialEntries || [] });
     setShowPrintDialog(true);
   };
 
+  const handlePrintDialogClose = () => {
+    setShowPrintDialog(false);
+    setCreatedProduct(null);
+  };
+
   return (
     <>
-      {/* Only show the print dialog when explicitly requested and product exists */}
+      {/* Trigger Button */}
+      <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
+        <Plus className="h-4 w-4" />
+        Add Product
+      </Button>
+
+      {/* Print Dialog */}
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
           productName={`${createdProduct.brand} ${createdProduct.model}`}
@@ -195,57 +238,118 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
           }
         />
       )}
-    <Card className="w-full max-w-3xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Smartphone className="h-5 w-5" />
-          Add Product with Serial Numbers
-        </CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <ProductFormFields
-            brand={brand}
-            setBrand={setBrand}
-            model={model}
-            setModel={setModel}
-            year={year}
-            setYear={setYear}
-            category={category}
-            setCategory={setCategory}
-            price={price}
-            setPrice={setPrice}
-            minPrice={minPrice}
-            setMinPrice={setMinPrice}
-            maxPrice={maxPrice}
-            setMaxPrice={setMaxPrice}
-            stock={stock}
-            setStock={setStock}
-            threshold={threshold}
-            setThreshold={setThreshold}
-            batteryLevel={batteryLevel}
-            setBatteryLevel={setBatteryLevel}
-            requiresSerial={requiresSerial}
+
+      <BaseDialog
+        title="Add Product with Serial Numbers"
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={handleSubmit}
+        isLoading={createProduct.isPending}
+        submitText={createProduct.isPending ? "Adding..." : "Add Product"}
+        maxWidth="2xl"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Brand *</label>
+            <AutocompleteInput
+              value={formData.brand}
+              onChange={(value) => updateField('brand', value)}
+              suggestions={existingBrands}
+              placeholder="Apple, Samsung, Google..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Model *</label>
+            <AutocompleteInput
+              value={formData.model}
+              onChange={(value) => updateField('model', value)}
+              suggestions={existingModels}
+              placeholder="iPhone 13 Pro Max, Galaxy S23..."
+            />
+          </div>
+
+          <FormField
+            label="Year (optional)"
+            value={formData.year}
+            onChange={(value) => updateField('year', value)}
+            inputType="number"
+            placeholder="2024"
           />
-          
-          <SerialNumbersInput
-            serialNumbers={serialNumbers}
-            setSerialNumbers={setSerialNumbers}
-            setStock={setStock}
+
+          <FormField
+            type="select"
+            label="Category"
+            required
+            value={formData.category_id}
+            onChange={(value) => updateField('category_id', value)}
+            options={CATEGORY_OPTIONS.map(cat => ({
+              value: cat.id.toString(),
+              label: `${cat.name} ${cat.id === 2 ? "(Serial optional)" : "(Serial required)"}`
+            }))}
+            placeholder="Select a category"
           />
-        </CardContent>
-        
-        <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button 
-            type="submit" 
-            disabled={createProduct.isPending}
-          >
-            {createProduct.isPending ? "Adding..." : "Add Product"}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+
+          <FormField
+            label="Base Price (€)"
+            required
+            value={formData.price}
+            onChange={(value) => updateField('price', value)}
+            inputType="number"
+            placeholder="899.99"
+          />
+
+          <FormField
+            label="Minimum Selling Price (€)"
+            required
+            value={formData.min_price}
+            onChange={(value) => updateField('min_price', value)}
+            inputType="number"
+            placeholder="799.99"
+          />
+
+          <FormField
+            label="Maximum Selling Price (€)"
+            required
+            value={formData.max_price}
+            onChange={(value) => updateField('max_price', value)}
+            inputType="number"
+            placeholder="999.99"
+          />
+
+          <FormField
+            label="Low Stock Threshold"
+            required
+            value={formData.threshold}
+            onChange={(value) => updateField('threshold', value)}
+            inputType="number"
+          />
+
+          <FormField
+            label="Battery Level (%)"
+            required
+            value={formData.battery_level}
+            onChange={(value) => updateField('battery_level', value)}
+            inputType="number"
+            placeholder="85"
+            description="Enter the current battery level (0-100%)"
+          />
+        </div>
+
+        {!requiresSerial && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> This category allows products without serial numbers. You can leave the serial numbers field empty if needed.
+            </p>
+          </div>
+        )}
+
+        <SerialNumbersInput
+          serialNumbers={serialNumbers}
+          setSerialNumbers={setSerialNumbers}
+          setStock={(stock) => updateField('stock', parseInt(stock))}
+        />
+      </BaseDialog>
     </>
   );
 }
