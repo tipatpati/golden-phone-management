@@ -45,7 +45,8 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
     return (
       <EditProductForm
         product={editingProduct}
-        onCancel={() => setEditingProduct(null)}
+        open={true}
+        onClose={() => setEditingProduct(null)}
         onSuccess={() => setEditingProduct(null)}
       />
     );
