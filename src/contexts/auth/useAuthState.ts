@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { UserRole } from "@/types/roles";
 import { supabase } from "@/integrations/supabase/client";
-import { log } from "@/utils/logger";
+import { log } from "@/utils/secureLogger";
 
 export function useAuthState() {
   const [user, setUser] = useState<User | null>(null);
@@ -116,6 +116,7 @@ export function useAuthState() {
   // Set up Supabase auth for all users
   useEffect(() => {
     let mounted = true;
+    console.log('useAuthState effect starting...');
     
     // Immediate timeout to prevent stuck loading
     const fallbackTimeout = setTimeout(() => {
@@ -124,7 +125,7 @@ export function useAuthState() {
         log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
         setIsInitialized(true);
       }
-    }, 1000); // Reduced from 3000 to 1000ms
+    }, 500); // Reduced from 1000 to 500ms
 
     const cleanup = () => {
       mounted = false;
@@ -133,6 +134,7 @@ export function useAuthState() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', { event, hasSession: !!session });
         log.debug('Supabase auth state changed', { event, hasUser: !!session?.user }, 'AuthState');
         
         if (!mounted) return;
@@ -159,6 +161,7 @@ export function useAuthState() {
         
         // Always ensure we're initialized after auth state changes
         if (!isInitialized) {
+          console.log('Setting isInitialized to true from auth state change');
           setIsInitialized(true);
         }
       }
@@ -167,6 +170,7 @@ export function useAuthState() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
+      console.log('Getting session result:', { hasSession: !!session });
       log.debug('Initial session check', { hasUser: !!session?.user }, 'AuthState');
       setSession(session);
       setUser(session?.user ?? null);
@@ -180,9 +184,11 @@ export function useAuthState() {
       }
       
       // Always initialize immediately, don't wait for profile
+      console.log('Setting initialized to true from getSession');
       log.debug('Setting initialized to true immediately', null, 'AuthState');
       setIsInitialized(true);
     }).catch(error => {
+      console.error('Failed to get initial session:', error);
       log.error('Failed to get initial session', error, 'AuthState');
       // Even on error, initialize to prevent stuck loading
       setIsInitialized(true);

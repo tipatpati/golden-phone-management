@@ -10,7 +10,13 @@ import { logSessionActivity } from '@/utils/securityAudit';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  console.log('AuthProvider rendering...');
   const authState = useAuthState();
+  console.log('AuthProvider authState:', { 
+    user: !!authState.user, 
+    session: !!authState.session, 
+    isInitialized: authState.isInitialized 
+  });
   
   // Disable custom session security to rely on Supabase's built-in token management
   // const { isSessionValid, resetActivity } = useSessionSecurity({
