@@ -28,24 +28,24 @@ interface ProductCardProps {
 function ProductCard({ product, onEdit, onDelete, onUpdate, isDeleting }: ProductCardProps) {
   return (
     <Card className="hover:shadow-lg transition-all duration-200 touch-target border-l-4 border-l-primary/20 hover:border-l-primary">
-      <CardHeader className="pb-4 md:pb-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1 min-w-0">
-            <div className="p-3 md:p-4 bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl">
-              <Smartphone className="h-7 w-7 md:h-8 md:w-8 text-primary" />
+      <CardHeader className="pb-3 md:pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="p-2 md:p-2.5 bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl">
+              <Smartphone className="h-6 w-6 md:h-6 md:w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-xl md:text-2xl text-on-surface truncate leading-tight">
+              <h3 className="font-bold text-lg md:text-lg text-on-surface truncate leading-tight">
                 {product.brand} {product.model}
               </h3>
-              <div className="flex items-center gap-2 mt-2">
-                <p className="text-sm md:text-base text-muted-foreground font-mono">
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm md:text-sm text-muted-foreground font-mono">
                   {product.serial_numbers?.[0] || product.id.slice(0, 8)}
                 </p>
                 {product.year && (
                   <>
                     <span className="text-muted-foreground">•</span>
-                    <p className="text-sm md:text-base text-muted-foreground">
+                    <p className="text-sm md:text-sm text-muted-foreground">
                       Anno: {product.year}
                     </p>
                   </>
@@ -57,55 +57,55 @@ function ProductCard({ product, onEdit, onDelete, onUpdate, isDeleting }: Produc
           {/* Stock Badge */}
           <Badge 
             variant={product.stock <= product.threshold ? "destructive" : "default"}
-            className="text-sm md:text-base font-semibold px-3 py-1"
+            className="text-sm md:text-sm font-semibold px-2 py-1"
           >
             {product.stock} pz
           </Badge>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-5 md:space-y-6">
-        {/* Key Information Grid - Better spacing for tablets */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Categoria</p>
-            <p className="text-base md:text-lg font-medium text-on-surface">
+      <CardContent className="pt-0 space-y-3 md:space-y-3">
+        {/* Key Information Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <p className="text-xs md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">Categoria</p>
+            <p className="text-sm md:text-sm font-medium text-on-surface">
               {product.category_name || product.category?.name || 'N/A'}
             </p>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Batteria</p>
+          <div className="space-y-1">
+            <p className="text-xs md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">Batteria</p>
             <div>
               {product.battery_level ? (
                 <Badge 
                   variant={product.battery_level > 80 ? "default" : product.battery_level > 50 ? "secondary" : "destructive"}
-                  className="text-sm md:text-base font-semibold px-3 py-1"
+                  className="text-xs md:text-xs font-semibold px-2 py-1"
                 >
                   {product.battery_level}%
                 </Badge>
               ) : (
-                <span className="text-base text-muted-foreground">N/A</span>
+                <span className="text-sm md:text-sm text-muted-foreground">N/A</span>
               )}
             </div>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Prezzo</p>
-            <div className="flex items-center gap-3">
-              <p className="text-2xl md:text-3xl font-bold text-primary">
+          <div className="space-y-1">
+            <p className="text-xs md:text-xs font-semibold text-muted-foreground uppercase tracking-wide">Prezzo</p>
+            <div className="flex items-center gap-2">
+              <p className="text-lg md:text-xl font-bold text-primary">
                 €{typeof product.price === 'number' ? product.price.toFixed(2) : product.price}
               </p>
               {/* Barcode indicator */}
               {product.barcode && (
-                <div className="p-2 bg-secondary/10 rounded-lg">
-                  <Barcode className="h-6 w-6 text-secondary" />
+                <div className="p-1 bg-secondary/10 rounded-lg">
+                  <Barcode className="h-4 w-4 text-secondary" />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Action Buttons - Improved tablet layout */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 pt-4 border-t">
+        {/* Action Buttons */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 pt-3 border-t">
           <BarcodePrintDialog
             productName={`${product.brand} ${product.model}`}
             barcode={product.barcode || undefined}
@@ -121,24 +121,24 @@ function ProductCard({ product, onEdit, onDelete, onUpdate, isDeleting }: Produc
             trigger={
               <Button 
                 variant="default" 
-                size="lg"
-                className="flex-1 md:flex-none touch-button h-12 md:h-11 text-base font-medium"
+                size="sm"
+                className="flex-1 md:flex-none touch-button h-9 md:h-8 text-sm font-medium"
                 title={product.barcode ? "Stampa Etichetta Prodotto" : "Genera Codice a Barre & Stampa"}
               >
-                <Printer className="h-5 w-5 mr-3" />
+                <Printer className="h-4 w-4 mr-2" />
                 Stampa Etichetta
               </Button>
             }
           />
           
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button 
               variant="outline" 
-              size="lg"
-              className="flex-1 md:flex-none touch-button h-12 md:h-11 text-base font-medium"
+              size="sm"
+              className="flex-1 md:flex-none touch-button h-9 md:h-8 text-sm font-medium"
               onClick={() => onEdit(product)}
             >
-              <Edit className="h-5 w-5 mr-2" />
+              <Edit className="h-4 w-4 mr-2" />
               Modifica
             </Button>
             
@@ -146,11 +146,11 @@ function ProductCard({ product, onEdit, onDelete, onUpdate, isDeleting }: Produc
               <AlertDialogTrigger asChild>
                 <Button 
                   variant="outline" 
-                  size="lg"
-                  className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10 touch-button h-12 md:h-11 text-base font-medium"
+                  size="sm"
+                  className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10 touch-button h-9 md:h-8 text-sm font-medium px-3"
                   disabled={isDeleting}
                 >
-                  <Trash className="h-5 w-5" />
+                  <Trash className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
