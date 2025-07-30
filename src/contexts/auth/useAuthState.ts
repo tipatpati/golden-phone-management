@@ -117,17 +117,11 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Immediate timeout to prevent stuck loading - reduced to 2 seconds for faster response
-    const fallbackTimeout = setTimeout(() => {
-      if (mounted && !isInitialized) {
-        log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
-        setIsInitialized(true);
-      }
-    }, 2000);
+    // Set initialized immediately for faster UX, auth state will be handled by the listener
+    setIsInitialized(true);
 
     const cleanup = () => {
       mounted = false;
-      clearTimeout(fallbackTimeout);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

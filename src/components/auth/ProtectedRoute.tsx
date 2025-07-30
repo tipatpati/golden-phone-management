@@ -10,17 +10,7 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoggedIn, isInitialized } = useAuth();
 
-  // Show loading while auth state is initializing
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <div className="text-lg">Authenticating...</div>
-        </div>
-      </div>
-    );
-  }
+  // No loading state needed - auth initialization is now immediate
 
   if (!isLoggedIn) {
     return <Navigate to="/" replace />;
