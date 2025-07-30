@@ -722,6 +722,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      validate_product_stock: {
+        Args: { product_items: Json }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "inventory_manager" | "salesperson"
