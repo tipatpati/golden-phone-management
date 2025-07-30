@@ -13,7 +13,7 @@ class EnhancedRateLimiter {
   private readonly BASE_LIMIT = 5; // Base requests per window
   private readonly WINDOW_MS = 60000; // 1 minute
   private readonly FAILURE_THRESHOLD = 3; // Failed attempts before blocking
-  private readonly BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+  private readonly BLOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes increased from 15
 
   checkRateLimit(key: string, isFailure = false): { allowed: boolean; retryAfter?: number } {
     const now = Date.now();
