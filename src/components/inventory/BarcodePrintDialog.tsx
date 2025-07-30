@@ -117,6 +117,23 @@ export function BarcodePrintDialog({
               ${productName}
             </div>
             
+            ${imeiInfo ? `
+              <div class="text-xs text-gray-800 mb-2 space-y-1">
+                <div class="font-semibold">IMEI: ${imeiInfo.serial}</div>
+                ${imeiInfo.batteryLevel ? `
+                  <div class="text-green-600 font-medium">
+                    Battery: ${imeiInfo.batteryLevel}%
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            ${specifications && specifications.toLowerCase().includes('color') ? `
+              <div class="text-xs text-gray-700 mb-2">
+                ${specifications}
+              </div>
+            ` : ''}
+            
             <div class="barcode-container">
               <canvas id="barcode-canvas"></canvas>
             </div>
@@ -613,6 +630,23 @@ export function BarcodePrintDialog({
                     <div className="text-sm font-semibold mb-2 leading-tight">
                       {productName}
                     </div>
+                    
+                    {imeiInfo && (
+                      <div className="text-xs text-gray-800 mb-2 space-y-1">
+                        <div className="font-semibold">IMEI: {imeiInfo.serial}</div>
+                        {imeiInfo.batteryLevel && (
+                          <div className="text-green-600 font-medium">
+                            Battery: {imeiInfo.batteryLevel}%
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {specifications && specifications.toLowerCase().includes('color') && (
+                      <div className="text-xs text-gray-700 mb-2">
+                        {specifications}
+                      </div>
+                    )}
                     
                      <div className="my-3 flex justify-center">
                        {barcode ? (
