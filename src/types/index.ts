@@ -8,8 +8,8 @@ export type ID = string;
 export type Timestamp = string; // ISO string
 export type Currency = number;
 
-// User and Authentication - Renamed to avoid conflict with Supabase User type
-export interface AppUser {
+// User and Authentication
+export interface User {
   id: ID;
   email: string;
   username?: string;
@@ -19,7 +19,7 @@ export interface AppUser {
 }
 
 export interface AuthSession {
-  user: AppUser;
+  user: User;
   access_token: string;
   refresh_token: string;
   expires_at: number;
@@ -126,7 +126,7 @@ export interface Sale {
   updated_at: Timestamp;
   // Relations
   client?: Client;
-  salesperson?: AppUser;
+  salesperson?: User;
   items?: SaleItem[];
 }
 
@@ -181,7 +181,7 @@ export interface Repair {
   updated_at: Timestamp;
   // Relations
   client?: Client;
-  technician?: AppUser;
+  technician?: User;
   parts?: RepairPart[];
 }
 
@@ -260,7 +260,7 @@ export interface TableColumn<T> {
 // User role type - inline definition to avoid circular dependency
 export type UserRole = 'admin' | 'manager' | 'inventory_manager' | 'salesperson' | 'technician';
 
-// Re-export the AppUser type with proper role type
-export interface UserWithRole extends Omit<AppUser, 'role'> {
+// Re-export the User type with proper role type
+export interface UserWithRole extends Omit<User, 'role'> {
   role: UserRole;
 }

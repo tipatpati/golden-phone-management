@@ -77,8 +77,8 @@ export const logger = new SecureLogger();
 
 // Re-export the existing log object for backwards compatibility
 export const log = {
-  debug: (message: string, data?: any, context?: string) => logger.debug(message, data, context),
-  info: (message: string, data?: any, context?: string) => logger.info(message, data, context),
-  warn: (message: string, data?: any, context?: string) => logger.warn(message, data, context),
-  error: (message: string, data?: any, context?: string) => logger.error(message, data, context),
+  debug: logger.debug,
+  info: logger.info,
+  warn: logger.warn,
+  error: logger.error
 };
