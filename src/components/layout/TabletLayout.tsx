@@ -26,7 +26,7 @@ export function TabletLayout({ children, userRole }: TabletLayoutProps) {
       />
       
       <div className="flex-1 min-w-0">
-        <header className="sticky top-0 z-40 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
+        <header className="sticky top-0 z-50 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/98 backdrop-blur-lg supports-[backdrop-filter]:bg-background/85 px-3 md:px-4 shadow-sm transition-shadow duration-200">
           {/* Menu Button for all screen sizes */}
           <Button 
             variant="ghost" 
