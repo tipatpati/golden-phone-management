@@ -36,6 +36,9 @@ serve(async (req) => {
     }
 
     console.log('Creating auth user for employee:', email)
+    
+    // Log security event for admin user creation attempt
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
 
     // First check if user already exists in auth system
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
@@ -52,9 +55,26 @@ serve(async (req) => {
     
     if (existingUser) {
       console.log('User already exists with email:', email)
+      
+      // Log failed attempt for security monitoring
+      await supabaseAdmin
+        .from('security_audit_log')
+        .insert({
+          event_type: 'failed_employee_creation',
+          event_data: { 
+            reason: 'email_exists', 
+            email, 
+            client_ip: clientIP 
+          },
+          ip_address: clientIP
+        })
+      
       return new Response(
-        JSON.stringify({ error: 'Un utente con questa email esiste già nel sistema' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: 'Un utente con questa email esiste già nel sistema',
+          details: 'L\'indirizzo email fornito è già registrato nel sistema. Utilizzare un indirizzo email diverso.'
+        }),
+        { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -91,6 +111,20 @@ serve(async (req) => {
     }
 
     console.log('Auth user created successfully:', authUser.user.id)
+    
+    // Log successful employee creation for security audit
+    await supabaseAdmin
+      .from('security_audit_log')
+      .insert({
+        event_type: 'employee_created',
+        event_data: { 
+          created_user_id: authUser.user.id,
+          created_email: authUser.user.email,
+          role,
+          client_ip: clientIP
+        },
+        ip_address: clientIP
+      })
 
     return new Response(
       JSON.stringify({ 

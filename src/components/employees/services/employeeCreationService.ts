@@ -54,7 +54,21 @@ export class EmployeeCreationService {
 
       if (authError || !authResponse?.success) {
         console.error('Failed to create auth user:', authError || authResponse);
-        const errorMessage = authResponse?.error || authError?.message || 'Impossibile creare l\'account di autenticazione';
+        
+        // Extract the specific error message from the response
+        let errorMessage = 'Impossibile creare l\'account di autenticazione';
+        
+        if (authResponse?.error) {
+          errorMessage = authResponse.error;
+        } else if (authError?.message) {
+          // Handle function invocation errors
+          if (authError.message.includes('Edge Function returned a non-2xx status code')) {
+            errorMessage = 'Un utente con questa email esiste già nel sistema';
+          } else {
+            errorMessage = authError.message;
+          }
+        }
+        
         throw new Error(errorMessage);
       }
 

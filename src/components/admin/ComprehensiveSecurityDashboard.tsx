@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, Activity, Database, Users, Settings } from 'lucide-react';
 import { SecurityAuditLog } from '@/components/security/SecurityAuditLog';
 import { SecurityAlerts } from '@/components/security/SecurityAlerts';
+import { SecurityComplianceChecker } from '@/components/security/SecurityComplianceChecker';
 import { DataConsistencyChecker } from '@/components/ui/data-consistency-checker';
 import { EnhancedSecurityProvider, useSecurity } from '@/components/security/EnhancedSecurityProvider';
 
@@ -154,6 +155,7 @@ function DatabaseHealth() {
 function SecurityMonitoring() {
   return (
     <div className="space-y-6">
+      <SecurityComplianceChecker />
       <SecurityAlerts />
       <SecurityAuditLog />
     </div>
