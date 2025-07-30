@@ -16,22 +16,37 @@ export function useAuthState() {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // First try to get the profile
-      const { data: profile, error: profileError } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000);
+      });
+      
+      // First try to get the profile with timeout
+      const profilePromise = supabase
         .from('profiles')
         .select('username, role')
         .eq('id', userId)
         .single();
       
-      if (profileError) {
-        console.error('Error fetching user profile:', profileError);
+      const { data: profile, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
+      
+      if (profileError || !profile) {
+        console.error('Error fetching user profile or no profile found:', profileError);
         // Set default admin role for users without profiles
         setUserRole('admin');
         setInterfaceRole('admin');
         // Get user email from the current session for username
-        const currentSession = await supabase.auth.getSession();
-        const userEmail = currentSession.data.session?.user?.email;
-        setUsername(userEmail?.split('@')[0] || 'user');
+        try {
+          const currentSession = await supabase.auth.getSession();
+          const userEmail = currentSession.data.session?.user?.email;
+          setUsername(userEmail?.split('@')[0] || 'user');
+        } catch (sessionError) {
+          console.error('Error getting session for username:', sessionError);
+          setUsername('admin');
+        }
         return;
       }
       
@@ -39,28 +54,39 @@ export function useAuthState() {
         console.log('User profile fetched:', profile);
         setUserRole(profile.role as UserRole);
         setInterfaceRole(profile.role as UserRole);
-        setUsername(profile.username);
+        setUsername(profile.username || 'user');
         
-        // Check if this user is also an employee
+        // Check if this user is also an employee (with timeout)
         try {
-          const { data: employee } = await supabase
+          const employeeTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Employee fetch timeout')), 5000);
+          });
+          
+          const employeePromise = supabase
             .from('employees')
             .select('first_name, last_name, position')
             .eq('profile_id', userId)
             .maybeSingle();
+          
+          const { data: employee } = await Promise.race([
+            employeePromise,
+            employeeTimeoutPromise
+          ]) as any;
           
           if (employee) {
             console.log('User is also an employee:', employee);
             // Could set additional employee-specific data here if needed
           }
         } catch (error) {
-          console.log('User is not an employee or error fetching employee data');
+          console.log('User is not an employee or error fetching employee data:', error);
         }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setUserRole('admin'); // Fallback
+      // Fallback to admin role on any error
+      setUserRole('admin');
       setInterfaceRole('admin');
+      setUsername('admin');
     }
   };
 
@@ -68,13 +94,17 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Fallback timeout to prevent infinite loading
+    // Fallback timeout to prevent infinite loading - reduced to 3 seconds
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
         console.warn('Auth initialization timeout, forcing initialization');
+        // Clear any problematic state and force initialization
+        setUserRole('admin');
+        setInterfaceRole('admin');
+        setUsername('admin');
         setIsInitialized(true);
       }
-    }, 5000);
+    }, 3000);
 
     const cleanup = () => {
       mounted = false;
