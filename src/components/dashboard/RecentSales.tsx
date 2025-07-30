@@ -26,14 +26,14 @@ export function RecentSales() {
   const recentSales = allSales.slice(0, 5);
 
   const getClientName = (client: any) => {
-    if (!client) return "Walk-in Customer";
+    if (!client) return "Cliente Occasionale";
     return client.type === "business" 
       ? client.company_name 
       : `${client.first_name} ${client.last_name}`;
   };
 
   const getClientEmail = (client: any) => {
-    return client?.email || "No email provided";
+    return client?.email || "Nessuna email fornita";
   };
 
   const getClientInitials = (clientName: string) => {
@@ -44,8 +44,8 @@ export function RecentSales() {
     return (
     <Card className="col-span-1 lg:col-span-2 border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Recent Sales</CardTitle>
-        <CardDescription className="text-xs sm:text-sm">Loading recent sales...</CardDescription>
+        <CardTitle className="text-base sm:text-lg">Vendite Recenti</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Caricamento vendite recenti...</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3 sm:space-y-4">
@@ -71,9 +71,9 @@ export function RecentSales() {
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Recent Sales</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Vendite Recenti</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {allSales.length > 0 ? `You have ${allSales.length} sales total` : "No sales yet"}
+          {allSales.length > 0 ? `Hai ${allSales.length} vendite totali` : "Nessuna vendita ancora"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -114,7 +114,7 @@ export function RecentSales() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">No sales yet. Create your first sale!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna vendita ancora. Crea la tua prima vendita!</p>
           </div>
         )}
       </CardContent>

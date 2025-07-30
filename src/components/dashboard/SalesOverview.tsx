@@ -13,11 +13,11 @@ import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 const chartConfig = {
   revenue: {
-    label: "Revenue",
+    label: "Ricavi",
     color: "hsl(221, 83%, 53%)"
   },
   sales: {
-    label: "Sales",
+    label: "Vendite",
     color: "hsl(142, 76%, 36%)"
   }
 };
@@ -106,7 +106,7 @@ export const SalesOverview = React.memo(() => {
       period: timePeriod === 'daily' ? date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric'
-      }) : timePeriod === 'weekly' ? `Week ${Math.ceil(date.getDate() / 7)}` : date.toLocaleDateString('en-US', {
+      }) : timePeriod === 'weekly' ? `Settimana ${Math.ceil(date.getDate() / 7)}` : date.toLocaleDateString('it-IT', {
         month: 'short'
       }),
       revenue: revenue,
@@ -150,12 +150,12 @@ export const SalesOverview = React.memo(() => {
     icon: Wrench,
     color: "text-orange-600"
   }, {
-    title: "Low Stock Items",
+    title: "Articoli con Scorte Basse",
     value: lowStockItems.toString(),
     icon: Package,
     color: "text-red-600"
   }, {
-    title: "New Clients",
+    title: "Nuovi Clienti",
     value: newClientsThisMonth.toString(),
     icon: Users,
     color: "text-green-600"
@@ -205,7 +205,7 @@ export const SalesOverview = React.memo(() => {
       {/* Time Period Selector */}
       <div className="flex flex-wrap gap-2">
         {(['daily', 'weekly', 'monthly'] as const).map(period => <button key={period} onClick={() => setTimePeriod(period)} className={`px-3 py-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all ${timePeriod === period ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-            {period.charAt(0).toUpperCase() + period.slice(1)}
+            {period === 'daily' ? 'Giornaliero' : period === 'weekly' ? 'Settimanale' : 'Mensile'}
           </button>)}
       </div>
 
@@ -213,39 +213,39 @@ export const SalesOverview = React.memo(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card className="card-glow border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">Today's Sales</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">Vendite di Oggi</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-blue-900">${todayRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-blue-600">
               <TrendingUp className="mr-1 h-3 w-3" />
-              <span>{todaySales.length} transactions</span>
+              <span>{todaySales.length} transazioni</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-green-700">This Week</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium text-green-700">Questa Settimana</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-green-900">${thisWeekRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-green-600">
               <TrendingUp className="mr-1 h-3 w-3" />
-              <span>{thisWeekSales.length} transactions</span>
+              <span>{thisWeekSales.length} transazioni</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 sm:col-span-2 lg:col-span-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-purple-700">This Month</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium text-purple-700">Questo Mese</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-purple-900">${thisMonthRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-purple-600">
               <TrendingUp className="mr-1 h-3 w-3" />
-              <span>{thisMonthSales.length} transactions</span>
+              <span>{thisMonthSales.length} transazioni</span>
             </div>
           </CardContent>
         </Card>
@@ -254,9 +254,9 @@ export const SalesOverview = React.memo(() => {
       {/* Revenue Chart */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-lg">Revenue Trend</CardTitle>
+          <CardTitle className="text-lg">Andamento Ricavi</CardTitle>
           <CardDescription>
-            {timePeriod === 'daily' ? 'Last 7 days' : timePeriod === 'weekly' ? 'Last 4 weeks' : 'Last 12 months'}
+            {timePeriod === 'daily' ? 'Ultimi 7 giorni' : timePeriod === 'weekly' ? 'Ultime 4 settimane' : 'Ultimi 12 mesi'}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 pr-6">
@@ -287,7 +287,7 @@ export const SalesOverview = React.memo(() => {
         {/* Quick Stats */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Quick Stats</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Statistiche Rapide</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
             {quickStats.map((stat, index) => <div key={index} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
@@ -305,19 +305,19 @@ export const SalesOverview = React.memo(() => {
         {/* Top Products */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Top Products This Month</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Prodotti Più Venduti Questo Mese</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
             {topProducts.length > 0 ? topProducts.map((product, index) => <div key={index} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm sm:text-base truncate">{product.name}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">{product.sold} units sold</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{product.sold} unità vendute</div>
                 </div>
                 <div className="text-right ml-2">
                   <div className="font-medium text-sm sm:text-base">${product.revenue.toFixed(2)}</div>
                 </div>
               </div>) : <div className="text-center py-6 sm:py-8 text-muted-foreground">
-                <div className="text-xs sm:text-sm">No sales data available yet</div>
+                <div className="text-xs sm:text-sm">Nessun dato di vendita disponibile</div>
               </div>}
           </CardContent>
         </Card>

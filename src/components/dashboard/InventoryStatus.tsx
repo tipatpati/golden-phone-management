@@ -29,13 +29,13 @@ export function InventoryStatus() {
 
   const getStockLevel = (current: number, threshold: number) => {
     const percentage = threshold > 0 ? (current / threshold) * 100 : 100;
-    if (percentage <= 20) return { color: "bg-red-500", level: "Critical", bgColor: "bg-red-100" };
+    if (percentage <= 20) return { color: "bg-red-500", level: "Critica", bgColor: "bg-red-100" };
     if (percentage <= 50) return { color: "bg-yellow-500", level: "Bassa", bgColor: "bg-yellow-100" };
-    return { color: "bg-green-500", level: "Good", bgColor: "bg-green-100" };
+    return { color: "bg-green-500", level: "Buona", bgColor: "bg-green-100" };
   };
 
   const getStockBadgeVariant = (level: string) => {
-    if (level === "Critical") return "destructive";
+    if (level === "Critica") return "destructive";
     return "outline";
   };
 
@@ -44,7 +44,7 @@ export function InventoryStatus() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base sm:text-lg">Articoli con Scorte Basse</CardTitle>
         <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">
-          Order Stock
+          Ordina Scorte
         </Button>
       </CardHeader>
       <CardContent>
@@ -66,7 +66,7 @@ export function InventoryStatus() {
                       </p>
                     </div>
                     <Badge variant={getStockBadgeVariant(stockStatus.level)} className="text-xs flex-shrink-0 ml-2">
-                      {item.stock} left
+                      {item.stock} rimasti
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function InventoryStatus() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">All items are well stocked!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Tutti gli articoli sono ben forniti!</p>
           </div>
         )}
       </CardContent>
