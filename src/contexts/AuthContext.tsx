@@ -1,23 +1,13 @@
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext } from "react";
 import { AuthContextType } from "./auth/types";
 import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
-import { useSessionSecurity } from '@/hooks/useSessionSecurity';
-import { usePeriodicReminder } from '@/hooks/usePeriodicReminder';
-import { logSessionActivity } from '@/utils/securityAudit';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
-  
-  // Disable custom session security to rely on Supabase's built-in token management
-  // const { isSessionValid, resetActivity } = useSessionSecurity({
-  //   timeoutMinutes: 1440, // 24 hours
-  //   maxIdleMinutes: 720,  // 12 hours - very long idle time
-  //   detectConcurrentSessions: false // Disabled
-  // });
   
   const authActions = createAuthActions({
     user: authState.user,
@@ -28,22 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession: authState.setSession
   });
 
-  const isLoggedIn = !!authState.session || !!authState.user;
-
-  // Set up 60-minute reminder system
-  usePeriodicReminder({
-    intervalMinutes: 60,
-    title: "Work Reminder",
-    message: "You've been working for an hour. Consider saving your progress and taking a short break!",
-    enabled: isLoggedIn
-  });
-
-  // Log session activities
-  useEffect(() => {
-    if (authState.user) {
-      logSessionActivity('login');
-    }
-  }, [authState.user]);
+  const isLoggedIn = !!authState.session;
 
   return (
     <AuthContext.Provider value={{ 
