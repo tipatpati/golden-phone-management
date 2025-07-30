@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
-import type { BaseEntity } from './BaseApiService';
+import type { BaseEntity, ApiError, SearchableFields } from './BaseApiService';
 
 export interface BaseReactQueryOptions {
   enableToasts?: boolean;
@@ -9,7 +9,10 @@ export interface BaseReactQueryOptions {
   optimistic?: boolean;
 }
 
-export class BaseReactQueryService<T extends BaseEntity, TCreate = Omit<T, keyof BaseEntity>> {
+export class BaseReactQueryService<
+  T extends BaseEntity, 
+  TCreate = Omit<T, keyof BaseEntity>
+> {
   constructor(
     protected apiService: any,
     protected queryKey: string,
@@ -178,7 +181,7 @@ export class BaseReactQueryService<T extends BaseEntity, TCreate = Omit<T, keyof
   // Helper methods
   protected getSearchFields(): string[] {
     // Override in subclasses to define search fields
-    return ['name', 'title', 'description'];
+    return ['name'];
   }
 
   // Cache utilities

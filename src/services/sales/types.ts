@@ -10,8 +10,8 @@ export type Sale = {
   total_amount: number;
   notes?: string;
   sale_date: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
   client?: {
     id: string;
     type: string;

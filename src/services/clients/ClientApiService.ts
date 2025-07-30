@@ -1,4 +1,4 @@
-import { BaseApiService } from '../core/BaseApiService';
+import { BaseApiService, type SearchableFields } from '../core/BaseApiService';
 import type { Client, CreateClientData } from './types';
 
 export class ClientApiService extends BaseApiService<Client, CreateClientData> {

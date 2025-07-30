@@ -13,6 +13,15 @@ export interface SearchFilters {
   offset?: number;
   orderBy?: string;
   ascending?: boolean;
+  filters?: Record<string, any>;
+}
+
+export type SearchableFields<T> = Array<keyof T>;
+
+export interface ApiError extends Error {
+  code?: string;
+  status?: number;
+  details?: Record<string, any>;
 }
 
 export interface PaginatedResponse<T> {
@@ -33,8 +42,13 @@ export abstract class BaseApiService<T extends BaseEntity, TCreate = Omit<T, key
   }
 
   protected handleError(operation: string, error: PostgrestError): never {
-    console.error(`Error ${operation} ${this.tableName}:`, error);
-    throw new Error(error.message || `Failed to ${operation} ${this.tableName}`);
+    const apiError: ApiError = new Error(error.message || `Failed to ${operation} ${this.tableName}`) as ApiError;
+    apiError.code = error.code;
+    apiError.status = 400; // Default status
+    apiError.details = error.details ? { details: error.details } : {};
+    
+    console.error(`Error ${operation} ${this.tableName}:`, apiError);
+    throw apiError;
   }
 
   protected buildSearchQuery(searchTerm: string, searchFields: string[]) {
@@ -151,17 +165,17 @@ export abstract class BaseApiService<T extends BaseEntity, TCreate = Omit<T, key
     if (!searchTerm) return this.getAll();
     
     console.log(`Searching ${this.tableName} with term:`, searchTerm);
-    
+    const searchFieldStrings = searchFields;
     const query = this.supabase
       .from(this.tableName as any)
       .select(this.selectQuery)
-      .or(this.buildSearchQuery(searchTerm, searchFields))
+      .or(this.buildSearchQuery(searchTerm, searchFieldStrings))
       .order('created_at', { ascending: false });
     
     return this.performQuery(query, 'searching');
   }
 
-  async count(): Promise<number> {
+  async count(filters?: Record<string, any>): Promise<number> {
     const { count, error } = await this.supabase
       .from(this.tableName as any)
       .select('*', { count: 'exact', head: true });
