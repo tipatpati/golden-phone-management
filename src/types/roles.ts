@@ -50,6 +50,17 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     ],
     permissions: ["inventory", "dashboard"]
   },
+  technician: {
+    name: "Tecnico",
+    description: "Gestisce riparazioni e assistenza tecnica",
+    features: [
+      "gestione_riparazioni",
+      "gestione_clienti",
+      "consultazione_inventario",
+      "dashboard_riparazioni"
+    ],
+    permissions: ["repairs", "clients", "dashboard"]
+  },
   salesperson: {
     name: "Addetto Vendite",
     description: "Gestisce vendite e interazioni con i clienti",

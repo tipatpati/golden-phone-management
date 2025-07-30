@@ -694,11 +694,55 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_add_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      admin_remove_user_role: {
+        Args: {
+          target_user_id: string
+          remove_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       admin_update_user_role: {
         Args: {
           target_user_id: string
@@ -722,13 +766,29 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       validate_product_stock: {
         Args: { product_items: Json }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "inventory_manager" | "salesperson"
+      app_role:
+        | "admin"
+        | "manager"
+        | "inventory_manager"
+        | "salesperson"
+        | "technician"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -856,7 +916,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "inventory_manager", "salesperson"],
+      app_role: [
+        "admin",
+        "manager",
+        "inventory_manager",
+        "salesperson",
+        "technician",
+      ],
     },
   },
 } as const
