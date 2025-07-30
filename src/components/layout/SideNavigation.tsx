@@ -99,8 +99,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
   const menuIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
   const setMenuOpen = setIsOpen || setInternalIsOpen;
   
-  // Treat tablet like mobile when overlay navigation is used
-  const shouldBehaveLikeMobile = isMobile || (isTablet && isOpen !== undefined);
+  // Treat both mobile and tablet like mobile when overlay navigation is used
+  const shouldBehaveLikeMobile = isMobile || isTablet || (isOpen !== undefined);
 
   const filteredNavItems = navItems.filter((item) =>
     userRole && item.permission.includes(userRole)

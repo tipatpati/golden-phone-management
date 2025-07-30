@@ -18,16 +18,25 @@ export function TabletLayout({ children, userRole }: TabletLayoutProps) {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const isDesktop = useIsDesktop();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTabletMenuOpen, setIsTabletMenuOpen] = useState(false);
   
-  // Hide sidebar on tablet, show on desktop only, collapsed on mobile
-  const shouldShowSidebar = !isTablet;
-  const defaultOpen = isDesktop && !isMobile;
+  // Only show sidebar on desktop
+  const shouldShowSidebar = isDesktop;
+  const defaultOpen = isDesktop;
   
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <div className="flex min-h-screen w-full bg-background overflow-hidden">
         {shouldShowSidebar && <TabletSidebar userRole={userRole} />}
+        
+        {/* Mobile Navigation Overlay */}
+        {isMobile && (
+          <SideNavigation 
+            isOpen={isMobileMenuOpen} 
+            setIsOpen={setIsMobileMenuOpen} 
+          />
+        )}
         
         {/* Tablet Navigation Overlay */}
         {isTablet && (
@@ -39,6 +48,21 @@ export function TabletLayout({ children, userRole }: TabletLayoutProps) {
         
         <SidebarInset className="flex-1 min-w-0">
           <header className="sticky top-0 z-40 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
+            {/* Mobile Menu Button */}
+            {isMobile && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="h-8 w-8"
+                >
+                  {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                </Button>
+                <Separator orientation="vertical" className="h-4" />
+              </>
+            )}
+            
             {/* Tablet Menu Button */}
             {isTablet && (
               <>
