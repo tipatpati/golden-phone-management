@@ -71,6 +71,21 @@ export const supabaseSalesApi = {
   async createSale(saleData: CreateSaleData) {
     console.log('Creating sale:', saleData);
     
+    // Validate stock availability first
+    const productItems = saleData.sale_items.map(item => ({
+      product_id: item.product_id,
+      quantity: item.quantity
+    }));
+    
+    const { error: stockError } = await supabase.rpc('validate_product_stock', {
+      product_items: productItems
+    });
+    
+    if (stockError) {
+      console.error('Stock validation error:', stockError);
+      throw new Error(stockError.message || 'Insufficient stock for one or more products');
+    }
+    
     // Calculate totals
     const subtotal = saleData.sale_items.reduce((sum, item) => 
       sum + (item.unit_price * item.quantity), 0
@@ -104,7 +119,7 @@ export const supabaseSalesApi = {
       throw saleError;
     }
     
-    // Create sale items
+    // Create sale items - this will automatically update stock via trigger
     const saleItems = saleData.sale_items.map(item => ({
       sale_id: sale.id,
       product_id: item.product_id,
@@ -120,23 +135,9 @@ export const supabaseSalesApi = {
     
     if (itemsError) {
       console.error('Error creating sale items:', itemsError);
+      // If sale items fail, we should delete the sale to maintain consistency
+      await supabase.from('sales').delete().eq('id', sale.id);
       throw itemsError;
-    }
-    
-    // Update product stock
-    for (const item of saleData.sale_items) {
-      const { data: product } = await supabase
-        .from('products')
-        .select('stock')
-        .eq('id', item.product_id)
-        .single();
-      
-      if (product) {
-        await supabase
-          .from('products')
-          .update({ stock: product.stock - item.quantity })
-          .eq('id', item.product_id);
-      }
     }
     
     // Fetch the complete sale with items for receipt
@@ -165,32 +166,122 @@ export const supabaseSalesApi = {
       return sale;
     }
     
-    console.log('Sale created successfully:', completeSale);
+    console.log('Sale created successfully with stock updates:', completeSale);
     return completeSale;
   },
 
   async updateSale(id: string, saleData: Partial<CreateSaleData>) {
     console.log('Updating sale:', id, saleData);
     
-    const { data, error } = await supabase
-      .from('sales')
-      .update(saleData)
-      .eq('id', id)
-      .select('*')
-      .single();
-    
-    if (error) {
-      console.error('Error updating sale:', error);
-      throw error;
+    // If sale items are being updated, we need to handle stock changes
+    if (saleData.sale_items) {
+      // Validate stock for new quantities
+      const productItems = saleData.sale_items.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity
+      }));
+      
+      const { error: stockError } = await supabase.rpc('validate_product_stock', {
+        product_items: productItems
+      });
+      
+      if (stockError) {
+        console.error('Stock validation error:', stockError);
+        throw new Error(stockError.message || 'Insufficient stock for one or more products');
+      }
+      
+      // Delete existing sale items (this will restore stock via trigger)
+      const { error: deleteError } = await supabase
+        .from('sale_items')
+        .delete()
+        .eq('sale_id', id);
+      
+      if (deleteError) {
+        console.error('Error deleting old sale items:', deleteError);
+        throw deleteError;
+      }
+      
+      // Create new sale items (this will update stock via trigger)
+      const saleItems = saleData.sale_items.map(item => ({
+        sale_id: id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.unit_price * item.quantity,
+        serial_number: item.serial_number
+      }));
+      
+      const { error: itemsError } = await supabase
+        .from('sale_items')
+        .insert(saleItems);
+      
+      if (itemsError) {
+        console.error('Error creating new sale items:', itemsError);
+        throw itemsError;
+      }
+      
+      // Recalculate totals
+      const subtotal = saleData.sale_items.reduce((sum, item) => 
+        sum + (item.unit_price * item.quantity), 0
+      );
+      const tax_amount = subtotal * 0.1;
+      const total_amount = subtotal + tax_amount;
+      
+      // Update sale with new totals
+      const { data, error } = await supabase
+        .from('sales')
+        .update({
+          ...saleData,
+          subtotal,
+          tax_amount,
+          total_amount,
+          sale_items: undefined // Remove sale_items from update object
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+      
+      if (error) {
+        console.error('Error updating sale:', error);
+        throw error;
+      }
+      
+      console.log('Sale updated successfully with stock changes:', data);
+      return data;
+    } else {
+      // Simple update without item changes
+      const { data, error } = await supabase
+        .from('sales')
+        .update(saleData)
+        .eq('id', id)
+        .select('*')
+        .single();
+      
+      if (error) {
+        console.error('Error updating sale:', error);
+        throw error;
+      }
+      
+      console.log('Sale updated successfully:', data);
+      return data;
     }
-    
-    console.log('Sale updated successfully:', data);
-    return data;
   },
 
   async deleteSale(id: string) {
     console.log('Deleting sale:', id);
     
+    // Delete sale items first (this will restore stock via trigger)
+    const { error: itemsError } = await supabase
+      .from('sale_items')
+      .delete()
+      .eq('sale_id', id);
+    
+    if (itemsError) {
+      console.error('Error deleting sale items:', itemsError);
+      throw itemsError;
+    }
+    
+    // Delete the sale
     const { error } = await supabase
       .from('sales')
       .delete()
@@ -201,7 +292,7 @@ export const supabaseSalesApi = {
       throw error;
     }
     
-    console.log('Sale deleted successfully');
+    console.log('Sale deleted successfully with stock restoration');
     return true;
   }
 };
