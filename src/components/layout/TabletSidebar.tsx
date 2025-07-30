@@ -117,16 +117,19 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
   };
 
   return (
-    <Sidebar className="border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-3">
-          <Logo className="h-8 w-8" />
+    <Sidebar 
+      collapsible="icon"
+      className="border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
+      <SidebarHeader className="border-b p-3 md:p-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Logo className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0" />
           {state === "expanded" && (
-            <div className="flex flex-col">
-              <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-base md:text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
                 GOLDEN PHONE
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground truncate">
                 Sistema di Gestione
               </span>
             </div>
@@ -134,22 +137,28 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 md:px-3">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigazione</SidebarGroupLabel>
+          {state === "expanded" && (
+            <SidebarGroupLabel className="px-2 py-2 text-xs font-medium">
+              Navigazione
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {filteredNavItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton 
                     asChild 
                     isActive={isActive(item.url)}
-                    size="lg"
-                    className="h-12 text-base font-medium"
+                    className="h-11 md:h-12 px-3 text-sm md:text-base font-medium rounded-lg transition-all duration-200 hover:bg-accent/50 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground touch-target"
+                    tooltip={state === "collapsed" ? item.title : undefined}
                   >
-                    <NavLink to={item.url}>
-                      <item.icon className="h-6 w-6" />
-                      <span>{item.title}</span>
+                    <NavLink to={item.url} className="flex items-center gap-3 w-full">
+                      <item.icon className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+                      {state === "expanded" && (
+                        <span className="truncate">{item.title}</span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -159,10 +168,10 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-medium">
+      <SidebarFooter className="border-t p-3 md:p-4">
+        <div className="flex items-center gap-2 md:gap-3 mb-3">
+          <Avatar className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0">
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-medium text-sm">
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
@@ -172,7 +181,7 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
               <p className="text-sm font-medium truncate">
                 {username || user?.email}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground truncate">
                 {ROLE_CONFIGS[userRole]?.name}
               </p>
             </div>
@@ -183,12 +192,11 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
         
         <Button
           variant="ghost"
-          size="lg"
           onClick={handleLogout}
-          className="w-full justify-start h-12 text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="w-full justify-start h-10 md:h-11 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 transition-colors touch-target"
         >
-          <LogOut className="h-5 w-5" />
-          {state === "expanded" && <span className="ml-2">Disconnetti</span>}
+          <LogOut className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+          {state === "expanded" && <span className="ml-2 text-sm">Disconnetti</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>

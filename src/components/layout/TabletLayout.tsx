@@ -4,6 +4,7 @@ import { TabletSidebar } from "./TabletSidebar";
 import { UserRole } from "@/types/roles";
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TabletLayoutProps {
   children: React.ReactNode;
@@ -11,34 +12,37 @@ interface TabletLayoutProps {
 }
 
 export function TabletLayout({ children, userRole }: TabletLayoutProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background">
+    <SidebarProvider defaultOpen={!isMobile}>
+      <div className="flex min-h-screen w-full bg-background overflow-hidden">
         <TabletSidebar userRole={userRole} />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
+        <SidebarInset className="flex-1 min-w-0">
+          <header className="sticky top-0 z-40 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
+            <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9" />
+            <Separator orientation="vertical" className="h-4" />
+            <Breadcrumb className="hidden md:flex">
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/">
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/" className="text-sm">
                     Dashboard
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Golden Phone Management</BreadcrumbPage>
+                  <BreadcrumbPage className="text-sm font-medium">Golden Phone Management</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-              <main className="p-4 md:p-6 lg:p-8">
+          
+          <div className="flex-1 overflow-auto">
+            <main className="container mx-auto max-w-none p-3 md:p-4 lg:p-6 xl:p-8">
+              <div className="w-full max-w-none overflow-hidden">
                 {children}
-              </main>
-            </div>
+              </div>
+            </main>
           </div>
         </SidebarInset>
       </div>
