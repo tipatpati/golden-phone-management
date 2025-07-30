@@ -1,9 +1,11 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Building, User, Phone, Mail, Edit2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building, User, Phone, Mail, Edit2, Trash2, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import { type Client } from "@/services/useClients";
+import { ClientDetailsDialog } from "./ClientDetailsDialog";
 import { format } from "date-fns";
 
 interface ClientsListProps {
@@ -112,19 +114,27 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
   ];
 
   // Define actions
-  const actions = onEdit && onDelete ? [
+  const actions = [
     {
-      icon: <Edit2 className="h-4 w-4" />,
-      label: "Edit",
-      onClick: onEdit
+      icon: <Eye className="h-4 w-4" />,
+      label: "View",
+      onClick: () => {}, // Required but not used when renderCustom is provided
+      renderCustom: (client: Client) => <ClientDetailsDialog client={client} />
     },
-    {
-      icon: <Trash2 className="h-4 w-4" />,
-      label: "Delete",
-      onClick: handleDeleteClient,
-      variant: "destructive" as const
-    }
-  ] : [];
+    ...(onEdit && onDelete ? [
+      {
+        icon: <Edit2 className="h-4 w-4" />,
+        label: "Edit",
+        onClick: onEdit
+      },
+      {
+        icon: <Trash2 className="h-4 w-4" />,
+        label: "Delete",
+        onClick: handleDeleteClient,
+        variant: "destructive" as const
+      }
+    ] : [])
+  ];
 
   return (
     <>
@@ -153,6 +163,20 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
               text: client.status.charAt(0).toUpperCase() + client.status.slice(1),
               variant: getStatusColor(client.status) as any
             }}
+            headerActions={
+              <ClientDetailsDialog 
+                client={client} 
+                trigger={
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary border border-border/50 bg-background/80 backdrop-blur-sm shadow-sm"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                }
+              />
+            }
             fields={[
               {
                 label: "Type",
@@ -183,20 +207,22 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
                 value: format(new Date(client.created_at!), "MMM dd, yyyy")
               }
             ]}
-            actions={onEdit && onDelete ? [
-              {
-                icon: <Edit2 className="h-3 w-3 mr-1" />,
-                label: "Edit",
-                onClick: () => onEdit(client)
-              },
-              {
-                icon: <Trash2 className="h-3 w-3 mr-1" />,
-                label: "Delete",
-                onClick: () => handleDeleteClient(client),
-                variant: "outline",
-                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              }
-            ] : []}
+            actions={[
+              ...(onEdit && onDelete ? [
+                {
+                  icon: <Edit2 className="h-3 w-3 mr-1" />,
+                  label: "Edit",
+                  onClick: () => onEdit(client)
+                },
+                {
+                  icon: <Trash2 className="h-3 w-3 mr-1" />,
+                  label: "Delete",
+                  onClick: () => handleDeleteClient(client),
+                  variant: "outline" as const,
+                  className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                }
+              ] : [])
+            ]}
           />
         ))}
       </div>
