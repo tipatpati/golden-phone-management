@@ -101,73 +101,150 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
       
       <div className="space-y-3">
         {entries.map((entry, index) => (
-          <div key={entry.id} className="grid grid-cols-12 gap-2 items-end p-3 border rounded-lg">
-            <div className="col-span-1 text-sm font-medium text-muted-foreground">
-              #{index + 1}
+          <div key={entry.id} className="p-3 border rounded-lg space-y-3 lg:space-y-0">
+            {/* Mobile/Tablet Layout: Stacked */}
+            <div className="lg:hidden space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Unit #{index + 1}
+                </span>
+                {entries.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeEntry(entry.id)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor={`serial-mobile-${entry.id}`} className="text-xs">
+                    IMEI/Serial Number
+                  </Label>
+                  <Input
+                    id={`serial-mobile-${entry.id}`}
+                    value={entry.serial}
+                    onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
+                    placeholder="352908764123456"
+                    className="text-sm"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs">
+                      Battery %
+                    </Label>
+                    <Input
+                      id={`battery-mobile-${entry.id}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={entry.batteryLevel}
+                      onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
+                      placeholder="85"
+                      className="text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`color-mobile-${entry.id}`} className="text-xs">
+                      Color
+                    </Label>
+                    <Select 
+                      value={entry.color} 
+                      onValueChange={(value) => updateEntry(entry.id, 'color', value)}
+                    >
+                      <SelectTrigger className="text-sm">
+                        <SelectValue placeholder="Select color" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {COLOR_OPTIONS.map(color => (
+                          <SelectItem key={color} value={color} className="hover:bg-muted">
+                            {color}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="col-span-5">
-              <Label htmlFor={`serial-${entry.id}`} className="text-xs">
-                IMEI/Serial Number
-              </Label>
-              <Input
-                id={`serial-${entry.id}`}
-                value={entry.serial}
-                onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
-                placeholder="352908764123456"
-                className="text-sm"
-              />
-            </div>
-            
-            <div className="col-span-2">
-              <Label htmlFor={`battery-${entry.id}`} className="text-xs">
-                Battery %
-              </Label>
-              <Input
-                id={`battery-${entry.id}`}
-                type="number"
-                min="0"
-                max="100"
-                value={entry.batteryLevel}
-                onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
-                placeholder="85"
-                className="text-sm"
-              />
-            </div>
-            
-            <div className="col-span-3">
-              <Label htmlFor={`color-${entry.id}`} className="text-xs">
-                Color
-              </Label>
-              <Select 
-                value={entry.color} 
-                onValueChange={(value) => updateEntry(entry.id, 'color', value)}
-              >
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Select color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COLOR_OPTIONS.map(color => (
-                    <SelectItem key={color} value={color}>
-                      {color}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="col-span-1">
-              {entries.length > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => removeEntry(entry.id)}
-                  className="h-8 w-8 p-0"
+
+            {/* Desktop Layout: Grid */}
+            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-end">
+              <div className="col-span-1 text-sm font-medium text-muted-foreground">
+                #{index + 1}
+              </div>
+              
+              <div className="col-span-5">
+                <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
+                  IMEI/Serial Number
+                </Label>
+                <Input
+                  id={`serial-desktop-${entry.id}`}
+                  value={entry.serial}
+                  onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
+                  placeholder="352908764123456"
+                  className="text-sm"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs">
+                  Battery %
+                </Label>
+                <Input
+                  id={`battery-desktop-${entry.id}`}
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={entry.batteryLevel}
+                  onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
+                  placeholder="85"
+                  className="text-sm"
+                />
+              </div>
+              
+              <div className="col-span-3">
+                <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs">
+                  Color
+                </Label>
+                <Select 
+                  value={entry.color} 
+                  onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                 >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              )}
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Select color" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {COLOR_OPTIONS.map(color => (
+                      <SelectItem key={color} value={color} className="hover:bg-muted">
+                        {color}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="col-span-1">
+                {entries.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeEntry(entry.id)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}
