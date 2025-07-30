@@ -7,6 +7,9 @@ import { format } from "date-fns";
 
 export function RecentSales() {
   const { data: allSales = [], isLoading } = useSales();
+  
+  // Type cast the data array
+  const salesArray = (allSales as any[]) || [];
 
   // Set up real-time subscription for sales updates with unique channel name
   useEffect(() => {
@@ -23,7 +26,7 @@ export function RecentSales() {
   }, []);
   
   // Get the 5 most recent sales
-  const recentSales = allSales.slice(0, 5);
+  const recentSales = salesArray.slice(0, 5);
 
   const getClientName = (client: any) => {
     if (!client) return "Cliente Occasionale";
@@ -73,7 +76,7 @@ export function RecentSales() {
       <CardHeader>
         <CardTitle className="text-base sm:text-lg">Vendite Recenti</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {allSales.length > 0 ? `Hai ${allSales.length} vendite totali` : "Nessuna vendita ancora"}
+          {salesArray.length > 0 ? `Hai ${salesArray.length} vendite totali` : "Nessuna vendita ancora"}
         </CardDescription>
       </CardHeader>
       <CardContent>

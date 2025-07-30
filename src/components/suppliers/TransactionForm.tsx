@@ -129,7 +129,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
               <SelectValue placeholder="Select supplier" />
             </SelectTrigger>
             <SelectContent className="bg-background border shadow-lg">
-              {suppliers?.map((supplier) => (
+              {((suppliers as any[]) || []).map((supplier) => (
                 <SelectItem key={supplier.id} value={supplier.id}>
                   {supplier.name}
                 </SelectItem>

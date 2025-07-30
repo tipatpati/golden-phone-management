@@ -18,7 +18,9 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog();
   const { data: suppliers, isLoading } = useSuppliers();
 
-  const filteredSuppliers = suppliers?.filter((supplier) =>
+  // Type cast the data array
+  const suppliersArray = (suppliers as any[]) || [];
+  const filteredSuppliers = suppliersArray.filter((supplier) =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())

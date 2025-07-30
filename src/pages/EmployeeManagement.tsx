@@ -21,7 +21,9 @@ export default function EmployeeManagement() {
 
   const { data: employees = [], isLoading, refetch } = useEmployees();
 
-  const filteredEmployees = employees.filter((employee) => {
+  // Type cast the data array
+  const employeesArray = (employees as any[]) || [];
+  const filteredEmployees = employeesArray.filter((employee) => {
     const matchesSearch = 
       employee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

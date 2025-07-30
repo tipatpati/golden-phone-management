@@ -14,6 +14,9 @@ interface RepairStatsCardsProps {
 
 export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts }) => {
   const { data: allRepairs = [] } = useRepairs();
+  
+  // Type cast the data array
+  const repairsArray = (allRepairs as any[]) || [];
 
   // Set up real-time subscription with unique channel name
   useEffect(() => {
@@ -33,10 +36,10 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
   const today = new Date().toISOString().split('T')[0];
   
   const realStatusCounts = {
-    total: allRepairs.length,
-    in_progress: allRepairs.filter(repair => repair.status === 'in_progress').length,
-    awaiting_parts: allRepairs.filter(repair => repair.status === 'awaiting_parts').length,
-    completed_today: allRepairs.filter(repair => 
+    total: repairsArray.length,
+    in_progress: repairsArray.filter(repair => repair.status === 'in_progress').length,
+    awaiting_parts: repairsArray.filter(repair => repair.status === 'awaiting_parts').length,
+    completed_today: repairsArray.filter(repair => 
       repair.status === 'completed' && 
       repair.actual_completion_date?.startsWith(today)
     ).length,

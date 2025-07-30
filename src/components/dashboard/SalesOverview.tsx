@@ -39,6 +39,12 @@ export const SalesOverview = React.memo(() => {
     data: allClients = [],
     isLoading: clientsLoading
   } = useClients();
+  
+  // Type cast the data arrays
+  const salesArray = (allSales as any[]) || [];
+  const repairsArray = (allRepairs as any[]) || [];
+  const productsArray = (allProducts as any[]) || [];
+  const clientsArray = (allClients as any[]) || [];
   const [timePeriod, setTimePeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const isLoading = salesLoading || repairsLoading || productsLoading || clientsLoading;
   if (salesError) {
@@ -87,7 +93,7 @@ export const SalesOverview = React.memo(() => {
   };
   const chartData = getDateRange(timePeriod).map(date => {
     const dateStr = date.toISOString().split('T')[0];
-    const periodSales = allSales.filter(sale => {
+    const periodSales = salesArray.filter(sale => {
       if (timePeriod === 'daily') {
         return sale.sale_date.startsWith(dateStr);
       } else if (timePeriod === 'weekly') {
@@ -116,13 +122,13 @@ export const SalesOverview = React.memo(() => {
 
   // Calculate today's data
   const todayStr = today.toISOString().split('T')[0];
-  const todaySales = allSales.filter(sale => sale.sale_date.startsWith(todayStr));
+  const todaySales = salesArray.filter(sale => sale.sale_date.startsWith(todayStr));
   const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
   // Calculate this week's data
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
-  const thisWeekSales = allSales.filter(sale => {
+  const thisWeekSales = salesArray.filter(sale => {
     const saleDate = new Date(sale.sale_date);
     return saleDate >= weekStart;
   });
@@ -130,16 +136,16 @@ export const SalesOverview = React.memo(() => {
 
   // Calculate this month's data
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const thisMonthSales = allSales.filter(sale => {
+  const thisMonthSales = salesArray.filter(sale => {
     const saleDate = new Date(sale.sale_date);
     return saleDate >= monthStart;
   });
   const thisMonthRevenue = thisMonthSales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
   // Quick stats with real data
-  const activeRepairs = allRepairs.filter(repair => repair.status === 'in_progress' || repair.status === 'awaiting_parts').length;
-  const lowStockItems = allProducts.filter(product => product.stock <= product.threshold).length;
-  const newClientsThisMonth = allClients.filter(client => {
+  const activeRepairs = repairsArray.filter(repair => repair.status === 'in_progress' || repair.status === 'awaiting_parts').length;
+  const lowStockItems = productsArray.filter(product => product.stock <= product.threshold).length;
+  const newClientsThisMonth = clientsArray.filter(client => {
     if (!client.created_at) return false;
     const clientDate = new Date(client.created_at);
     return clientDate >= monthStart;
@@ -162,15 +168,15 @@ export const SalesOverview = React.memo(() => {
   }];
 
   // Top products calculation
-  const productSales = allSales.flatMap(sale => sale.sale_items || []);
+  const productSales = salesArray.flatMap(sale => sale.sale_items || []);
   const productRevenue = productSales.reduce((acc, item) => {
     const productName = item.product ? `${item.product.brand} ${item.product.model}` : 'Unknown Product';
     acc[productName] = (acc[productName] || 0) + item.total_price;
     return acc;
   }, {} as Record<string, number>);
-  const topProducts = Object.entries(productRevenue).sort(([, a], [, b]) => b - a).slice(0, 3).map(([name, revenue]) => ({
+  const topProducts = Object.entries(productRevenue).sort(([, a], [, b]) => (b as number) - (a as number)).slice(0, 3).map(([name, revenue]) => ({
     name,
-    revenue,
+    revenue: revenue as number,
     sold: productSales.filter(item => item.product ? `${item.product.brand} ${item.product.model}` === name : false).reduce((sum, item) => sum + item.quantity, 0)
   }));
   return <ErrorBoundary>
@@ -314,7 +320,7 @@ export const SalesOverview = React.memo(() => {
                   <div className="text-xs sm:text-sm text-muted-foreground">{product.sold} unità vendute</div>
                 </div>
                 <div className="text-right ml-2">
-                  <div className="font-medium text-sm sm:text-base">${product.revenue.toFixed(2)}</div>
+                  <div className="font-medium text-sm sm:text-base">${(product.revenue as number).toFixed(2)}</div>
                 </div>
               </div>) : <div className="text-center py-6 sm:py-8 text-muted-foreground">
                 <div className="text-xs sm:text-sm">Nessun dato di vendita disponibile</div>

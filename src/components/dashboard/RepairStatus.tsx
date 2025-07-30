@@ -9,6 +9,9 @@ type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted
 
 export function RepairStatus() {
   const { data: allRepairs = [] } = useRepairs();
+  
+  // Type cast the data array
+  const repairsArray = (allRepairs as any[]) || [];
 
   // Set up real-time subscription for repair updates with unique channel name
   useEffect(() => {
@@ -25,7 +28,7 @@ export function RepairStatus() {
   }, []);
 
   // Filter active repairs (not completed or cancelled)
-  const activeRepairs = allRepairs.filter(repair => 
+  const activeRepairs = repairsArray.filter(repair => 
     repair.status !== 'completed' && repair.status !== 'cancelled'
   ).slice(0, 5); // Show only first 5
 

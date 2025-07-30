@@ -13,10 +13,15 @@ export function DashboardOverview() {
   const { data: allRepairs = [] } = useRepairs();
   const { data: allClients = [] } = useClients();
 
+  // Type cast the data arrays
+  const salesArray = (allSales as any[]) || [];
+  const repairsArray = (allRepairs as any[]) || [];
+  const clientsArray = (allClients as any[]) || [];
+
   // Calculate today's metrics
   const today = new Date().toISOString().split('T')[0];
-  const todaySales = allSales.filter(sale => sale.sale_date.startsWith(today));
-  const pendingRepairs = allRepairs.filter(repair => 
+  const todaySales = salesArray.filter(sale => sale.sale_date.startsWith(today));
+  const pendingRepairs = repairsArray.filter(repair => 
     repair.status === 'in_progress' || repair.status === 'awaiting_parts'
   );
 
@@ -24,12 +29,12 @@ export function DashboardOverview() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
-  const yesterdaySales = allSales.filter(sale => sale.sale_date.startsWith(yesterdayStr));
+  const yesterdaySales = salesArray.filter(sale => sale.sale_date.startsWith(yesterdayStr));
 
   // Calculate this month's new clients
   const thisMonth = new Date();
   const firstDayOfMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1).toISOString();
-  const newClientsThisMonth = allClients.filter(client => 
+  const newClientsThisMonth = clientsArray.filter(client => 
     client.created_at && client.created_at >= firstDayOfMonth
   );
 
