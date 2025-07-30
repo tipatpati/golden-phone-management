@@ -10,7 +10,18 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
-  const config = ROLE_CONFIGS[userRole];
+  const config = userRole ? ROLE_CONFIGS[userRole] : null;
+  
+  if (!userRole || !config) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading your dashboard...</h2>
+          <p className="text-gray-600">Please wait while we set up your workspace.</p>
+        </div>
+      </div>
+    );
+  }
 
   const getQuickStats = () => {
     switch (userRole) {

@@ -117,13 +117,13 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Immediate timeout to prevent stuck loading
+    // Immediate timeout to prevent stuck loading - reduced to 2 seconds for faster response
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
         log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
         setIsInitialized(true);
       }
-    }, 3000);
+    }, 2000);
 
     const cleanup = () => {
       mounted = false;
