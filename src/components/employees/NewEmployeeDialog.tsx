@@ -21,12 +21,12 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
 
   return (
     <BaseDialog
-      title="Add New Employee"
+      title="Aggiungi Nuovo Dipendente"
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit}
       isLoading={isLoading}
-      submitText="Add Employee"
+      submitText="Aggiungi Dipendente"
       maxWidth="md"
     >
       <EmployeeFormFields

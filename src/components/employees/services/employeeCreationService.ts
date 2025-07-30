@@ -5,19 +5,31 @@ import { generateRandomPassword } from "../utils/passwordUtils";
 
 export class EmployeeCreationService {
   static async checkEmailExists(email: string): Promise<boolean> {
-    // Check both employees table and auth users
-    const { data: existingEmployee, error: checkError } = await supabase
-      .from("employees")
-      .select("email")
-      .eq("email", email)
-      .maybeSingle();
+    try {
+      // Check if email exists in employees table
+      const { data: existingEmployee, error: checkError } = await supabase
+        .from("employees")
+        .select("email")
+        .eq("email", email)
+        .maybeSingle();
 
-    if (checkError) {
-      console.error("Error checking existing email:", checkError);
-      throw new Error("Failed to check email availability");
+      if (checkError) {
+        console.error("Error checking existing email:", checkError);
+        throw new Error("Impossibile verificare la disponibilità dell'email");
+      }
+
+      // If employee record exists, email is taken
+      if (existingEmployee) {
+        return true;
+      }
+
+      // Additional check: try to create a temporary auth user to see if email exists in auth system
+      // This is handled by the edge function, so we'll rely on that for auth-level checking
+      return false;
+    } catch (error) {
+      console.error("Error in checkEmailExists:", error);
+      throw new Error("Errore nella verifica dell'email");
     }
-
-    return !!existingEmployee;
   }
 
   static async createEmployee(formData: EmployeeFormData): Promise<{ employee: any; tempPassword: string }> {
@@ -42,7 +54,8 @@ export class EmployeeCreationService {
 
       if (authError || !authResponse?.success) {
         console.error('Failed to create auth user:', authError || authResponse);
-        throw new Error(authResponse?.error || 'Failed to create authentication account');
+        const errorMessage = authResponse?.error || authError?.message || 'Impossibile creare l\'account di autenticazione';
+        throw new Error(errorMessage);
       }
 
       const userId = authResponse.user_id;

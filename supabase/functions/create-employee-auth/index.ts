@@ -30,12 +30,33 @@ serve(async (req) => {
 
     if (!email || !password) {
       return new Response(
-        JSON.stringify({ error: 'Email and password are required' }),
+        JSON.stringify({ error: 'Email e password sono obbligatori' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     console.log('Creating auth user for employee:', email)
+
+    // First check if user already exists in auth system
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (listError) {
+      console.error('Error checking existing users:', listError)
+      return new Response(
+        JSON.stringify({ error: 'Errore nel controllo utenti esistenti' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const existingUser = existingUsers.users.find(user => user.email === email)
+    
+    if (existingUser) {
+      console.log('User already exists with email:', email)
+      return new Response(
+        JSON.stringify({ error: 'Un utente con questa email esiste già nel sistema' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Create the auth user with admin privileges
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -52,8 +73,19 @@ serve(async (req) => {
 
     if (authError) {
       console.error('Auth user creation failed:', authError)
+      
+      // Provide more specific error messages
+      let errorMessage = 'Errore nella creazione dell\'account'
+      if (authError.message.includes('already been registered')) {
+        errorMessage = 'Un utente con questa email esiste già nel sistema'
+      } else if (authError.message.includes('password')) {
+        errorMessage = 'La password non soddisfa i requisiti di sicurezza'
+      } else if (authError.message.includes('email')) {
+        errorMessage = 'Formato email non valido'
+      }
+      
       return new Response(
-        JSON.stringify({ error: authError.message }),
+        JSON.stringify({ error: errorMessage }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -75,7 +107,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Errore interno del server' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

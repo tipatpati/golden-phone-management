@@ -13,13 +13,14 @@ export function useNewEmployeeForm() {
     setIsLoading(true);
 
     try {
-      // Check if email already exists
+      // Note: Email existence check is also performed by the edge function
+      // which checks both the employees table and the auth system
       const emailExists = await EmployeeCreationService.checkEmailExists(formData.email);
       
       if (emailExists) {
         toast({
-          title: "Error",
-          description: "An employee with this email already exists",
+          title: "Errore",
+          description: "Un dipendente con questa email esiste già",
           variant: "destructive",
         });
         return false;
@@ -29,8 +30,8 @@ export function useNewEmployeeForm() {
       const { employee, tempPassword } = await EmployeeCreationService.createEmployee(formData);
 
       toast({
-        title: "Success",
-        description: `Employee ${formData.first_name} ${formData.last_name} has been created successfully! They can now log in with their email: ${formData.email}. ${!formData.password ? `Temporary password: ${tempPassword}` : ''}`,
+        title: "Successo",
+        description: `Il dipendente ${formData.first_name} ${formData.last_name} è stato creato con successo! Ora può accedere con la sua email: ${formData.email}. ${!formData.password ? `Password temporanea: ${tempPassword}` : ''}`,
         duration: 10000,
       });
 
@@ -39,8 +40,8 @@ export function useNewEmployeeForm() {
     } catch (error) {
       console.error("Error adding employee:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add employee",
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Impossibile aggiungere il dipendente",
         variant: "destructive",
       });
       return false;

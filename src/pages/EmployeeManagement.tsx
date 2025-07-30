@@ -44,10 +44,10 @@ export default function EmployeeManagement() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Employee Management
+              Gestione Dipendenti
             </h1>
             <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">
-              Manage your team members and security settings
+              Gestisci i membri del team e le impostazioni di sicurezza
             </p>
           </div>
         </div>
@@ -57,9 +57,9 @@ export default function EmployeeManagement() {
       <Tabs defaultValue="employees" className="w-full">
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-3 sm:p-6 border-0">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4 sm:mb-6 h-auto">
-            <TabsTrigger value="employees" className="text-xs sm:text-sm p-2 sm:p-3">Employees</TabsTrigger>
-            <TabsTrigger value="roles" className="text-xs sm:text-sm p-2 sm:p-3">Roles</TabsTrigger>
-            <TabsTrigger value="security" className="text-xs sm:text-sm p-2 sm:p-3">Security</TabsTrigger>
+            <TabsTrigger value="employees" className="text-xs sm:text-sm p-2 sm:p-3">Dipendenti</TabsTrigger>
+            <TabsTrigger value="roles" className="text-xs sm:text-sm p-2 sm:p-3">Ruoli</TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm p-2 sm:p-3">Sicurezza</TabsTrigger>
             <TabsTrigger value="audit" className="text-xs sm:text-sm p-2 sm:p-3">Audit</TabsTrigger>
           </TabsList>
           
@@ -72,8 +72,8 @@ export default function EmployeeManagement() {
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Employee</span>
-              <span className="sm:hidden">Add</span>
+              <span className="hidden sm:inline">Aggiungi Dipendente</span>
+              <span className="sm:hidden">Aggiungi</span>
             </Button>
             </div>
 
@@ -83,7 +83,7 @@ export default function EmployeeManagement() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search employees..."
+                    placeholder="Cerca dipendenti..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-10 sm:h-12 text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -96,10 +96,10 @@ export default function EmployeeManagement() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="border-2 border-gray-200 rounded-lg px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-w-[100px]"
                   >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="terminated">Terminated</option>
+                    <option value="all">Tutti gli Stati</option>
+                    <option value="active">Attivo</option>
+                    <option value="inactive">Inattivo</option>
+                    <option value="terminated">Licenziato</option>
                   </select>
                 </div>
               </div>
