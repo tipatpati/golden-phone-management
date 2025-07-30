@@ -245,15 +245,21 @@ export function BarcodePrintDialog({
             // Generate barcodes directly after page loads
             window.addEventListener('load', function() {
               const canvases = document.querySelectorAll('#barcode-canvas');
+              const barcodeValue = '${barcode.replace(/'/g, "\\'")}'; // Escape quotes properly
+              
+              console.log('Generating barcode for:', barcodeValue);
+              
               canvases.forEach(function(canvas) {
                 try {
                   // Auto-detect format based on barcode
                   let format = 'EAN13';
-                  if ('${barcode}'.length !== 13 || !/^\\d+$/.test('${barcode}')) {
+                  if (barcodeValue.length !== 13 || !/^[0-9]+$/.test(barcodeValue)) {
                     format = 'CODE128';
                   }
                   
-                  JsBarcode(canvas, '${barcode}', {
+                  console.log('Using format:', format, 'for barcode:', barcodeValue);
+                  
+                  JsBarcode(canvas, barcodeValue, {
                     format: format,
                     width: ${currentSize.barcodeWidth},
                     height: ${currentSize.barcodeHeight},
@@ -264,10 +270,13 @@ export function BarcodePrintDialog({
                     background: '#ffffff',
                     lineColor: '#000000'
                   });
+                  
+                  console.log('Barcode generated successfully');
                 } catch (error) {
+                  console.error('Primary barcode generation failed:', error);
                   // Fallback to CODE128
                   try {
-                    JsBarcode(canvas, '${barcode}', {
+                    JsBarcode(canvas, barcodeValue, {
                       format: 'CODE128',
                       width: ${currentSize.barcodeWidth},
                       height: ${currentSize.barcodeHeight},
@@ -278,8 +287,16 @@ export function BarcodePrintDialog({
                       background: '#ffffff',
                       lineColor: '#000000'
                     });
+                    console.log('Fallback barcode generated successfully');
                   } catch (fallbackError) {
-                    console.error('Barcode generation failed:', fallbackError);
+                    console.error('Barcode generation failed completely:', fallbackError);
+                    // Show error message in canvas
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                      ctx.fillStyle = '#ff0000';
+                      ctx.font = '14px Arial';
+                      ctx.fillText('Barcode Error', 10, 30);
+                    }
                   }
                 }
               });
@@ -287,7 +304,7 @@ export function BarcodePrintDialog({
               // Print after barcodes are generated
               setTimeout(function() {
                 window.print();
-              }, 1000);
+              }, 1500); // Increased delay to ensure barcode rendering
             });
           </script>
         </body>

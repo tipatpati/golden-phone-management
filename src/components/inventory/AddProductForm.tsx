@@ -89,6 +89,9 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
     const enhancedBrand = colors.length > 0 ? `${brand} (${colors.join(', ')})` : brand;
     
+    // Set stock to match number of serial entries (each serial = 1 unit of stock)
+    const actualStock = serialEntries.length > 0 ? serialEntries.length : parseInt(stock);
+    
     const newProduct = {
       brand: enhancedBrand,
       model,
@@ -97,15 +100,15 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       price: parseFloat(price),
       min_price: parseFloat(minPrice),
       max_price: parseFloat(maxPrice),
-      stock: parseInt(stock),
+      stock: actualStock, // Stock matches serial entries count
       threshold: parseInt(threshold),
-      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined,
+      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined, // Default battery level for category
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
       ),
       barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${brand} ${model}`, undefined, 0),
-      serial_entries: serialEntries // For potential future use
+      serial_entries: serialEntries // Store individual entries for inventory tracking
     };
     
     console.log('Submitting product with category ID:', newProduct.category_id);
