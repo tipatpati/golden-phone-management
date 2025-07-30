@@ -28,6 +28,7 @@ interface DataCardProps {
   };
   fields: DataField[];
   actions?: ActionButton[];
+  headerActions?: React.ReactNode;
   onClick?: () => void;
   className?: string;
 }
@@ -39,6 +40,7 @@ export function DataCard({
   badge,
   fields,
   actions = [],
+  headerActions,
   onClick,
   className = ""
 }: DataCardProps) {
@@ -69,14 +71,18 @@ export function DataCard({
             </div>
           </div>
           
-          {badge && (
-            <Badge 
-              variant={badge.variant || "default"}
-              className="text-xs md:text-xs font-semibold px-1.5 py-0.5"
-            >
-              {badge.text}
-            </Badge>
-          )}
+          {/* Combined Badge and Header Actions */}
+          <div className="flex items-center gap-2">
+            {badge && (
+              <Badge 
+                variant={badge.variant || "default"}
+                className="text-xs md:text-xs font-semibold px-1.5 py-0.5"
+              >
+                {badge.text}
+              </Badge>
+            )}
+            {headerActions}
+          </div>
         </div>
       </CardHeader>
       
