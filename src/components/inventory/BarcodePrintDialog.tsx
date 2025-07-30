@@ -67,236 +67,270 @@ export function BarcodePrintDialog({
       return;
     }
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Please allow popups to print labels');
-      return;
-    }
+    // Convert all canvas elements to images before printing
+    const canvasElements = printAreaRef.current.querySelectorAll('canvas');
+    const imagePromises: Promise<void>[] = [];
+    
+    canvasElements.forEach((canvas) => {
+      const promise = new Promise<void>((resolve) => {
+        try {
+          const dataURL = canvas.toDataURL('image/png');
+          const img = document.createElement('img');
+          img.src = dataURL;
+          img.style.maxWidth = '90%';
+          img.style.height = 'auto';
+          img.style.display = 'block';
+          img.style.margin = '0 auto';
+          canvas.parentNode?.replaceChild(img, canvas);
+          resolve();
+        } catch (error) {
+          console.error('Error converting canvas to image:', error);
+          resolve();
+        }
+      });
+      imagePromises.push(promise);
+    });
 
-    const printContent = printAreaRef.current.innerHTML;
-    const copiesNum = parseInt(copies) || 1;
-
-    let allLabels = '';
-    for (let i = 0; i < copiesNum; i++) {
-      allLabels += `<div class="print-label">${printContent}</div>`;
-      if (i < copiesNum - 1) {
-        allLabels += '<div class="page-break"></div>';
+    Promise.all(imagePromises).then(() => {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error('Please allow popups to print labels');
+        return;
       }
-    }
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Barcode Labels - ${productName}</title>
-          <style>
-            @media print {
-              @page {
-                size: ${currentSize.width + 20}px ${currentSize.height + 20}px;
-                margin: 10px;
+      const printContent = printAreaRef.current?.innerHTML || '';
+      const copiesNum = parseInt(copies) || 1;
+
+      let allLabels = '';
+      for (let i = 0; i < copiesNum; i++) {
+        allLabels += `<div class="print-label">${printContent}</div>`;
+        if (i < copiesNum - 1) {
+          allLabels += '<div class="page-break"></div>';
+        }
+      }
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Barcode Labels - ${productName}</title>
+            <style>
+              @media print {
+                @page {
+                  size: ${currentSize.width + 20}px ${currentSize.height + 20}px;
+                  margin: 10px;
+                }
+                
+                body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                }
+                
+                .print-label {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  border: none !important;
+                }
               }
               
               body {
-                margin: 0 !important;
-                padding: 0 !important;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: white;
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
               }
               
               .print-label {
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
+                border: 1px solid #d1d5db;
+                padding: 12px;
+                text-align: center;
+                background: white;
+                width: ${currentSize.width}px;
+                height: ${currentSize.height}px;
+                box-sizing: border-box;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
               }
-            }
-            
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-              background: white;
-              width: 100vw;
-              height: 100vh;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            
-            .print-label {
-              border: 1px solid #d1d5db;
-              padding: 12px;
-              text-align: center;
-              background: white;
-              width: ${currentSize.width}px;
-              height: ${currentSize.height}px;
-              box-sizing: border-box;
-              overflow: hidden;
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            }
-            
-            /* Exact Tailwind class replications */
-            .text-xs {
-              font-size: 12px;
-              line-height: 1rem;
-            }
-            
-            .text-sm {
-              font-size: 14px;
-              line-height: 1.25rem;
-            }
-            
-            .text-lg {
-              font-size: 18px;
-              line-height: 1.75rem;
-            }
-            
-            .text-xl {
-              font-size: 20px;
-              line-height: 1.75rem;
-            }
-            
-            .font-bold {
-              font-weight: 700;
-            }
-            
-            .font-semibold {
-              font-weight: 600;
-            }
-            
-            .font-medium {
-              font-weight: 500;
-            }
-            
-            .mb-2 {
-              margin-bottom: 6px;
-            }
-            
-            .mb-3 {
-              margin-bottom: 8px;
-            }
-            
-            .text-gray-700 {
-              color: #374151;
-            }
-            
-            .text-gray-800 {
-              color: #1f2937;
-            }
-            
-            .text-green-600 {
-              color: #16a34a;
-            }
-            
-            .text-red-600 {
-              color: #dc2626;
-            }
-            
-            .uppercase {
-              text-transform: uppercase;
-            }
-            
-            .tracking-wider {
-              letter-spacing: 0.05em;
-            }
-            
-            .leading-tight {
-              line-height: 1.25;
-            }
-            
-            .my-3 {
-              margin-top: 8px;
-              margin-bottom: 8px;
-            }
-            
-            .flex {
-              display: flex;
-            }
-            
-            .justify-center {
-              justify-content: center;
-            }
-            
-            .border {
-              border-width: 1px;
-            }
-            
-            .border-dashed {
-              border-style: dashed;
-            }
-            
-            .border-gray-300 {
-              border-color: #d1d5db;
-            }
-            
-            .p-4 {
-              padding: 16px;
-            }
-            
-            .rounded {
-              border-radius: 4px;
-            }
-            
-            .text-gray-500 {
-              color: #6b7280;
-            }
-            
-            .text-center {
-              text-align: center;
-            }
-            
-            /* Canvas and barcode styling */
-            canvas {
-              max-width: 90%;
-              height: auto;
-              display: block;
-              margin: 0 auto;
-            }
-            
-            /* Compact layout for small labels */
-            .sticker-content {
-              display: flex;
-              flex-direction: column;
-              height: 100%;
-              justify-content: space-between;
-              align-items: center;
-            }
-            
-            .barcode-container {
-              width: 100%;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              flex: 1;
-              margin: 4px 0;
-            }
-          </style>
-        </head>
-        <body>
-          ${allLabels}
-          <script>
-            // Wait for canvases to render before printing
-            window.addEventListener('load', function() {
-              setTimeout(function() {
-                window.print();
-              }, 1000);
-            });
-          </script>
-        </body>
-      </html>
-    `);
+              
+              /* Exact Tailwind class replications */
+              .text-xs {
+                font-size: 12px;
+                line-height: 1rem;
+              }
+              
+              .text-sm {
+                font-size: 14px;
+                line-height: 1.25rem;
+              }
+              
+              .text-lg {
+                font-size: 18px;
+                line-height: 1.75rem;
+              }
+              
+              .text-xl {
+                font-size: 20px;
+                line-height: 1.75rem;
+              }
+              
+              .font-bold {
+                font-weight: 700;
+              }
+              
+              .font-semibold {
+                font-weight: 600;
+              }
+              
+              .font-medium {
+                font-weight: 500;
+              }
+              
+              .mb-2 {
+                margin-bottom: 6px;
+              }
+              
+              .mb-3 {
+                margin-bottom: 8px;
+              }
+              
+              .text-gray-700 {
+                color: #374151;
+              }
+              
+              .text-gray-800 {
+                color: #1f2937;
+              }
+              
+              .text-green-600 {
+                color: #16a34a;
+              }
+              
+              .text-red-600 {
+                color: #dc2626;
+              }
+              
+              .uppercase {
+                text-transform: uppercase;
+              }
+              
+              .tracking-wider {
+                letter-spacing: 0.05em;
+              }
+              
+              .leading-tight {
+                line-height: 1.25;
+              }
+              
+              .my-3 {
+                margin-top: 8px;
+                margin-bottom: 8px;
+              }
+              
+              .flex {
+                display: flex;
+              }
+              
+              .justify-center {
+                justify-content: center;
+              }
+              
+              .border {
+                border-width: 1px;
+              }
+              
+              .border-dashed {
+                border-style: dashed;
+              }
+              
+              .border-gray-300 {
+                border-color: #d1d5db;
+              }
+              
+              .p-4 {
+                padding: 16px;
+              }
+              
+              .rounded {
+                border-radius: 4px;
+              }
+              
+              .text-gray-500 {
+                color: #6b7280;
+              }
+              
+              .text-center {
+                text-align: center;
+              }
+              
+              /* Canvas and barcode styling */
+              canvas {
+                max-width: 90%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+              }
+              
+              /* Image styling for converted barcodes */
+              img {
+                max-width: 90%;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+              }
+              
+              /* Compact layout for small labels */
+              .sticker-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                justify-content: space-between;
+                align-items: center;
+              }
+              
+              .barcode-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                margin: 4px 0;
+              }
+            </style>
+          </head>
+          <body>
+            ${allLabels}
+            <script>
+              // Wait for images to load before printing
+              window.addEventListener('load', function() {
+                setTimeout(function() {
+                  window.print();
+                }, 1000);
+              });
+            </script>
+          </body>
+        </html>
+      `);
 
-    printWindow.document.close();
-    printWindow.focus();
-    
-    // Longer delay to ensure barcodes are fully rendered
-    setTimeout(() => {
-      printWindow.print();
-      // Don't close immediately to allow user to see print preview
+      printWindow.document.close();
+      printWindow.focus();
+      
+      // Longer delay to ensure barcodes are fully rendered
       setTimeout(() => {
-        printWindow.close();
-      }, 2000);
-    }, 1500);
+        printWindow.print();
+        // Don't close immediately to allow user to see print preview
+        setTimeout(() => {
+          printWindow.close();
+        }, 2000);
+      }, 1500);
 
-    toast.success(`Preparing to print ${copiesNum} label(s)`);
+      toast.success(`Preparing to print ${copiesNum} label(s)`);
+    });
   };
 
   const handleDownload = () => {
