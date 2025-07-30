@@ -96,7 +96,7 @@ interface SideNavigationProps {
   setIsOpen?: (open: boolean) => void;
 }
 
-export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) {
+export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
