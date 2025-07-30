@@ -145,7 +145,7 @@ export const SalesOverview = React.memo(() => {
     return clientDate >= monthStart;
   }).length;
   const quickStats = [{
-    title: "Active Repairs",
+    title: "Riparazioni Attive",
     value: activeRepairs.toString(),
     icon: Wrench,
     color: "text-orange-600"

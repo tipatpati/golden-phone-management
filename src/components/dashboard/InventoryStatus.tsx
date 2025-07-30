@@ -30,7 +30,7 @@ export function InventoryStatus() {
   const getStockLevel = (current: number, threshold: number) => {
     const percentage = threshold > 0 ? (current / threshold) * 100 : 100;
     if (percentage <= 20) return { color: "bg-red-500", level: "Critical", bgColor: "bg-red-100" };
-    if (percentage <= 50) return { color: "bg-yellow-500", level: "Low", bgColor: "bg-yellow-100" };
+    if (percentage <= 50) return { color: "bg-yellow-500", level: "Bassa", bgColor: "bg-yellow-100" };
     return { color: "bg-green-500", level: "Good", bgColor: "bg-green-100" };
   };
 
@@ -42,7 +42,7 @@ export function InventoryStatus() {
   return (
     <Card className="card-glow border-0 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-base sm:text-lg">Low Stock Items</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Articoli con Scorte Basse</CardTitle>
         <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">
           Order Stock
         </Button>

@@ -49,15 +49,15 @@ export function RepairStatus() {
   const getStatusDisplayName = (status: RepairStatusType) => {
     switch (status) {
       case "in_progress":
-        return "In Progress";
+        return "In Corso";
       case "awaiting_parts":
-        return "Awaiting Parts";
+        return "In Attesa Pezzi";
       case "completed":
-        return "Completed";
+        return "Completata";
       case "quoted":
-        return "Quoted";
+        return "Preventivo";
       case "cancelled":
-        return "Cancelled";
+        return "Annullata";
       default:
         return status;
     }
@@ -91,7 +91,7 @@ export function RepairStatus() {
   return (
     <Card className="col-span-1 lg:col-span-2 border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Active Repairs</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Riparazioni Attive</CardTitle>
       </CardHeader>
       <CardContent>
         {activeRepairs.length > 0 ? (
@@ -140,7 +140,7 @@ export function RepairStatus() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">No active repairs at the moment!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna riparazione attiva al momento!</p>
           </div>
         )}
       </CardContent>

@@ -41,14 +41,14 @@ export function DashboardOverview() {
 
   const handleCardClick = (title: string) => {
     switch (title) {
-      case "Total Revenue":
-      case "Total Sales":
+      case "Ricavi Totali":
+      case "Vendite Totali":
         navigate("/sales");
         break;
-      case "New Customers":
+      case "Nuovi Clienti":
         navigate("/clients");
         break;
-      case "Pending Repairs":
+      case "Riparazioni Pendenti":
         navigate("/repairs");
         break;
       default:
@@ -58,7 +58,7 @@ export function DashboardOverview() {
 
   const overviewData = [
     {
-      title: "Total Revenue",
+      title: "Ricavi Totali",
       value: `$${totalRevenue.toFixed(2)}`,
       change: `${revenueChange}%`,
       isPositive: parseFloat(revenueChange) >= 0,
@@ -66,7 +66,7 @@ export function DashboardOverview() {
       gradient: "from-blue-500 to-blue-600",
     },
     {
-      title: "Total Sales",
+      title: "Vendite Totali",
       value: todaySales.length.toString(),
       change: `${yesterdaySales.length > 0 ? ((todaySales.length - yesterdaySales.length) / yesterdaySales.length * 100).toFixed(1) : '0'}%`,
       isPositive: todaySales.length >= yesterdaySales.length,
@@ -74,7 +74,7 @@ export function DashboardOverview() {
       gradient: "from-green-500 to-green-600",
     },
     {
-      title: "New Customers",
+      title: "Nuovi Clienti",
       value: newClientsThisMonth.length.toString(),
       change: "+24.5%",
       isPositive: true,
@@ -82,9 +82,9 @@ export function DashboardOverview() {
       gradient: "from-purple-500 to-purple-600",
     },
     {
-      title: "Pending Repairs",
+      title: "Riparazioni Pendenti",
       value: pendingRepairs.length.toString(),
-      change: pendingRepairs.length > 0 ? "Active" : "None",
+      change: pendingRepairs.length > 0 ? "Attive" : "Nessuna",
       isPositive: pendingRepairs.length < 10,
       icon: Calendar,
       gradient: "from-orange-500 to-orange-600",
@@ -119,7 +119,7 @@ export function DashboardOverview() {
                   <span className={item.isPositive ? "text-green-500" : "text-red-500"}>
                     {item.change}
                   </span>
-                  <span className="text-gray-500 ml-1 hidden sm:inline">from yesterday</span>
+                  <span className="text-gray-500 ml-1 hidden sm:inline">da ieri</span>
                 </>
               ) : (
                 <span className="text-gray-500">{item.change}</span>

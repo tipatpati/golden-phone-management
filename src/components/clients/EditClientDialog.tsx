@@ -80,8 +80,8 @@ export const EditClientDialog = ({ client }: EditClientDialogProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="active">Attivo</SelectItem>
+                  <SelectItem value="inactive">Inattivo</SelectItem>
                 </SelectContent>
               </Select>
             </div>

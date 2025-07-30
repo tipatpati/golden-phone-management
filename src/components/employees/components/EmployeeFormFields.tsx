@@ -34,7 +34,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="first_name">First Name *</Label>
+          <Label htmlFor="first_name">Nome *</Label>
           <Input
             id="first_name"
             value={formData.first_name}
@@ -43,7 +43,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
           />
         </div>
         <div>
-          <Label htmlFor="last_name">Last Name *</Label>
+          <Label htmlFor="last_name">Cognome *</Label>
           <Input
             id="last_name"
             value={formData.last_name}
@@ -66,19 +66,19 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
 
       {showPassword && (
         <div>
-          <Label htmlFor="password">Password (optional)</Label>
+          <Label htmlFor="password">Password (opzionale)</Label>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={(e) => onFieldChange("password", e.target.value)}
-            placeholder="Leave blank for auto-generated password"
+            placeholder="Lascia vuoto per password generata automaticamente"
           />
         </div>
       )}
 
       <div>
-        <Label htmlFor="phone">Phone</Label>
+        <Label htmlFor="phone">Telefono</Label>
         <Input
           id="phone"
           value={formData.phone}
@@ -87,10 +87,10 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
       </div>
 
       <div>
-        <Label htmlFor="role">Role *</Label>
+        <Label htmlFor="role">Ruolo *</Label>
         <Select value={formData.role} onValueChange={(value) => onFieldChange("role", value)}>
           <SelectTrigger>
-            <SelectValue placeholder="Select a role" />
+            <SelectValue placeholder="Seleziona un ruolo" />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(ROLE_CONFIGS).map(([roleKey, roleConfig]) => (
@@ -104,7 +104,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="department">Department</Label>
+          <Label htmlFor="department">Dipartimento</Label>
           <Input
             id="department"
             value={formData.department}
@@ -112,7 +112,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
           />
         </div>
         <div>
-          <Label htmlFor="position">Position</Label>
+          <Label htmlFor="position">Posizione</Label>
           <Input
             id="position"
             value={formData.position}
@@ -123,7 +123,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="salary">Salary (€)</Label>
+          <Label htmlFor="salary">Stipendio (€)</Label>
           <Input
             id="salary"
             type="number"
@@ -133,7 +133,7 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
           />
         </div>
         <div>
-          <Label htmlFor="hire_date">Hire Date *</Label>
+          <Label htmlFor="hire_date">Data di Assunzione *</Label>
           <Input
             id="hire_date"
             type="date"
@@ -145,15 +145,15 @@ export function EmployeeFormFields({ formData, onFieldChange, showPassword = tru
       </div>
 
       <div>
-        <Label htmlFor="status">Status</Label>
+        <Label htmlFor="status">Stato</Label>
         <Select value={formData.status} onValueChange={(value) => onFieldChange("status", value)}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="terminated">Terminated</SelectItem>
+            <SelectItem value="active">Attivo</SelectItem>
+            <SelectItem value="inactive">Inattivo</SelectItem>
+            <SelectItem value="terminated">Licenziato</SelectItem>
           </SelectContent>
         </Select>
       </div>
