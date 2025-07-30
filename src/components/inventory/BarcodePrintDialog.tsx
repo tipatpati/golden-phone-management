@@ -236,6 +236,10 @@ export function BarcodePrintDialog({
             canvas {
               display: block;
               margin: 0 auto;
+              image-rendering: crisp-edges;
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: pixelated;
+              -ms-interpolation-mode: nearest-neighbor;
             }
           </style>
         </head>
@@ -283,11 +287,17 @@ export function BarcodePrintDialog({
                     width: ${currentSize.barcodeWidth},
                     height: ${currentSize.barcodeHeight},
                     displayValue: true,
-                    fontSize: 12,
-                    textMargin: 4,
+                    fontSize: 14,
+                    fontOptions: 'bold',
+                    font: 'Arial',
+                    textAlign: 'center',
+                    textPosition: 'bottom',
+                    textMargin: 6,
                     margin: 8,
                     background: '#ffffff',
                     lineColor: '#000000',
+                    // Increase canvas resolution for crisp text
+                    devicePixelRatio: 2,
                     valid: function(valid) {
                       if (!valid) {
                         console.error('Invalid barcode format for:', barcodeValue);
@@ -305,11 +315,17 @@ export function BarcodePrintDialog({
                       width: ${currentSize.barcodeWidth},
                       height: ${currentSize.barcodeHeight},
                       displayValue: true,
-                      fontSize: 12,
-                      textMargin: 4,
+                      fontSize: 14,
+                      fontOptions: 'bold',
+                      font: 'Arial',
+                      textAlign: 'center',
+                      textPosition: 'bottom',
+                      textMargin: 6,
                       margin: 8,
                       background: '#ffffff',
-                      lineColor: '#000000'
+                      lineColor: '#000000',
+                      // Increase canvas resolution for crisp text
+                      devicePixelRatio: 2
                     });
                     console.log('Canvas ' + index + ': Fallback barcode generated successfully');
                   } catch (fallbackError) {
