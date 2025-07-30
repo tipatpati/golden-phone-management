@@ -38,10 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     enabled: isLoggedIn
   });
 
-  // Log session activities
+  // Log session activities (only if not in preview environment)
   useEffect(() => {
-    if (authState.user) {
-      logSessionActivity('login');
+    const isPreview = window.location.hostname.includes('lovable.app') || 
+                     window.location.hostname.includes('localhost') ||
+                     window !== window.top;
+    
+    if (authState.user && !isPreview) {
+      logSessionActivity('login').catch(err => 
+        console.warn('Session activity logging failed:', err)
+      );
     }
   }, [authState.user]);
 
