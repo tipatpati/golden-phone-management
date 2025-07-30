@@ -31,7 +31,10 @@ const PageLoader = () => (
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
-  // No loading state needed - auth initialization is now immediate
+  // Show loading while auth is being initialized
+  if (!isInitialized || (isLoggedIn && !userRole)) {
+    return <PageLoader />;
+  }
 
   // Determine effective role based on authenticated user data only - no fallbacks
   const effectiveRole = userRole;
