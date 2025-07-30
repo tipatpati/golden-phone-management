@@ -1,17 +1,20 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import type { Sale } from "@/services/sales";
+import { SaleDetailsDialog } from "./SaleDetailsDialog";
 import { format } from "date-fns";
 
 interface SalesListProps {
   sales: Sale[];
   onEdit?: (sale: Sale) => void;
   onDelete?: (sale: Sale) => void;
+  onViewDetails?: (sale: Sale) => void;
 }
 
-export function SalesList({ sales, onEdit, onDelete }: SalesListProps) {
+export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListProps) {
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Sale>();
 
   const handleDeleteSale = (sale: Sale) => {
@@ -91,19 +94,27 @@ export function SalesList({ sales, onEdit, onDelete }: SalesListProps) {
   ];
 
   // Define actions
-  const actions = onEdit && onDelete ? [
+  const actions = [
     {
-      icon: <Edit2 className="h-4 w-4" />,
-      label: "Edit",
-      onClick: onEdit
+      icon: <Eye className="h-4 w-4" />,
+      label: "View",
+      onClick: () => {}, // Required but not used when renderCustom is provided
+      renderCustom: (sale: Sale) => <SaleDetailsDialog sale={sale} />
     },
-    {
-      icon: <Trash2 className="h-4 w-4" />,
-      label: "Delete",
-      onClick: handleDeleteSale,
-      variant: "destructive" as const
-    }
-  ] : [];
+    ...(onEdit && onDelete ? [
+      {
+        icon: <Edit2 className="h-4 w-4" />,
+        label: "Edit",
+        onClick: onEdit
+      },
+      {
+        icon: <Trash2 className="h-4 w-4" />,
+        label: "Delete",
+        onClick: handleDeleteSale,
+        variant: "destructive" as const
+      }
+    ] : [])
+  ];
 
   return (
     <>
@@ -120,55 +131,69 @@ export function SalesList({ sales, onEdit, onDelete }: SalesListProps) {
       {/* Mobile Card Layout */}
       <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1">
         {sales.map((sale) => (
-          <DataCard
-            key={sale.id}
-            title={`Sale #${sale.sale_number}`}
-            subtitle={typeof sale.salesperson === 'object' ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson"}
-            icon={<Receipt className="h-5 w-5 text-primary" />}
-            badge={{
-              text: sale.status.charAt(0).toUpperCase() + sale.status.slice(1),
-              variant: getStatusColor(sale.status) as any
-            }}
-            fields={[
-              {
-                label: "Amount",
-                value: <span className="text-base font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>,
-                className: "text-lg font-bold text-primary"
-              },
-              {
-                label: "Payment",
-                value: (
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-3 w-3 text-muted-foreground" />
-                    {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
-                  </div>
-                )
-              },
-              {
-                label: "Date",
-                value: (
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                    {format(new Date(sale.sale_date), "MMM dd, yyyy")}
-                  </div>
-                )
-              }
-            ]}
-            actions={onEdit && onDelete ? [
-              {
-                icon: <Edit2 className="h-3 w-3 mr-1" />,
-                label: "Edit",
-                onClick: () => onEdit(sale)
-              },
-              {
-                icon: <Trash2 className="h-3 w-3 mr-1" />,
-                label: "Delete",
-                onClick: () => handleDeleteSale(sale),
-                variant: "outline",
-                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              }
-            ] : []}
-          />
+          <div key={sale.id} className="relative">
+            <DataCard
+              title={`Sale #${sale.sale_number}`}
+              subtitle={typeof sale.salesperson === 'object' ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson"}
+              icon={<Receipt className="h-5 w-5 text-primary" />}
+              badge={{
+                text: sale.status.charAt(0).toUpperCase() + sale.status.slice(1),
+                variant: getStatusColor(sale.status) as any
+              }}
+              fields={[
+                {
+                  label: "Amount",
+                  value: <span className="text-base font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>,
+                  className: "text-lg font-bold text-primary"
+                },
+                {
+                  label: "Payment",
+                  value: (
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-3 w-3 text-muted-foreground" />
+                      {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
+                    </div>
+                  )
+                },
+                {
+                  label: "Date",
+                  value: (
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-3 w-3 text-muted-foreground" />
+                      {format(new Date(sale.sale_date), "MMM dd, yyyy")}
+                    </div>
+                  )
+                }
+              ]}
+              actions={[
+                ...(onEdit && onDelete ? [
+                  {
+                    icon: <Edit2 className="h-3 w-3 mr-1" />,
+                    label: "Edit",
+                    onClick: () => onEdit(sale)
+                  },
+                  {
+                    icon: <Trash2 className="h-3 w-3 mr-1" />,
+                    label: "Delete",
+                    onClick: () => handleDeleteSale(sale),
+                    variant: "outline" as const,
+                    className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                  }
+                ] : [])
+              ]}
+            />
+            {/* View Details Button positioned outside the card */}
+            <div className="absolute top-2 right-2">
+              <SaleDetailsDialog 
+                sale={sale} 
+                trigger={
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
         ))}
       </div>
 

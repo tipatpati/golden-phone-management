@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { EditSaleDialog } from "./EditSaleDialog";
 import { DeleteSaleDialog } from "./DeleteSaleDialog";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
+import { SaleDetailsDialog } from "./SaleDetailsDialog";
 import type { Sale } from "@/services/sales";
 
 interface SaleCardProps {
@@ -85,6 +86,7 @@ export function SaleCard({ sale }: SaleCardProps) {
               {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
             </Badge>
             <div className="flex gap-1">
+              <SaleDetailsDialog sale={sale} />
               <SaleReceiptDialog sale={sale} />
               <EditSaleDialog sale={sale} />
               <DeleteSaleDialog sale={sale} />

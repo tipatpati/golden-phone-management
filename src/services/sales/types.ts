@@ -18,6 +18,7 @@ export type Sale = {
     first_name?: string;
     last_name?: string;
     company_name?: string;
+    contact_person?: string;
     email?: string;
     phone?: string;
   };
