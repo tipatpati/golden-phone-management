@@ -19,6 +19,7 @@ const Repairs = React.lazy(() => import("@/pages/Repairs"));
 const EmployeeManagement = React.lazy(() => import("@/pages/EmployeeManagement"));
 const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDashboard"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
+const Finances = React.lazy(() => import("@/pages/Finances"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -116,6 +117,15 @@ export function AppRouter() {
                     <TabletLayout userRole={effectiveRole}>
                       <Suspense fallback={<PageLoader />}>
                         <Repairs />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/finances" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Finances />
                       </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>

@@ -19,22 +19,23 @@ export function SaleTotals({ saleItems }: SaleTotalsProps) {
   }
 
   const subtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const tax = subtotal * 0.1;
+  // Use configurable tax rate - for now defaulting to 22% (Italian standard VAT)
+  const tax = subtotal * 0.22;
   const total = subtotal + tax;
 
   return (
     <div className="border-t pt-4 space-y-2">
       <div className="flex justify-between">
-        <span>Subtotal:</span>
-        <span>${subtotal.toFixed(2)}</span>
+        <span>Subtotale:</span>
+        <span>€{subtotal.toFixed(2)}</span>
       </div>
       <div className="flex justify-between">
-        <span>Tax (10%):</span>
-        <span>${tax.toFixed(2)}</span>
+        <span>IVA (22%):</span>
+        <span>€{tax.toFixed(2)}</span>
       </div>
       <div className="flex justify-between font-bold text-lg">
-        <span>Total:</span>
-        <span>${total.toFixed(2)}</span>
+        <span>TOTALE:</span>
+        <span>€{total.toFixed(2)}</span>
       </div>
     </div>
   );
