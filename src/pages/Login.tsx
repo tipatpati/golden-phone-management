@@ -20,24 +20,24 @@ export default function Login() {
     const sanitizedEmail = sanitizeEmail(email) || sanitizeInput(email);
     const sanitizedPassword = sanitizeInput(password);
     if (!sanitizedEmail || !sanitizedPassword) {
-      toast.error("Please provide valid credentials");
+      toast.error("Inserisci credenziali valide");
       return;
     }
 
     // Basic password strength check
     if (sanitizedPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("La password deve essere di almeno 6 caratteri");
       return;
     }
     setIsLoading(true);
     try {
       // Use the auth context login - it will automatically detect user role from database
       await login(sanitizedEmail, sanitizedPassword);
-      toast.success("Login successful! Redirecting...");
+      toast.success("Accesso effettuato! Reindirizzamento...");
     } catch (error: any) {
       console.error('Login failed:', error);
       toast.error('Login failed', {
-        description: error.message || 'Please check your credentials'
+        description: error.message || 'Controlla le tue credenziali'
       });
     } finally {
       setIsLoading(false);
@@ -53,9 +53,9 @@ export default function Login() {
             <div className="flex justify-center mb-4">
               <Logo size={160} className="mx-auto" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome Back!</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Bentornato!</h1>
             <p className="text-white/80 text-xs sm:text-sm">
-              Sign in to access GOLDEN PHONE Management System
+              Accedi al Sistema di Gestione GOLDEN PHONE
             </p>
           </div>
 
@@ -65,9 +65,9 @@ export default function Login() {
             <div className="space-y-1 sm:space-y-2">
               <Label htmlFor="email" className="text-white/90 text-xs sm:text-sm font-medium">
                 <Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
-                Email Address
+                Indirizzo Email
               </Label>
-              <Input id="email" type="email" value={email} onChange={e => setEmail(sanitizeInput(e.target.value))} placeholder="Enter your email" className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={254} required />
+              <Input id="email" type="email" value={email} onChange={e => setEmail(sanitizeInput(e.target.value))} placeholder="Inserisci la tua email" className="glass-input h-10 sm:h-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={254} required />
             </div>
             
             {/* Password Field */}
@@ -77,7 +77,7 @@ export default function Login() {
                 Password
               </Label>
               <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={128} minLength={6} required />
+                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Inserisci la tua password" className="glass-input h-10 sm:h-12 pr-10 sm:pr-12 text-white placeholder:text-white/60 text-sm sm:text-base" maxLength={128} minLength={6} required />
                 <button type="button" className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
                 </button>
@@ -87,13 +87,13 @@ export default function Login() {
             {/* Submit Button */}
             <Button type="submit" className="w-full h-10 sm:h-12 glass-button font-medium text-white text-sm sm:text-base" disabled={isLoading}>
               <LogIn className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? "Accesso in corso..." : "Accedi"}
             </Button>
 
             {/* Additional Info */}
             <div className="text-center">
               <p className="text-[10px] sm:text-xs text-white/60 leading-tight">
-                Enter your credentials to access the system. Your role and permissions will be automatically detected.
+                Inserisci le tue credenziali per accedere al sistema. Il tuo ruolo e i permessi verranno rilevati automaticamente.
               </p>
             </div>
           </form>
@@ -107,7 +107,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center">
           <p className="text-[10px] sm:text-xs text-white/60">
-            GOLDEN PHONE Management System
+            Sistema di Gestione GOLDEN PHONE
           </p>
         </div>
       </div>

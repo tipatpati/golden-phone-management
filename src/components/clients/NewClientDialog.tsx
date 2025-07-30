@@ -64,25 +64,25 @@ export function NewClientDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Client
+          Aggiungi Cliente
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Client</DialogTitle>
+          <DialogTitle>Aggiungi Nuovo Cliente</DialogTitle>
         </DialogHeader>
         
         <Tabs value={clientType} onValueChange={(value) => setClientType(value as 'individual' | 'business')}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="individual">Individual (B2C)</TabsTrigger>
-            <TabsTrigger value="business">Business (B2B)</TabsTrigger>
+            <TabsTrigger value="individual">Privato (B2C)</TabsTrigger>
+            <TabsTrigger value="business">Azienda (B2B)</TabsTrigger>
           </TabsList>
           
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <TabsContent value="individual" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
+                  <Label htmlFor="first_name">Nome *</Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
@@ -91,7 +91,7 @@ export function NewClientDialog() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Label htmlFor="last_name">Cognome *</Label>
                   <Input
                     id="last_name"
                     value={formData.last_name}
@@ -104,7 +104,7 @@ export function NewClientDialog() {
             
             <TabsContent value="business" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name *</Label>
+                <Label htmlFor="company_name">Ragione Sociale *</Label>
                 <Input
                   id="company_name"
                   value={formData.company_name}
@@ -113,7 +113,7 @@ export function NewClientDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_person">Contact Person</Label>
+                <Label htmlFor="contact_person">Persona di Contatto</Label>
                 <Input
                   id="contact_person"
                   value={formData.contact_person}
@@ -121,7 +121,7 @@ export function NewClientDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="tax_id">Tax ID</Label>
+                <Label htmlFor="tax_id">Partita IVA</Label>
                 <Input
                   id="tax_id"
                   value={formData.tax_id}
@@ -142,7 +142,7 @@ export function NewClientDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Telefono</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
@@ -152,7 +152,7 @@ export function NewClientDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">Indirizzo</Label>
               <Input
                 id="address"
                 value={formData.address}
@@ -161,12 +161,12 @@ export function NewClientDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">Note</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => updateFormData('notes', e.target.value)}
-                placeholder="Additional notes..."
+                placeholder="Note aggiuntive..."
               />
             </div>
 
@@ -176,13 +176,13 @@ export function NewClientDialog() {
                 variant="outline" 
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                Annulla
               </Button>
               <Button 
                 type="submit" 
                 disabled={createClient.isPending}
               >
-                {createClient.isPending ? "Creating..." : "Create Client"}
+                {createClient.isPending ? "Creazione..." : "Crea Cliente"}
               </Button>
             </div>
           </form>

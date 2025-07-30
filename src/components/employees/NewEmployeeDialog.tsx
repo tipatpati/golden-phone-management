@@ -31,7 +31,7 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Employee</DialogTitle>
+          <DialogTitle>Aggiungi Nuovo Dipendente</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -43,10 +43,10 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
 
           <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
-              Cancel
+              Annulla
             </Button>
             <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading ? "Adding..." : "Add Employee"}
+              {isLoading ? "Aggiunta..." : "Aggiungi Dipendente"}
             </Button>
           </div>
         </form>

@@ -36,7 +36,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     
     // Validation
     if (!brand || !model || !category || !price || !minPrice || !maxPrice || !threshold) {
-      toast.error("Please fill in all required fields");
+      toast.error("Compila tutti i campi obbligatori");
       return;
     }
 
@@ -45,7 +45,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     
     // For categories that require serials, validate them
     if (requiresSerial && serialLines.length === 0) {
-      toast.error("This product category requires IMEI/Serial numbers");
+      toast.error("Questa categoria di prodotto richiede numeri IMEI/Seriali");
       return;
     }
 
@@ -64,12 +64,12 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const maxPriceNum = parseFloat(maxPrice);
     
     if (minPriceNum >= maxPriceNum) {
-      toast.error("Minimum price must be less than maximum price");
+      toast.error("Il prezzo minimo deve essere inferiore al prezzo massimo");
       return;
     }
     
     if (priceNum < minPriceNum || priceNum > maxPriceNum) {
-      toast.error("Base price must be between minimum and maximum selling prices");
+      toast.error("Il prezzo base deve essere compreso tra i prezzi minimi e massimi di vendita");
       return;
     }
     

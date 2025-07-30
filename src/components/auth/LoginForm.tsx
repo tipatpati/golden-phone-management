@@ -35,7 +35,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     const sanitizedPassword = sanitizeInput(password);
     
     if (!sanitizedEmail || !sanitizedPassword) {
-      toast.error("Please provide valid email and password");
+      toast.error("Inserisci email e password valide");
       return;
     }
     
@@ -60,13 +60,13 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     const sanitizedUsername = sanitizeInput(username);
     
     if (!sanitizedEmail || !sanitizedPassword) {
-      toast.error("Please provide valid email and password");
+      toast.error("Inserisci email e password valide");
       return;
     }
     
     // Basic password strength check
     if (sanitizedPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("La password deve essere di almeno 6 caratteri");
       return;
     }
     
@@ -93,14 +93,14 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             GOLDEN PHONE
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Access your inventory management system
+            Accedi al tuo sistema di gestione inventario
           </p>
         </CardHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mx-6">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="login">Accedi</TabsTrigger>
+            <TabsTrigger value="signup">Registrati</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">
@@ -113,7 +113,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(sanitizeInput(e.target.value))}
-                    placeholder="Enter your email"
+                    placeholder="Inserisci la tua email"
                     maxLength={254}
                     required
                   />
@@ -127,7 +127,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder="Inserisci la tua password"
                       maxLength={128}
                       required
                     />
@@ -150,7 +150,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   className="w-full" 
                   disabled={isLoading}
                 >
-                  {isLoading ? "Logging in..." : "Login"}
+                  {isLoading ? "Accesso in corso..." : "Accedi"}
                 </Button>
               </CardFooter>
             </form>
@@ -160,13 +160,13 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             <form onSubmit={handleSignup}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username (Optional)</Label>
+                  <Label htmlFor="signup-username">Nome utente (Opzionale)</Label>
                   <Input
                     id="signup-username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(sanitizeInput(e.target.value))}
-                    placeholder="Enter a username"
+                    placeholder="Inserisci un nome utente"
                     maxLength={50}
                   />
                 </div>
@@ -178,7 +178,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(sanitizeInput(e.target.value))}
-                    placeholder="Enter your email"
+                    placeholder="Inserisci la tua email"
                     maxLength={254}
                     required
                   />
@@ -192,7 +192,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password (min 6 characters)"
+                      placeholder="Crea una password (min 6 caratteri)"
                       maxLength={128}
                       minLength={6}
                       required
@@ -210,10 +210,10 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role-select">Role</Label>
+                  <Label htmlFor="role-select">Ruolo</Label>
                   <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select your role" />
+                      <SelectValue placeholder="Seleziona il tuo ruolo" />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(ROLE_CONFIGS).map(([key, config]) => (
@@ -236,7 +236,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   disabled={isLoading}
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
-                  {isLoading ? "Creating account..." : "Sign Up"}
+                  {isLoading ? "Creazione account..." : "Registrati"}
                 </Button>
               </CardFooter>
             </form>
