@@ -47,32 +47,54 @@ export function SaleItemsList({
 
   return (
     <div className="space-y-4">
-      <Label>Articoli Vendita</Label>
-      <div className="space-y-2">
+      <Label className="text-base font-medium text-foreground">Articoli Vendita</Label>
+      <div className="space-y-3">
         {saleItems.map((item) => (
-          <div key={item.product_id} className="border rounded-md p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-medium">{item.product_name}</div>
+          <div 
+            key={item.product_id} 
+            className="border border-border rounded-lg p-4 sm:p-5 bg-card shadow-sm hover:shadow-md transition-shadow"
+          >
+            {/* Header with product name and remove button */}
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground text-sm sm:text-base leading-tight">
+                  {item.product_name}
+                </h4>
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemoveItem(item.product_id)}
+                className="h-8 w-8 p-0 shrink-0 hover:bg-destructive/10 hover:text-destructive"
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <Label className="text-xs">Quantità</Label>
+
+            {/* Main content grid - responsive layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {/* Quantity Section */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Quantità
+                </Label>
                 {(() => {
                   const availableStock = getProductStock(item.product_id);
                   const hasStockWarning = item.quantity > availableStock;
                   
                   return (
-                    <>
-                      <div className="text-xs text-muted-foreground mb-1">
-                        Disponibile: {availableStock}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          Disponibile:
+                        </span>
+                        <span className={`text-xs font-medium ${
+                          availableStock > 10 ? 'text-green-600' : 
+                          availableStock > 0 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {availableStock}
+                        </span>
                       </div>
                       <Input
                         type="number"
@@ -80,59 +102,81 @@ export function SaleItemsList({
                         max={availableStock}
                         value={item.quantity}
                         onChange={(e) => onQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
-                        className={hasStockWarning ? "border-red-500" : ""}
+                        className={`h-9 ${hasStockWarning ? "border-destructive focus:border-destructive" : ""}`}
                       />
                       {hasStockWarning && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <AlertTriangle className="h-3 w-3 text-red-500" />
-                          <span className="text-xs text-red-500">
+                        <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded-md">
+                          <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
+                          <span className="text-xs text-destructive leading-tight">
                             Supera la scorta disponibile di {item.quantity - availableStock}
                           </span>
                         </div>
                       )}
-                    </>
+                    </div>
                   );
                 })()}
               </div>
-              <div>
-                <Label className="text-xs">Prezzo Unitario</Label>
-                {item.min_price && item.max_price && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Range: ${item.min_price} - ${item.max_price}
-                  </div>
-                )}
-                <Input
-                  type="number"
-                  step="0.01"
-                  min={item.min_price || 0}
-                  max={item.max_price || undefined}
-                  value={item.unit_price}
-                  onChange={(e) => onPriceUpdate(item.product_id, parseFloat(e.target.value) || 0)}
-                  className={
-                    item.min_price && item.max_price && 
-                    (item.unit_price < item.min_price || item.unit_price > item.max_price)
-                      ? "border-red-500" 
-                      : ""
-                  }
-                />
-                {item.min_price && item.max_price && 
-                 (item.unit_price < item.min_price || item.unit_price > item.max_price) && (
-                  <div className="text-xs text-red-500 mt-1">
-                    Il prezzo deve essere tra ${item.min_price} - ${item.max_price}
-                  </div>
-                )}
+
+              {/* Price Section */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Prezzo Unitario
+                </Label>
+                <div className="space-y-2">
+                  {item.min_price && item.max_price && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Range:</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        ${item.min_price} - ${item.max_price}
+                      </span>
+                    </div>
+                  )}
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={item.min_price || 0}
+                    max={item.max_price || undefined}
+                    value={item.unit_price}
+                    onChange={(e) => onPriceUpdate(item.product_id, parseFloat(e.target.value) || 0)}
+                    className={`h-9 ${
+                      item.min_price && item.max_price && 
+                      (item.unit_price < item.min_price || item.unit_price > item.max_price)
+                        ? "border-destructive focus:border-destructive" 
+                        : ""
+                    }`}
+                  />
+                  {item.min_price && item.max_price && 
+                   (item.unit_price < item.min_price || item.unit_price > item.max_price) && (
+                    <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded-md">
+                      <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
+                      <span className="text-xs text-destructive leading-tight">
+                        Il prezzo deve essere tra ${item.min_price} - ${item.max_price}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <Label className="text-xs">Numero di Serie</Label>
+
+              {/* Serial Number Section */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Numero di Serie
+                </Label>
                 <Input
                   placeholder="Opzionale"
                   value={item.serial_number || ""}
                   onChange={(e) => onSerialNumberUpdate(item.product_id, e.target.value)}
+                  className="h-9"
                 />
               </div>
             </div>
-            <div className="text-right mt-2 font-medium">
-              Totale: ${(item.unit_price * item.quantity).toFixed(2)}
+
+            {/* Footer with total */}
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-border">
+              <span className="text-sm text-muted-foreground">Subtotale articolo:</span>
+              <span className="text-base font-semibold text-foreground">
+                ${(item.unit_price * item.quantity).toFixed(2)}
+              </span>
             </div>
           </div>
         ))}
