@@ -131,7 +131,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                     value={entry.serial}
                     onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
                     placeholder="352908764123456"
-                    className="text-sm"
+                    className="text-sm h-9"
                   />
                 </div>
                 
@@ -148,7 +148,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                       value={entry.batteryLevel}
                       onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
                       placeholder="85"
-                      className="text-sm"
+                      className="text-sm h-9"
                     />
                   </div>
                   
@@ -160,7 +160,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                       value={entry.color} 
                       onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                     >
-                      <SelectTrigger className="text-sm">
+                      <SelectTrigger className="text-sm h-9">
                         <SelectValue placeholder="Select color" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
@@ -191,7 +191,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   value={entry.serial}
                   onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
                   placeholder="352908764123456"
-                  className="text-sm"
+                  className="text-sm h-9"
                 />
               </div>
               
@@ -207,7 +207,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   value={entry.batteryLevel}
                   onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
                   placeholder="85"
-                  className="text-sm"
+                  className="text-sm h-9"
                 />
               </div>
               
@@ -219,7 +219,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   value={entry.color} 
                   onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                 >
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className="text-sm h-9">
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
