@@ -84,9 +84,15 @@ export abstract class BaseApiService<T extends BaseEntity, TCreate = Omit<T, key
       .from(this.tableName as any)
       .select(this.selectQuery)
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
-    return this.performQuery(query, 'fetching by id');
+    const result = await this.performQuery(query, 'fetching by id');
+    
+    if (!result) {
+      throw new Error(`${this.tableName} with id ${id} not found`);
+    }
+    
+    return result;
   }
 
   async create(data: TCreate): Promise<T> {
@@ -96,9 +102,14 @@ export abstract class BaseApiService<T extends BaseEntity, TCreate = Omit<T, key
       .from(this.tableName as any)
       .insert([data as any])
       .select(this.selectQuery)
-      .single();
+      .maybeSingle();
     
     const result = await this.performQuery(query, 'creating');
+    
+    if (!result) {
+      throw new Error(`Failed to create ${this.tableName}: No data returned`);
+    }
+    
     console.log(`${this.tableName} created successfully:`, result);
     return result;
   }
@@ -111,9 +122,14 @@ export abstract class BaseApiService<T extends BaseEntity, TCreate = Omit<T, key
       .update(data as any)
       .eq('id', id)
       .select(this.selectQuery)
-      .single();
+      .maybeSingle();
     
     const result = await this.performQuery(query, 'updating');
+    
+    if (!result) {
+      throw new Error(`Failed to update ${this.tableName} with id ${id}: No data returned`);
+    }
+    
     console.log(`${this.tableName} updated successfully:`, result);
     return result;
   }

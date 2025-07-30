@@ -37,7 +37,14 @@ export class BaseReactQueryService<T extends BaseEntity, TCreate = Omit<T, keyof
   useGetById(id: string, customOptions?: UseQueryOptions) {
     return useQuery({
       queryKey: [this.queryKey, 'detail', id],
-      queryFn: () => this.apiService.getById(id),
+      queryFn: async () => {
+        try {
+          return await this.apiService.getById(id);
+        } catch (error) {
+          console.warn(`${this.queryKey} with id ${id} not found:`, error);
+          return null;
+        }
+      },
       enabled: !!id,
       ...customOptions,
     });
