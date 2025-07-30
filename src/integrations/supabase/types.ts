@@ -750,21 +750,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_failed_auth_attempts: {
-        Args: { user_email: string }
-        Returns: number
-      }
       cleanup_invalid_auth_state: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      cleanup_old_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      detect_concurrent_sessions: {
-        Args: { user_uuid: string }
-        Returns: boolean
       }
       generate_repair_number: {
         Args: Record<PropertyKey, never>
@@ -791,10 +779,6 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
-        Returns: boolean
-      }
-      is_ip_blocked: {
-        Args: { client_ip: unknown }
         Returns: boolean
       }
       validate_product_stock: {

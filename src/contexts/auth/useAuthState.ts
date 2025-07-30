@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { UserRole } from "@/types/roles";
 import { supabase } from "@/integrations/supabase/client";
+import { log } from "@/utils/secureLogger";
 
 export function useAuthState() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,98 +15,190 @@ export function useAuthState() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching user profile for:', userId);
+      log.debug('Fetching user profile', { userId }, 'AuthState');
       
-      // First try to get the profile
-      const { data: profile, error: profileError } = await supabase
+      // Use Promise.race for timeout functionality  
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 8000);
+      });
+      
+      const profilePromise = supabase
         .from('profiles')
         .select('username, role')
         .eq('id', userId)
         .single();
       
-      if (profileError) {
-        console.error('Error fetching user profile:', profileError);
-        // Set default admin role for users without profiles
-        setUserRole('admin');
-        setInterfaceRole('admin');
-        // Get user email from the current session for username
-        const currentSession = await supabase.auth.getSession();
-        const userEmail = currentSession.data.session?.user?.email;
-        setUsername(userEmail?.split('@')[0] || 'user');
-        return;
-      }
+      const { data: profile, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
       
-      if (profile) {
-        console.log('User profile fetched:', profile);
-        setUserRole(profile.role as UserRole);
-        setInterfaceRole(profile.role as UserRole);
-        setUsername(profile.username);
-        
-        // Check if this user is also an employee
-        try {
-          const { data: employee } = await supabase
-            .from('employees')
-            .select('first_name, last_name, position')
-            .eq('profile_id', userId)
-            .maybeSingle();
+        if (profileError) {
+          log.error('Error fetching user profile', profileError, 'AuthState');
           
-          if (employee) {
-            console.log('User is also an employee:', employee);
-            // Could set additional employee-specific data here if needed
+          // Handle different error types
+          if (profileError.code === 'PGRST116') {
+            // No profile found - this is expected for new users, create one
+            log.info('No profile found, user needs setup', null, 'AuthState');
+            setUserRole(null);
+            setInterfaceRole(null); 
+            setUsername(null);
+            return;
+          } else {
+            // Other errors - sign out for security
+            log.warn('Profile error, signing out for security', null, 'AuthState');
+            await supabase.auth.signOut();
+            setUserRole(null);
+            setInterfaceRole(null);
+            setUsername(null);
+            return;
           }
-        } catch (error) {
-          console.log('User is not an employee or error fetching employee data');
         }
+        
+        if (!profile) {
+          log.info('No profile data returned, user needs setup', null, 'AuthState');
+          setUserRole(null);
+          setInterfaceRole(null);
+          setUsername(null);
+          return;
+        }
+      
+        // Valid profile found - set user data
+        log.info('User profile fetched successfully', { role: profile.role, username: profile.username }, 'AuthState');
+      setUserRole(profile.role as UserRole);
+      setInterfaceRole(profile.role as UserRole);
+      setUsername(profile.username || profile.role);
+      
+      // Optional: Check if this user is also an employee
+      try {
+        const employeeTimeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Employee fetch timeout')), 5000);
+        });
+        
+        const employeePromise = supabase
+          .from('employees')
+          .select('first_name, last_name, position')
+          .eq('profile_id', userId)
+          .maybeSingle();
+        
+        const { data: employee } = await Promise.race([
+          employeePromise,
+          employeeTimeoutPromise
+        ]) as any;
+        
+          if (employee) {
+            log.debug('User is also an employee', { position: employee.position }, 'AuthState');
+          // Could set additional employee-specific data here if needed
+        }
+      } catch (error) {
+          // Employee data is optional - don't fail auth for this
+          log.debug('User is not an employee or error fetching employee data', error, 'AuthState');
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      setUserRole('admin'); // Fallback
-      setInterfaceRole('admin');
+      log.error('Error fetching user profile', error, 'AuthState');
+      // For timeout errors, just continue without profile
+      if (error.message?.includes('timeout')) {
+        log.warn('Profile fetch timeout, continuing without profile', null, 'AuthState');
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+      } else {
+        // For other errors, sign out
+        log.warn('Authentication error occurred. Signing out user.', null, 'AuthState');
+        await supabase.auth.signOut();
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+      }
     }
   };
 
+  // Set up Supabase auth for all users
   useEffect(() => {
     let mounted = true;
+    console.log('useAuthState effect starting...');
     
+    // Immediate timeout to prevent stuck loading
+    const fallbackTimeout = setTimeout(() => {
+      if (mounted && !isInitialized) {
+        console.log('Auth initialization timeout, force completing...');
+        log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
+        setIsInitialized(true);
+      }
+    }, 500); // Reduced from 1000 to 500ms
+
+    const cleanup = () => {
+      mounted = false;
+      clearTimeout(fallbackTimeout);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('Auth state change:', { event, hasSession: !!session });
+        log.debug('Supabase auth state changed', { event, hasUser: !!session?.user }, 'AuthState');
+        
         if (!mounted) return;
 
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          log.debug('User found, fetching profile in background', null, 'AuthState');
+          // Fetch profile in background without blocking initialization
+          setTimeout(() => {
+            if (mounted) {
+              fetchUserProfile(session.user.id).catch(error => {
+                log.warn('Background profile fetch failed in auth change', error, 'AuthState');
+              });
+            }
+          }, 0);
         } else {
+          log.debug('No user, clearing profile data', null, 'AuthState');
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
         }
         
-        setIsInitialized(true);
+        // Always ensure we're initialized after auth state changes
+        if (!isInitialized) {
+          console.log('Setting isInitialized to true from auth state change');
+          setIsInitialized(true);
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
+      console.log('Getting session result:', { hasSession: !!session });
+      log.debug('Initial session check', { hasUser: !!session?.user }, 'AuthState');
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id).finally(() => {
-          if (mounted) setIsInitialized(true);
+        log.debug('Initial user found, fetching profile...', null, 'AuthState');
+        // Fetch profile in background but initialize immediately
+        fetchUserProfile(session.user.id).catch(error => {
+          log.warn('Background profile fetch failed', error, 'AuthState');
         });
-      } else {
-        setIsInitialized(true);
       }
+      
+      // Always initialize immediately, don't wait for profile
+      console.log('Setting initialized to true from getSession');
+      log.debug('Setting initialized to true immediately', null, 'AuthState');
+      setIsInitialized(true);
+    }).catch(error => {
+      console.error('Failed to get initial session:', error);
+      log.error('Failed to get initial session', error, 'AuthState');
+      // Even on error, initialize to prevent stuck loading
+      setIsInitialized(true);
     });
 
     return () => {
-      mounted = false;
+      cleanup();
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Remove isInitialized dependency to prevent infinite recreation
 
   return {
     user,

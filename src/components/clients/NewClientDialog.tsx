@@ -3,60 +3,56 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { useCreateClient } from "@/services/useClients";
+import { useForm } from "@/hooks/useForm";
+import { CreateClientSchema, ClientFormData } from "@/schemas/validation";
+import { useErrorHandler } from "@/utils/errorHandler";
 
 export function NewClientDialog() {
   const [open, setOpen] = useState(false);
-  const [clientType, setClientType] = useState<'individual' | 'business'>('individual');
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    company_name: '',
-    contact_person: '',
-    email: '',
-    phone: '',
-    address: '',
-    tax_id: '',
-    notes: ''
-  });
-
+  
   const createClient = useCreateClient();
+  const { handleError } = useErrorHandler('NewClientDialog');
+  
+  // Form with validation
+  const form = useForm<ClientFormData>(
+    {
+      type: 'individual',
+      first_name: '',
+      last_name: '',
+      company_name: '',
+      contact_person: '',
+      email: '',
+      phone: '',
+      address: '',
+      tax_id: '',
+      notes: '',
+      status: 'active'
+    },
+    CreateClientSchema,
+    'NewClientDialog'
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      await createClient.mutateAsync({
-        type: clientType,
-        status: 'active',
-        ...formData
-      });
-      
-      // Reset form
-      setFormData({
-        first_name: '',
-        last_name: '',
-        company_name: '',
-        contact_person: '',
-        email: '',
-        phone: '',
-        address: '',
-        tax_id: '',
-        notes: ''
-      });
-      setClientType('individual');
-      setOpen(false);
-    } catch (error) {
-      console.error('Error creating client:', error);
-    }
-  };
-
-  const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSubmit = async () => {
+    await form.handleSubmit(
+      async (data) => {
+        await createClient.mutateAsync({
+          ...data,
+          type: data.type as 'individual' | 'business',
+          status: data.status || 'active'
+        });
+        setOpen(false);
+      },
+      () => {
+        // Success - form automatically resets
+      },
+      (error) => {
+        handleError(error, 'createClient');
+      }
+    );
   };
 
   return (
@@ -72,32 +68,38 @@ export function NewClientDialog() {
           <DialogTitle>Aggiungi Nuovo Cliente</DialogTitle>
         </DialogHeader>
         
-        <Tabs value={clientType} onValueChange={(value) => setClientType(value as 'individual' | 'business')}>
+        <Tabs value={form.data.type} onValueChange={(value) => form.updateField('type', value)}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="individual">Privato (B2C)</TabsTrigger>
             <TabsTrigger value="business">Azienda (B2B)</TabsTrigger>
           </TabsList>
           
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4 mt-4">
             <TabsContent value="individual" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">Nome *</Label>
                   <Input
                     id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => updateFormData('first_name', e.target.value)}
+                    value={form.data.first_name || ''}
+                    onChange={(e) => form.updateField('first_name', e.target.value)}
                     required
                   />
+                  {form.getFieldError('first_name') && (
+                    <p className="text-sm text-destructive">{form.getFieldError('first_name')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Cognome *</Label>
                   <Input
                     id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => updateFormData('last_name', e.target.value)}
+                    value={form.data.last_name || ''}
+                    onChange={(e) => form.updateField('last_name', e.target.value)}
                     required
                   />
+                  {form.getFieldError('last_name') && (
+                    <p className="text-sm text-destructive">{form.getFieldError('last_name')}</p>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -107,25 +109,28 @@ export function NewClientDialog() {
                 <Label htmlFor="company_name">Ragione Sociale *</Label>
                 <Input
                   id="company_name"
-                  value={formData.company_name}
-                  onChange={(e) => updateFormData('company_name', e.target.value)}
+                  value={form.data.company_name || ''}
+                  onChange={(e) => form.updateField('company_name', e.target.value)}
                   required
                 />
+                {form.getFieldError('company_name') && (
+                  <p className="text-sm text-destructive">{form.getFieldError('company_name')}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact_person">Persona di Contatto</Label>
                 <Input
                   id="contact_person"
-                  value={formData.contact_person}
-                  onChange={(e) => updateFormData('contact_person', e.target.value)}
+                  value={form.data.contact_person || ''}
+                  onChange={(e) => form.updateField('contact_person', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tax_id">Partita IVA</Label>
                 <Input
                   id="tax_id"
-                  value={formData.tax_id}
-                  onChange={(e) => updateFormData('tax_id', e.target.value)}
+                  value={form.data.tax_id || ''}
+                  onChange={(e) => form.updateField('tax_id', e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -137,16 +142,19 @@ export function NewClientDialog() {
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData('email', e.target.value)}
+                  value={form.data.email || ''}
+                  onChange={(e) => form.updateField('email', e.target.value)}
                 />
+                {form.getFieldError('email') && (
+                  <p className="text-sm text-destructive">{form.getFieldError('email')}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Telefono</Label>
                 <Input
                   id="phone"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
+                  value={form.data.phone || ''}
+                  onChange={(e) => form.updateField('phone', e.target.value)}
                 />
               </div>
             </div>
@@ -155,8 +163,8 @@ export function NewClientDialog() {
               <Label htmlFor="address">Indirizzo</Label>
               <Input
                 id="address"
-                value={formData.address}
-                onChange={(e) => updateFormData('address', e.target.value)}
+                value={form.data.address || ''}
+                onChange={(e) => form.updateField('address', e.target.value)}
               />
             </div>
 
@@ -164,8 +172,8 @@ export function NewClientDialog() {
               <Label htmlFor="notes">Note</Label>
               <Textarea
                 id="notes"
-                value={formData.notes}
-                onChange={(e) => updateFormData('notes', e.target.value)}
+                value={form.data.notes || ''}
+                onChange={(e) => form.updateField('notes', e.target.value)}
                 placeholder="Note aggiuntive..."
               />
             </div>
@@ -180,9 +188,9 @@ export function NewClientDialog() {
               </Button>
               <Button 
                 type="submit" 
-                disabled={createClient.isPending}
+                disabled={form.isLoading || !form.isValid}
               >
-                {createClient.isPending ? "Creazione..." : "Crea Cliente"}
+                {form.isLoading ? "Creazione..." : "Crea Cliente"}
               </Button>
             </div>
           </form>

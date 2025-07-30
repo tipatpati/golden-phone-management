@@ -13,7 +13,7 @@ class EnhancedRateLimiter {
   private readonly BASE_LIMIT = 5; // Base requests per window
   private readonly WINDOW_MS = 60000; // 1 minute
   private readonly FAILURE_THRESHOLD = 3; // Failed attempts before blocking
-  private readonly BLOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes increased from 15
+  private readonly BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
   checkRateLimit(key: string, isFailure = false): { allowed: boolean; retryAfter?: number } {
     const now = Date.now();
@@ -119,19 +119,19 @@ export const validateInput = {
     if (password.length > 128) return { valid: false, error: 'Password is too long' };
     
     if (isSignup) {
-      // Stronger validation for signup
+      // Stronger validation for signup only
       if (!/[A-Za-z]/.test(password)) {
         return { valid: false, error: 'Password must contain at least one letter' };
       }
       if (!/[0-9]/.test(password)) {
         return { valid: false, error: 'Password must contain at least one number' };
       }
-    }
-    
-    // Check for common weak passwords
-    const weakPasswords = ['password', '123456', 'qwerty', 'admin', 'login'];
-    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-      return { valid: false, error: 'Password is too common. Please choose a stronger password' };
+      
+      // Check for common weak passwords only during signup
+      const weakPasswords = ['password', '123456', 'qwerty', 'admin', 'login'];
+      if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
+        return { valid: false, error: 'Password is too common. Please choose a stronger password' };
+      }
     }
     
     return { valid: true };
