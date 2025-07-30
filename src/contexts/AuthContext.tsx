@@ -3,11 +3,19 @@ import React, { createContext, useContext } from "react";
 import { AuthContextType } from "./auth/types";
 import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
+import { useSessionSecurity } from "@/hooks/useSessionSecurity";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const authState = useAuthState();
+  
+  // Enhanced session security
+  const { isSessionValid, resetActivity } = useSessionSecurity({
+    timeoutMinutes: 120,
+    maxIdleMinutes: 30,
+    detectConcurrentSessions: true
+  });
   
   const authActions = createAuthActions({
     user: authState.user,
@@ -18,7 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession: authState.setSession
   });
 
-  const isLoggedIn = !!authState.session;
+  const isLoggedIn = !!authState.session && isSessionValid;
+
+  // Reset activity on successful auth state changes
+  React.useEffect(() => {
+    if (authState.session && isSessionValid) {
+      resetActivity();
+    }
+  }, [authState.session, isSessionValid, resetActivity]);
 
   return (
     <AuthContext.Provider value={{ 
