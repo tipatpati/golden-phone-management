@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { useProducts, useDeleteProduct, useUpdateProduct, Product } from "@/services/useProducts";
 import { EditProductForm } from "./EditProductForm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -416,3 +416,5 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: Inventory
     </>
   );
 }
+
+export default memo(InventoryTable);
