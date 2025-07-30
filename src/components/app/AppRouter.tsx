@@ -30,8 +30,12 @@ const PageLoader = () => (
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
+  // Add debugging
+  console.log('AppRouter state:', { isLoggedIn, userRole, user: !!user, isInitialized });
+
   // Show loading while auth state is initializing
   if (!isInitialized) {
+    console.log('Auth not initialized, showing loading...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-lg text-gray-900">Loading...</div>

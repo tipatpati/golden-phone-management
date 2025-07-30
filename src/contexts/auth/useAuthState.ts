@@ -120,10 +120,11 @@ export function useAuthState() {
     // Immediate timeout to prevent stuck loading
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
+        console.log('Auth initialization timeout, force completing...');
         log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
         setIsInitialized(true);
       }
-    }, 3000);
+    }, 1000); // Reduced from 3000 to 1000ms
 
     const cleanup = () => {
       mounted = false;
