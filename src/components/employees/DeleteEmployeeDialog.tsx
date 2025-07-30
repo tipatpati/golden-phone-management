@@ -12,7 +12,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle } from "lucide-react";
-import { log } from "@/utils/logger";
 
 interface Employee {
   id: string;
@@ -50,7 +49,7 @@ export function DeleteEmployeeDialog({ employee, open, onClose, onSuccess }: Del
 
       onSuccess();
     } catch (error) {
-      log.error("Error deleting employee", error, "DeleteEmployeeDialog");
+      console.error("Error deleting employee:", error);
       toast({
         title: "Error",
         description: "Failed to delete employee",

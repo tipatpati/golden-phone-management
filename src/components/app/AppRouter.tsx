@@ -1,50 +1,42 @@
-import React, { Suspense } from "react";
+
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { TabletLayout } from "@/components/layout/TabletLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { EmployeeDashboard } from "@/pages/employee/EmployeeDashboard";
 import { useAuth } from "@/contexts/AuthContext";
+import Dashboard from "@/pages/Dashboard";
+import Clients from "@/pages/Clients";
+import Sales from "@/pages/Sales";
+import Inventory from "@/pages/Inventory";
+import Suppliers from "@/pages/Suppliers";
+import Repairs from "@/pages/Repairs";
+import EmployeeManagement from "@/pages/EmployeeManagement";
+import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
-import NotFound from "@/pages/NotFound";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
-// Lazy load major route components for better performance
-const Dashboard = React.lazy(() => import("@/pages/Dashboard"));
-const Clients = React.lazy(() => import("@/pages/Clients"));
-const Sales = React.lazy(() => import("@/pages/Sales"));
-const Inventory = React.lazy(() => import("@/pages/Inventory"));
-const Suppliers = React.lazy(() => import("@/pages/Suppliers"));
-const Repairs = React.lazy(() => import("@/pages/Repairs"));
-const EmployeeManagement = React.lazy(() => import("@/pages/EmployeeManagement"));
-const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDashboard"));
-const Documentation = React.lazy(() => import("@/pages/Documentation"));
-
-// Loading fallback component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner />
-  </div>
-);
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
-  // Add debugging
-  console.log('AppRouter state:', { isLoggedIn, userRole, user: !!user, isInitialized });
-
   // Show loading while auth state is initializing
   if (!isInitialized) {
-    console.log('Auth not initialized, showing loading...');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-lg text-gray-900">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
       </div>
     );
   }
 
-  // Determine effective role based on authenticated user data only - no fallbacks
-  const effectiveRole = userRole;
+  // Show loading only if we have a user but no role yet (brief loading state)
+  if (user && !userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading user profile...</div>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -52,19 +44,15 @@ export function AppRouter() {
         {/* Root route - login if not authenticated, main app if authenticated */}
         <Route path="/" element={
           isLoggedIn ? (
-            effectiveRole === 'admin' ? (
+            userRole === 'admin' ? (
               <ProtectedRoute>
-                <TabletLayout userRole={effectiveRole}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Dashboard />
-                  </Suspense>
+                <TabletLayout userRole={userRole || 'admin'}>
+                  <Dashboard />
                 </TabletLayout>
               </ProtectedRoute>
             ) : (
-              <TabletLayout userRole={effectiveRole}>
-                <Suspense fallback={<PageLoader />}>
-                  <EmployeeDashboard userRole={effectiveRole} />
-                </Suspense>
+              <TabletLayout userRole={userRole || 'salesperson'}>
+                <EmployeeDashboard userRole={userRole || 'salesperson'} />
               </TabletLayout>
             )
           ) : (
@@ -84,56 +72,46 @@ export function AppRouter() {
         {isLoggedIn && (
           <>
             {/* Admin users get full admin interface */}
-            {effectiveRole === 'admin' ? (
+            {userRole === 'admin' ? (
               <>
                 <Route path="/sales" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Sales />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <Sales />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/clients" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Clients />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <Clients />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/inventory" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Inventory />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <Inventory />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/suppliers" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Suppliers />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <Suppliers />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/repairs" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Repairs />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <Repairs />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/reports" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <div className="min-h-[80vh] flex items-center justify-center">
                         <h1 className="text-2xl">Reports Module - Coming Soon</h1>
                       </div>
@@ -142,25 +120,14 @@ export function AppRouter() {
                 } />
                 <Route path="/employees" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <EmployeeManagement />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Documentation />
-                      </Suspense>
+                    <TabletLayout userRole={userRole || 'admin'}>
+                      <EmployeeManagement />
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <div className="min-h-[80vh] flex items-center justify-center">
                         <h1 className="text-2xl">Settings Module - Coming Soon</h1>
                       </div>
@@ -172,38 +139,28 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Sales />
-                    </Suspense>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
+                    <Sales />
                   </TabletLayout>
                 } />
                 <Route path="/clients" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Clients />
-                    </Suspense>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
+                    <Clients />
                   </TabletLayout>
                 } />
                 <Route path="/inventory" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Inventory />
-                    </Suspense>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
+                    <Inventory />
                   </TabletLayout>
                 } />
                 <Route path="/suppliers" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Suppliers />
-                    </Suspense>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
+                    <Suppliers />
                   </TabletLayout>
                 } />
                 <Route path="/repairs" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Repairs />
-                    </Suspense>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
+                    <Repairs />
                   </TabletLayout>
                 } />
               </>

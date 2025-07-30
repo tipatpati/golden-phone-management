@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
-// import { SecurityProvider } from "@/components/security/SecurityProvider"; // Disabled
+import { SecurityProvider } from "@/components/security/SecurityProvider";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -23,39 +23,23 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children, includeAuth = false }: AppProvidersProps) {
-  console.log('AppProviders rendering with includeAuth:', includeAuth);
-  
-  try {
-    const content = includeAuth ? (
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    ) : (
-      children
-    );
+  const content = includeAuth ? (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  ) : (
+    children
+  );
 
-    console.log('AppProviders: About to render providers...');
-
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          {/* SecurityProvider completely disabled for all environments */}
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <SecurityProvider>
           {content}
           <Toaster />
           <Sonner />
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  } catch (error) {
-    console.error('Error in AppProviders:', error);
-    return (
-      <div style={{ padding: '20px', color: 'red', fontFamily: 'Arial' }}>
-        <h2>AppProviders Error</h2>
-        <p>Error: {error?.message || 'Unknown error'}</p>
-        <pre style={{ background: '#f0f0f0', padding: '10px' }}>
-          {error?.stack || 'No stack trace available'}
-        </pre>
-      </div>
-    );
-  }
+        </SecurityProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }

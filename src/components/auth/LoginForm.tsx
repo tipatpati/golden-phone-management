@@ -6,69 +6,81 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff, UserPlus, LogIn } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import { LogIn, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
-import { useForm } from "@/hooks/useForm";
-import { LoginSchema } from "@/schemas/validation";
-import { useErrorHandler } from "@/utils/errorHandler";
-import { LoginFormData } from "@/schemas/validation";
+import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
 }
 
 export function LoginForm({ onLoginSuccess }: LoginFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("salesperson");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   
   const { login, signup } = useAuth();
-  const { handleError } = useErrorHandler('LoginForm');
-  
-  // Login form with validation
-  const loginForm = useForm<LoginFormData>(
-    { email: '', password: '' },
-    LoginSchema,
-    'LoginForm'
-  );
-  
-  // Signup form - using separate state for additional fields
-  const [signupData, setSignupData] = useState({
-    email: '',
-    password: '',
-    username: ''
-  });
 
-  const handleLogin = async () => {
-    await loginForm.handleSubmit(
-      async (data) => {
-        await login(data.email, data.password);
-        onLoginSuccess();
-      },
-      () => {
-        // Success handled in submit function
-      },
-      (error) => {
-        handleError(error, 'login');
-      }
-    );
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Inserisci email e password valide");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await login(sanitizedEmail, sanitizedPassword);
+      onLoginSuccess();
+    } catch (error) {
+      // Error is already shown by the auth service
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!signupData.email || !signupData.password) {
-      handleError(new Error('Email and password are required'), 'validation', true);
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    const sanitizedUsername = sanitizeInput(username);
+    
+    if (!sanitizedEmail || !sanitizedPassword) {
+      toast.error("Inserisci email e password valide");
       return;
     }
     
+    // Basic password strength check
+    if (sanitizedPassword.length < 6) {
+      toast.error("La password deve essere di almeno 6 caratteri");
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
-      await signup(signupData.email, signupData.password, signupData.username, selectedRole);
+      await signup(sanitizedEmail, sanitizedPassword, sanitizedUsername, selectedRole);
+      // After successful signup, switch to login tab
       setActiveTab("login");
-      setSignupData({ email: '', password: '', username: '' });
+      setPassword(""); // Clear password for security
     } catch (error) {
-      handleError(error, 'signup');
+      // Error is already shown by the auth service
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,22 +104,19 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
           </TabsList>
           
           <TabsContent value="login">
-            <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+            <form onSubmit={handleLogin}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    value={loginForm.data.email}
-                    onChange={(e) => loginForm.updateField('email', e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                     placeholder="Inserisci la tua email"
                     maxLength={254}
                     required
                   />
-                  {loginForm.getFieldError('email') && (
-                    <p className="text-sm text-destructive">{loginForm.getFieldError('email')}</p>
-                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -116,8 +125,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      value={loginForm.data.password}
-                      onChange={(e) => loginForm.updateField('password', e.target.value)}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="Inserisci la tua password"
                       maxLength={128}
                       required
@@ -132,9 +141,6 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {loginForm.getFieldError('password') && (
-                    <p className="text-sm text-destructive">{loginForm.getFieldError('password')}</p>
-                  )}
                 </div>
               </CardContent>
               
@@ -142,9 +148,9 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loginForm.isLoading}
+                  disabled={isLoading}
                 >
-                  {loginForm.isLoading ? "Accesso in corso..." : "Accedi"}
+                  {isLoading ? "Accesso in corso..." : "Accedi"}
                 </Button>
               </CardFooter>
             </form>
@@ -158,8 +164,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   <Input
                     id="signup-username"
                     type="text"
-                    value={signupData.username}
-                    onChange={(e) => setSignupData(prev => ({...prev, username: e.target.value}))}
+                    value={username}
+                    onChange={(e) => setUsername(sanitizeInput(e.target.value))}
                     placeholder="Inserisci un nome utente"
                     maxLength={50}
                   />
@@ -170,8 +176,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   <Input
                     id="signup-email"
                     type="email"
-                    value={signupData.email}
-                    onChange={(e) => setSignupData(prev => ({...prev, email: e.target.value}))}
+                    value={email}
+                    onChange={(e) => setEmail(sanitizeInput(e.target.value))}
                     placeholder="Inserisci la tua email"
                     maxLength={254}
                     required
@@ -184,8 +190,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
-                      value={signupData.password}
-                      onChange={(e) => setSignupData(prev => ({...prev, password: e.target.value}))}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="Crea una password (min 6 caratteri)"
                       maxLength={128}
                       minLength={6}
@@ -227,10 +233,10 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loginForm.isLoading}
+                  disabled={isLoading}
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
-                  {loginForm.isLoading ? "Creazione account..." : "Registrati"}
+                  {isLoading ? "Creazione account..." : "Registrati"}
                 </Button>
               </CardFooter>
             </form>

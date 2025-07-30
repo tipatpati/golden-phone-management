@@ -119,19 +119,19 @@ export const validateInput = {
     if (password.length > 128) return { valid: false, error: 'Password is too long' };
     
     if (isSignup) {
-      // Stronger validation for signup only
+      // Stronger validation for signup
       if (!/[A-Za-z]/.test(password)) {
         return { valid: false, error: 'Password must contain at least one letter' };
       }
       if (!/[0-9]/.test(password)) {
         return { valid: false, error: 'Password must contain at least one number' };
       }
-      
-      // Check for common weak passwords only during signup
-      const weakPasswords = ['password', '123456', 'qwerty', 'admin', 'login'];
-      if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-        return { valid: false, error: 'Password is too common. Please choose a stronger password' };
-      }
+    }
+    
+    // Check for common weak passwords
+    const weakPasswords = ['password', '123456', 'qwerty', 'admin', 'login'];
+    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
+      return { valid: false, error: 'Password is too common. Please choose a stronger password' };
     }
     
     return { valid: true };

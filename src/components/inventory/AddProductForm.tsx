@@ -10,7 +10,6 @@ import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, validateSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
-import { logger } from "@/utils/logger";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [brand, setBrand] = useState("");
@@ -26,12 +25,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [serialNumbers, setSerialNumbers] = useState("");
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
-
-  // Clear any persistent states on component mount
-  React.useEffect(() => {
-    setCreatedProduct(null);
-    setShowPrintDialog(false);
-  }, []);
 
   const createProduct = useCreateProduct();
 
@@ -96,9 +89,6 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
     const enhancedBrand = colors.length > 0 ? `${brand} (${colors.join(', ')})` : brand;
     
-    // Set stock to match number of serial entries (each serial = 1 unit of stock)
-    const actualStock = serialEntries.length > 0 ? serialEntries.length : parseInt(stock);
-    
     const newProduct = {
       brand: enhancedBrand,
       model,
@@ -107,42 +97,28 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       price: parseFloat(price),
       min_price: parseFloat(minPrice),
       max_price: parseFloat(maxPrice),
-      stock: actualStock, // Stock matches serial entries count
+      stock: parseInt(stock),
       threshold: parseInt(threshold),
-      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined, // Default battery level for category
+      battery_level: batteryLevel ? parseInt(batteryLevel) : undefined,
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
       ),
       barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${brand} ${model}`, undefined, 0),
-      serial_entries: serialEntries // Store individual entries for inventory tracking
+      serial_entries: serialEntries // For potential future use
     };
     
-    logger.debug('Submitting product', { 
-      categoryId: newProduct.category_id,
-      serialEntriesCount: serialEntries.length 
-    }, 'AddProductForm');
+    console.log('Submitting product with category ID:', newProduct.category_id);
+    console.log('Serial entries:', serialEntries);
     
     createProduct.mutate(newProduct, {
       onSuccess: (data) => {
-        // Clear form state first
-        setBrand("");
-        setModel("");
-        setYear("");
-        setCategory("");
-        setPrice("");
-        setMinPrice("");
-        setMaxPrice("");
-        setStock("0");
-        setThreshold("5");
-        setBatteryLevel("85");
-        setSerialNumbers("");
-        
-        // Then handle the created product
-        handleProductCreated({ ...newProduct, id: data?.id, serialEntries });
+        toast.success(`Product added successfully with ${serialEntries.length} serial entries`);
+        setCreatedProduct({ ...newProduct, id: data?.id, serialEntries });
+        setShowPrintDialog(true);
       },
       onError: (error) => {
-        logger.error('Product creation failed', error, 'AddProductForm');
+        console.error('Product creation failed:', error);
         toast.error(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });
@@ -154,31 +130,22 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     onCancel(); // Close the form after printing
   };
 
-  // Handle successful product creation
-  const handleProductCreated = (data: any) => {
-    toast.success(`Product added successfully with ${data.serialEntries?.length || 1} serial entries`);
-    setCreatedProduct({ ...data, serialEntries: data.serialEntries || [] });
-    setShowPrintDialog(true);
-  };
-
   return (
     <>
-      {/* Only show the print dialog when explicitly requested and product exists */}
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
           productName={`${createdProduct.brand} ${createdProduct.model}`}
           barcode={createdProduct.barcode}
           price={createdProduct.price}
           serialEntries={createdProduct.serialEntries}
-          onBarcodeGenerated={() => {}}
           trigger={
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-background p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
                 <h3 className="text-lg font-semibold mb-4">Product Created Successfully!</h3>
                 <div className="text-center mb-4">
                   <BarcodeGenerator value={createdProduct.barcode} />
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Would you like to print barcode labels for this product? ({createdProduct.serialEntries?.length || 1} labels)
                 </p>
                 <div className="flex gap-2">
