@@ -1,15 +1,23 @@
-
 import React from "react";
 import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
-import { PreviewDebugger } from "@/components/debug/PreviewDebugger";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { logger } from "@/utils/logger";
 
 export default function App() {
-  // All iframe detection and security features disabled
+  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+    logger.error('Application error boundary triggered', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack
+    }, 'App');
+  };
+
   return (
-    <AppProviders includeAuth>
-      <PreviewDebugger />
-      <AppRouter />
-    </AppProviders>
+    <ErrorBoundary onError={handleError}>
+      <AppProviders includeAuth>
+        <AppRouter />
+      </AppProviders>
+    </ErrorBoundary>
   );
 }

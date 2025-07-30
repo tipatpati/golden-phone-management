@@ -22,10 +22,49 @@ class Logger {
     return {
       level,
       message,
-      data,
+      data: this.sanitizeData(data),
       timestamp: new Date().toISOString(),
       component
     };
+  }
+
+  private sanitizeData(data: any): any {
+    if (!data) return data;
+    
+    // Remove sensitive fields
+    const sensitiveFields = [
+      'password', 'token', 'secret', 'key', 'auth', 
+      'session', 'cookie', 'authorization', 'credential',
+      'user_metadata', 'raw_user_meta_data'
+    ];
+    
+    if (typeof data === 'object' && data !== null) {
+      const sanitized = Array.isArray(data) ? [...data] : { ...data };
+      
+      const sanitizeObject = (obj: any): any => {
+        if (typeof obj !== 'object' || obj === null) return obj;
+        
+        if (Array.isArray(obj)) {
+          return obj.map(item => sanitizeObject(item));
+        }
+        
+        const result: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+          if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+            result[key] = '[REDACTED]';
+          } else if (typeof value === 'object') {
+            result[key] = sanitizeObject(value);
+          } else {
+            result[key] = value;
+          }
+        }
+        return result;
+      };
+      
+      return sanitizeObject(sanitized);
+    }
+    
+    return data;
   }
 
   private shouldLog(level: LogLevel): boolean {

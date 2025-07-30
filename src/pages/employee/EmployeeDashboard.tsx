@@ -148,3 +148,5 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
     </div>
   );
 }
+
+export default EmployeeDashboard;

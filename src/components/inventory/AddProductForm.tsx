@@ -10,6 +10,7 @@ import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, validateSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
+import { logger } from "@/utils/logger";
 
 export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [brand, setBrand] = useState("");
@@ -117,8 +118,10 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
       serial_entries: serialEntries // Store individual entries for inventory tracking
     };
     
-    console.log('Submitting product with category ID:', newProduct.category_id);
-    console.log('Serial entries:', serialEntries);
+    logger.debug('Submitting product', { 
+      categoryId: newProduct.category_id,
+      serialEntriesCount: serialEntries.length 
+    }, 'AddProductForm');
     
     createProduct.mutate(newProduct, {
       onSuccess: (data) => {
@@ -139,7 +142,7 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
         handleProductCreated({ ...newProduct, id: data?.id, serialEntries });
       },
       onError: (error) => {
-        console.error('Product creation failed:', error);
+        logger.error('Product creation failed', error, 'AddProductForm');
         toast.error(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });

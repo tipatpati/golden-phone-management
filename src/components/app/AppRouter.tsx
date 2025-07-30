@@ -1,20 +1,30 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { TabletLayout } from "@/components/layout/TabletLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { EmployeeDashboard } from "@/pages/employee/EmployeeDashboard";
 import { useAuth } from "@/contexts/AuthContext";
-import Dashboard from "@/pages/Dashboard";
-import Clients from "@/pages/Clients";
-import Sales from "@/pages/Sales";
-import Inventory from "@/pages/Inventory";
-import Suppliers from "@/pages/Suppliers";
-import Repairs from "@/pages/Repairs";
-import EmployeeManagement from "@/pages/EmployeeManagement";
-import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
+import NotFound from "@/pages/NotFound";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+// Lazy load major route components for better performance
+const Dashboard = React.lazy(() => import("@/pages/Dashboard"));
+const Clients = React.lazy(() => import("@/pages/Clients"));
+const Sales = React.lazy(() => import("@/pages/Sales"));
+const Inventory = React.lazy(() => import("@/pages/Inventory"));
+const Suppliers = React.lazy(() => import("@/pages/Suppliers"));
+const Repairs = React.lazy(() => import("@/pages/Repairs"));
+const EmployeeManagement = React.lazy(() => import("@/pages/EmployeeManagement"));
+const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDashboard"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <LoadingSpinner />
+  </div>
+);
 
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
@@ -28,8 +38,8 @@ export function AppRouter() {
     );
   }
 
-  // Determine effective role - use actual role or fallback to 'admin' for authenticated users
-  const effectiveRole = userRole || (user ? 'admin' : null);
+  // Determine effective role based on authenticated user data only - no fallbacks
+  const effectiveRole = userRole;
 
   return (
     <BrowserRouter>
@@ -40,12 +50,16 @@ export function AppRouter() {
             effectiveRole === 'admin' ? (
               <ProtectedRoute>
                 <TabletLayout userRole={effectiveRole}>
-                  <Dashboard />
+                  <Suspense fallback={<PageLoader />}>
+                    <Dashboard />
+                  </Suspense>
                 </TabletLayout>
               </ProtectedRoute>
             ) : (
-              <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                <EmployeeDashboard userRole={effectiveRole || 'salesperson'} />
+              <TabletLayout userRole={effectiveRole}>
+                <Suspense fallback={<PageLoader />}>
+                  <EmployeeDashboard userRole={effectiveRole} />
+                </Suspense>
               </TabletLayout>
             )
           ) : (
@@ -70,35 +84,45 @@ export function AppRouter() {
                 <Route path="/sales" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <Sales />
+                      <Suspense fallback={<PageLoader />}>
+                        <Sales />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/clients" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <Clients />
+                      <Suspense fallback={<PageLoader />}>
+                        <Clients />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/inventory" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <Inventory />
+                      <Suspense fallback={<PageLoader />}>
+                        <Inventory />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/suppliers" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <Suppliers />
+                      <Suspense fallback={<PageLoader />}>
+                        <Suppliers />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/repairs" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <Repairs />
+                      <Suspense fallback={<PageLoader />}>
+                        <Repairs />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
@@ -114,7 +138,9 @@ export function AppRouter() {
                 <Route path="/employees" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
-                      <EmployeeManagement />
+                      <Suspense fallback={<PageLoader />}>
+                        <EmployeeManagement />
+                      </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
@@ -132,28 +158,38 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                    <Sales />
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Sales />
+                    </Suspense>
                   </TabletLayout>
                 } />
                 <Route path="/clients" element={
-                  <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                    <Clients />
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Clients />
+                    </Suspense>
                   </TabletLayout>
                 } />
                 <Route path="/inventory" element={
-                  <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                    <Inventory />
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Inventory />
+                    </Suspense>
                   </TabletLayout>
                 } />
                 <Route path="/suppliers" element={
-                  <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                    <Suppliers />
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Suppliers />
+                    </Suspense>
                   </TabletLayout>
                 } />
                 <Route path="/repairs" element={
-                  <TabletLayout userRole={effectiveRole || 'salesperson'}>
-                    <Repairs />
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Repairs />
+                    </Suspense>
                   </TabletLayout>
                 } />
               </>
