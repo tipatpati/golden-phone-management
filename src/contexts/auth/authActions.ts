@@ -54,9 +54,12 @@ export function createAuthActions(params: AuthActionsParams) {
   };
 
   const login = async (email: string, password: string) => {
+    // Clear any existing invalid session first
+    await supabase.auth.signOut();
+    
     // Validate and sanitize inputs using centralized validation
     const emailValidation = validation.email(email);
-    const passwordValidation = validation.password(password);
+    const passwordValidation = validation.password(password, { isSignup: false });
     
     try {
       if (!emailValidation.isValid) {
