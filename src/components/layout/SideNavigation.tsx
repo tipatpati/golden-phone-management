@@ -171,8 +171,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'User'}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Unknown'}</p>
+                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'Utente'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Sconosciuto'}</p>
                 </div>
               </div>
               <Button 

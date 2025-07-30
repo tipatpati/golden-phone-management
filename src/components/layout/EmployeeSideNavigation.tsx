@@ -157,8 +157,8 @@ export function EmployeeSideNavigation({ userRole }: EmployeeSideNavigationProps
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'Employee'}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Unknown'}</p>
+                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'Dipendente'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Sconosciuto'}</p>
                 </div>
               </div>
               <Button 

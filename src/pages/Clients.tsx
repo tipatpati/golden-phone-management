@@ -24,9 +24,9 @@ const Clients = () => {
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Client Management
+              Gestione Clienti
             </h2>
-            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">Loading clients...</p>
+            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">Caricamento clienti...</p>
           </div>
         </div>
       </div>
@@ -39,9 +39,9 @@ const Clients = () => {
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Client Management
+              Gestione Clienti
             </h2>
-            <p className="text-red-500 mt-2 sm:mt-3 text-base sm:text-lg">Error loading clients. Please try again.</p>
+            <p className="text-red-500 mt-2 sm:mt-3 text-base sm:text-lg">Errore nel caricamento clienti. Riprova.</p>
           </div>
         </div>
       </div>
