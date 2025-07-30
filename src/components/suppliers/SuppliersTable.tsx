@@ -5,7 +5,7 @@ import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState } fr
 import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
 import { ContactSupplierDialog } from "./ContactSupplierDialog";
-import { useSuppliers } from "@/services/useSuppliers";
+import { useSuppliers } from "@/services";
 
 interface SuppliersTableProps {
   searchTerm: string;

@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useSuppliers } from "@/services/useSuppliers";
+import { useDeleteSupplier } from "@/services";
 
 interface DeleteSupplierDialogProps {
   supplier: any;
@@ -20,7 +20,7 @@ interface DeleteSupplierDialogProps {
 
 export function DeleteSupplierDialog({ supplier, open, onOpenChange }: DeleteSupplierDialogProps) {
   const { toast } = useToast();
-  const { deleteSupplier } = useSuppliers();
+  const deleteSupplier = useDeleteSupplier();
 
   const handleDelete = async () => {
     try {

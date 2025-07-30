@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useSuppliers } from "@/services/useSuppliers";
+import { useSuppliers } from "@/services";
 import { useSupplierTransactions } from "@/services/useSupplierTransactions";
 import { useProducts } from "@/services/useProducts";
 import { Plus, Trash2 } from "lucide-react";

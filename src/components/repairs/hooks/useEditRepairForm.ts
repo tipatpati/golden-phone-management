@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useUpdateRepair, useTechnicians } from "@/services/useRepairs";
-import { useClients } from "@/services/useClients";
+import { useUpdateRepair, useTechnicians } from "@/services";
+import { useClients } from "@/services";
 import { type Repair } from "../RepairCard";
 import { type RepairFormData } from "../types";
 
@@ -20,8 +20,12 @@ export const useEditRepairForm = (repair: Repair | null, open: boolean, onOpenCh
   });
 
   const updateRepair = useUpdateRepair();
-  const { data: clients = [] } = useClients();
-  const { data: technicians = [] } = useTechnicians();
+  const { data: clientsData = [] } = useClients();
+  const { data: techniciansData = [] } = useTechnicians();
+  
+  // Type-safe array handling
+  const clients = Array.isArray(clientsData) ? clientsData : [];
+  const technicians = Array.isArray(techniciansData) ? techniciansData : [];
 
   useEffect(() => {
     if (repair && open) {
@@ -58,7 +62,7 @@ export const useEditRepairForm = (repair: Repair | null, open: boolean, onOpenCh
     try {
       await updateRepair.mutateAsync({
         id: repair.id,
-        repair: {
+        data: {
           client_id: formData.client_id || undefined,
           technician_id: formData.technician_id || undefined,
           device: formData.device,

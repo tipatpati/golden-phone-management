@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useSuppliers } from "@/services/useSuppliers";
+import { useCreateSupplier, useUpdateSupplier } from "@/services";
 
 const supplierSchema = z.object({
   name: z.string().min(1, "Supplier name is required"),
@@ -38,7 +38,8 @@ interface SupplierFormProps {
 
 export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
   const { toast } = useToast();
-  const { createSupplier, updateSupplier } = useSuppliers();
+  const createSupplier = useCreateSupplier();
+  const updateSupplier = useUpdateSupplier();
 
   const {
     register,
@@ -61,16 +62,18 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
       if (supplier) {
         await updateSupplier.mutateAsync({ 
           id: supplier.id, 
-          name: data.name,
-          contact_person: data.contact_person,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          tax_id: data.tax_id,
-          payment_terms: data.payment_terms,
-          credit_limit: data.credit_limit,
-          notes: data.notes,
-          status: data.status,
+          data: {
+            name: data.name,
+            contact_person: data.contact_person,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            tax_id: data.tax_id,
+            payment_terms: data.payment_terms,
+            credit_limit: data.credit_limit,
+            notes: data.notes,
+            status: data.status,
+          }
         });
         toast({
           title: "Success",

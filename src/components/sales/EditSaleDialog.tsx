@@ -27,8 +27,8 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
       await updateSale.mutateAsync({
         id: sale.id,
         data: {
-          status: status,
-          payment_method: paymentMethod,
+          status: status as any,
+          payment_method: paymentMethod as any,
           notes
         }
       });
