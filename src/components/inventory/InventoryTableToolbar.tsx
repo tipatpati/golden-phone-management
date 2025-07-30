@@ -2,13 +2,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Grid, List, FilterX, Plus } from "lucide-react";
+import { Search, Grid, List, FilterX } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { AddProductForm } from "./AddProductForm";
 
 interface InventoryTableToolbarProps {
-  onAddProduct: () => void;
   onSearchChange: (searchTerm: string) => void;
   onViewModeChange: (viewMode: "list" | "grid") => void;
   searchTerm: string;
@@ -16,7 +16,6 @@ interface InventoryTableToolbarProps {
 }
 
 export function InventoryTableToolbar({ 
-  onAddProduct, 
   onSearchChange, 
   onViewModeChange, 
   searchTerm, 
@@ -97,15 +96,7 @@ export function InventoryTableToolbar({
       </form>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-        <Button 
-          variant="default" 
-          onClick={onAddProduct}
-          className="flex items-center justify-center gap-2 h-12 order-1 sm:order-none shadow-lg"
-          size="lg"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Aggiungi Prodotto</span>
-        </Button>
+        <AddProductForm />
         
         <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">
           <Button 

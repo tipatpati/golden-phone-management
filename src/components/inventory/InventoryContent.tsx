@@ -39,7 +39,6 @@ export function InventoryContent({
   return (
     <>
       <InventoryTableToolbar 
-        onAddProduct={onAddProduct}
         onSearchChange={handleSearchChange}
         onViewModeChange={handleViewModeChange}
         searchTerm={searchTerm}
