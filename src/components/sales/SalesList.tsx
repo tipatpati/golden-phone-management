@@ -182,8 +182,8 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                 ] : [])
               ]}
             />
-            {/* View Details Button positioned outside the card */}
-            <div className="absolute top-3 right-3">
+            {/* View Details Button aligned with status badge */}
+            <div className="absolute top-4 right-16">
               <SaleDetailsDialog 
                 sale={sale} 
                 trigger={
