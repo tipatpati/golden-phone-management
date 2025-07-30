@@ -2,41 +2,46 @@ import { useEffect } from 'react';
 
 export function SecurityHeaders() {
   useEffect(() => {
-    // Set security headers programmatically where possible
-    // Note: Most security headers need to be set server-side, but we can add meta tags
+    // Detect if we're in a preview/iframe environment
+    const isInIframe = window !== window.top;
+    const isLovablePreview = window.location.hostname.includes('lovable.app') || 
+                            window.location.hostname.includes('localhost') ||
+                            isInIframe;
+    
+    console.log('SecurityHeaders: Preview environment detected:', isLovablePreview);
+    
+    // Skip all security header modifications in preview environments
+    if (isLovablePreview) {
+      console.log('SecurityHeaders: Skipping security headers in preview environment');
+      return;
+    }
+    
+    // Only apply security headers in production environments
+    console.log('SecurityHeaders: Applying production security headers');
     
     // Add Content Security Policy meta tag if not already present
     if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
       const cspMeta = document.createElement('meta');
       cspMeta.httpEquiv = 'Content-Security-Policy';
-      // Allow iframe for development/preview environments
-      const isPreview = window.location.hostname.includes('lovable.app') || 
-                       window.location.hostname.includes('localhost') ||
-                       window !== window.top;
-      
       cspMeta.content = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' https://cdn.gpteng.co",
+        "script-src 'self' 'unsafe-inline' https://cdn.gpteng.co https://cdn.jsdelivr.net",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: https:",
         "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-        isPreview ? "frame-ancestors *" : "frame-ancestors 'none'",
+        "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"
       ].join('; ');
       document.head.appendChild(cspMeta);
     }
 
-    // Add X-Frame-Options (conditionally for preview environments)
+    // Add X-Frame-Options
     if (!document.querySelector('meta[http-equiv="X-Frame-Options"]')) {
       const frameOptionsMeta = document.createElement('meta');
       frameOptionsMeta.httpEquiv = 'X-Frame-Options';
-      // Allow iframe for development/preview environments
-      const isPreview = window.location.hostname.includes('lovable.app') || 
-                       window.location.hostname.includes('localhost') ||
-                       window !== window.top;
-      frameOptionsMeta.content = isPreview ? 'ALLOWALL' : 'DENY';
+      frameOptionsMeta.content = 'DENY';
       document.head.appendChild(frameOptionsMeta);
     }
 
@@ -71,41 +76,10 @@ export function SecurityHeaders() {
       document.head.appendChild(permissionsMeta);
     }
 
-    // Prevent clickjacking by removing any iframe that might be containing this page
-    const isPreview = window.location.hostname.includes('lovable.app') || 
-                     window.location.hostname.includes('localhost') ||
-                     window !== window.top;
-                     
-    if (window !== window.top) {
-      if (isPreview) {
-        console.log('Running in preview iframe - security headers adjusted for development');
-      } else {
-        console.warn('Page is running in iframe - potential clickjacking attempt');
-        // In production, you might want to break out of frames:
-        // window.top.location = window.location;
-      }
+    // Log frame status for production monitoring
+    if (isInIframe) {
+      console.warn('Page is running in iframe in production - potential security concern');
     }
-
-    // Add security event listener for suspicious activities
-    const handleSecurityViolation = (event: SecurityPolicyViolationEvent) => {
-      console.warn('CSP violation detected:', event.violatedDirective, event.sourceFile);
-      
-      // In production, you would report this to your security monitoring system
-      // logSecurityEvent({
-      //   event_type: 'csp_violation',
-      //   event_data: {
-      //     violatedDirective: event.violatedDirective,
-      //     sourceFile: event.sourceFile,
-      //     lineNumber: event.lineNumber
-      //   }
-      // });
-    };
-
-    document.addEventListener('securitypolicyviolation', handleSecurityViolation);
-
-    return () => {
-      document.removeEventListener('securitypolicyviolation', handleSecurityViolation);
-    };
   }, []);
 
   return null; // This component doesn't render anything

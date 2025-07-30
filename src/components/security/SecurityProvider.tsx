@@ -16,29 +16,35 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
   const [isSecure, setIsSecure] = useState(true);
 
   useEffect(() => {
-    // Initialize security monitoring
+    // Detect if we're in a preview/iframe environment
+    const isInIframe = window !== window.top;
+    const isLovablePreview = window.location.hostname.includes('lovable.app') || 
+                            window.location.hostname.includes('localhost') ||
+                            isInIframe;
+    
+    if (isLovablePreview) {
+      console.log('SecurityProvider: Preview environment detected, skipping security initialization');
+      setSecurityLevel('medium');
+      setIsSecure(true);
+      return;
+    }
+
+    // Initialize security monitoring only in production
     const initSecurity = async () => {
       try {
-        // Log application start (only if we're not in a preview environment)
-        const isPreview = window.location.hostname.includes('lovable.app') || 
-                         window.location.hostname.includes('localhost') ||
-                         window !== window.top;
-        
-        if (!isPreview) {
-          await logSecurityEvent({
-            event_type: 'application_start',
-            event_data: {
-              timestamp: new Date().toISOString(),
-              userAgent: navigator.userAgent,
-              location: window.location.href
-            }
-          });
-        }
+        await logSecurityEvent({
+          event_type: 'application_start',
+          event_data: {
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            location: window.location.href
+          }
+        });
 
         // Check for security features
         checkSecurityFeatures();
         
-        // Set up security monitoring (but don't log in preview)
+        // Set up security monitoring
         setupSecurityMonitoring();
       } catch (error) {
         // Don't let security logging errors break the app
