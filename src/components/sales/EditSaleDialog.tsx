@@ -1,10 +1,9 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { BaseDialog } from "@/components/common/BaseDialog";
+import { FormField } from "@/components/common/FormField";
 import { Edit } from "lucide-react";
 import { useUpdateSale, type Sale } from "@/services";
 
@@ -20,9 +19,7 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
 
   const updateSale = useUpdateSale();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     try {
       await updateSale.mutateAsync({
         id: sale.id,
@@ -39,67 +36,57 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-          <Edit className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Sale - {sale.sale_number}</DialogTitle>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <>
+      <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors" onClick={() => setOpen(true)}>
+        <Edit className="h-4 w-4" />
+      </Button>
+      
+      <BaseDialog
+        title={`Edit Sale - ${sale.sale_number}`}
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={handleSubmit}
+        isLoading={updateSale.isPending}
+        submitText={updateSale.isPending ? "Updating..." : "Update Sale"}
+        cancelText="Cancel"
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          <FormField
+            label="Status"
+            type="select"
+            value={status}
+            onChange={setStatus}
+            options={[
+              { value: "completed", label: "Completed" },
+              { value: "pending", label: "Pending" },
+              { value: "cancelled", label: "Cancelled" },
+              { value: "refunded", label: "Refunded" }
+            ]}
+          />
 
-          <div className="space-y-2">
-            <Label>Payment Method</Label>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="card">Card</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <FormField
+            label="Payment Method"
+            type="select"
+            value={paymentMethod}
+            onChange={setPaymentMethod}
+            options={[
+              { value: "cash", label: "Cash" },
+              { value: "card", label: "Card" },
+              { value: "bank_transfer", label: "Bank Transfer" },
+              { value: "other", label: "Other" }
+            ]}
+          />
 
-          <div className="space-y-2">
-            <Label>Notes</Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes..."
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={updateSale.isPending}>
-              {updateSale.isPending ? "Updating..." : "Update Sale"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <FormField
+            label="Notes"
+            type="textarea"
+            value={notes}
+            onChange={setNotes}
+            placeholder="Additional notes..."
+          />
+        </div>
+      </BaseDialog>
+    </>
   );
 }

@@ -55,8 +55,7 @@ export const useEditRepairForm = (repair: Repair | null, open: boolean, onOpenCh
     }
   }, [repair, open, clients, technicians]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!repair) return;
     
     try {
