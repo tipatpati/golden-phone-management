@@ -16,12 +16,11 @@ export function useAuthState() {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // Add timeout to prevent hanging
+      // Use Promise.race for timeout functionality  
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000);
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 8000);
       });
       
-      // First try to get the profile with timeout
       const profilePromise = supabase
         .from('profiles')
         .select('username, role')
@@ -33,60 +32,66 @@ export function useAuthState() {
         timeoutPromise
       ]) as any;
       
-      if (profileError || !profile) {
-        console.error('Error fetching user profile or no profile found:', profileError);
-        // Set default admin role for users without profiles
-        setUserRole('admin');
-        setInterfaceRole('admin');
-        // Get user email from the current session for username
-        try {
-          const currentSession = await supabase.auth.getSession();
-          const userEmail = currentSession.data.session?.user?.email;
-          setUsername(userEmail?.split('@')[0] || 'user');
-        } catch (sessionError) {
-          console.error('Error getting session for username:', sessionError);
-          setUsername('admin');
-        }
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        // STRICT AUTH: No fallback admin roles - force logout on profile errors
+        console.warn('Profile not found or error occurred. User must have valid profile.');
+        await supabase.auth.signOut();
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
         return;
       }
       
-      if (profile) {
-        console.log('User profile fetched:', profile);
-        setUserRole(profile.role as UserRole);
-        setInterfaceRole(profile.role as UserRole);
-        setUsername(profile.username || 'user');
+      if (!profile) {
+        console.error('No profile found for authenticated user');
+        // STRICT AUTH: No profile = no access
+        await supabase.auth.signOut();
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+        return;
+      }
+      
+      // Valid profile found - set user data
+      console.log('User profile fetched:', profile);
+      setUserRole(profile.role as UserRole);
+      setInterfaceRole(profile.role as UserRole);
+      setUsername(profile.username || profile.role);
+      
+      // Optional: Check if this user is also an employee
+      try {
+        const employeeTimeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Employee fetch timeout')), 5000);
+        });
         
-        // Check if this user is also an employee (with timeout)
-        try {
-          const employeeTimeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Employee fetch timeout')), 5000);
-          });
-          
-          const employeePromise = supabase
-            .from('employees')
-            .select('first_name, last_name, position')
-            .eq('profile_id', userId)
-            .maybeSingle();
-          
-          const { data: employee } = await Promise.race([
-            employeePromise,
-            employeeTimeoutPromise
-          ]) as any;
-          
-          if (employee) {
-            console.log('User is also an employee:', employee);
-            // Could set additional employee-specific data here if needed
-          }
-        } catch (error) {
-          console.log('User is not an employee or error fetching employee data:', error);
+        const employeePromise = supabase
+          .from('employees')
+          .select('first_name, last_name, position')
+          .eq('profile_id', userId)
+          .maybeSingle();
+        
+        const { data: employee } = await Promise.race([
+          employeePromise,
+          employeeTimeoutPromise
+        ]) as any;
+        
+        if (employee) {
+          console.log('User is also an employee:', employee);
+          // Could set additional employee-specific data here if needed
         }
+      } catch (error) {
+        // Employee data is optional - don't fail auth for this
+        console.log('User is not an employee or error fetching employee data:', error);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // Fallback to admin role on any error
-      setUserRole('admin');
-      setInterfaceRole('admin');
-      setUsername('admin');
+      // STRICT AUTH: On any error, sign out and clear state
+      console.warn('Authentication error occurred. Signing out user.');
+      await supabase.auth.signOut();
+      setUserRole(null);
+      setInterfaceRole(null);
+      setUsername(null);
     }
   };
 
@@ -94,17 +99,14 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Fallback timeout to prevent infinite loading - reduced to 3 seconds
+    // Strict timeout to prevent infinite loading - no fallback roles
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
-        console.warn('Auth initialization timeout, forcing initialization');
-        // Clear any problematic state and force initialization
-        setUserRole('admin');
-        setInterfaceRole('admin');
-        setUsername('admin');
+        console.warn('Auth initialization timeout, completing initialization without auth');
+        // STRICT AUTH: Just mark as initialized, don't assign roles
         setIsInitialized(true);
       }
-    }, 3000);
+    }, 5000);
 
     const cleanup = () => {
       mounted = false;
