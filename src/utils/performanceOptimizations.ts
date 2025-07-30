@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import { debounce } from 'lodash-es';
 
 /**
  * Debounced search hook for better performance
@@ -12,17 +11,18 @@ export function useDebouncedSearch(
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialValue);
 
   const debouncedUpdate = useCallback(
-    debounce((value: string) => {
-      setDebouncedSearchTerm(value);
-    }, delay),
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (value: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => setDebouncedSearchTerm(value), delay);
+      };
+    })(),
     [delay]
   );
 
   useEffect(() => {
     debouncedUpdate(searchTerm);
-    return () => {
-      debouncedUpdate.cancel();
-    };
   }, [searchTerm, debouncedUpdate]);
 
   return {
@@ -165,14 +165,7 @@ export function useMemoryOptimizedData<T>(
  * Create lazy-loaded component
  */
 export function createLazyComponent<P = {}>(
-  importFn: () => Promise<{ default: React.ComponentType<P> }>,
-  fallback: React.ComponentType = () => <div>Loading...</div>
+  importFn: () => Promise<{ default: React.ComponentType<P> }>
 ) {
-  const LazyComponent = React.lazy(importFn);
-  
-  return (props: P) => (
-    <React.Suspense fallback={<fallback />}>
-      <LazyComponent {...props} />
-    </React.Suspense>
-  );
+  return React.lazy(importFn);
 }
