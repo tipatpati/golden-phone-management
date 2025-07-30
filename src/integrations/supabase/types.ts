@@ -750,6 +750,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_invalid_auth_state: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_repair_number: {
         Args: Record<PropertyKey, never>
         Returns: string
