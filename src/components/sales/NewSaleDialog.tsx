@@ -199,7 +199,7 @@ export function NewSaleDialog() {
           Nuova Vendita
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
+      <DialogContent className="max-w-5xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Crea Nuova Vendita</DialogTitle>
         </DialogHeader>

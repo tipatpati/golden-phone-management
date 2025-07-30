@@ -36,7 +36,11 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg rounded-xl",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background shadow-lg rounded-xl",
+        "p-6 sm:p-6", // Mobile: 6, SM and up: 6 (consistent)
+        "m-4 sm:m-0", // Mobile: margin 4 for edge padding, SM and up: no margin 
+        "max-h-[85vh] sm:max-h-[90vh]", // Mobile: smaller height, SM and up: larger
+        "overflow-y-auto",
         className
       )}
       {...props}
