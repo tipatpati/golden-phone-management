@@ -1,7 +1,7 @@
 
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { TabletLayout } from "@/components/layout/TabletLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { EmployeeDashboard } from "@/pages/employee/EmployeeDashboard";
@@ -46,14 +46,14 @@ export function AppRouter() {
           isLoggedIn ? (
             userRole === 'admin' ? (
               <ProtectedRoute>
-                <MainLayout>
+                <TabletLayout userRole={userRole || 'admin'}>
                   <Dashboard />
-                </MainLayout>
+                </TabletLayout>
               </ProtectedRoute>
             ) : (
-              <EmployeeLayout userRole={userRole || 'salesperson'}>
+              <TabletLayout userRole={userRole || 'salesperson'}>
                 <EmployeeDashboard userRole={userRole || 'salesperson'} />
-              </EmployeeLayout>
+              </TabletLayout>
             )
           ) : (
             <Login />
@@ -76,62 +76,62 @@ export function AppRouter() {
               <>
                 <Route path="/sales" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <Sales />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/clients" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <Clients />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/inventory" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <Inventory />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/suppliers" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <Suppliers />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/repairs" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <Repairs />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/reports" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <div className="min-h-[80vh] flex items-center justify-center">
                         <h1 className="text-2xl">Reports Module - Coming Soon</h1>
                       </div>
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/employees" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <EmployeeManagement />
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <MainLayout>
+                    <TabletLayout userRole={userRole || 'admin'}>
                       <div className="min-h-[80vh] flex items-center justify-center">
                         <h1 className="text-2xl">Settings Module - Coming Soon</h1>
                       </div>
-                    </MainLayout>
+                    </TabletLayout>
                   </ProtectedRoute>
                 } />
               </>
@@ -139,29 +139,29 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
                     <Sales />
-                  </EmployeeLayout>
+                  </TabletLayout>
                 } />
                 <Route path="/clients" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
                     <Clients />
-                  </EmployeeLayout>
+                  </TabletLayout>
                 } />
                 <Route path="/inventory" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
                     <Inventory />
-                  </EmployeeLayout>
+                  </TabletLayout>
                 } />
                 <Route path="/suppliers" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
                     <Suppliers />
-                  </EmployeeLayout>
+                  </TabletLayout>
                 } />
                 <Route path="/repairs" element={
-                  <EmployeeLayout userRole={userRole || 'salesperson'}>
+                  <TabletLayout userRole={userRole || 'salesperson'}>
                     <Repairs />
-                  </EmployeeLayout>
+                  </TabletLayout>
                 } />
               </>
             )}
