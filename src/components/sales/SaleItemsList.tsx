@@ -3,7 +3,9 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X, AlertTriangle } from "lucide-react";
+import { useProducts } from "@/services/useProducts";
 
 type SaleItem = {
   product_id: string;
@@ -30,6 +32,15 @@ export function SaleItemsList({
   onSerialNumberUpdate, 
   onRemoveItem 
 }: SaleItemsListProps) {
+  // Fetch all products to get current stock information
+  const { data: allProducts = [] } = useProducts();
+  
+  // Helper function to get product stock
+  const getProductStock = (productId: string) => {
+    const product = allProducts.find(p => p.id === productId);
+    return product?.stock || 0;
+  };
+
   if (saleItems.length === 0) {
     return null;
   }
@@ -54,12 +65,34 @@ export function SaleItemsList({
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <Label className="text-xs">Quantity</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => onQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
-                />
+                {(() => {
+                  const availableStock = getProductStock(item.product_id);
+                  const hasStockWarning = item.quantity > availableStock;
+                  
+                  return (
+                    <>
+                      <div className="text-xs text-muted-foreground mb-1">
+                        Available: {availableStock}
+                      </div>
+                      <Input
+                        type="number"
+                        min="1"
+                        max={availableStock}
+                        value={item.quantity}
+                        onChange={(e) => onQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
+                        className={hasStockWarning ? "border-red-500" : ""}
+                      />
+                      {hasStockWarning && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <AlertTriangle className="h-3 w-3 text-red-500" />
+                          <span className="text-xs text-red-500">
+                            Exceeds available stock by {item.quantity - availableStock}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <div>
                 <Label className="text-xs">Unit Price</Label>
