@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BaseDialog, FormField } from '@/components/common';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { validateInput } from '@/utils/securityEnhancements';
@@ -26,9 +23,7 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
     setEmailError(validation.valid ? '' : validation.error || '');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     const validation = validateInput.email(email);
     if (!validation.valid) {
       setEmailError(validation.error || 'Invalid email');
@@ -51,13 +46,13 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
         setEmailSent(true);
         toast({
           title: "Email sent",
-          description: "Check your email for password reset instructions."
+          description: "Check your email for password reset instructions.",
         });
       }
     } catch (error) {
       toast({
-        title: "Error", 
-        description: "Something went wrong. Please try again.",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -67,97 +62,62 @@ export function PasswordResetDialog({ open, onOpenChange }: PasswordResetDialogP
 
   const handleClose = () => {
     setEmail('');
-    setEmailError('');
     setEmailSent(false);
+    setEmailError('');
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Reset Password
-          </DialogTitle>
-          <DialogDescription>
-            {emailSent 
-              ? "We've sent you a password reset link"
-              : "Enter your email address and we'll send you a reset link"
-            }
-          </DialogDescription>
-        </DialogHeader>
-
-        {emailSent ? (
-          <div className="space-y-4">
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                Password reset email sent to <strong>{email}</strong>. 
-                Check your inbox and follow the instructions to reset your password.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="text-sm text-muted-foreground">
-              <p>Didn't receive the email?</p>
-              <ul className="mt-2 space-y-1 list-disc list-inside">
-                <li>Check your spam/junk folder</li>
-                <li>Make sure the email address is correct</li>
-                <li>Wait a few minutes for delivery</li>
-              </ul>
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setEmailSent(false)}
-                className="flex-1"
-              >
-                Try Different Email
-              </Button>
-              <Button onClick={handleClose} className="flex-1">
-                Close
-              </Button>
-            </div>
+    <BaseDialog
+      title={emailSent ? "Email Sent" : "Reset Password"}
+      open={open}
+      onClose={handleClose}
+      onSubmit={emailSent ? undefined : handleSubmit}
+      isLoading={loading}
+      submitText="Send Reset Email"
+      showActions={!emailSent}
+    >
+      {emailSent ? (
+        <div className="space-y-4 text-center">
+          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email">Email Address</Label>
-              <Input
-                id="reset-email"
-                type="email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="Enter your email address"
-                className={emailError ? 'border-destructive' : ''}
-                required
-              />
-              {emailError && (
-                <p className="text-sm text-destructive">{emailError}</p>
-              )}
+          <div>
+            <p className="text-sm text-muted-foreground">
+              We've sent password reset instructions to:
+            </p>
+            <p className="font-medium">{email}</p>
+          </div>
+          <Alert>
+            <Mail className="h-4 w-4" />
+            <AlertDescription>
+              Check your email inbox and follow the instructions to reset your password. 
+              The link will expire in 1 hour for security reasons.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-blue-600" />
             </div>
-
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || !!emailError || !email}
-                className="flex-1"
-              >
-                {loading ? 'Sending...' : 'Send Reset Link'}
-              </Button>
-            </div>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+            <p className="text-sm text-muted-foreground">
+              Enter your email address and we'll send you instructions to reset your password.
+            </p>
+          </div>
+          
+          <FormField
+            label="Email Address"
+            inputType="email"
+            value={email}
+            onChange={handleEmailChange}
+            error={emailError}
+            placeholder="Enter your email address"
+            required
+          />
+        </div>
+      )}
+    </BaseDialog>
   );
 }

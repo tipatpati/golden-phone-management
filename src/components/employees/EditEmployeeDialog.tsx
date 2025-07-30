@@ -1,12 +1,5 @@
-
 import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { BaseDialog } from "@/components/common";
 import { useEditEmployeeForm } from "./hooks/useEditEmployeeForm";
 import { EmployeeFormFields } from "./components/EmployeeFormFields";
 import { UserRole } from "@/types/roles";
@@ -38,8 +31,7 @@ interface EditEmployeeDialogProps {
 export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditEmployeeDialogProps) {
   const { formData, isLoading, handleChange, submitEmployee } = useEditEmployeeForm(employee);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     const success = await submitEmployee();
     if (success) {
       onSuccess();
@@ -47,29 +39,20 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Employee</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <EmployeeFormFields
-            formData={formData}
-            onFieldChange={handleChange}
-            showPassword={false}
-          />
-
-          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading ? "Updating..." : "Update Employee"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <BaseDialog
+      title={`Edit ${employee.first_name} ${employee.last_name}`}
+      open={open}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+      submitText="Update Employee"
+      maxWidth="md"
+    >
+      <EmployeeFormFields
+        formData={formData}
+        onFieldChange={handleChange}
+        showPassword={false}
+      />
+    </BaseDialog>
   );
 }

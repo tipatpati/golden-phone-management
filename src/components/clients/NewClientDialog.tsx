@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
+import { BaseDialog, FormField } from "@/components/common";
 import { useCreateClient } from "@/services/useClients";
 import { useForm } from "@/hooks/useForm";
 import { CreateClientSchema, ClientFormData } from "@/schemas/validation";
@@ -56,146 +53,121 @@ export function NewClientDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Aggiungi Cliente
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Aggiungi Nuovo Cliente</DialogTitle>
-        </DialogHeader>
-        
+    <>
+      <Button onClick={() => setOpen(true)}>
+        <Plus className="mr-2 h-4 w-4" />
+        Add Client
+      </Button>
+
+      <BaseDialog
+        title="Add New Client"
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={handleSubmit}
+        isLoading={createClient.isPending}
+        submitText="Add Client"
+        maxWidth="2xl"
+      >
         <Tabs value={form.data.type} onValueChange={(value) => form.updateField('type', value)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="individual">Privato (B2C)</TabsTrigger>
-            <TabsTrigger value="business">Azienda (B2B)</TabsTrigger>
+            <TabsTrigger value="individual">Individual (B2C)</TabsTrigger>
+            <TabsTrigger value="business">Business (B2B)</TabsTrigger>
           </TabsList>
           
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4 mt-4">
+          <div className="space-y-4 mt-4">
             <TabsContent value="individual" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">Nome *</Label>
-                  <Input
-                    id="first_name"
-                    value={form.data.first_name || ''}
-                    onChange={(e) => form.updateField('first_name', e.target.value)}
-                    required
-                  />
-                  {form.getFieldError('first_name') && (
-                    <p className="text-sm text-destructive">{form.getFieldError('first_name')}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Cognome *</Label>
-                  <Input
-                    id="last_name"
-                    value={form.data.last_name || ''}
-                    onChange={(e) => form.updateField('last_name', e.target.value)}
-                    required
-                  />
-                  {form.getFieldError('last_name') && (
-                    <p className="text-sm text-destructive">{form.getFieldError('last_name')}</p>
-                  )}
-                </div>
+                <FormField
+                  label="First Name"
+                  required
+                  value={form.data.first_name || ''}
+                  onChange={(value) => form.updateField('first_name', value)}
+                  error={form.getFieldError('first_name')}
+                />
+                <FormField
+                  label="Last Name"
+                  required
+                  value={form.data.last_name || ''}
+                  onChange={(value) => form.updateField('last_name', value)}
+                  error={form.getFieldError('last_name')}
+                />
               </div>
             </TabsContent>
             
             <TabsContent value="business" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="company_name">Ragione Sociale *</Label>
-                <Input
-                  id="company_name"
-                  value={form.data.company_name || ''}
-                  onChange={(e) => form.updateField('company_name', e.target.value)}
-                  required
-                />
-                {form.getFieldError('company_name') && (
-                  <p className="text-sm text-destructive">{form.getFieldError('company_name')}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact_person">Persona di Contatto</Label>
-                <Input
-                  id="contact_person"
-                  value={form.data.contact_person || ''}
-                  onChange={(e) => form.updateField('contact_person', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tax_id">Partita IVA</Label>
-                <Input
-                  id="tax_id"
-                  value={form.data.tax_id || ''}
-                  onChange={(e) => form.updateField('tax_id', e.target.value)}
-                />
-              </div>
+              <FormField
+                label="Company Name"
+                required
+                value={form.data.company_name || ''}
+                onChange={(value) => form.updateField('company_name', value)}
+                error={form.getFieldError('company_name')}
+              />
+              <FormField
+                label="Contact Person"
+                value={form.data.contact_person || ''}
+                onChange={(value) => form.updateField('contact_person', value)}
+                error={form.getFieldError('contact_person')}
+              />
             </TabsContent>
 
-            {/* Common fields */}
+            {/* Common fields for both types */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.data.email || ''}
-                  onChange={(e) => form.updateField('email', e.target.value)}
-                />
-                {form.getFieldError('email') && (
-                  <p className="text-sm text-destructive">{form.getFieldError('email')}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefono</Label>
-                <Input
-                  id="phone"
-                  value={form.data.phone || ''}
-                  onChange={(e) => form.updateField('phone', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Indirizzo</Label>
-              <Input
-                id="address"
-                value={form.data.address || ''}
-                onChange={(e) => form.updateField('address', e.target.value)}
+              <FormField
+                label="Email"
+                inputType="email"
+                value={form.data.email || ''}
+                onChange={(value) => form.updateField('email', value)}
+                error={form.getFieldError('email')}
+              />
+              <FormField
+                label="Phone"
+                inputType="tel"
+                value={form.data.phone || ''}
+                onChange={(value) => form.updateField('phone', value)}
+                error={form.getFieldError('phone')}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Note</Label>
-              <Textarea
-                id="notes"
-                value={form.data.notes || ''}
-                onChange={(e) => form.updateField('notes', e.target.value)}
-                placeholder="Note aggiuntive..."
+            <FormField
+              type="textarea"
+              label="Address"
+              value={form.data.address || ''}
+              onChange={(value) => form.updateField('address', value)}
+              error={form.getFieldError('address')}
+              rows={2}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Tax ID"
+                value={form.data.tax_id || ''}
+                onChange={(value) => form.updateField('tax_id', value)}
+                error={form.getFieldError('tax_id')}
+              />
+              <FormField
+                type="select"
+                label="Status"
+                value={form.data.status || 'active'}
+                onChange={(value) => form.updateField('status', value)}
+                options={[
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' }
+                ]}
+                error={form.getFieldError('status')}
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setOpen(false)}
-              >
-                Annulla
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={form.isLoading || !form.isValid}
-              >
-                {form.isLoading ? "Creazione..." : "Crea Cliente"}
-              </Button>
-            </div>
-          </form>
+            <FormField
+              type="textarea"
+              label="Notes"
+              value={form.data.notes || ''}
+              onChange={(value) => form.updateField('notes', value)}
+              error={form.getFieldError('notes')}
+              rows={3}
+            />
+          </div>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+      </BaseDialog>
+    </>
   );
 }
