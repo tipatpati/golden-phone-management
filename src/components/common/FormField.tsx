@@ -50,50 +50,75 @@ export function FormField({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label htmlFor={fieldId} className="text-sm font-medium text-on-surface">
+      <Label htmlFor={fieldId} className="text-sm font-medium text-foreground flex items-center gap-1">
         {label}
-        {required && <span className="text-destructive ml-1">*</span>}
+        {required && <span className="text-destructive">*</span>}
       </Label>
       
       {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
       )}
 
-      {props.type === "textarea" ? (
-        <Textarea
-          id={fieldId}
-          value={props.value}
-          onChange={(e) => props.onChange(e.target.value)}
-          placeholder={props.placeholder}
-          rows={props.rows || 3}
-          className={error ? "border-destructive" : ""}
-        />
-      ) : props.type === "select" ? (
-        <Select value={props.value} onValueChange={props.onChange}>
-          <SelectTrigger id={fieldId} className={error ? "border-destructive" : ""}>
-            <SelectValue placeholder={props.placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {props.options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <Input
-          id={fieldId}
-          type={props.inputType || "text"}
-          value={props.value}
-          onChange={(e) => props.onChange(e.target.value)}
-          placeholder={props.placeholder}
-          className={error ? "border-destructive" : ""}
-        />
-      )}
+      <div className="relative">
+        {props.type === "textarea" ? (
+          <Textarea
+            id={fieldId}
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            placeholder={props.placeholder}
+            rows={props.rows || 3}
+            className={`
+              w-full resize-none transition-colors
+              ${error ? "border-destructive focus:border-destructive" : "focus:border-primary"}
+            `}
+          />
+        ) : props.type === "select" ? (
+          <Select value={props.value} onValueChange={props.onChange}>
+            <SelectTrigger 
+              id={fieldId} 
+              className={`
+                w-full h-10 transition-colors
+                ${error ? "border-destructive focus:border-destructive" : "focus:border-primary"}
+              `}
+            >
+              <SelectValue placeholder={props.placeholder} />
+            </SelectTrigger>
+            <SelectContent 
+              className="z-[100] bg-popover border shadow-lg"
+              position="popper"
+              sideOffset={4}
+            >
+              {props.options.map((option) => (
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value}
+                  className="cursor-pointer hover:bg-accent focus:bg-accent"
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            id={fieldId}
+            type={props.inputType || "text"}
+            value={props.value}
+            onChange={(e) => props.onChange(e.target.value)}
+            placeholder={props.placeholder}
+            className={`
+              w-full h-10 transition-colors
+              ${error ? "border-destructive focus:border-destructive" : "focus:border-primary"}
+            `}
+          />
+        )}
+      </div>
 
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+          <span className="inline-block w-1 h-1 bg-destructive rounded-full"></span>
+          {error}
+        </p>
       )}
     </div>
   );
