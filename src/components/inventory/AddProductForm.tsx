@@ -26,6 +26,12 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
+  // Clear any persistent states on component mount
+  React.useEffect(() => {
+    setCreatedProduct(null);
+    setShowPrintDialog(false);
+  }, []);
+
   const createProduct = useCreateProduct();
 
   // Check if category requires serial numbers (accessories are optional)
@@ -116,9 +122,21 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     
     createProduct.mutate(newProduct, {
       onSuccess: (data) => {
-        toast.success(`Product added successfully with ${serialEntries.length} serial entries`);
-        setCreatedProduct({ ...newProduct, id: data?.id, serialEntries });
-        setShowPrintDialog(true);
+        // Clear form state first
+        setBrand("");
+        setModel("");
+        setYear("");
+        setCategory("");
+        setPrice("");
+        setMinPrice("");
+        setMaxPrice("");
+        setStock("0");
+        setThreshold("5");
+        setBatteryLevel("85");
+        setSerialNumbers("");
+        
+        // Then handle the created product
+        handleProductCreated({ ...newProduct, id: data?.id, serialEntries });
       },
       onError: (error) => {
         console.error('Product creation failed:', error);
@@ -133,22 +151,31 @@ export function AddProductForm({ onCancel }: { onCancel: () => void }) {
     onCancel(); // Close the form after printing
   };
 
+  // Handle successful product creation
+  const handleProductCreated = (data: any) => {
+    toast.success(`Product added successfully with ${data.serialEntries?.length || 1} serial entries`);
+    setCreatedProduct({ ...data, serialEntries: data.serialEntries || [] });
+    setShowPrintDialog(true);
+  };
+
   return (
     <>
+      {/* Only show the print dialog when explicitly requested and product exists */}
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
           productName={`${createdProduct.brand} ${createdProduct.model}`}
           barcode={createdProduct.barcode}
           price={createdProduct.price}
           serialEntries={createdProduct.serialEntries}
+          onBarcodeGenerated={() => {}}
           trigger={
-            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="bg-background p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
                 <h3 className="text-lg font-semibold mb-4">Product Created Successfully!</h3>
                 <div className="text-center mb-4">
                   <BarcodeGenerator value={createdProduct.barcode} />
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-gray-600 mb-4">
                   Would you like to print barcode labels for this product? ({createdProduct.serialEntries?.length || 1} labels)
                 </p>
                 <div className="flex gap-2">
