@@ -35,24 +35,33 @@ export function useAuthState() {
       
         if (profileError) {
           log.error('Error fetching user profile', profileError, 'AuthState');
-          // STRICT AUTH: No fallback admin roles - force logout on profile errors
-          log.warn('Profile not found or error occurred. User must have valid profile.', null, 'AuthState');
-          await supabase.auth.signOut();
-          setUserRole(null);
-        setInterfaceRole(null);
-        setUsername(null);
-        return;
-      }
-      
+          
+          // Handle different error types
+          if (profileError.code === 'PGRST116') {
+            // No profile found - this is expected for new users, create one
+            log.info('No profile found, user needs setup', null, 'AuthState');
+            setUserRole(null);
+            setInterfaceRole(null); 
+            setUsername(null);
+            return;
+          } else {
+            // Other errors - sign out for security
+            log.warn('Profile error, signing out for security', null, 'AuthState');
+            await supabase.auth.signOut();
+            setUserRole(null);
+            setInterfaceRole(null);
+            setUsername(null);
+            return;
+          }
+        }
+        
         if (!profile) {
-          log.error('No profile found for authenticated user', null, 'AuthState');
-        // STRICT AUTH: No profile = no access
-        await supabase.auth.signOut();
-        setUserRole(null);
-        setInterfaceRole(null);
-        setUsername(null);
-        return;
-      }
+          log.info('No profile data returned, user needs setup', null, 'AuthState');
+          setUserRole(null);
+          setInterfaceRole(null);
+          setUsername(null);
+          return;
+        }
       
         // Valid profile found - set user data
         log.info('User profile fetched successfully', { role: profile.role, username: profile.username }, 'AuthState');
@@ -87,12 +96,20 @@ export function useAuthState() {
       }
     } catch (error) {
       log.error('Error fetching user profile', error, 'AuthState');
-      // STRICT AUTH: On any error, sign out and clear state
-      log.warn('Authentication error occurred. Signing out user.', null, 'AuthState');
-      await supabase.auth.signOut();
-      setUserRole(null);
-      setInterfaceRole(null);
-      setUsername(null);
+      // For timeout errors, just continue without profile
+      if (error.message?.includes('timeout')) {
+        log.warn('Profile fetch timeout, continuing without profile', null, 'AuthState');
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+      } else {
+        // For other errors, sign out
+        log.warn('Authentication error occurred. Signing out user.', null, 'AuthState');
+        await supabase.auth.signOut();
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+      }
     }
   };
 
