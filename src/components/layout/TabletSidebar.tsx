@@ -1,103 +1,75 @@
 import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Package, 
-  Users, 
-  Wrench, 
-  Building2, 
-  UserCog,
-  LogOut,
-  User
-} from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  SidebarHeader,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { LayoutDashboard, ShoppingBag, Package, Users, Wrench, Building2, UserCog, LogOut, User } from "lucide-react";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { Logo } from "@/components/shared/Logo";
-
 interface TabletSidebarProps {
   userRole: UserRole;
 }
-
-export function TabletSidebar({ userRole }: TabletSidebarProps) {
+export function TabletSidebar({
+  userRole
+}: TabletSidebarProps) {
   const location = useLocation();
-  const { user, logout, username } = useAuth();
-  const { state } = useSidebar();
+  const {
+    user,
+    logout,
+    username
+  } = useAuth();
+  const {
+    state
+  } = useSidebar();
 
   // Navigation items with role-based permissions
-  const navItems = [
-    {
-      title: "Dashboard",
-      url: "/",
-      icon: LayoutDashboard,
-      roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[],
-    },
-    {
-      title: "Vendite",
-      url: "/sales",
-      icon: ShoppingBag,
-      roles: ["admin", "manager", "salesperson"] as UserRole[],
-    },
-    {
-      title: "Inventario",
-      url: "/inventory",
-      icon: Package,
-      roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[],
-    },
-    {
-      title: "Clienti",
-      url: "/clients",
-      icon: Users,
-      roles: ["admin", "manager", "salesperson", "technician"] as UserRole[],
-    },
-    {
-      title: "Riparazioni",
-      url: "/repairs",
-      icon: Wrench,
-      roles: ["admin", "manager", "salesperson", "technician"] as UserRole[],
-    },
-    {
-      title: "Fornitori",
-      url: "/suppliers",
-      icon: Building2,
-      roles: ["admin", "manager", "inventory_manager"] as UserRole[],
-    },
-    {
-      title: "Dipendenti",
-      url: "/employees",
-      icon: UserCog,
-      roles: ["admin"] as UserRole[],
-    },
-  ];
+  const navItems = [{
+    title: "Dashboard",
+    url: "/",
+    icon: LayoutDashboard,
+    roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
+  }, {
+    title: "Vendite",
+    url: "/sales",
+    icon: ShoppingBag,
+    roles: ["admin", "manager", "salesperson"] as UserRole[]
+  }, {
+    title: "Inventario",
+    url: "/inventory",
+    icon: Package,
+    roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
+  }, {
+    title: "Clienti",
+    url: "/clients",
+    icon: Users,
+    roles: ["admin", "manager", "salesperson", "technician"] as UserRole[]
+  }, {
+    title: "Riparazioni",
+    url: "/repairs",
+    icon: Wrench,
+    roles: ["admin", "manager", "salesperson", "technician"] as UserRole[]
+  }, {
+    title: "Fornitori",
+    url: "/suppliers",
+    icon: Building2,
+    roles: ["admin", "manager", "inventory_manager"] as UserRole[]
+  }, {
+    title: "Dipendenti",
+    url: "/employees",
+    icon: UserCog,
+    roles: ["admin"] as UserRole[]
+  }];
 
   // Filter navigation items based on user role
-  const filteredNavItems = navItems.filter(item => 
-    item.roles.includes(userRole)
-  );
-
+  const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
   const isActive = (path: string) => {
     if (path === "/") {
       return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
   };
-
   const getUserInitials = () => {
     if (username) {
       return username.slice(0, 2).toUpperCase();
@@ -107,7 +79,6 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
     }
     return "U";
   };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -115,54 +86,29 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
       console.error("Logout error:", error);
     }
   };
-
-  return (
-    <Sidebar 
-      collapsible="icon"
-      className="border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-    >
+  return <Sidebar collapsible="icon" className="border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarHeader className="border-b p-3 md:p-4">
         <div className="flex items-center gap-2 md:gap-3">
           <Logo className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0" />
-          {state === "expanded" && (
-            <div className="flex flex-col min-w-0">
-              <span className="font-bold text-base md:text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
-                GOLDEN PHONE
-              </span>
-              <span className="text-xs text-muted-foreground truncate">
-                Sistema di Gestione
-              </span>
-            </div>
-          )}
+          {state === "expanded"}
         </div>
       </SidebarHeader>
 
       <SidebarContent className="px-2 md:px-3">
         <SidebarGroup>
-          {state === "expanded" && (
-            <SidebarGroupLabel className="px-2 py-2 text-xs font-medium">
+          {state === "expanded" && <SidebarGroupLabel className="px-2 py-2 text-xs font-medium">
               Navigazione
-            </SidebarGroupLabel>
-          )}
+            </SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {filteredNavItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(item.url)}
-                    className="h-11 md:h-12 px-3 text-sm md:text-base font-medium rounded-lg transition-all duration-200 hover:bg-accent/50 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground touch-target"
-                    tooltip={state === "collapsed" ? item.title : undefined}
-                  >
+              {filteredNavItems.map(item => <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} className="h-11 md:h-12 px-3 text-sm md:text-base font-medium rounded-lg transition-all duration-200 hover:bg-accent/50 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground touch-target" tooltip={state === "collapsed" ? item.title : undefined}>
                     <NavLink to={item.url} className="flex items-center gap-3 w-full">
                       <item.icon className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
-                      {state === "expanded" && (
-                        <span className="truncate">{item.title}</span>
-                      )}
+                      {state === "expanded" && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                </SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -176,29 +122,22 @@ export function TabletSidebar({ userRole }: TabletSidebarProps) {
             </AvatarFallback>
           </Avatar>
           
-          {state === "expanded" && (
-            <div className="flex-1 min-w-0">
+          {state === "expanded" && <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
                 {username || user?.email}
               </p>
               <p className="text-xs text-muted-foreground truncate">
                 {ROLE_CONFIGS[userRole]?.name}
               </p>
-            </div>
-          )}
+            </div>}
         </div>
 
         {state === "expanded" && <Separator className="mb-3" />}
         
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className="w-full justify-start h-10 md:h-11 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 transition-colors touch-target"
-        >
+        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start h-10 md:h-11 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 transition-colors touch-target">
           <LogOut className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
           {state === "expanded" && <span className="ml-2 text-sm">Disconnetti</span>}
         </Button>
       </SidebarFooter>
-    </Sidebar>
-  );
+    </Sidebar>;
 }
