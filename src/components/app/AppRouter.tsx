@@ -42,7 +42,7 @@ export function AppRouter() {
         {/* Root route - login if not authenticated, main app if authenticated */}
         <Route path="/" element={
           isLoggedIn ? (
-            effectiveRole === 'super_admin' ? (
+            effectiveRole === 'super_admin' || effectiveRole === 'admin' ? (
               <ProtectedRoute>
                 <TabletLayout userRole={effectiveRole}>
                   <Suspense fallback={<PageLoader />}>
@@ -73,8 +73,8 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
-            {/* Super Admin users get full admin interface including Finances */}
-            {effectiveRole === 'super_admin' ? (
+            {/* Super Admin and Admin users get full admin interface */}
+            {effectiveRole === 'super_admin' || effectiveRole === 'admin' ? (
               <>
                 <Route path="/sales" element={
                   <ProtectedRoute>
@@ -122,98 +122,17 @@ export function AppRouter() {
                   </ProtectedRoute>
                 } />
                 <Route path="/finances" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Finances />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/reports" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <div className="min-h-[80vh] flex items-center justify-center">
-                        <h1 className="text-2xl">Reports Module - Coming Soon</h1>
-                      </div>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/employees" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <EmployeeManagement />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Documentation />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <div className="min-h-[80vh] flex items-center justify-center">
-                        <h1 className="text-2xl">Settings Module - Coming Soon</h1>
-                      </div>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-              </>
-            ) : effectiveRole === 'admin' ? (
-              /* Admin interface without Finances */
-              <>
-                <Route path="/sales" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Sales />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/clients" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Clients />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/inventory" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Inventory />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/suppliers" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Suppliers />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/repairs" element={
-                  <ProtectedRoute>
-                    <TabletLayout userRole={effectiveRole}>
-                      <Suspense fallback={<PageLoader />}>
-                        <Repairs />
-                      </Suspense>
-                    </TabletLayout>
-                  </ProtectedRoute>
+                  effectiveRole === 'super_admin' ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Finances />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
                 <Route path="/reports" element={
                   <ProtectedRoute>
