@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 export const queryConfig = {
   // Global defaults for better performance
   staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
-  cacheTime: 10 * 60 * 1000, // 10 minutes - keep in cache
+  gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache (renamed from cacheTime)
   refetchOnWindowFocus: false, // Reduce unnecessary refetches
   refetchOnMount: true,
   retry: (failureCount: number, error: any) => {
@@ -20,19 +20,19 @@ export const dataQueryConfigs = {
   // Fast-changing data (sales, real-time updates)
   realtime: {
     staleTime: 30 * 1000, // 30 seconds
-    cacheTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 2 * 60 * 1000, // 2 minutes
   },
   
   // Moderately changing data (inventory, clients)
   moderate: {
     staleTime: 2 * 60 * 1000, // 2 minutes
-    cacheTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
   },
   
   // Rarely changing data (categories, settings)
   static: {
     staleTime: 15 * 60 * 1000, // 15 minutes
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   }
 };
 

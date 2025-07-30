@@ -1,0 +1,57 @@
+import { BaseReactQueryService } from '../core/BaseReactQueryService';
+import { ProductApiService } from './ProductApiService';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import type { Product, CreateProductData } from './types';
+
+class ProductReactQueryServiceClass extends BaseReactQueryService<Product, CreateProductData> {
+  constructor() {
+    const apiService = new ProductApiService();
+    super(apiService, 'products', { queryConfig: 'moderate' });
+  }
+
+  protected getSearchFields(): string[] {
+    return ['brand', 'model', 'barcode'];
+  }
+
+  useCategories() {
+    return useOptimizedQuery(
+      ['categories'],
+      () => (this.apiService as ProductApiService).getCategories(),
+      'static'
+    );
+  }
+
+  useProductRecommendations(productId: string) {
+    return useOptimizedQuery(
+      ['product-recommendations', productId],
+      () => (this.apiService as ProductApiService).getProductRecommendations(productId),
+      'moderate'
+    );
+  }
+}
+
+export const productService = new ProductReactQueryServiceClass();
+
+// Export hooks for use in components
+export const useProducts = (searchTerm: string = '') => 
+  productService.useGetAll(searchTerm);
+
+export const useProduct = (id: string) => 
+  productService.useGetById(id);
+
+export const useCreateProduct = () => 
+  productService.useCreate();
+
+export const useUpdateProduct = () => 
+  productService.useUpdate();
+
+export const useDeleteProduct = () => 
+  productService.useDelete();
+
+export const useCategories = () => 
+  productService.useCategories();
+
+export const useProductRecommendations = (productId: string) => 
+  productService.useProductRecommendations(productId);
+
+export type { Product, CreateProductData };
