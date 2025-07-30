@@ -16,6 +16,7 @@ interface Action<T> {
   onClick: (item: T) => void;
   variant?: "ghost" | "outline" | "destructive";
   className?: string;
+  renderCustom?: (item: T) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -86,21 +87,27 @@ export function DataTable<T>({
               
               {actions.length > 0 && (
                 <div className="flex justify-end items-center gap-1">
-                  {actions.map((action, index) => (
-                    <Button
-                      key={index}
-                      variant={action.variant || "ghost"}
-                      size="sm"
-                      className={`h-8 w-8 p-0 ${action.className || ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        action.onClick(item);
-                      }}
-                      title={action.label}
-                    >
-                      {action.icon}
-                    </Button>
-                  ))}
+                  {actions.map((action, index) => 
+                    action.renderCustom ? (
+                      <div key={index}>
+                        {action.renderCustom(item)}
+                      </div>
+                    ) : (
+                      <Button
+                        key={index}
+                        variant={action.variant || "ghost"}
+                        size="sm"
+                        className={`h-8 w-8 p-0 ${action.className || ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          action.onClick(item);
+                        }}
+                        title={action.label}
+                      >
+                        {action.icon}
+                      </Button>
+                    )
+                  )}
                 </div>
               )}
             </div>

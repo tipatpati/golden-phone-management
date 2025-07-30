@@ -133,8 +133,28 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
       icon: <Printer className="h-4 w-4" />,
       label: "Print",
       onClick: (product: Product) => {
-        // BarcodePrintDialog will be handled separately for now
-      }
+        // This will be handled by the BarcodePrintDialog component
+      },
+      renderCustom: (product: Product) => (
+        <BarcodePrintDialog
+          productName={`${product.brand} ${product.model}`}
+          barcode={product.barcode || undefined}
+          price={product.price}
+          specifications={product.description}
+          serialNumbers={product.serial_numbers}
+          onBarcodeGenerated={(newBarcode) => {
+            updateProduct.mutate({
+              id: product.id,
+              product: { barcode: newBarcode }
+            });
+          }}
+          trigger={
+            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 w-9">
+              <Printer className="h-4 w-4" />
+            </button>
+          }
+        />
+      )
     },
     {
       icon: <Edit className="h-4 w-4" />,
@@ -156,7 +176,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
         <DataTable
           data={products}
           columns={columns}
-          actions={actions.slice(1)} // Skip print for table view
+          actions={actions} // Include all actions including print
           getRowKey={(product) => product.id}
         />
       </div>
@@ -208,9 +228,13 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
                       product: { barcode: newBarcode }
                     });
                   }}
-                  trigger={<Printer className="h-3 w-3" />}
+                  trigger={
+                    <div className="flex items-center justify-center p-2 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                      <Printer className="h-4 w-4 text-primary" />
+                    </div>
+                  }
                 />,
-                label: "",
+                label: "Print",
                 onClick: () => {},
                 className: "p-0 w-auto h-auto bg-transparent hover:bg-transparent"
               },
