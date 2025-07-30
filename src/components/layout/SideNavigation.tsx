@@ -15,7 +15,7 @@ import {
   LogOut,
   UserCog
 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/roles";
 import { Logo } from "@/components/shared/Logo";
@@ -92,11 +92,15 @@ interface SideNavigationProps {
 export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const { logout, userRole, username } = useAuth();
 
   const menuIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
   const setMenuOpen = setIsOpen || setInternalIsOpen;
+  
+  // Treat tablet like mobile when overlay navigation is used
+  const shouldBehaveLikeMobile = isMobile || (isTablet && isOpen !== undefined);
 
   const filteredNavItems = navItems.filter((item) =>
     userRole && item.permission.includes(userRole)
@@ -105,8 +109,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
   return (
     <>
 
-      {/* Mobile overlay */}
-      {isMobile && menuIsOpen && (
+      {/* Mobile/Tablet overlay */}
+      {shouldBehaveLikeMobile && menuIsOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-30" 
           onClick={() => setMenuOpen(false)}
@@ -117,7 +121,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
       <aside
         className={cn(
           "bg-surface-container fixed inset-y-0 left-0 z-40 w-64 transform border-r border-border md-motion-graceful md-elevation-3",
-          isMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
+          shouldBehaveLikeMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
         style={{ boxShadow: 'var(--elevation-3)' }}
       >
@@ -140,7 +144,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps = {}) 
                           ? "bg-primary-container text-on-primary-container shadow-sm"
                           : "text-on-surface hover:bg-primary/5 hover:text-primary"
                       )}
-                      onClick={() => isMobile && setMenuOpen(false)}
+                      onClick={() => shouldBehaveLikeMobile && setMenuOpen(false)}
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span className="truncate">{item.title}</span>
