@@ -177,7 +177,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-end">
+            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-center">
               <div className="col-span-1 text-sm font-medium text-muted-foreground">
                 #{index + 1}
               </div>
