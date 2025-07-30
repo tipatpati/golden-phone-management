@@ -117,14 +117,13 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Strict timeout to prevent infinite loading - no fallback roles
+    // Immediate timeout to prevent stuck loading
     const fallbackTimeout = setTimeout(() => {
       if (mounted && !isInitialized) {
-        log.warn('Auth initialization timeout, completing initialization without auth', null, 'AuthState');
-        // STRICT AUTH: Just mark as initialized, don't assign roles
+        log.warn('Auth initialization timeout, completing initialization', null, 'AuthState');
         setIsInitialized(true);
       }
-    }, 5000);
+    }, 3000);
 
     const cleanup = () => {
       mounted = false;
@@ -132,7 +131,7 @@ export function useAuthState() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         log.debug('Supabase auth state changed', { event, hasUser: !!session?.user }, 'AuthState');
         
         if (!mounted) return;
@@ -141,22 +140,24 @@ export function useAuthState() {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          log.debug('User found, fetching profile...', null, 'AuthState');
+          log.debug('User found, fetching profile in background', null, 'AuthState');
+          // Fetch profile in background without blocking initialization
           setTimeout(() => {
             if (mounted) {
-              fetchUserProfile(session.user.id).finally(() => {
-                if (mounted) {
-                  log.debug('Setting initialized to true (with user)', null, 'AuthState');
-                  setIsInitialized(true);
-                }
+              fetchUserProfile(session.user.id).catch(error => {
+                log.warn('Background profile fetch failed in auth change', error, 'AuthState');
               });
             }
           }, 0);
         } else {
-          log.debug('No user, setting initialized to true', null, 'AuthState');
+          log.debug('No user, clearing profile data', null, 'AuthState');
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
+        }
+        
+        // Always ensure we're initialized after auth state changes
+        if (!isInitialized) {
           setIsInitialized(true);
         }
       }
@@ -171,20 +172,19 @@ export function useAuthState() {
       
       if (session?.user) {
         log.debug('Initial user found, fetching profile...', null, 'AuthState');
-        setTimeout(() => {
-          if (mounted) {
-            fetchUserProfile(session.user.id).finally(() => {
-              if (mounted) {
-                log.debug('Setting initialized to true (initial with user)', null, 'AuthState');
-                setIsInitialized(true);
-              }
-            });
-          }
-        }, 0);
-      } else {
-        log.debug('No initial user, setting initialized to true', null, 'AuthState');
-        setIsInitialized(true);
+        // Fetch profile in background but initialize immediately
+        fetchUserProfile(session.user.id).catch(error => {
+          log.warn('Background profile fetch failed', error, 'AuthState');
+        });
       }
+      
+      // Always initialize immediately, don't wait for profile
+      log.debug('Setting initialized to true immediately', null, 'AuthState');
+      setIsInitialized(true);
+    }).catch(error => {
+      log.error('Failed to get initial session', error, 'AuthState');
+      // Even on error, initialize to prevent stuck loading
+      setIsInitialized(true);
     });
 
     return () => {
