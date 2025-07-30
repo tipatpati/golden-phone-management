@@ -239,14 +239,14 @@ export function BillCalculator() {
                       <div className="flex-1">
                         <Label>Sconto</Label>
                         <Select
-                          value={item.discountId || ""}
-                          onValueChange={(value) => updateItem(item.id, "discountId", value || undefined)}
+                          value={item.discountId || "none"}
+                          onValueChange={(value) => updateItem(item.id, "discountId", value === "none" ? undefined : value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Nessuno" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Nessuno</SelectItem>
+                            <SelectItem value="none">Nessuno</SelectItem>
                             {discounts.map(discount => (
                               <SelectItem key={discount.id} value={discount.id}>
                                 {discount.name}
