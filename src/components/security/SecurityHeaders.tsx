@@ -9,6 +9,11 @@ export function SecurityHeaders() {
     if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
       const cspMeta = document.createElement('meta');
       cspMeta.httpEquiv = 'Content-Security-Policy';
+      // Allow iframe for development/preview environments
+      const isPreview = window.location.hostname.includes('lovable.app') || 
+                       window.location.hostname.includes('localhost') ||
+                       window !== window.top;
+      
       cspMeta.content = [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' https://cdn.gpteng.co",
@@ -16,18 +21,22 @@ export function SecurityHeaders() {
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: https:",
         "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-        "frame-ancestors 'none'",
+        isPreview ? "frame-ancestors *" : "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"
       ].join('; ');
       document.head.appendChild(cspMeta);
     }
 
-    // Add X-Frame-Options
+    // Add X-Frame-Options (conditionally for preview environments)
     if (!document.querySelector('meta[http-equiv="X-Frame-Options"]')) {
       const frameOptionsMeta = document.createElement('meta');
       frameOptionsMeta.httpEquiv = 'X-Frame-Options';
-      frameOptionsMeta.content = 'DENY';
+      // Allow iframe for development/preview environments
+      const isPreview = window.location.hostname.includes('lovable.app') || 
+                       window.location.hostname.includes('localhost') ||
+                       window !== window.top;
+      frameOptionsMeta.content = isPreview ? 'ALLOWALL' : 'DENY';
       document.head.appendChild(frameOptionsMeta);
     }
 
@@ -63,10 +72,18 @@ export function SecurityHeaders() {
     }
 
     // Prevent clickjacking by removing any iframe that might be containing this page
+    const isPreview = window.location.hostname.includes('lovable.app') || 
+                     window.location.hostname.includes('localhost') ||
+                     window !== window.top;
+                     
     if (window !== window.top) {
-      console.warn('Page is running in iframe - potential clickjacking attempt');
-      // In production, you might want to break out of frames:
-      // window.top.location = window.location;
+      if (isPreview) {
+        console.log('Running in preview iframe - security headers adjusted for development');
+      } else {
+        console.warn('Page is running in iframe - potential clickjacking attempt');
+        // In production, you might want to break out of frames:
+        // window.top.location = window.location;
+      }
     }
 
     // Add security event listener for suspicious activities
