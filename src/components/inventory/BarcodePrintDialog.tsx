@@ -67,38 +67,40 @@ export function BarcodePrintDialog({
       return;
     }
 
-    // Convert all canvas elements to images before printing
-    const canvasElements = printAreaRef.current.querySelectorAll('canvas');
-    const imagePromises: Promise<void>[] = [];
-    
-    canvasElements.forEach((canvas) => {
-      const promise = new Promise<void>((resolve) => {
-        try {
-          const dataURL = canvas.toDataURL('image/png');
-          const img = document.createElement('img');
-          img.src = dataURL;
-          img.style.maxWidth = '90%';
-          img.style.height = 'auto';
-          img.style.display = 'block';
-          img.style.margin = '0 auto';
-          canvas.parentNode?.replaceChild(img, canvas);
-          resolve();
-        } catch (error) {
-          console.error('Error converting canvas to image:', error);
-          resolve();
-        }
-      });
-      imagePromises.push(promise);
-    });
+            // Clone the print area to avoid modifying the original preview
+            const clonedPrintArea = printAreaRef.current.cloneNode(true) as HTMLElement;
+            const canvasElements = clonedPrintArea.querySelectorAll('canvas');
+            const imagePromises: Promise<void>[] = [];
+            
+            canvasElements.forEach((canvas) => {
+              const promise = new Promise<void>((resolve) => {
+                try {
+                  const dataURL = canvas.toDataURL('image/png');
+                  const img = document.createElement('img');
+                  img.src = dataURL;
+                  // Match the exact styling from the preview
+                  img.style.width = canvas.style.width || `${currentSize.barcodeWidth * 100}px`;
+                  img.style.height = canvas.style.height || `${currentSize.barcodeHeight}px`;
+                  img.style.display = 'block';
+                  img.style.margin = '0 auto';
+                  canvas.parentNode?.replaceChild(img, canvas);
+                  resolve();
+                } catch (error) {
+                  console.error('Error converting canvas to image:', error);
+                  resolve();
+                }
+              });
+              imagePromises.push(promise);
+            });
 
-    Promise.all(imagePromises).then(() => {
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        toast.error('Please allow popups to print labels');
-        return;
-      }
+        Promise.all(imagePromises).then(() => {
+          const printWindow = window.open('', '_blank');
+          if (!printWindow) {
+            toast.error('Please allow popups to print labels');
+            return;
+          }
 
-      const printContent = printAreaRef.current?.innerHTML || '';
+          const printContent = clonedPrintArea.innerHTML || '';
       const copiesNum = parseInt(copies) || 1;
 
       let allLabels = '';
@@ -270,16 +272,12 @@ export function BarcodePrintDialog({
               
               /* Canvas and barcode styling */
               canvas {
-                max-width: 90%;
-                height: auto;
                 display: block;
                 margin: 0 auto;
               }
               
-              /* Image styling for converted barcodes */
+              /* Image styling for converted barcodes - match canvas exactly */
               img {
-                max-width: 90%;
-                height: auto;
                 display: block;
                 margin: 0 auto;
               }
