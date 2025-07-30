@@ -13,7 +13,7 @@ export function Logo({ className = "", size = 48 }: LogoProps) {
     <img
       src="/lovable-uploads/1c674f52-56e5-4464-9c2e-7c97347b4ccc.png"
       alt="Golden Phone Logo"
-      style={{ width: width, height: "auto", display: "block" }}
+      style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }}
       className={className}
       loading="lazy"
     />
