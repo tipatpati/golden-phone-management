@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRepairs } from "@/services/useRepairs";
+import { useRepairs } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RepairStatsCardsProps {

@@ -4,7 +4,7 @@ import { RepairStatsCards } from "@/components/repairs/RepairStatsCards";
 import { RepairSearchBar } from "@/components/repairs/RepairSearchBar";
 import { RepairsList } from "@/components/repairs/RepairsList";
 import { NewRepairDialog } from "@/components/repairs/NewRepairDialog";
-import { useRepairs } from "@/services/useRepairs";
+import { useRepairs, type Repair } from "@/services";
 
 const Repairs = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,8 +15,11 @@ const Repairs = () => {
     console.error('Error loading repairs:', error);
   }
 
+  // Ensure repairs is always an array
+  const repairsArray = Array.isArray(repairs) ? repairs as Repair[] : [];
+
   // Convert database repairs to match the expected format
-  const formattedRepairs = repairs.map(repair => ({
+  const formattedRepairs = repairsArray.map(repair => ({
     id: repair.id, // Use the actual database UUID, not repair_number
     repairNumber: repair.repair_number, // Add repair number separately
     clientName: repair.client 
@@ -45,8 +48,8 @@ const Repairs = () => {
         if (statusFilter === 'awaiting_parts') return repair.status === 'awaiting_parts';
         if (statusFilter === 'completed_today') {
           const today = new Date().toISOString().split('T')[0];
-          const completionDate = repairs.find(r => r.id === repair.id)?.actual_completion_date 
-            ? new Date(repairs.find(r => r.id === repair.id)!.actual_completion_date!).toISOString().split('T')[0]
+          const completionDate = repairsArray.find(r => r.id === repair.id)?.actual_completion_date 
+            ? new Date(repairsArray.find(r => r.id === repair.id)!.actual_completion_date!).toISOString().split('T')[0]
             : null;
           return completionDate === today;
         }
@@ -56,10 +59,10 @@ const Repairs = () => {
 
   // Calculate stats
   const statusCounts = {
-    total: repairs.length,
-    in_progress: repairs.filter(r => r.status === "in_progress").length,
-    awaiting_parts: repairs.filter(r => r.status === "awaiting_parts").length,
-    completed_today: repairs.filter(r => {
+    total: repairsArray.length,
+    in_progress: repairsArray.filter(r => r.status === "in_progress").length,
+    awaiting_parts: repairsArray.filter(r => r.status === "awaiting_parts").length,
+    completed_today: repairsArray.filter(r => {
       if (!r.actual_completion_date) return false;
       const today = new Date().toISOString().split('T')[0];
       const completionDate = new Date(r.actual_completion_date).toISOString().split('T')[0];

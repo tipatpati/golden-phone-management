@@ -3,8 +3,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownRight, DollarSign, ShoppingBag, Users, Calendar } from "lucide-react";
-import { useSales } from "@/services/useSales";
-import { useRepairs } from "@/services/useRepairs";
+import { useSales } from "@/services";
+import { useRepairs } from "@/services";
 import { useClients } from "@/services/useClients";
 
 export function DashboardOverview() {

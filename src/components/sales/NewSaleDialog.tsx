@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Scan } from "lucide-react";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { supabaseProductApi } from "@/services/supabaseProducts";
-import { useCreateSale } from "@/services/useSales";
+import { useCreateSale } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClientSelector } from "./ClientSelector";
 import { ProductSelector } from "./ProductSelector";

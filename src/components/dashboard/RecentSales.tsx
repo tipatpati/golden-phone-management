@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
-import { useSales } from "@/services/useSales";
+import { useSales } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit } from "lucide-react";
-import { useUpdateSale, type Sale } from "@/services/useSales";
+import { useUpdateSale, type Sale } from "@/services";
 
 interface EditSaleDialogProps {
   sale: Sale;
@@ -26,7 +26,7 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
     try {
       await updateSale.mutateAsync({
         id: sale.id,
-        sale: {
+        data: {
           status: status,
           payment_method: paymentMethod,
           notes

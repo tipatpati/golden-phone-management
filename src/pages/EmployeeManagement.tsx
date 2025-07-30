@@ -6,7 +6,7 @@ import { Plus, Search, Filter } from "lucide-react";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { NewEmployeeDialog } from "@/components/employees/NewEmployeeDialog";
 import { EditEmployeeDialog } from "@/components/employees/EditEmployeeDialog";
-import { useEmployees } from "@/services/useEmployees";
+import { useEmployees } from "@/services";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleManagement } from "@/components/admin/RoleManagement";
 import { SecurityAuditLog } from "@/components/security/SecurityAuditLog";

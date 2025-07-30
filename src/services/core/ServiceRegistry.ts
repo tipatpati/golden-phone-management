@@ -64,10 +64,10 @@ export const serviceRegistry = new ServiceRegistry();
 export const serviceLoaders = {
   clients: () => import('../clients/ClientReactQueryService').then(m => m.clientService),
   products: () => import('../products/ProductReactQueryService').then(m => m.productService),
-  sales: () => import('../useSales').then(m => m),
-  repairs: () => import('../useRepairs').then(m => m),
-  employees: () => import('../useEmployees').then(m => m),
-  suppliers: () => import('../useSuppliers').then(m => m),
+  sales: () => import('../sales/SalesReactQueryService').then(m => m.salesService),
+  repairs: () => import('../repairs/RepairsReactQueryService').then(m => m.repairsService),
+  employees: () => import('../employees/EmployeesReactQueryService').then(m => m.employeesService),
+  suppliers: () => import('../suppliers/SuppliersReactQueryService').then(m => m.suppliersService),
 };
 
 // Helper to get a service with lazy loading

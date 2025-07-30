@@ -3,7 +3,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
-import { type Sale } from "@/services/useSales";
+import { type Sale } from "@/services";
 import { format } from "date-fns";
 
 interface SaleReceiptDialogProps {
