@@ -31,14 +31,30 @@ export function AppProviders({ children, includeAuth = false }: AppProvidersProp
     children
   );
 
+  // Detect preview environment
+  const isPreview = typeof window !== 'undefined' && (
+    window.location.hostname.includes('lovable.app') || 
+    window.location.hostname.includes('localhost') ||
+    window !== window.top
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SecurityProvider>
-          {content}
-          <Toaster />
-          <Sonner />
-        </SecurityProvider>
+        {/* Only wrap with SecurityProvider in production environments */}
+        {isPreview ? (
+          <>
+            {content}
+            <Toaster />
+            <Sonner />
+          </>
+        ) : (
+          <SecurityProvider>
+            {content}
+            <Toaster />
+            <Sonner />
+          </SecurityProvider>
+        )}
       </TooltipProvider>
     </QueryClientProvider>
   );

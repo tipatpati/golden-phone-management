@@ -19,11 +19,28 @@ import ResetPassword from "@/pages/ResetPassword";
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
+  // Debug logging for preview issues
+  React.useEffect(() => {
+    const isPreview = window.location.hostname.includes('lovable.app') || 
+                     window.location.hostname.includes('localhost') ||
+                     window !== window.top;
+    
+    console.log('AppRouter Debug:', {
+      isPreview,
+      hostname: window.location.hostname,
+      isInIframe: window !== window.top,
+      isInitialized,
+      isLoggedIn,
+      userRole,
+      hasUser: !!user
+    });
+  }, [isLoggedIn, userRole, user, isInitialized]);
+
   // Show loading while auth state is initializing
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-lg text-gray-900">Loading...</div>
       </div>
     );
   }
