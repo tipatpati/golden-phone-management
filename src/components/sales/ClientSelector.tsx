@@ -26,7 +26,7 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
 
   return (
     <div className="space-y-2">
-      <Label>Client (Optional)</Label>
+      <Label>Cliente (Opzionale)</Label>
       {selectedClient ? (
         <div className="flex items-center gap-2">
           <Badge variant="outline">
@@ -46,10 +46,11 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search clients..."
+              placeholder="Cerca clienti..."
               value={clientSearch}
               onChange={(e) => setClientSearch(e.target.value)}
               className="pl-8"
+              type="search"
             />
           </div>
           {clientSearch && clients.length > 0 && (
@@ -75,7 +76,7 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
           )}
           {clientSearch && clients.length === 0 && (
             <div className="border rounded-md p-3 text-center space-y-2">
-              <p className="text-sm text-muted-foreground">No clients found for "{clientSearch}"</p>
+              <p className="text-sm text-muted-foreground">Nessun cliente trovato per "{clientSearch}"</p>
               <NewClientDialogInSales 
                 onClientCreated={(newClient) => {
                   onClientSelect(newClient);

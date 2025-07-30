@@ -29,10 +29,17 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   });
 
   useEffect(() => {
-    if (searchInputRef.current) {
-      const cleanup = setupHardwareScanner(searchInputRef.current);
-      return cleanup;
-    }
+    // Hardware scanner setup will be handled differently since AutocompleteInput doesn't accept ref
+    // We'll use a workaround to get the input element
+    const timer = setTimeout(() => {
+      const inputElement = document.querySelector('[placeholder*="Cerca per nome"]') as HTMLInputElement;
+      if (inputElement) {
+        const cleanup = setupHardwareScanner(inputElement);
+        return cleanup;
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [setupHardwareScanner]);
 
   const handleProductSelect = (product: any) => {
@@ -66,14 +73,14 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
 
   return (
     <div className="space-y-2">
-      <Label>Add Products</Label>
+      <Label>Aggiungi Prodotti</Label>
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground z-10" />
         <AutocompleteInput
           value={productSearch}
           onChange={setProductSearch}
           suggestions={existingProductNames}
-          placeholder="Search by name, serial/IMEI, barcode, or scan barcode..."
+          placeholder="Cerca per nome, seriale/IMEI, barcode o scansiona..."
           className="pl-8 pr-12"
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
@@ -139,7 +146,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
       )}
       {productSearch && products.length === 0 && (
         <div className="border rounded-md p-2 text-center text-muted-foreground">
-          No products found matching "{productSearch}"
+          Nessun prodotto trovato per "{productSearch}"
         </div>
       )}
     </div>

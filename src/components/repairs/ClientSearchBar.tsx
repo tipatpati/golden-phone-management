@@ -49,6 +49,7 @@ export function ClientSearchBar({ selectedClient, onClientSelect, onClientClear 
               value={clientSearch}
               onChange={(e) => setClientSearch(e.target.value)}
               className="pl-8"
+              type="search"
             />
           </div>
           {clientSearch && clients.length > 0 && (

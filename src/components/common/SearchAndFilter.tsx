@@ -26,7 +26,7 @@ interface SearchAndFilterProps {
 export function SearchAndFilter({
   searchTerm,
   onSearchChange,
-  placeholder = "Search...",
+  placeholder = "Cerca...",
   filters = [],
   actions,
   className = ""
@@ -49,6 +49,7 @@ export function SearchAndFilter({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10 h-10 sm:h-12 text-sm sm:text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            type="search"
           />
         </div>
 
@@ -79,7 +80,7 @@ export function SearchAndFilter({
             className="flex items-center gap-2"
           >
             <X className="h-4 w-4" />
-            Clear
+            Cancella
           </Button>
         )}
 

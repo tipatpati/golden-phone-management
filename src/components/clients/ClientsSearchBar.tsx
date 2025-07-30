@@ -16,10 +16,11 @@ export const ClientsSearchBar = ({ searchTerm, onSearchChange }: ClientsSearchBa
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search clients by name, email, or phone..."
+            placeholder="Cerca clienti per nome, email o telefono..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-8"
+            type="search"
           />
         </div>
       </CardContent>
