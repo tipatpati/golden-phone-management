@@ -51,12 +51,12 @@ export const SecurityAuditLog: React.FC = () => {
       
       return filteredData;
     },
-    enabled: userRole === 'admin',
+    enabled: userRole === 'admin' || userRole === 'super_admin',
     refetchInterval: 30000 // Auto-refresh every 30 seconds
   });
 
   // Only admins can view security logs
-  if (userRole !== 'admin') {
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
     return (
       <Card>
         <CardHeader>

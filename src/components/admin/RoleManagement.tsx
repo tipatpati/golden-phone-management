@@ -29,14 +29,14 @@ export function RoleManagement() {
     }
 
     // Prevent admins from changing their own role without proper verification
-    if (userRole === 'admin' && user.id && selectedRole !== 'admin') {
+    if ((userRole === 'admin' || userRole === 'super_admin') && user.id && selectedRole !== userRole) {
       setShowConfirmDialog(true);
       return;
     }
 
     // For high-risk changes, always show confirmation
-    if ((userRole !== 'admin' && selectedRole === 'admin') || 
-        (userRole === 'admin' && selectedRole !== 'admin')) {
+    if ((userRole !== 'admin' && userRole !== 'super_admin' && (selectedRole === 'admin' || selectedRole === 'super_admin')) || 
+        ((userRole === 'admin' || userRole === 'super_admin') && selectedRole !== 'admin' && selectedRole !== 'super_admin')) {
       setShowConfirmDialog(true);
       return;
     }
@@ -93,7 +93,7 @@ export function RoleManagement() {
     }
   };
 
-  if (userRole !== 'admin') {
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
     return (
       <Card>
         <CardHeader>
@@ -153,7 +153,7 @@ export function RoleManagement() {
               <Button 
                 onClick={handleRoleChangeRequest}
                 disabled={isUpdating || selectedRole === userRole}
-                variant={selectedRole === 'admin' ? 'destructive' : 'default'}
+                variant={(selectedRole === 'admin' || selectedRole === 'super_admin') ? 'destructive' : 'default'}
               >
                 {isUpdating ? "Updating..." : "Update Role"}
               </Button>

@@ -37,7 +37,7 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
     log.info('Role selected', { role }, 'AuthFlow');
     setSelectedRole(role);
     // Since we now handle login at the page level, redirect to appropriate login page
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'super_admin') {
       window.location.href = '/admin-login';
     } else {
       window.location.href = '/employee-login';

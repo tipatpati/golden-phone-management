@@ -29,37 +29,37 @@ export function TabletSidebar({
     title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
-    roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
   }, {
     title: "Vendite",
     url: "/sales",
     icon: ShoppingBag,
-    roles: ["admin", "manager", "salesperson"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "salesperson"] as UserRole[]
   }, {
     title: "Inventario",
     url: "/inventory",
     icon: Package,
-    roles: ["admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "inventory_manager", "salesperson", "technician"] as UserRole[]
   }, {
     title: "Clienti",
     url: "/clients",
     icon: Users,
-    roles: ["admin", "manager", "salesperson", "technician"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "salesperson", "technician"] as UserRole[]
   }, {
     title: "Riparazioni",
     url: "/repairs",
     icon: Wrench,
-    roles: ["admin", "manager", "salesperson", "technician"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "salesperson", "technician"] as UserRole[]
   }, {
     title: "Fornitori",
     url: "/suppliers",
     icon: Building2,
-    roles: ["admin", "manager", "inventory_manager"] as UserRole[]
+    roles: ["super_admin", "admin", "manager", "inventory_manager"] as UserRole[]
   }, {
     title: "Dipendenti",
     url: "/employees",
     icon: UserCog,
-    roles: ["admin"] as UserRole[]
+    roles: ["super_admin", "admin"] as UserRole[]
   }];
 
   // Filter navigation items based on user role

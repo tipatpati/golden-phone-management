@@ -13,7 +13,7 @@ export interface User {
   id: ID;
   email: string;
   username?: string;
-  role: 'admin' | 'manager' | 'inventory_manager' | 'salesperson' | 'technician';
+  role: 'super_admin' | 'admin' | 'manager' | 'inventory_manager' | 'salesperson' | 'technician';
   created_at: Timestamp;
   updated_at: Timestamp;
 }
@@ -258,7 +258,7 @@ export interface TableColumn<T> {
 }
 
 // User role type - inline definition to avoid circular dependency
-export type UserRole = 'admin' | 'manager' | 'inventory_manager' | 'salesperson' | 'technician';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'inventory_manager' | 'salesperson' | 'technician';
 
 // Re-export the User type with proper role type
 export interface UserWithRole extends Omit<User, 'role'> {

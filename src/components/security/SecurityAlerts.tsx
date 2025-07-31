@@ -22,7 +22,7 @@ export function SecurityAlerts() {
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (userRole !== 'admin') return;
+    if (userRole !== 'admin' && userRole !== 'super_admin') return;
 
     const fetchRecentAlerts = async () => {
       const { data, error } = await supabase
@@ -98,7 +98,7 @@ export function SecurityAlerts() {
 
   const visibleAlerts = alerts.filter(alert => !dismissedAlerts.has(alert.id));
 
-  if (userRole !== 'admin' || visibleAlerts.length === 0) {
+  if ((userRole !== 'admin' && userRole !== 'super_admin') || visibleAlerts.length === 0) {
     return null;
   }
 

@@ -53,8 +53,8 @@ export function RoleChangeConfirmationDialog({
     onClose();
   };
 
-  const isHighRiskChange = (currentRole === 'admin' && newRole !== 'admin') || 
-                          (currentRole !== 'admin' && newRole === 'admin');
+  const isHighRiskChange = ((currentRole === 'admin' || currentRole === 'super_admin') && newRole !== 'admin' && newRole !== 'super_admin') || 
+                          (currentRole !== 'admin' && currentRole !== 'super_admin' && (newRole === 'admin' || newRole === 'super_admin'));
 
   return (
     <AlertDialog open={isOpen} onOpenChange={handleClose}>
