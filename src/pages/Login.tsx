@@ -81,7 +81,7 @@ export default function Login() {
                 value={email} 
                 onChange={e => setEmail(sanitizeInput(e.target.value))} 
                 placeholder="Inserisci la tua email" 
-                className="h-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:bg-white/15 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
+                className="h-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
                 maxLength={254} 
                 required 
               />
