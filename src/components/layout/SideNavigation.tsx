@@ -63,7 +63,7 @@ const navItems: NavItem[] = [
     title: "Riparazioni",
     href: "/repairs",
     icon: ClipboardList,
-    permission: ["manager", "admin", "super_admin"],
+    permission: ["manager", "technician", "admin", "super_admin"],
   },
   {
     title: "Finanze",

@@ -54,11 +54,13 @@ export function AppRouter() {
                 </TabletLayout>
               </ProtectedRoute>
             ) : (
-              <TabletLayout userRole={effectiveRole}>
-                <Suspense fallback={<PageLoader />}>
-                  <EmployeeDashboard userRole={effectiveRole} />
-                </Suspense>
-              </TabletLayout>
+              <ProtectedRoute>
+                <TabletLayout userRole={effectiveRole}>
+                  <Suspense fallback={<PageLoader />}>
+                    <EmployeeDashboard userRole={effectiveRole} />
+                  </Suspense>
+                </TabletLayout>
+              </ProtectedRoute>
             )
           ) : (
             <Login />
@@ -178,39 +180,69 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Sales />
-                    </Suspense>
-                  </TabletLayout>
+                  ['salesperson', 'manager'].includes(effectiveRole || '') ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Sales />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
                 <Route path="/clients" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Clients />
-                    </Suspense>
-                  </TabletLayout>
+                  ['salesperson', 'manager', 'technician'].includes(effectiveRole || '') ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Clients />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
                 <Route path="/inventory" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Inventory />
-                    </Suspense>
-                  </TabletLayout>
+                  ['manager', 'inventory_manager', 'salesperson', 'technician'].includes(effectiveRole || '') ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Inventory />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
                 <Route path="/suppliers" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Suppliers />
-                    </Suspense>
-                  </TabletLayout>
+                  ['manager', 'inventory_manager'].includes(effectiveRole || '') ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Suppliers />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
                 <Route path="/repairs" element={
-                  <TabletLayout userRole={effectiveRole}>
-                    <Suspense fallback={<PageLoader />}>
-                      <Repairs />
-                    </Suspense>
-                  </TabletLayout>
+                  ['manager', 'technician'].includes(effectiveRole || '') ? (
+                    <ProtectedRoute>
+                      <TabletLayout userRole={effectiveRole}>
+                        <Suspense fallback={<PageLoader />}>
+                          <Repairs />
+                        </Suspense>
+                      </TabletLayout>
+                    </ProtectedRoute>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
                 } />
               </>
             )}

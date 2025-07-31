@@ -49,13 +49,13 @@ const navItems: NavItem[] = [
     title: "Inventario",
     href: "/inventory",
     icon: PackageSearch,
-    permission: ["manager", "inventory_manager", "admin", "super_admin"],
+    permission: ["manager", "inventory_manager", "salesperson", "technician", "admin", "super_admin"],
   },
   {
     title: "Riparazioni",
     href: "/repairs",
     icon: ClipboardList,
-    permission: ["manager", "admin", "super_admin"],
+    permission: ["manager", "technician", "admin", "super_admin"],
   },
   {
     title: "Report",
