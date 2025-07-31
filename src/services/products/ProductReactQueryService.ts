@@ -48,8 +48,37 @@ class ProductReactQueryServiceClass extends BaseReactQueryService<Product, Creat
           },
           (payload) => {
             console.log('🔄 Products table changed:', payload);
-            // Invalidate all product queries to ensure fresh data
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+            
+            // More efficient updates based on the change type
+            if (payload.eventType === 'UPDATE' && payload.new) {
+              // Optimistically update specific product in cache
+              const updatedProduct = payload.new;
+              
+              // Update specific product cache
+              queryClient.setQueryData(['products', 'detail', updatedProduct.id], updatedProduct);
+              
+              // Update list cache efficiently
+              queryClient.setQueryData(['products', 'list'], (old: any) => {
+                if (!old) return old;
+                return old.map((product: any) => 
+                  product.id === updatedProduct.id ? updatedProduct : product
+                );
+              });
+              
+              // Update search results
+              queryClient.setQueriesData(
+                { queryKey: ['products', 'list'] }, 
+                (old: any) => {
+                  if (!old) return old;
+                  return old.map((product: any) => 
+                    product.id === updatedProduct.id ? updatedProduct : product
+                  );
+                }
+              );
+            } else {
+              // For INSERT/DELETE, just invalidate to refetch
+              queryClient.invalidateQueries({ queryKey: ['products'] });
+            }
           }
         )
         .subscribe();
