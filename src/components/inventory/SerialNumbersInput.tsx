@@ -9,7 +9,6 @@ import { Plus, Trash2 } from "lucide-react";
 interface SerialEntry {
   id: string;
   serial: string;
-  batteryLevel: string;
   color: string;
 }
 
@@ -36,8 +35,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
         return {
           id: `entry-${index}`,
           serial: parts[0] || '',
-          batteryLevel: parts[1] || '85',
-          color: parts[2] || ''
+          color: parts[1] || ''
         };
       });
       
@@ -45,11 +43,11 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
         setEntries(initialEntries);
       } else {
         // Start with one empty entry
-        setEntries([{ id: 'entry-0', serial: '', batteryLevel: '85', color: '' }]);
+        setEntries([{ id: 'entry-0', serial: '', color: '' }]);
       }
     } else if (!serialNumbers && entries.length === 0) {
       // Start with one empty entry
-      setEntries([{ id: 'entry-0', serial: '', batteryLevel: '85', color: '' }]);
+      setEntries([{ id: 'entry-0', serial: '', color: '' }]);
     }
   }, [serialNumbers, entries.length]);
 
@@ -57,7 +55,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`)
+      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}`)
       .join('\n');
     
     setSerialNumbers(serialString);
@@ -68,7 +66,6 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
     const newEntry: SerialEntry = {
       id: `entry-${Date.now()}`,
       serial: '',
-      batteryLevel: '85',
       color: ''
     };
     setEntries([...entries, newEntry]);
@@ -92,7 +89,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">
-          Numeri IMEI/Seriali con Livello Batteria e Colore *
+          Numeri IMEI/Seriali con Colore *
         </Label>
         <div className="text-sm text-muted-foreground">
           Scorta: {validEntriesCount}
@@ -135,23 +132,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs">
-                      Batteria %
-                    </Label>
-                    <Input
-                      id={`battery-mobile-${entry.id}`}
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={entry.batteryLevel}
-                      onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
-                      placeholder="85"
-                      className="text-sm h-9"
-                    />
-                  </div>
-                  
+                <div>
                   <div>
                     <Label htmlFor={`color-mobile-${entry.id}`} className="text-xs">
                       Colore
@@ -177,12 +158,12 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-center">
+            <div className="hidden lg:grid lg:grid-cols-10 lg:gap-3 lg:items-center">
               <div className="col-span-1 text-sm font-medium text-muted-foreground">
                 #{index + 1}
               </div>
               
-              <div className="col-span-5">
+              <div className="col-span-6">
                 <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
                   Numero IMEI/Seriale
                 </Label>
@@ -195,23 +176,8 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                 />
               </div>
               
-              <div className="col-span-2">
-                <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs">
-                  Batteria %
-                </Label>
-                <Input
-                  id={`battery-desktop-${entry.id}`}
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={entry.batteryLevel}
-                  onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
-                  placeholder="85"
-                  className="text-sm h-9"
-                />
-              </div>
               
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs">
                   Colore
                 </Label>
@@ -261,7 +227,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
       </Button>
       
       <p className="text-xs text-muted-foreground">
-        Aggiungi singole unità con i loro numeri IMEI/Seriali, livelli di batteria e colori. La scorta verrà calcolata automaticamente in base al numero di voci valide.
+        Aggiungi singole unità con i loro numeri IMEI/Seriali e colori. La scorta verrà calcolata automaticamente in base al numero di voci valide.
       </p>
     </div>
   );

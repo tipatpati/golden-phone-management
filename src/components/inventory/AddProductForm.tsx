@@ -33,7 +33,7 @@ interface ProductFormData {
   max_price: number;
   stock: number;
   threshold: number;
-  battery_level?: number;
+  
   has_serial: boolean;
   serial_numbers?: string[];
   barcode?: string;
@@ -58,7 +58,6 @@ export function AddProductForm() {
     max_price: '',
     stock: 0,
     threshold: '5',
-    battery_level: '85',
     has_serial: true,
   });
 
@@ -119,10 +118,9 @@ export function AddProductForm() {
     // Parse serial entries and generate individual barcodes
     const serialEntries = serialLines.map(line => {
       const parsed = parseSerialWithBattery(line);
-      const barcode = generateSerialBasedBarcode(parsed.serial, undefined, parsed.batteryLevel);
+      const barcode = generateSerialBasedBarcode(parsed.serial, undefined, 0);
       return {
         serial: parsed.serial,
-        batteryLevel: parsed.batteryLevel,
         color: parsed.color,
         barcode: barcode
       };
@@ -147,7 +145,7 @@ export function AddProductForm() {
       threshold: parseInt(formData.threshold),
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
-        `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
+        `${entry.serial}${entry.color ? ` ${entry.color}` : ''}`
       ),
       barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${formData.brand} ${formData.model}`, undefined, 0)
     };
@@ -174,7 +172,7 @@ export function AddProductForm() {
             max_price: '',
             stock: 0,
             threshold: '5',
-            battery_level: '85',
+            
             has_serial: true,
           });
           setSerialNumbers("");
@@ -326,15 +324,6 @@ export function AddProductForm() {
             inputType="number"
           />
 
-          <FormField
-            label="Battery Level (%)"
-            required
-            value={formData.battery_level}
-            onChange={(value) => updateField('battery_level', value)}
-            inputType="number"
-            placeholder="85"
-            description="Enter the current battery level (0-100%)"
-          />
         </div>
 
         {!requiresSerial && (
