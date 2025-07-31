@@ -4,6 +4,7 @@ import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryTableToolbar } from "@/components/inventory/InventoryTableToolbar";
 import { AddProductForm } from "@/components/inventory/AddProductForm";
 import { Barcode } from "lucide-react";
+import { useProductsRealtime } from "@/services/products/ProductReactQueryService";
 
 interface InventoryContentProps {
   showAddProduct: boolean;
@@ -18,6 +19,9 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  
+  // Enable real-time updates for inventory
+  useProductsRealtime();
 
   const handleSearchChange = (newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);

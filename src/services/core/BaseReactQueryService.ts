@@ -128,6 +128,11 @@ export class BaseReactQueryService<
         // Invalidate related queries
         queryClient.invalidateQueries({ queryKey: [this.queryKey] });
         
+        // For sales, also invalidate products since stock changes
+        if (this.queryKey === 'sales') {
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+        }
+        
         if (this.options.enableToasts) {
           toast.success(`${this.queryKey} updated successfully`);
         }
@@ -163,6 +168,11 @@ export class BaseReactQueryService<
         
         // Invalidate list queries
         queryClient.invalidateQueries({ queryKey: [this.queryKey, 'list'] });
+        
+        // For sales, also invalidate products since stock changes
+        if (this.queryKey === 'sales') {
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+        }
         
         if (this.options.enableToasts) {
           toast.success(`${this.queryKey} deleted successfully`);

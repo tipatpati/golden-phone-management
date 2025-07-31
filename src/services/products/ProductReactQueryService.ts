@@ -1,6 +1,9 @@
 import { BaseReactQueryService } from '../core/BaseReactQueryService';
 import { ProductApiService } from './ProductApiService';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import type { Product, CreateProductData } from './types';
 
 class ProductReactQueryServiceClass extends BaseReactQueryService<Product, CreateProductData> {
@@ -28,6 +31,34 @@ class ProductReactQueryServiceClass extends BaseReactQueryService<Product, Creat
       'moderate'
     );
   }
+
+  // Real-time subscription hook for products
+  useProductsRealtime() {
+    const queryClient = useQueryClient();
+    
+    useEffect(() => {
+      const channel = supabase
+        .channel('products-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'products'
+          },
+          (payload) => {
+            console.log('🔄 Products table changed:', payload);
+            // Invalidate all product queries to ensure fresh data
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, [queryClient]);
+  }
 }
 
 export const productService = new ProductReactQueryServiceClass();
@@ -53,5 +84,8 @@ export const useCategories = () =>
 
 export const useProductRecommendations = (productId: string) => 
   productService.useProductRecommendations(productId);
+
+export const useProductsRealtime = () => 
+  productService.useProductsRealtime();
 
 export type { Product, CreateProductData };
