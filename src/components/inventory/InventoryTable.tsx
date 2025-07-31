@@ -89,18 +89,6 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
       )
     },
     {
-      key: 'battery_level' as keyof Product,
-      header: 'Battery',
-      render: (value: number) => 
-        value ? (
-          <Badge variant={value > 80 ? "outline" : value > 50 ? "secondary" : "destructive"}>
-            {value}%
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground">N/A</span>
-        )
-    },
-    {
       key: 'category_name' as keyof Product,
       header: 'Category',
       render: (value: string, product: Product) => value || product.category?.name || '-'
@@ -197,14 +185,6 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
               {
                 label: "Category",
                 value: product.category_name || product.category?.name || 'N/A'
-              },
-              {
-                label: "Battery",
-                value: product.battery_level ? (
-                  <Badge variant={product.battery_level > 80 ? "default" : product.battery_level > 50 ? "secondary" : "destructive"}>
-                    {product.battery_level}%
-                  </Badge>
-                ) : "N/A"
               },
               {
                 label: "Price",
