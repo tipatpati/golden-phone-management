@@ -22,10 +22,12 @@ export function ProductForm({
     getFieldError
   } = useProductForm({ initialData, onSubmit });
 
-  // Expose handleSubmit to parent through a ref or effect
+  // Expose handleSubmit to parent components
   React.useEffect(() => {
-    // Store handleSubmit in a way that parent can access it
-    (window as any).__currentProductFormSubmit = handleSubmit;
+    (window as any).__currentFormSubmit = handleSubmit;
+    return () => {
+      (window as any).__currentFormSubmit = null;
+    };
   }, [handleSubmit]);
 
   const { data: products } = useProducts();

@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseDialog } from "@/components/common/BaseDialog";
+import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { useUpdateProduct } from "@/services/products/ProductReactQueryService";
 import { Product } from "@/services/products/types";
@@ -23,8 +23,6 @@ export function EditProductDialog({
   log.debug('EditProductDialog rendering', { productId: product.id }, 'EditProductDialog');
   
   const updateProduct = useUpdateProduct();
-
-  // Track initial serial count to calculate new additions
   const initialSerialCount = product.serial_numbers?.length || 0;
 
   const handleSubmit = async (data: ProductFormData) => {
@@ -35,7 +33,6 @@ export function EditProductDialog({
     }, 'EditProductDialog');
     
     try {
-      // Calculate how many new units were added
       const addedUnits = data.has_serial 
         ? Math.max(0, (data.serial_numbers?.length || 0) - initialSerialCount) 
         : 0;
@@ -75,7 +72,6 @@ export function EditProductDialog({
     }
   };
 
-  // Convert product to initial form data
   const initialData: Partial<ProductFormData> = {
     brand: product.brand || "",
     model: product.model || "",
@@ -93,23 +89,11 @@ export function EditProductDialog({
     serial_numbers: product.serial_numbers || [],
   };
 
-  log.debug('Rendering form with initial data', { 
-    brand: initialData.brand, 
-    model: initialData.model 
-  }, 'EditProductDialog');
-
-  const handleDialogSubmit = async () => {
-    if ((window as any).__currentProductFormSubmit) {
-      await (window as any).__currentProductFormSubmit();
-    }
-  };
-
   return (
-    <BaseDialog
+    <FormDialog
       title={`Edit Product: ${product.brand} ${product.model}`}
       open={open}
       onClose={onClose}
-      onSubmit={handleDialogSubmit}
       isLoading={updateProduct.isPending}
       submitText="Update Product"
       maxWidth="xl"
@@ -120,6 +104,6 @@ export function EditProductDialog({
         isLoading={updateProduct.isPending}
         submitText="Update Product"
       />
-    </BaseDialog>
+    </FormDialog>
   );
 }

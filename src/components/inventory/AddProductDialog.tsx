@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Plus, Scan } from "lucide-react";
+import { Plus, Scan, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BaseDialog } from "@/components/common/BaseDialog";
+import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/useProducts";
@@ -22,24 +22,19 @@ export function AddProductDialog() {
   const createProduct = useCreateProduct();
   const { data: products } = useProducts();
 
-  // Handle barcode scan to auto-populate product info
   const handleBarcodeScanned = (scannedBarcode: string) => {
-    // Look for existing product with this barcode
     const existingProduct = Array.isArray(products) 
       ? products.find(p => p.barcode === scannedBarcode) 
       : undefined;
     
     if (existingProduct) {
-      // Auto-populate form with existing product data - this will be handled by ProductForm
       toast.success(`Product information loaded from barcode: ${existingProduct.brand} ${existingProduct.model}`);
-      // TODO: Implement form pre-population in ProductForm
     } else {
       toast.info(`Barcode scanned: ${scannedBarcode}. No existing product found - you can add this as a new product.`);
     }
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    // Parse serial entries and generate individual barcodes
     const serialEntries = data.serial_numbers?.map(line => {
       const parsed = parseSerialWithBattery(line);
       const barcode = generateSerialBasedBarcode(parsed.serial, undefined, parsed.batteryLevel);
@@ -51,7 +46,6 @@ export function AddProductDialog() {
       };
     }) || [];
 
-    // Collect colors for product name enhancement
     const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
     const enhancedBrand = colors.length > 0 ? `${data.brand} (${colors.join(', ')})` : data.brand;
     
@@ -84,7 +78,6 @@ export function AddProductDialog() {
     return new Promise<void>((resolve, reject) => {
       createProduct.mutate(newProduct, {
         onSuccess: (responseData) => {
-          // Handle the created product
           handleProductCreated({ ...newProduct, id: responseData?.id, serialEntries });
           setOpen(false);
           resolve();
@@ -108,21 +101,13 @@ export function AddProductDialog() {
     setCreatedProduct(null);
   };
 
-  const handleDialogSubmit = async () => {
-    if ((window as any).__currentProductFormSubmit) {
-      await (window as any).__currentProductFormSubmit();
-    }
-  };
-
   return (
     <>
-      {/* Trigger Button */}
       <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
         <Plus className="h-4 w-4" />
         Add Product
       </Button>
 
-      {/* Print Dialog */}
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
           productName={`${createdProduct.brand} ${createdProduct.model}`}
@@ -145,6 +130,7 @@ export function AddProductDialog() {
                     Skip
                   </Button>
                   <Button onClick={() => {}} className="flex-1">
+                    <Printer className="h-4 w-4 mr-2" />
                     Print Labels
                   </Button>
                 </div>
@@ -154,17 +140,14 @@ export function AddProductDialog() {
         />
       )}
 
-      {/* Main Dialog */}
-      <BaseDialog
+      <FormDialog
         title="Add Product with Serial Numbers"
         open={open}
         onClose={() => setOpen(false)}
-        onSubmit={handleDialogSubmit}
         isLoading={createProduct.isPending}
         submitText={createProduct.isPending ? "Adding..." : "Add Product"}
         maxWidth="2xl"
       >
-        {/* Barcode Scanner Section */}
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
@@ -189,7 +172,7 @@ export function AddProductDialog() {
           isLoading={createProduct.isPending}
           submitText={createProduct.isPending ? "Adding..." : "Add Product"}
         />
-      </BaseDialog>
+      </FormDialog>
     </>
   );
 }
