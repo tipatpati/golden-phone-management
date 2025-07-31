@@ -42,15 +42,8 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
   const [serialNumbers, setSerialNumbers] = useState<string>(
     product.serial_numbers ? product.serial_numbers.join('\n') : ""
   );
-  const [newSerialNumbers, setNewSerialNumbers] = useState<string>("");
-  // Extract IMEI/Serial from existing barcode or first serial number
-  const [imeiSerial, setImeiSerial] = useState(() => {
-    if (product.serial_numbers?.length > 0) {
-      const { serial } = parseSerialWithBattery(product.serial_numbers[0]);
-      return serial;
-    }
-    return "";
-  });
+  // Track initial serial count to calculate new additions
+  const [initialSerialCount] = useState(product.serial_numbers?.length || 0);
   
 
   const updateProduct = useUpdateProduct();
@@ -70,17 +63,9 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     return Array.from(models) as string[];
   }, [products]);
 
-  // Auto-generate barcode when new serial numbers are added
+  // Auto-generate barcode when serial numbers change
   useEffect(() => {
-    if (newSerialNumbers.trim()) {
-      const lines = newSerialNumbers.split('\n').filter(line => line.trim() !== '');
-      if (lines.length > 0) {
-        const parsed = parseSerialWithBattery(lines[0]);
-        const generatedBarcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
-        setBarcode(generatedBarcode);
-      }
-    } else if (serialNumbers.trim()) {
-      // Fallback to existing serial numbers
+    if (serialNumbers.trim()) {
       const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
       if (lines.length > 0) {
         const parsed = parseSerialWithBattery(lines[0]);
@@ -88,16 +73,15 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         setBarcode(generatedBarcode);
       }
     }
-  }, [newSerialNumbers, serialNumbers, product.id]);
+  }, [serialNumbers, product.id]);
 
   const generateNewBarcode = () => {
-    const availableSerials = newSerialNumbers.trim() || serialNumbers.trim();
-    if (!availableSerials) {
+    if (!serialNumbers.trim()) {
       toast.error("Please enter serial numbers first");
       return;
     }
 
-    const lines = availableSerials.split('\n').filter(line => line.trim() !== '');
+    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
       toast.error("Please enter at least one serial number");
       return;
@@ -126,16 +110,11 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
       return;
     }
     
-    // Validate existing and new serial numbers with battery levels if they exist
-    const allSerialNumbers = [...serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "")];
-    
-    if (newSerialNumbers.trim()) {
-      const newSerialArray = newSerialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "");
-      allSerialNumbers.push(...newSerialArray);
-    }
-    
-    if (hasSerial && allSerialNumbers.length > 0) {
-      for (const serial of allSerialNumbers) {
+    // Validate serial numbers with battery levels if they exist
+    if (hasSerial && serialNumbers.trim()) {
+      const allSerialArray = serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "");
+      
+      for (const serial of allSerialArray) {
         const parts = serial.split(/\s+/);
         if (parts.length >= 2) {
           const batteryLevel = parseInt(parts[parts.length - 1]);
@@ -148,20 +127,16 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     }
     
     try {
-      // Combine existing and new serial numbers
-      const existingSerialArray = serialNumbers.trim() 
+      // Parse all serial numbers from the unified input
+      const allSerialArray = hasSerial && serialNumbers.trim() 
         ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
         : [];
       
-      const newSerialArray = newSerialNumbers.trim() 
-        ? newSerialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
-        : [];
+      // Calculate new stock: use serial count if has_serial, otherwise keep manual stock
+      const newStock = hasSerial ? allSerialArray.length : parseInt(stock);
       
-      const allSerialArray = [...existingSerialArray, ...newSerialArray];
-      
-      // Calculate new stock: current stock + new serial numbers added
-      const currentStock = parseInt(stock);
-      const newStock = hasSerial ? allSerialArray.length : currentStock;
+      // Calculate how many new units were added
+      const addedUnits = hasSerial ? Math.max(0, allSerialArray.length - initialSerialCount) : 0;
         
       const updatedProduct = {
         brand,
@@ -185,11 +160,8 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         data: updatedProduct 
       });
       
-      const addedUnits = newSerialArray.length;
-      const totalUnits = allSerialArray.length;
-      
       if (addedUnits > 0) {
-        toast.success(`Product updated successfully! Added ${addedUnits} new units. Total stock: ${totalUnits}`);
+        toast.success(`Product updated successfully! Added ${addedUnits} new units. Total stock: ${newStock}`);
       } else {
         toast.success("Product updated successfully!");
       }
@@ -350,24 +322,15 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           </div>
 
           {hasSerial && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium mb-2">Existing Serial Numbers</h4>
-                <SerialNumbersInput
-                  serialNumbers={serialNumbers}
-                  setSerialNumbers={setSerialNumbers}
-                  setStock={() => {}} // Don't auto-update stock for existing serials
-                />
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium mb-2">Add New Serial Numbers</h4>
-                <SerialNumbersInput
-                  serialNumbers={newSerialNumbers}
-                  setSerialNumbers={setNewSerialNumbers}
-                  setStock={() => {}} // Stock calculation handled in submit
-                />
-              </div>
+            <div>
+              <SerialNumbersInput
+                serialNumbers={serialNumbers}
+                setSerialNumbers={setSerialNumbers}
+                setStock={(value) => setStock(value)} // Auto-update stock based on serial count
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Use "Add New Unit" button above to add new serial numbers to this product. Stock will update automatically.
+              </p>
             </div>
           )}
         </div>
