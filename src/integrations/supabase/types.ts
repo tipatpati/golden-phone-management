@@ -290,7 +290,6 @@ export type Database = {
       products: {
         Row: {
           barcode: string | null
-          battery_level: number | null
           brand: string
           category_id: number | null
           created_at: string | null
@@ -310,7 +309,6 @@ export type Database = {
         }
         Insert: {
           barcode?: string | null
-          battery_level?: number | null
           brand: string
           category_id?: number | null
           created_at?: string | null
@@ -330,7 +328,6 @@ export type Database = {
         }
         Update: {
           barcode?: string | null
-          battery_level?: number | null
           brand?: string
           category_id?: number | null
           created_at?: string | null
