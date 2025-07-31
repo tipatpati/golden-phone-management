@@ -356,7 +356,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           <div className="md:col-span-2">
             <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
               <h4 className="font-medium">Unit Barcodes</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+              <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
                 {generateUnitBarcodes.map((unit) => (
                   <div key={unit.index} className="p-3 bg-background rounded border">
                     <div className="text-sm font-medium mb-2">
