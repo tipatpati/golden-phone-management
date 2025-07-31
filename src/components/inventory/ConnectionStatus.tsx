@@ -1,8 +1,9 @@
 
 import React from "react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { WifiOff, RefreshCw, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ConnectionStatusProps {
   canAddProducts: boolean;
@@ -15,36 +16,82 @@ export function ConnectionStatus({
   isCheckingConnection, 
   onTestConnection 
 }: ConnectionStatusProps) {
-  if (canAddProducts) return null;
+  const navigate = useNavigate();
+  const { userRole } = useAuth();
+
+  const inventoryActions = [
+    {
+      title: "View Products",
+      description: "Browse all inventory items",
+      icon: PackageSearch,
+      href: "/inventory",
+      roles: ['salesperson', 'technician', 'inventory_manager', 'manager', 'admin', 'super_admin']
+    },
+    {
+      title: "Create Sale",
+      description: "Start a new product sale",
+      icon: ShoppingCart,
+      href: "/sales",
+      roles: ['salesperson', 'manager', 'admin', 'super_admin']
+    },
+    {
+      title: "Find Client",
+      description: "Search for existing clients",
+      icon: Users,
+      href: "/clients",
+      roles: ['salesperson', 'technician', 'manager', 'admin', 'super_admin']
+    },
+    {
+      title: "New Repair",
+      description: "Create repair order",
+      icon: Wrench,
+      href: "/repairs",
+      roles: ['technician', 'manager', 'admin', 'super_admin']
+    },
+    {
+      title: "Suppliers",
+      description: "Manage suppliers",
+      icon: Building2,
+      href: "/suppliers",
+      roles: ['inventory_manager', 'manager', 'admin', 'super_admin']
+    }
+  ];
+
+  const filteredActions = inventoryActions.filter(action => 
+    userRole && action.roles.includes(userRole)
+  );
 
   return (
-    <Alert variant="destructive" className="w-full">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
-        <div className="flex items-start gap-2 flex-1 min-w-0">
-          <WifiOff className="h-5 w-5 flex-shrink-0 mt-0.5" />
-          <div className="min-w-0 flex-1">
-            <AlertTitle className="text-sm sm:text-base">Backend Connection Issue</AlertTitle>
-            <AlertDescription className="text-xs sm:text-sm">
-              Unable to connect to backend. This will affect adding, updating, and viewing products.
-            </AlertDescription>
-          </div>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
-          <Button 
-            size="sm" 
-            onClick={onTestConnection} 
-            disabled={isCheckingConnection}
-            className="flex-1 sm:flex-none h-9 flex items-center justify-center gap-1"
+    <div className="w-full">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filteredActions.map((action, index) => (
+          <Card 
+            key={index} 
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg bg-white hover:scale-105"
+            onClick={() => navigate(action.href)}
           >
-            {isCheckingConnection ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            <span className="text-xs sm:text-sm">Test</span>
-          </Button>
-        </div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-2.5 shadow-md">
+                  <action.icon className="h-4 w-4 text-white" />
+                </div>
+                <CardTitle className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                  {action.title}
+                </CardTitle>
+              </div>
+              <CardDescription className="text-xs group-hover:text-gray-700 transition-colors duration-300 ml-11">
+                {action.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="inline-flex items-center text-blue-600 hover:text-blue-700 text-xs font-medium group-hover:translate-x-1 transition-transform duration-300 ml-11">
+                Go to {action.title}
+                <ArrowRight className="ml-2 h-3 w-3" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-    </Alert>
+    </div>
   );
 }
