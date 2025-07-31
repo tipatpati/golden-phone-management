@@ -1,7 +1,8 @@
 import React from "react";
-import { BaseDialog } from "@/components/common";
+import { FormDialog } from "@/components/common/FormDialog";
 import { useNewEmployeeForm } from "./hooks/useNewEmployeeForm";
-import { EmployeeFormFields } from "./components/EmployeeFormFields";
+import { EmployeeForm } from "./forms/EmployeeForm";
+import { useEmployeeForm } from "./forms/hooks/useEmployeeForm";
 
 interface NewEmployeeDialogProps {
   open: boolean;
@@ -10,17 +11,21 @@ interface NewEmployeeDialogProps {
 }
 
 export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialogProps) {
-  const { formData, isLoading, handleChange, submitEmployee } = useNewEmployeeForm();
+  const { formData, errors, handleChange, handleBlur, isValid, resetForm } = useEmployeeForm();
+  const { submitEmployee, isLoading } = useNewEmployeeForm();
 
   const handleSubmit = async () => {
-    const success = await submitEmployee();
+    if (!isValid()) return;
+    
+    const success = await submitEmployee(formData);
     if (success) {
+      resetForm();
       onSuccess();
     }
   };
 
   return (
-    <BaseDialog
+    <FormDialog
       title="Aggiungi Nuovo Dipendente"
       open={open}
       onClose={onClose}
@@ -29,11 +34,13 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
       submitText="Aggiungi Dipendente"
       maxWidth="md"
     >
-      <EmployeeFormFields
+      <EmployeeForm
         formData={formData}
+        errors={errors}
         onFieldChange={handleChange}
+        onFieldBlur={handleBlur}
         showPassword={true}
       />
-    </BaseDialog>
+    </FormDialog>
   );
 }

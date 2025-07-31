@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/roles";
+import { EmployeeFormData } from "../forms/types";
 
 interface Employee {
   id: string;
@@ -21,69 +22,22 @@ interface Employee {
   };
 }
 
-interface FormData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  department: string;
-  position: string;
-  salary: string;
-  hire_date: string;
-  status: string;
-  role: UserRole;
-  password: string;
-}
+// Remove the FormData interface as we're using EmployeeFormData from types
 
 export function useEditEmployeeForm(employee: Employee) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    department: "",
-    position: "",
-    salary: "",
-    hire_date: "",
-    status: "active",
-    role: "salesperson" as UserRole,
-    password: "",
-  });
 
-  useEffect(() => {
-    if (employee) {
-      setFormData({
-        first_name: employee.first_name || "",
-        last_name: employee.last_name || "",
-        email: employee.email || "",
-        phone: employee.phone || "",
-        department: employee.department || "",
-        position: employee.position || "",
-        salary: employee.salary ? employee.salary.toString() : "",
-        hire_date: employee.hire_date ? employee.hire_date.split('T')[0] : "",
-        status: employee.status || "active",
-        role: employee.profiles?.role || "salesperson",
-        password: "",
-      });
-    }
-  }, [employee]);
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const submitEmployee = async (): Promise<boolean> => {
+  const submitEmployee = async (employeeData: EmployeeFormData): Promise<boolean> => {
     setIsLoading(true);
 
     try {
       // Check if email is being changed and if it already exists
-      if (formData.email !== employee.email) {
+      if (employeeData.email !== employee.email) {
         const { data: existingEmployee, error: checkError } = await supabase
           .from("employees")
           .select("email")
-          .eq("email", formData.email)
+          .eq("email", employeeData.email)
           .neq("id", employee.id)
           .maybeSingle();
 
@@ -94,8 +48,8 @@ export function useEditEmployeeForm(employee: Employee) {
 
         if (existingEmployee) {
           toast({
-            title: "Error",
-            description: "An employee with this email already exists",
+            title: "Errore",
+            description: "Un dipendente con questa email esiste già",
             variant: "destructive",
           });
           return false;
@@ -106,11 +60,11 @@ export function useEditEmployeeForm(employee: Employee) {
         const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
           employee.id,
           {
-            email: formData.email,
+            email: employeeData.email,
             user_metadata: {
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              role: formData.role
+              first_name: employeeData.first_name,
+              last_name: employeeData.last_name,
+              role: employeeData.role
             }
           }
         );
@@ -126,9 +80,9 @@ export function useEditEmployeeForm(employee: Employee) {
           employee.id,
           {
             user_metadata: {
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              role: formData.role
+              first_name: employeeData.first_name,
+              last_name: employeeData.last_name,
+              role: employeeData.role
             }
           }
         );
@@ -138,23 +92,23 @@ export function useEditEmployeeForm(employee: Employee) {
         }
       }
 
-      const employeeData = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone,
-        department: formData.department,
-        position: formData.position,
-        salary: formData.salary ? parseFloat(formData.salary) : null,
-        hire_date: formData.hire_date,
-        status: formData.status,
+      const updateData = {
+        first_name: employeeData.first_name,
+        last_name: employeeData.last_name,
+        email: employeeData.email,
+        phone: employeeData.phone,
+        department: employeeData.department,
+        position: employeeData.position,
+        salary: employeeData.salary ? parseFloat(employeeData.salary) : null,
+        hire_date: employeeData.hire_date,
+        status: employeeData.status,
       };
 
-      console.log("Updating employee with data:", employeeData);
+      console.log("Updating employee with data:", updateData);
 
       const { error: employeeError } = await supabase
         .from("employees")
-        .update(employeeData)
+        .update(updateData)
         .eq("id", employee.id);
 
       if (employeeError) {
@@ -166,10 +120,10 @@ export function useEditEmployeeForm(employee: Employee) {
 
       // Update the profile role
       if (employee.profile_id || employee.id) {
-        console.log("Updating profile role to:", formData.role);
+        console.log("Updating profile role to:", employeeData.role);
         const { error: profileError } = await supabase
           .from("profiles")
-          .update({ role: formData.role })
+          .update({ role: employeeData.role })
           .eq("id", employee.profile_id || employee.id);
 
         if (profileError) {
@@ -180,16 +134,16 @@ export function useEditEmployeeForm(employee: Employee) {
       }
 
       toast({
-        title: "Success",
-        description: "Employee updated successfully",
+        title: "Successo",
+        description: "Dipendente aggiornato con successo",
       });
 
       return true;
     } catch (error) {
       console.error("Error updating employee:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update employee",
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Impossibile aggiornare il dipendente",
         variant: "destructive",
       });
       return false;
@@ -199,9 +153,7 @@ export function useEditEmployeeForm(employee: Employee) {
   };
 
   return {
-    formData,
     isLoading,
-    handleChange,
     submitEmployee,
   };
 }

@@ -1,7 +1,8 @@
 import React from "react";
-import { BaseDialog } from "@/components/common";
+import { FormDialog } from "@/components/common/FormDialog";
 import { useEditEmployeeForm } from "./hooks/useEditEmployeeForm";
-import { EmployeeFormFields } from "./components/EmployeeFormFields";
+import { EmployeeForm } from "./forms/EmployeeForm";
+import { useEmployeeForm } from "./forms/hooks/useEmployeeForm";
 import { UserRole } from "@/types/roles";
 
 interface Employee {
@@ -29,30 +30,48 @@ interface EditEmployeeDialogProps {
 }
 
 export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditEmployeeDialogProps) {
-  const { formData, isLoading, handleChange, submitEmployee } = useEditEmployeeForm(employee);
+  const { formData, errors, handleChange, handleBlur, isValid } = useEmployeeForm({
+    first_name: employee.first_name,
+    last_name: employee.last_name,
+    email: employee.email || "",
+    phone: employee.phone || "",
+    department: employee.department || "",
+    position: employee.position || "",
+    salary: employee.salary?.toString() || "",
+    hire_date: employee.hire_date,
+    status: employee.status,
+    role: employee.profiles?.role || "salesperson",
+    password: ""
+  });
+  
+  const { submitEmployee, isLoading } = useEditEmployeeForm(employee);
 
   const handleSubmit = async () => {
-    const success = await submitEmployee();
+    if (!isValid()) return;
+    
+    const success = await submitEmployee(formData);
     if (success) {
       onSuccess();
     }
   };
 
   return (
-    <BaseDialog
-      title={`Edit ${employee.first_name} ${employee.last_name}`}
+    <FormDialog
+      title={`Modifica ${employee.first_name} ${employee.last_name}`}
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit}
       isLoading={isLoading}
-      submitText="Update Employee"
+      submitText="Aggiorna Dipendente"
       maxWidth="md"
     >
-      <EmployeeFormFields
+      <EmployeeForm
         formData={formData}
+        errors={errors}
         onFieldChange={handleChange}
+        onFieldBlur={handleBlur}
         showPassword={false}
       />
-    </BaseDialog>
+    </FormDialog>
   );
 }

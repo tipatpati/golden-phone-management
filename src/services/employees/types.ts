@@ -11,7 +11,7 @@ export interface Employee extends BaseEntity {
   department?: string;
   hire_date?: string;
   salary?: number;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'terminated';
   notes?: string;
   profiles?: {
     role: string;
