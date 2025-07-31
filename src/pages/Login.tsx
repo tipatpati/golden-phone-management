@@ -53,15 +53,15 @@ export default function Login() {
       
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Login Card */}
-        <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-6 lg:p-8 space-y-6 transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)] animate-fade-in">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-6 lg:p-8 space-y-6 transition-all duration-500 hover:bg-white/15 hover:border-white/30 hover:shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)] animate-fade-in">
           {/* Logo and Welcome Section */}
           <div className="text-center space-y-5">
             <div className="flex justify-center mb-6 transform transition-transform duration-300 hover:scale-105">
               <Logo size={160} className="mx-auto drop-shadow-lg" />
             </div>
              <div className="space-y-2">
-               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Bentornato!</h1>
-               <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-md">Bentornato!</h1>
+               <p className="text-white/90 text-sm sm:text-base leading-relaxed drop-shadow-sm">
                  Accedi al Sistema di Gestione GOLDEN PHONE
                </p>
             </div>
@@ -71,8 +71,8 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white text-sm font-medium flex items-center gap-2">
-                <Mail className="h-4 w-4 text-white/80" />
+              <Label htmlFor="email" className="text-white text-sm font-medium flex items-center gap-2 drop-shadow-sm">
+                <Mail className="h-4 w-4 text-white/90" />
                 Indirizzo Email
               </Label>
               <Input 
@@ -81,7 +81,7 @@ export default function Login() {
                 value={email} 
                 onChange={e => setEmail(sanitizeInput(e.target.value))} 
                 placeholder="Inserisci la tua email" 
-                className="h-12 bg-white/5 backdrop-blur-md border-white/20 text-white placeholder:text-white/60 focus:bg-white/10 focus:border-white/30 transition-all duration-200 focus:scale-[1.02]" 
+                className="h-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:bg-white/15 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
                 maxLength={254} 
                 required 
               />
@@ -89,8 +89,8 @@ export default function Login() {
             
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white text-sm font-medium flex items-center gap-2">
-                <Lock className="h-4 w-4 text-white/80" />
+              <Label htmlFor="password" className="text-white text-sm font-medium flex items-center gap-2 drop-shadow-sm">
+                <Lock className="h-4 w-4 text-white/90" />
                 Password
               </Label>
               <div className="relative">
@@ -100,7 +100,7 @@ export default function Login() {
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   placeholder="Inserisci la tua password" 
-                  className="h-12 pr-12 bg-white/5 backdrop-blur-md border-white/20 text-white placeholder:text-white/60 focus:bg-white/10 focus:border-white/30 transition-all duration-200 focus:scale-[1.02]" 
+                  className="h-12 pr-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:bg-white/15 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
                   maxLength={128} 
                   minLength={6} 
                   required 
@@ -127,7 +127,7 @@ export default function Login() {
 
             {/* Additional Info */}
              <div className="text-center pt-2">
-               <p className="text-xs text-white/60 leading-relaxed">
+               <p className="text-xs text-white/80 leading-relaxed drop-shadow-sm">
                  Inserisci le tue credenziali per accedere al sistema. Il tuo ruolo e i permessi verranno rilevati automaticamente.
                </p>
              </div>
