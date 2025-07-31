@@ -67,21 +67,32 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     return Array.from(models) as string[];
   }, [products]);
 
-  // Auto-generate barcode when brand + model changes
+  // Auto-generate barcode when serial numbers change
   useEffect(() => {
-    if (brand.trim() && model.trim()) {
-      const generatedBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, 0);
-      setBarcode(generatedBarcode);
+    if (serialNumbers.trim()) {
+      const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+      if (lines.length > 0) {
+        const parsed = parseSerialWithBattery(lines[0]);
+        const generatedBarcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+        setBarcode(generatedBarcode);
+      }
     }
-  }, [brand, model, product.id]);
+  }, [serialNumbers, product.id]);
 
   const generateNewBarcode = () => {
-    if (!brand.trim() || !model.trim()) {
-      toast.error("Please enter brand and model first");
+    if (!serialNumbers.trim()) {
+      toast.error("Please enter serial numbers first");
       return;
     }
 
-    const newBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, 0);
+    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) {
+      toast.error("Please enter at least one serial number");
+      return;
+    }
+
+    const parsed = parseSerialWithBattery(lines[0]);
+    const newBarcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
     setBarcode(newBarcode);
     toast.success("New barcode generated");
   };
