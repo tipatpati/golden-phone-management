@@ -63,6 +63,22 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     return Array.from(models) as string[];
   }, [products]);
 
+  // Generate individual barcodes for each serial number
+  const generateUnitBarcodes = React.useMemo(() => {
+    if (!hasSerial || !serialNumbers.trim()) return [];
+    
+    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+    return lines.map((line, index) => {
+      const parsed = parseSerialWithBattery(line);
+      const barcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+      return {
+        serial: line.trim(),
+        barcode: barcode,
+        index: index
+      };
+    });
+  }, [serialNumbers, product.id, hasSerial]);
+
   // Auto-generate barcode when serial numbers change
   useEffect(() => {
     if (serialNumbers.trim()) {
@@ -335,47 +351,29 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           )}
         </div>
 
-        {/* Barcode Section */}
-        <div className="md:col-span-2">
-          {barcode && (
-            <div className="space-y-2 p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium">Product Barcode</h4>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={generateNewBarcode}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Regenerate
-                </Button>
+        {/* Unit Barcodes Section */}
+        {hasSerial && generateUnitBarcodes.length > 0 && (
+          <div className="md:col-span-2">
+            <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium">Unit Barcodes</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                {generateUnitBarcodes.map((unit) => (
+                  <div key={unit.index} className="p-3 bg-background rounded border">
+                    <div className="text-sm font-medium mb-2">
+                      Serial: {unit.serial}
+                    </div>
+                    <div className="flex justify-center mb-2">
+                      <BarcodeGenerator value={unit.barcode} />
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground">
+                      {unit.barcode}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-center">
-                <BarcodeGenerator value={barcode} />
-              </div>
-              <p className="text-xs text-center text-muted-foreground">
-                Barcode: {barcode}
-              </p>
             </div>
-          )}
-          
-          {!barcode && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800 mb-2">
-                This product doesn't have a barcode yet.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={generateNewBarcode}
-              >
-                Generate Barcode
-              </Button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </BaseDialog>
   );
