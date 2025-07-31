@@ -6,6 +6,7 @@ import { ClientsSearchBar } from "@/components/clients/ClientsSearchBar";
 import { ClientsStats } from "@/components/clients/ClientsStats";
 import { ClientsList } from "@/components/clients/ClientsList";
 import { EmptyClientsList } from "@/components/clients/EmptyClientsList";
+import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,6 +53,7 @@ const Clients = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         <ClientsHeader />
+        <ModuleNavCards currentModule="clients" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="lg:col-span-2">

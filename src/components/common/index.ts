@@ -16,3 +16,6 @@ export { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 // Types
 export type { FormFieldProps } from "./FormField";
+
+// Module Components
+export { ModuleNavCards } from "./ModuleNavCards";

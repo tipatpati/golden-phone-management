@@ -10,6 +10,7 @@ import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialo
 import { Search, Plus, Building2, Receipt, Mail, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +50,8 @@ const Suppliers = () => {
           <p className="text-muted-foreground text-sm sm:text-base">Manage suppliers and track transactions</p>
         </div>
       </div>
+
+      <ModuleNavCards currentModule="suppliers" />
 
       <Tabs defaultValue="suppliers" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-2 h-auto">

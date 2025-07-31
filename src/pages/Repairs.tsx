@@ -5,6 +5,7 @@ import { RepairSearchBar } from "@/components/repairs/RepairSearchBar";
 import { RepairsList } from "@/components/repairs/RepairsList";
 import { NewRepairDialog } from "@/components/repairs/NewRepairDialog";
 import { useRepairs, type Repair } from "@/services";
+import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 
 const Repairs = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,6 +104,8 @@ const Repairs = () => {
           <NewRepairDialog />
         </div>
       </div>
+
+      <ModuleNavCards currentModule="repairs" />
 
       {/* Stats Cards */}
       <RepairStatsCards 
