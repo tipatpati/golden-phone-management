@@ -62,9 +62,11 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   }, [formData.has_serial, updateField, clearErrors]);
 
   const handleSubmit = useCallback(async () => {
+    console.log('🔄 useProductForm handleSubmit called with formData:', formData);
     const errors = validateForm(formData, serialNumbers);
     
     if (errors.length > 0) {
+      console.log('❌ Form validation errors:', errors);
       toast.error("Please fix the form errors before submitting");
       return;
     }

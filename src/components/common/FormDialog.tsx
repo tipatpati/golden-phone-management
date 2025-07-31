@@ -43,10 +43,15 @@ export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
     }));
 
     const handleSubmit = async () => {
+      console.log('🔄 FormDialog handleSubmit called, submitHandler:', !!submitHandler, 'onSubmit:', !!onSubmit);
       if (submitHandler) {
+        console.log('🔄 Calling submitHandler from FormDialog');
         await submitHandler();
       } else if (onSubmit) {
+        console.log('🔄 Calling onSubmit from FormDialog');
         await onSubmit();
+      } else {
+        console.log('❌ No submit handler found in FormDialog');
       }
     };
 

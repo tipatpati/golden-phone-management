@@ -26,6 +26,7 @@ export function EditProductDialog({
   const initialSerialCount = product.serial_numbers?.length || 0;
 
   const handleSubmit = async (data: ProductFormData) => {
+    console.log('🔄 EditProductDialog handleSubmit called with data:', data);
     log.debug('Submitting product update', { 
       brand: data.brand, 
       model: data.model, 

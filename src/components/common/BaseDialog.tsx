@@ -74,7 +74,10 @@ export function BaseDialog({
             </Button>
             {onSubmit && (
               <Button
-                onClick={onSubmit}
+                onClick={() => {
+                  console.log('🔄 BaseDialog submit button clicked');
+                  onSubmit();
+                }}
                 disabled={isLoading}
                 className="w-full sm:w-auto min-w-[120px] order-1 sm:order-2"
               >
