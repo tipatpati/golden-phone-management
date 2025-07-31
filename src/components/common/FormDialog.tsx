@@ -26,11 +26,14 @@ export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
 
     // Allow child components to register their submit handlers
     React.useEffect(() => {
+      console.log('🔄 FormDialog checking for submit handler');
       const handler = (window as any).__currentFormSubmit;
+      console.log('🔄 Found handler:', !!handler, typeof handler);
       if (handler && typeof handler === 'function') {
+        console.log('🔄 Setting submit handler');
         setSubmitHandler(() => handler);
       }
-    }, [children]);
+    }, [children, open]); // Added 'open' dependency to re-check when dialog opens
 
     useImperativeHandle(ref, () => ({
       submit: async () => {
