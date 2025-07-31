@@ -5,14 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 import { Edit, Trash, Printer, Smartphone, Barcode } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState, EmptyState } from "@/components/common";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchTerm?: string; viewMode?: "list" | "grid" }) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Product>();
+  const { userRole } = useAuth();
   
   const { data: products, isLoading, error } = useProducts(searchTerm);
   const deleteProduct = useDeleteProduct();
   const updateProduct = useUpdateProduct();
+
+  // Check if user can modify products
+  const canModifyProducts = userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -115,7 +120,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
     }
   ];
 
-  // Define actions for both table and cards
+  // Define actions for both table and cards - filtered by role
   const actions = [
     {
       icon: <Printer className="h-4 w-4" />,
@@ -131,10 +136,12 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
           specifications={product.description}
           serialNumbers={product.serial_numbers}
           onBarcodeGenerated={(newBarcode) => {
-            updateProduct.mutate({
-              id: product.id,
-              product: { barcode: newBarcode }
-            });
+            if (canModifyProducts) {
+              updateProduct.mutate({
+                id: product.id,
+                product: { barcode: newBarcode }
+              });
+            }
           }}
           trigger={
             <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 w-9">
@@ -144,17 +151,19 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
         />
       )
     },
-    {
-      icon: <Edit className="h-4 w-4" />,
-      label: "Edit",
-      onClick: handleEditProduct
-    },
-    {
-      icon: <Trash className="h-4 w-4" />,
-      label: "Delete", 
-      onClick: handleDeleteProduct,
-      variant: "destructive" as const
-    }
+    ...(canModifyProducts ? [
+      {
+        icon: <Edit className="h-4 w-4" />,
+        label: "Edit",
+        onClick: handleEditProduct
+      },
+      {
+        icon: <Trash className="h-4 w-4" />,
+        label: "Delete", 
+        onClick: handleDeleteProduct,
+        variant: "destructive" as const
+      }
+    ] : [])
   ];
 
   return (
@@ -203,10 +212,12 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
                   specifications={product.description}
                   serialNumbers={product.serial_numbers}
                   onBarcodeGenerated={(newBarcode) => {
-                    updateProduct.mutate({
-                      id: product.id,
-                      product: { barcode: newBarcode }
-                    });
+                    if (canModifyProducts) {
+                      updateProduct.mutate({
+                        id: product.id,
+                        product: { barcode: newBarcode }
+                      });
+                    }
                   }}
                   trigger={
                      <div className="flex items-center justify-center p-2 rounded-md bg-green-100 hover:bg-green-200 transition-colors">
@@ -218,18 +229,20 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
                 onClick: () => {},
                 className: "p-0 w-auto h-auto bg-transparent hover:bg-transparent"
               },
-              {
-                icon: <Edit className="h-3 w-3 mr-1" />,
-                label: "Edit",
-                onClick: () => handleEditProduct(product)
-              },
-              {
-                icon: <Trash className="h-3 w-3 mr-1" />,
-                label: "Delete",
-                onClick: () => handleDeleteProduct(product),
-                variant: "outline",
-                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              }
+              ...(canModifyProducts ? [
+                {
+                  icon: <Edit className="h-3 w-3 mr-1" />,
+                  label: "Edit",
+                  onClick: () => handleEditProduct(product)
+                },
+                {
+                  icon: <Trash className="h-3 w-3 mr-1" />,
+                  label: "Delete",
+                  onClick: () => handleDeleteProduct(product),
+                  variant: "outline" as const,
+                  className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                }
+              ] : [])
             ]}
           />
         ))}

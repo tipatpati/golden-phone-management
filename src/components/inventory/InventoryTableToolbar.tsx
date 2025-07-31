@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { AddProductForm } from "./AddProductForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface InventoryTableToolbarProps {
   onSearchChange: (searchTerm: string) => void;
@@ -23,6 +24,10 @@ export function InventoryTableToolbar({
 }: InventoryTableToolbarProps) {
   const queryClient = useQueryClient();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { userRole } = useAuth();
+  
+  // Check if user can add products
+  const canModifyProducts = userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
   
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
@@ -96,7 +101,7 @@ export function InventoryTableToolbar({
       </form>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-        <AddProductForm />
+        {canModifyProducts && <AddProductForm />}
         
         <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">
           <Button 

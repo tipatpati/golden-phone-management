@@ -5,15 +5,22 @@ import { toast } from "@/components/ui/sonner";
 
 export function useInventoryState() {
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, userRole } = useAuth();
 
-  // Check if user can add products (must be logged in with Supabase)
-  const canAddProducts = isLoggedIn;
+  // Check if user can add products (must be logged in and have proper role)
+  const canAddProducts = isLoggedIn && userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
 
   const handleAddProduct = () => {
-    if (!canAddProducts) {
+    if (!isLoggedIn) {
       toast.error("Please log in to add products", {
         description: "You need to be authenticated to manage inventory"
+      });
+      return;
+    }
+    
+    if (!canAddProducts) {
+      toast.error("Access denied", {
+        description: "Only inventory managers and above can add products"
       });
       return;
     }
