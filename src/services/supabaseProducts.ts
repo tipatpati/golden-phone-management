@@ -21,7 +21,6 @@ export type Product = {
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
-  battery_level?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -41,7 +40,6 @@ export type CreateProductData = {
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
-  battery_level?: number;
 };
 
 export const supabaseProductApi = {

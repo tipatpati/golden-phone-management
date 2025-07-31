@@ -10,7 +10,7 @@ interface SerialEntry {
   id: string;
   serial: string;
   color: string;
-  batteryLevel: string;
+  batteryLevel: number;
 }
 
 interface SerialNumbersInputProps {
@@ -37,7 +37,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
           id: `entry-${index}`,
           serial: parts[0] || '',
           color: parts[1] || '',
-          batteryLevel: parts[2] || ''
+          batteryLevel: parts[2] ? parseInt(parts[2]) : 0
         };
       });
       
@@ -45,11 +45,11 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
         setEntries(initialEntries);
       } else {
         // Start with one empty entry
-        setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: '' }]);
+        setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 }]);
       }
     } else if (!serialNumbers && entries.length === 0) {
       // Start with one empty entry
-      setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: '' }]);
+      setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 }]);
     }
   }, [serialNumbers, entries.length]);
 
@@ -69,7 +69,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
       id: `entry-${Date.now()}`,
       serial: '',
       color: '',
-      batteryLevel: ''
+      batteryLevel: 0
     };
     setEntries([...entries, newEntry]);
   };
@@ -80,7 +80,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
     }
   };
 
-  const updateEntry = (id: string, field: keyof SerialEntry, value: string) => {
+  const updateEntry = (id: string, field: keyof SerialEntry, value: string | number) => {
     setEntries(entries.map(entry => 
       entry.id === id ? { ...entry, [field]: value } : entry
     ));
@@ -165,8 +165,8 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                     type="number"
                     min="0"
                     max="100"
-                    value={entry.batteryLevel}
-                    onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
+                    value={entry.batteryLevel.toString()}
+                    onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
                     placeholder="85"
                     className="text-sm h-9"
                   />
@@ -223,8 +223,8 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   type="number"
                   min="0"
                   max="100"
-                  value={entry.batteryLevel}
-                  onChange={(e) => updateEntry(entry.id, 'batteryLevel', e.target.value)}
+                  value={entry.batteryLevel.toString()}
+                  onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
                   placeholder="85"
                   className="text-sm h-9"
                 />

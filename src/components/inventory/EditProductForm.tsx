@@ -48,7 +48,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     }
     return "";
   });
-  const [batteryLevel, setBatteryLevel] = useState(product.battery_level?.toString() || "");
+  
 
   const updateProduct = useUpdateProduct();
   const { data: categories } = useCategories();
@@ -67,14 +67,13 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     return Array.from(models) as string[];
   }, [products]);
 
-  // Auto-generate barcode when brand + model or battery changes
+  // Auto-generate barcode when brand + model changes
   useEffect(() => {
     if (brand.trim() && model.trim()) {
-      const battery = batteryLevel ? parseInt(batteryLevel) : 0;
-      const generatedBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, battery);
+      const generatedBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, 0);
       setBarcode(generatedBarcode);
     }
-  }, [brand, model, batteryLevel, product.id]);
+  }, [brand, model, product.id]);
 
   const generateNewBarcode = () => {
     if (!brand.trim() || !model.trim()) {
@@ -82,15 +81,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
       return;
     }
 
-    const battery = batteryLevel ? parseInt(batteryLevel) : 0;
-    
-    // Validate battery level if provided
-    if (batteryLevel && (isNaN(battery!) || battery! < 0 || battery! > 100)) {
-      toast.error("Battery level must be between 0-100");
-      return;
-    }
-
-    const newBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, battery);
+    const newBarcode = generateSKUBasedBarcode(`${brand} ${model}`, product.id, 0);
     setBarcode(newBarcode);
     toast.success("New barcode generated");
   };
@@ -105,11 +96,6 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
       return;
     }
 
-    // Validate battery level if provided
-    if (batteryLevel && (isNaN(parseInt(batteryLevel)) || parseInt(batteryLevel) < 0 || parseInt(batteryLevel) > 100)) {
-      toast.error("Battery level must be between 0-100");
-      return;
-    }
 
     // Validate that a barcode exists
     if (!barcode) {
@@ -148,7 +134,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         max_price: parseFloat(maxPrice),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
-        battery_level: batteryLevel ? parseInt(batteryLevel) : undefined,
+        
         barcode: barcode || undefined,
         has_serial: hasSerial,
         serial_numbers: hasSerial ? serialArray : undefined,
@@ -283,16 +269,6 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           className="md:col-span-1"
         />
 
-        <FormField
-          label="Battery Level (%)"
-          type="input"
-          inputType="number"
-          value={batteryLevel}
-          onChange={(value) => setBatteryLevel(value)}
-          placeholder="0-100"
-          description="Optional: Battery level for electronic devices"
-          className="md:col-span-1"
-        />
 
         <div className="md:col-span-2">
           <div className="flex items-center space-x-2 mb-4">
