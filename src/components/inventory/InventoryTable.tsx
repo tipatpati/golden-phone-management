@@ -1,5 +1,5 @@
 import React, { useState, memo } from "react";
-import { useProducts, useDeleteProduct, useUpdateProduct, Product } from "@/services/useProducts";
+import { useProducts, useDeleteProduct, useUpdateProduct, Product } from "@/services/products/ProductReactQueryService";
 import { EditProductForm } from "./EditProductForm";
 import { Badge } from "@/components/ui/badge";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
@@ -12,7 +12,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Product>();
   const { userRole } = useAuth();
   
-  const { data: products, isLoading, error } = useProducts(searchTerm);
+  const { data: products = [], isLoading, error } = useProducts(searchTerm) as { data: Product[], isLoading: boolean, error: Error | null };
   const deleteProduct = useDeleteProduct();
   const updateProduct = useUpdateProduct();
 
@@ -139,7 +139,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
             if (canModifyProducts) {
               updateProduct.mutate({
                 id: product.id,
-                product: { barcode: newBarcode }
+                data: { barcode: newBarcode }
               });
             }
           }}
@@ -215,7 +215,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
                     if (canModifyProducts) {
                       updateProduct.mutate({
                         id: product.id,
-                        product: { barcode: newBarcode }
+                        data: { barcode: newBarcode }
                       });
                     }
                   }}
