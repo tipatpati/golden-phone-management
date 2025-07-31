@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
+import { SerialNumbersInput } from "./SerialNumbersInput";
 import { RefreshCw } from "lucide-react";
 import { log } from "@/utils/logger";
 import { BaseDialog } from "@/components/common/BaseDialog";
@@ -349,29 +350,25 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           </div>
 
           {hasSerial && (
-            <>
-              <FormField
-                label="Existing IMEI/Serial Numbers"
-                type="textarea"
-                value={serialNumbers}
-                onChange={(value) => setSerialNumbers(value)}
-                placeholder="Existing serial numbers..."
-                description="These are the current serial numbers for this product"
-                rows={3}
-                className="md:col-span-2"
-              />
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-2">Existing Serial Numbers</h4>
+                <SerialNumbersInput
+                  serialNumbers={serialNumbers}
+                  setSerialNumbers={setSerialNumbers}
+                  setStock={() => {}} // Don't auto-update stock for existing serials
+                />
+              </div>
               
-              <FormField
-                label="Add New IMEI/Serial Numbers with Battery Level (One per line)"
-                type="textarea"
-                value={newSerialNumbers}
-                onChange={(value) => setNewSerialNumbers(value)}
-                placeholder="352908764123456 85&#10;352908764123457 92&#10;352908764123458 78"
-                description='Format: IMEI/Serial followed by battery level (e.g., "352908764123456 85"). Leave empty if no new units to add.'
-                rows={5}
-                className="md:col-span-2"
-              />
-            </>
+              <div>
+                <h4 className="text-sm font-medium mb-2">Add New Serial Numbers</h4>
+                <SerialNumbersInput
+                  serialNumbers={newSerialNumbers}
+                  setSerialNumbers={setNewSerialNumbers}
+                  setStock={() => {}} // Stock calculation handled in submit
+                />
+              </div>
+            </div>
           )}
         </div>
 
