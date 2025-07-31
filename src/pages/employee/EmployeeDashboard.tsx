@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
@@ -10,6 +11,7 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
+  const navigate = useNavigate();
   const config = userRole ? ROLE_CONFIGS[userRole] : null;
   
   if (!userRole || !config) {
@@ -117,19 +119,24 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2">
         {actions.map((action, index) => (
-          <Card key={index} className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg bg-white">
+          <Card 
+            key={index} 
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg bg-white hover:scale-105"
+            onClick={() => navigate(action.href)}
+          >
             <CardHeader>
-              <CardTitle className="text-lg text-gray-900">{action.title}</CardTitle>
-              <CardDescription>{action.description}</CardDescription>
+              <CardTitle className="text-lg text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                {action.title}
+              </CardTitle>
+              <CardDescription className="group-hover:text-gray-700 transition-colors duration-300">
+                {action.description}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <a 
-                href={action.href}
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300"
-              >
+              <div className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
                 Go to {action.title}
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+              </div>
             </CardContent>
           </Card>
         ))}
