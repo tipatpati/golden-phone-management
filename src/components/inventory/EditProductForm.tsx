@@ -41,6 +41,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
   const [serialNumbers, setSerialNumbers] = useState<string>(
     product.serial_numbers ? product.serial_numbers.join('\n') : ""
   );
+  const [newSerialNumbers, setNewSerialNumbers] = useState<string>("");
   // Extract IMEI/Serial from existing barcode or first serial number
   const [imeiSerial, setImeiSerial] = useState(() => {
     if (product.serial_numbers?.length > 0) {
@@ -68,9 +69,17 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     return Array.from(models) as string[];
   }, [products]);
 
-  // Auto-generate barcode when serial numbers change
+  // Auto-generate barcode when new serial numbers are added
   useEffect(() => {
-    if (serialNumbers.trim()) {
+    if (newSerialNumbers.trim()) {
+      const lines = newSerialNumbers.split('\n').filter(line => line.trim() !== '');
+      if (lines.length > 0) {
+        const parsed = parseSerialWithBattery(lines[0]);
+        const generatedBarcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+        setBarcode(generatedBarcode);
+      }
+    } else if (serialNumbers.trim()) {
+      // Fallback to existing serial numbers
       const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
       if (lines.length > 0) {
         const parsed = parseSerialWithBattery(lines[0]);
@@ -78,15 +87,16 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         setBarcode(generatedBarcode);
       }
     }
-  }, [serialNumbers, product.id]);
+  }, [newSerialNumbers, serialNumbers, product.id]);
 
   const generateNewBarcode = () => {
-    if (!serialNumbers.trim()) {
+    const availableSerials = newSerialNumbers.trim() || serialNumbers.trim();
+    if (!availableSerials) {
       toast.error("Please enter serial numbers first");
       return;
     }
 
-    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+    const lines = availableSerials.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
       toast.error("Please enter at least one serial number");
       return;
@@ -115,11 +125,16 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
       return;
     }
     
-    // Validate serial numbers with battery levels if they exist
-    if (hasSerial && serialNumbers.trim()) {
-      const serialArray = serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "");
-      
-      for (const serial of serialArray) {
+    // Validate existing and new serial numbers with battery levels if they exist
+    const allSerialNumbers = [...serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "")];
+    
+    if (newSerialNumbers.trim()) {
+      const newSerialArray = newSerialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "");
+      allSerialNumbers.push(...newSerialArray);
+    }
+    
+    if (hasSerial && allSerialNumbers.length > 0) {
+      for (const serial of allSerialNumbers) {
         const parts = serial.split(/\s+/);
         if (parts.length >= 2) {
           const batteryLevel = parseInt(parts[parts.length - 1]);
@@ -132,9 +147,20 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
     }
     
     try {
-      const serialArray = hasSerial && serialNumbers.trim() 
+      // Combine existing and new serial numbers
+      const existingSerialArray = serialNumbers.trim() 
         ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
         : [];
+      
+      const newSerialArray = newSerialNumbers.trim() 
+        ? newSerialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
+        : [];
+      
+      const allSerialArray = [...existingSerialArray, ...newSerialArray];
+      
+      // Calculate new stock: current stock + new serial numbers added
+      const currentStock = parseInt(stock);
+      const newStock = hasSerial ? allSerialArray.length : currentStock;
         
       const updatedProduct = {
         brand,
@@ -144,13 +170,13 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         price: parseFloat(price),
         min_price: parseFloat(minPrice),
         max_price: parseFloat(maxPrice),
-        stock: parseInt(stock),
+        stock: newStock,
         threshold: parseInt(threshold),
         description: description || undefined,
         supplier: supplier || undefined,
         barcode: barcode || undefined,
         has_serial: hasSerial,
-        serial_numbers: hasSerial ? serialArray : undefined,
+        serial_numbers: hasSerial ? allSerialArray : undefined,
       };
 
       await updateProduct.mutateAsync({ 
@@ -158,7 +184,14 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         data: updatedProduct 
       });
       
-      toast.success("Product updated successfully!");
+      const addedUnits = newSerialArray.length;
+      const totalUnits = allSerialArray.length;
+      
+      if (addedUnits > 0) {
+        toast.success(`Product updated successfully! Added ${addedUnits} new units. Total stock: ${totalUnits}`);
+      } else {
+        toast.success("Product updated successfully!");
+      }
       onSuccess();
       onClose();
     } catch (error) {
@@ -316,15 +349,29 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           </div>
 
           {hasSerial && (
-            <FormField
-              label="IMEI/Serial Numbers with Battery Level (One per line)"
-              type="textarea"
-              value={serialNumbers}
-              onChange={(value) => setSerialNumbers(value)}
-              placeholder="352908764123456 85&#10;352908764123457 92&#10;352908764123458 78"
-              description='Format: IMEI/Serial followed by battery level (e.g., "352908764123456 85")'
-              rows={5}
-            />
+            <>
+              <FormField
+                label="Existing IMEI/Serial Numbers"
+                type="textarea"
+                value={serialNumbers}
+                onChange={(value) => setSerialNumbers(value)}
+                placeholder="Existing serial numbers..."
+                description="These are the current serial numbers for this product"
+                rows={3}
+                className="md:col-span-2"
+              />
+              
+              <FormField
+                label="Add New IMEI/Serial Numbers with Battery Level (One per line)"
+                type="textarea"
+                value={newSerialNumbers}
+                onChange={(value) => setNewSerialNumbers(value)}
+                placeholder="352908764123456 85&#10;352908764123457 92&#10;352908764123458 78"
+                description='Format: IMEI/Serial followed by battery level (e.g., "352908764123456 85"). Leave empty if no new units to add.'
+                rows={5}
+                className="md:col-span-2"
+              />
+            </>
           )}
         </div>
 
