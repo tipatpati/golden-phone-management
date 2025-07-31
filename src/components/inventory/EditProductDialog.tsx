@@ -73,6 +73,15 @@ export function EditProductDialog({
     }
   };
 
+  const handleFormDialogSubmit = async () => {
+    console.log('🔄 FormDialog submit wrapper called');
+    // Call the form's submit function directly through the global handler
+    const formSubmitHandler = (window as any).__currentFormSubmit;
+    if (formSubmitHandler) {
+      await formSubmitHandler();
+    }
+  };
+
   const initialData: Partial<ProductFormData> = {
     brand: product.brand || "",
     model: product.model || "",
@@ -95,6 +104,7 @@ export function EditProductDialog({
       title={`Edit Product: ${product.brand} ${product.model}`}
       open={open}
       onClose={onClose}
+      onSubmit={handleFormDialogSubmit}
       isLoading={updateProduct.isPending}
       submitText="Update Product"
       maxWidth="xl"
