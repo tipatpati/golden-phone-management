@@ -145,13 +145,11 @@ export function AddProductForm() {
       max_price: maxPriceNum,
       stock: actualStock,
       threshold: parseInt(formData.threshold),
-      battery_level: parseInt(formData.battery_level),
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
         `${entry.serial}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.color ? ` ${entry.color}` : ''}`
       ),
-      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${formData.brand} ${formData.model}`, undefined, 0),
-      serial_entries: serialEntries
+      barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${formData.brand} ${formData.model}`, undefined, 0)
     };
     
     logger.debug('Submitting product', { 
