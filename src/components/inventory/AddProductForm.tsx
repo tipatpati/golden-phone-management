@@ -6,7 +6,7 @@ import { CreateProductSchema } from "@/schemas/validation";
 import { useCreateProduct } from "@/services/useProducts";
 import { SerialNumbersInput } from "./SerialNumbersInput";
 import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
-import { parseSerialWithBattery, validateSerialWithBattery } from "@/utils/serialNumberUtils";
+import { parseSerialWithBattery, validateSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 import { Button } from "@/components/ui/button";
@@ -118,10 +118,11 @@ export function AddProductForm() {
     // Parse serial entries and generate individual barcodes
     const serialEntries = serialLines.map(line => {
       const parsed = parseSerialWithBattery(line);
-      const barcode = generateSerialBasedBarcode(parsed.serial, undefined, 0);
+      const barcode = generateSerialBasedBarcode(parsed.serial, undefined, parsed.batteryLevel);
       return {
         serial: parsed.serial,
         color: parsed.color,
+        batteryLevel: parsed.batteryLevel,
         barcode: barcode
       };
     });
@@ -145,7 +146,7 @@ export function AddProductForm() {
       threshold: parseInt(formData.threshold),
       has_serial: serialEntries.length > 0,
       serial_numbers: serialEntries.map(entry => 
-        `${entry.serial}${entry.color ? ` ${entry.color}` : ''}`
+        formatSerialWithBattery(entry.serial, entry.batteryLevel, entry.color)
       ),
       barcode: serialEntries.length > 0 ? serialEntries[0].barcode : generateSerialBasedBarcode(`${formData.brand} ${formData.model}`, undefined, 0)
     };
