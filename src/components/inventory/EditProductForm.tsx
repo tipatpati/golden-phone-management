@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateProduct, useCategories } from "@/services/useProducts";
-import { Product } from "@/services/supabaseProducts";
+import { useUpdateProduct, useCategories, useProducts } from "@/services/products/ProductReactQueryService";
+import { Product } from "@/services/products/types";
 import { toast } from "@/components/ui/sonner";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
@@ -14,7 +14,6 @@ import { BaseDialog } from "@/components/common/BaseDialog";
 import { FormField } from "@/components/common/FormField";
 import { CATEGORY_OPTIONS } from "@/components/inventory/ProductFormFields";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { useProducts } from "@/services/products/ProductReactQueryService";
 
 interface EditProductFormProps {
   product: Product;
@@ -35,6 +34,8 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
   const [maxPrice, setMaxPrice] = useState(product.max_price?.toString() || "");
   const [stock, setStock] = useState(product.stock?.toString() || "");
   const [threshold, setThreshold] = useState(product.threshold?.toString() || "");
+  const [description, setDescription] = useState(product.description || "");
+  const [supplier, setSupplier] = useState(product.supplier || "");
   const [barcode, setBarcode] = useState(product.barcode || "");
   const [hasSerial, setHasSerial] = useState(product.has_serial || false);
   const [serialNumbers, setSerialNumbers] = useState<string>(
@@ -145,7 +146,8 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
         max_price: parseFloat(maxPrice),
         stock: parseInt(stock),
         threshold: parseInt(threshold),
-        
+        description: description || undefined,
+        supplier: supplier || undefined,
         barcode: barcode || undefined,
         has_serial: hasSerial,
         serial_numbers: hasSerial ? serialArray : undefined,
@@ -153,7 +155,7 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
 
       await updateProduct.mutateAsync({ 
         id: product.id, 
-        product: updatedProduct 
+        data: updatedProduct 
       });
       
       toast.success("Product updated successfully!");
@@ -280,6 +282,24 @@ export function EditProductForm({ product, open, onClose, onSuccess }: EditProdu
           className="md:col-span-1"
         />
 
+        <FormField
+          label="Description"
+          type="textarea"
+          value={description}
+          onChange={(value) => setDescription(value)}
+          placeholder="Product description..."
+          className="md:col-span-2"
+          rows={2}
+        />
+
+        <FormField
+          label="Supplier"
+          type="input"
+          value={supplier}
+          onChange={(value) => setSupplier(value)}
+          placeholder="Supplier name"
+          className="md:col-span-2"
+        />
 
         <div className="md:col-span-2">
           <div className="flex items-center space-x-2 mb-4">
