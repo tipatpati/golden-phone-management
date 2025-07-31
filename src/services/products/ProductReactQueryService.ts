@@ -9,7 +9,7 @@ import type { Product, CreateProductData } from './types';
 class ProductReactQueryServiceClass extends BaseReactQueryService<Product, CreateProductData> {
   constructor() {
     const apiService = new ProductApiService();
-    super(apiService, 'products', { queryConfig: 'moderate' });
+    super(apiService, 'products', { queryConfig: 'realtime' });
   }
 
   protected getSearchFields(): string[] {

@@ -82,6 +82,8 @@ export class BaseReactQueryService<
         // For sales, also invalidate products since stock changes
         if (this.queryKey === 'sales') {
           queryClient.invalidateQueries({ queryKey: ['products'] });
+          // Force immediate refetch to show updated stock
+          queryClient.refetchQueries({ queryKey: ['products'] });
         }
         
         // Optimistic update for lists
@@ -131,6 +133,8 @@ export class BaseReactQueryService<
         // For sales, also invalidate products since stock changes
         if (this.queryKey === 'sales') {
           queryClient.invalidateQueries({ queryKey: ['products'] });
+          // Force immediate refetch to show updated stock
+          queryClient.refetchQueries({ queryKey: ['products'] });
         }
         
         if (this.options.enableToasts) {
@@ -172,6 +176,8 @@ export class BaseReactQueryService<
         // For sales, also invalidate products since stock changes
         if (this.queryKey === 'sales') {
           queryClient.invalidateQueries({ queryKey: ['products'] });
+          // Force immediate refetch to show updated stock
+          queryClient.refetchQueries({ queryKey: ['products'] });
         }
         
         if (this.options.enableToasts) {
