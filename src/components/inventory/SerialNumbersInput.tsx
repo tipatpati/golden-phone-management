@@ -37,7 +37,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
           id: `entry-${index}`,
           serial: parts[0] || '',
           color: parts[1] || '',
-          batteryLevel: parts[2] ? parseInt(parts[2]) : 0
+          batteryLevel: parts[2] ? parseInt(parts[2].replace('%', '')) : 0
         };
       });
       
@@ -57,7 +57,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
+      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}`)
       .join('\n');
     
     setSerialNumbers(serialString);
