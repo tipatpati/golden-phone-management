@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import { useClients } from "@/services/useClients";
+import { useClients } from "@/services";
 import { NewClientDialogInSales } from "./NewClientDialogInSales";
 
 type ClientSelectorProps = {
@@ -16,7 +16,8 @@ type ClientSelectorProps = {
 
 export function ClientSelector({ selectedClient, onClientSelect, onClientClear }: ClientSelectorProps) {
   const [clientSearch, setClientSearch] = useState("");
-  const { data: clients = [] } = useClients(clientSearch);
+  const { data: clientsData = [] } = useClients(clientSearch);
+  const clients = Array.isArray(clientsData) ? clientsData : [];
 
   const getClientDisplayName = (client: any) => {
     return client.type === 'business' 

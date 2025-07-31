@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useClients, type Client } from "@/services/useClients";
+import { useClients, type Client } from "@/services";
 import { ClientsHeader } from "@/components/clients/ClientsHeader";
 import { ClientsSearchBar } from "@/components/clients/ClientsSearchBar";
 import { ClientsStats } from "@/components/clients/ClientsStats";
@@ -11,12 +11,12 @@ const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { data: clientsData = [], isLoading, error } = useClients(searchTerm);
 
-  // Type assertion to ensure the data conforms to our Client type
-  const clients: Client[] = clientsData.map(client => ({
+  // Ensure clientsData is always an array and properly typed
+  const clients: Client[] = Array.isArray(clientsData) ? clientsData.map(client => ({
     ...client,
     type: client.type as 'individual' | 'business',
     status: client.status as 'active' | 'inactive'
-  }));
+  })) : [];
 
   if (isLoading) {
     return (

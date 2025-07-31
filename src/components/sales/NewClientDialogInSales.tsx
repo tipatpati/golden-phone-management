@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
-import { useCreateClient } from "@/services/useClients";
+import { useCreateClient } from "@/services";
 import { toast } from "@/components/ui/sonner";
 
 interface NewClientDialogInSalesProps {

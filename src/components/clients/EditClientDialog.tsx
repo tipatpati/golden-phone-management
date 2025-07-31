@@ -1,7 +1,7 @@
 import React from "react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ClientForm } from "./forms/ClientForm";
-import { useUpdateClient, type Client } from "@/services/useClients";
+import { useUpdateClient, type Client } from "@/services";
 import { ClientFormData } from "./forms/types";
 import { toast } from "@/components/ui/sonner";
 import { Edit } from "lucide-react";
@@ -19,7 +19,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
     try {
       await updateClient.mutateAsync({ 
         id: client.id, 
-        client: data 
+        data: data 
       });
       
       toast.success("Client updated successfully!");

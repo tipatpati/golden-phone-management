@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Building, User, Phone, Mail, Edit2, Trash2, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
-import { type Client } from "@/services/useClients";
+import { type Client } from "@/services";
 import { ClientDetailsDialog } from "./ClientDetailsDialog";
 import { format } from "date-fns";
 

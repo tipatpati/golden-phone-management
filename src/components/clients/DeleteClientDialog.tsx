@@ -12,7 +12,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
-import { useDeleteClient, type Client } from "@/services/useClients";
+import { useDeleteClient, type Client } from "@/services";
 import { Trash2 } from "lucide-react";
 
 interface DeleteClientDialogProps {

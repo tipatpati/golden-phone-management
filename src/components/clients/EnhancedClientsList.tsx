@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClientCard, ClientMetrics } from "./ui";
 import { useClientServices } from "./forms/hooks/useClientServices";
-import { type Client } from "@/services/useClients";
+import { type Client } from "@/services";
 import { Search, Filter, Grid, List, Eye } from "lucide-react";
 import { ClientDetailsDialog } from "./ClientDetailsDialog";
 import { EditClientDialog } from "./EditClientDialog";

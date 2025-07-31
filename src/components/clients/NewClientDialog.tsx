@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ClientForm } from "./forms/ClientForm";
 import { ClientFormData } from "./forms/types";
-import { useCreateClient } from "@/services/useClients";
+import { useCreateClient } from "@/services";
 import { toast } from "@/components/ui/sonner";
 
 export function NewClientDialog() {

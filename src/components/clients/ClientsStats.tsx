@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Building } from "lucide-react";
-import { type Client } from "@/services/useClients";
+import { type Client } from "@/services";
 
 interface ClientsStatsProps {
   clients: Client[];

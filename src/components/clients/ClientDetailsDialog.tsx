@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Eye, User, Building, Mail, Phone, MapPin, CreditCard, CalendarDays, FileText } from 'lucide-react';
 import { format } from 'date-fns';
-import type { Client } from '@/services/useClients';
+import type { Client } from '@/services';
 
 interface ClientDetailsDialogProps {
   client: Client;

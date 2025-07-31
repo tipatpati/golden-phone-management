@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useClients } from "@/services/useClients";
+import { useClients } from "@/services";
 
 /**
  * Custom hook that provides client-related data services
