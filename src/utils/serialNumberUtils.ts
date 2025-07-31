@@ -12,25 +12,54 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
   const parts = serialString.trim().split(/\s+/);
   
   if (parts.length >= 3) {
-    const batteryLevel = parseInt(parts[parts.length - 2]);
-    const color = parts[parts.length - 1];
-    if (!isNaN(batteryLevel) && batteryLevel >= 0 && batteryLevel <= 100) {
+    const secondPart = parts[1];
+    const thirdPart = parts[2];
+    
+    const secondPartNum = parseInt(secondPart);
+    const thirdPartNum = parseInt(thirdPart);
+    
+    // Check if second part is battery level (SERIAL BATTERY COLOR)
+    if (!isNaN(secondPartNum) && secondPartNum >= 0 && secondPartNum <= 100) {
       return {
-        serial: parts.slice(0, -2).join(' '),
-        batteryLevel: batteryLevel,
-        color: color
+        serial: parts[0],
+        batteryLevel: secondPartNum,
+        color: thirdPart
       };
     }
+    
+    // Check if third part is battery level (SERIAL COLOR BATTERY)
+    if (!isNaN(thirdPartNum) && thirdPartNum >= 0 && thirdPartNum <= 100) {
+      return {
+        serial: parts[0],
+        batteryLevel: thirdPartNum,
+        color: secondPart
+      };
+    }
+    
+    // If neither is a valid battery level, treat as serial with color only
+    return {
+      serial: parts[0],
+      color: parts.slice(1).join(' ')
+    };
   }
   
-  if (parts.length >= 2) {
-    const batteryLevel = parseInt(parts[parts.length - 1]);
+  if (parts.length === 2) {
+    const secondPart = parts[1];
+    const batteryLevel = parseInt(secondPart);
+    
+    // If second part is a number, treat as battery level
     if (!isNaN(batteryLevel) && batteryLevel >= 0 && batteryLevel <= 100) {
       return {
-        serial: parts.slice(0, -1).join(' '),
+        serial: parts[0],
         batteryLevel: batteryLevel
       };
     }
+    
+    // Otherwise treat as color
+    return {
+      serial: parts[0],
+      color: secondPart
+    };
   }
   
   return {
@@ -68,26 +97,48 @@ export function validateSerialWithBattery(serialString: string): { isValid: bool
     return { isValid: true };
   }
   
-  if (parts.length >= 3) {
-    // Format: SERIAL BATTERY COLOR
-    const batteryLevel = parseInt(parts[parts.length - 2]);
-    if (isNaN(batteryLevel)) {
-      return { isValid: false, error: "Battery level must be a number" };
+  if (parts.length === 2) {
+    // Could be SERIAL COLOR or SERIAL BATTERY
+    const secondPart = parts[1];
+    const batteryLevel = parseInt(secondPart);
+    
+    // If it's a number, treat as battery level
+    if (!isNaN(batteryLevel)) {
+      if (batteryLevel < 0 || batteryLevel > 100) {
+        return { isValid: false, error: "Battery level must be between 0 and 100" };
+      }
     }
-    if (batteryLevel < 0 || batteryLevel > 100) {
-      return { isValid: false, error: "Battery level must be between 0 and 100" };
-    }
+    // If it's not a number, treat as color - both are valid
     return { isValid: true };
   }
   
-  if (parts.length >= 2) {
-    const batteryLevel = parseInt(parts[parts.length - 1]);
-    if (isNaN(batteryLevel)) {
-      return { isValid: false, error: "Battery level must be a number" };
+  if (parts.length === 3) {
+    // Format could be: SERIAL COLOR BATTERY or SERIAL BATTERY COLOR
+    const secondPart = parts[1];
+    const thirdPart = parts[2];
+    
+    const secondPartNum = parseInt(secondPart);
+    const thirdPartNum = parseInt(thirdPart);
+    
+    // Check if either the second or third part is a valid battery level
+    let hasBatteryLevel = false;
+    
+    if (!isNaN(secondPartNum) && secondPartNum >= 0 && secondPartNum <= 100) {
+      hasBatteryLevel = true;
     }
-    if (batteryLevel < 0 || batteryLevel > 100) {
-      return { isValid: false, error: "Battery level must be between 0 and 100" };
+    
+    if (!isNaN(thirdPartNum) && thirdPartNum >= 0 && thirdPartNum <= 100) {
+      hasBatteryLevel = true;
     }
+    
+    // If we found a number but it's not a valid battery level, return error
+    if (!hasBatteryLevel && (!isNaN(secondPartNum) || !isNaN(thirdPartNum))) {
+      const invalidNum = !isNaN(secondPartNum) ? secondPartNum : thirdPartNum;
+      if (invalidNum < 0 || invalidNum > 100) {
+        return { isValid: false, error: "Battery level must be between 0 and 100" };
+      }
+    }
+    
     return { isValid: true };
   }
   
