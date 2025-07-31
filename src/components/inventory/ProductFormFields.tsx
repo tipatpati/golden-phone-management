@@ -54,10 +54,21 @@ export function ProductFormFields({
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
   
-  // Get existing products for autocomplete
+  // Get existing products for smart autocomplete
   const { data: allProducts = [] } = useProducts("");
   const existingBrands = [...new Set(allProducts.map(product => product.brand))].filter(Boolean);
-  const existingModels = [...new Set(allProducts.map(product => product.model))].filter(Boolean);
+  
+  // Filter models based on selected brand for smarter suggestions
+  const getModelsForBrand = (selectedBrand: string) => {
+    if (!selectedBrand) {
+      return [...new Set(allProducts.map(product => product.model))].filter(Boolean);
+    }
+    return [...new Set(allProducts
+      .filter(product => product.brand.toLowerCase().includes(selectedBrand.toLowerCase()))
+      .map(product => product.model))].filter(Boolean);
+  };
+  
+  const existingModels = getModelsForBrand(brand);
 
   return (
     <>

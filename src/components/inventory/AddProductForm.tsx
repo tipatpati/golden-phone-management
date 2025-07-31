@@ -48,10 +48,6 @@ export function AddProductForm() {
   const createProduct = useCreateProduct();
   const { data: allProducts = [] } = useProducts("");
   
-  // Get existing products for autocomplete
-  const existingBrands = [...new Set((allProducts as any[]).map(product => product.brand))].filter(Boolean);
-  const existingModels = [...new Set((allProducts as any[]).map(product => product.model))].filter(Boolean);
-
   // Form with validation - using individual state since we have complex custom validation
   const [formData, setFormData] = useState({
     brand: '',
@@ -70,6 +66,21 @@ export function AddProductForm() {
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Get existing products for smart autocomplete
+  const existingBrands = [...new Set((allProducts as any[]).map(product => product.brand))].filter(Boolean);
+  
+  // Filter models based on selected brand for smarter suggestions
+  const getModelsForBrand = (selectedBrand: string) => {
+    if (!selectedBrand) {
+      return [...new Set((allProducts as any[]).map(product => product.model))].filter(Boolean);
+    }
+    return [...new Set((allProducts as any[])
+      .filter(product => product.brand.toLowerCase().includes(selectedBrand.toLowerCase()))
+      .map(product => product.model))].filter(Boolean);
+  };
+  
+  const existingModels = getModelsForBrand(formData.brand);
 
   // Check if category requires serial numbers (accessories are optional)
   const requiresSerial = formData.category_id !== "2";

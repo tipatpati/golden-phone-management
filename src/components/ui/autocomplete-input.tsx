@@ -103,14 +103,14 @@ export function AutocompleteInput({
       />
       
       {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg max-h-40 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-[60] mt-1 bg-background/95 backdrop-blur-sm border rounded-md shadow-xl max-h-40 overflow-y-auto">{/* Higher z-index and better background */}
           {filteredSuggestions.map((suggestion, index) => (
             <div
               key={suggestion}
               ref={el => suggestionRefs.current[index] = el}
               className={cn(
-                "px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors",
-                selectedIndex === index && "bg-muted"
+                "px-3 py-2 cursor-pointer hover:bg-muted/70 transition-colors text-sm",
+                selectedIndex === index && "bg-muted/90"
               )}
               onClick={() => handleSuggestionClick(suggestion)}
             >
