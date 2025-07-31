@@ -241,9 +241,9 @@ export function EnhancedEmployeesList({
           <Card>
             <CardContent className="p-0">
               <EmployeeTable
-                employees={filteredEmployees}
+                employees={filteredEmployees as any}
                 isLoading={false}
-                onEdit={onEdit}
+                onEdit={onEdit as any}
                 onRefresh={onRefresh}
               />
             </CardContent>

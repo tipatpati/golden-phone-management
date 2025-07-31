@@ -5,22 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/roles";
 import { EmployeeFormData } from "../forms/types";
 
-interface Employee {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  status: string;
-  hire_date: string;
-  salary?: number;
-  profile_id?: string;
-  profiles?: {
-    role: UserRole;
-  };
-}
+import type { Employee } from "@/services/employees/types";
 
 // Remove the FormData interface as we're using EmployeeFormData from types
 

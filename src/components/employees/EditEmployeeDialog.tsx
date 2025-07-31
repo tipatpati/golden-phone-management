@@ -4,23 +4,7 @@ import { useEditEmployeeForm } from "./hooks/useEditEmployeeForm";
 import { EmployeeForm } from "./forms/EmployeeForm";
 import { useEmployeeForm } from "./forms/hooks/useEmployeeForm";
 import { UserRole } from "@/types/roles";
-
-interface Employee {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  status: string;
-  hire_date: string;
-  salary?: number;
-  profile_id?: string;
-  profiles?: {
-    role: UserRole;
-  };
-}
+import type { Employee } from "@/services/employees/types";
 
 interface EditEmployeeDialogProps {
   employee: Employee;
@@ -40,7 +24,7 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
     salary: employee.salary?.toString() || "",
     hire_date: employee.hire_date,
     status: employee.status,
-    role: employee.profiles?.role || "salesperson",
+    role: (employee.profiles?.role as UserRole) || "salesperson",
     password: ""
   });
   

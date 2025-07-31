@@ -13,13 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle } from "lucide-react";
 import { log } from "@/utils/logger";
-
-interface Employee {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-}
+import type { Employee } from "@/services/employees/types";
 
 interface DeleteEmployeeDialogProps {
   employee: Employee;

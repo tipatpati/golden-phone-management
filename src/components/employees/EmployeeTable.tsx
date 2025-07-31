@@ -5,22 +5,7 @@ import { Edit2, Trash2, User } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import { DeleteEmployeeDialog } from "./DeleteEmployeeDialog";
 import { ROLE_CONFIGS } from "@/types/roles";
-
-interface Employee {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  department?: string;
-  position?: string;
-  status: string;
-  hire_date: string;
-  salary?: number;
-  profiles?: {
-    role: string;
-  };
-}
+import type { Employee } from "@/services/employees/types";
 
 interface EmployeeRowProps {
   employee: Employee;

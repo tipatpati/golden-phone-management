@@ -5,7 +5,7 @@ export interface Employee extends BaseEntity {
   profile_id?: string;
   first_name: string;
   last_name: string;
-  email?: string;
+  email: string;
   phone?: string;
   position?: string;
   department?: string;
