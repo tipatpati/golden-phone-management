@@ -43,7 +43,7 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-primary via-primary-dark to-primary-darker flex items-center justify-center p-4 relative overflow-hidden">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Enhanced Background Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
