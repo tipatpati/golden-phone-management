@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProducts } from "@/services/useProducts";
+import { useSearchBrands, useModelsByBrand } from "@/services/brands/BrandsReactQueryService";
 
 interface ProductFormFieldsProps {
   brand: string;
@@ -54,21 +54,13 @@ export function ProductFormFields({
 }: ProductFormFieldsProps) {
   const categoryOptions = categories || CATEGORY_OPTIONS;
   
-  // Get existing products for smart autocomplete
-  const { data: allProducts = [] } = useProducts("");
-  const existingBrands = [...new Set(allProducts.map(product => product.brand))].filter(Boolean);
+  // Get brands and models from dedicated database
+  const { data: searchedBrands = [] } = useSearchBrands(brand || '');
+  const { data: modelsByBrand = [] } = useModelsByBrand(brand);
   
-  // Filter models based on selected brand for smarter suggestions
-  const getModelsForBrand = (selectedBrand: string) => {
-    if (!selectedBrand) {
-      return [...new Set(allProducts.map(product => product.model))].filter(Boolean);
-    }
-    return [...new Set(allProducts
-      .filter(product => product.brand.toLowerCase().includes(selectedBrand.toLowerCase()))
-      .map(product => product.model))].filter(Boolean);
-  };
-  
-  const existingModels = getModelsForBrand(brand);
+  // Convert to suggestion arrays
+  const brandSuggestions = searchedBrands.map(b => b.name);
+  const modelSuggestions = modelsByBrand.map(m => m.name);
 
   return (
     <>
@@ -78,7 +70,7 @@ export function ProductFormFields({
           <AutocompleteInput
             value={brand}
             onChange={setBrand}
-            suggestions={existingBrands}
+            suggestions={brandSuggestions}
             placeholder="Apple, Samsung, Google..."
           />
         </div>
@@ -88,7 +80,7 @@ export function ProductFormFields({
           <AutocompleteInput
             value={model}
             onChange={setModel}
-            suggestions={existingModels}
+            suggestions={modelSuggestions}
             placeholder="iPhone 13 Pro Max, Galaxy S23..."
           />
         </div>

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      brands: {
+        Row: {
+          category_id: number | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: number | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: number | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brands_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -138,6 +173,57 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      models: {
+        Row: {
+          brand_id: string
+          category_id: number | null
+          color_variants: string[] | null
+          created_at: string
+          id: string
+          name: string
+          release_year: number | null
+          storage_variants: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          category_id?: number | null
+          color_variants?: string[] | null
+          created_at?: string
+          id?: string
+          name: string
+          release_year?: number | null
+          storage_variants?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          category_id?: number | null
+          color_variants?: string[] | null
+          created_at?: string
+          id?: string
+          name?: string
+          release_year?: number | null
+          storage_variants?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "models_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "models_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]

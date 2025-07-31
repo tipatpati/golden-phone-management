@@ -12,7 +12,7 @@ import { BarcodePrintDialog } from "./BarcodePrintDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
-import { useProducts } from "@/services/useProducts";
+import { useSearchBrands, useModelsByBrand } from "@/services/brands/BrandsReactQueryService";
 import { logger } from "@/utils/logger";
 
 // Category mapping
@@ -46,7 +46,6 @@ export function AddProductForm() {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   
   const createProduct = useCreateProduct();
-  const { data: allProducts = [] } = useProducts("");
   
   // Form with validation - using individual state since we have complex custom validation
   const [formData, setFormData] = useState({
@@ -67,20 +66,13 @@ export function AddProductForm() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Get existing products for smart autocomplete
-  const existingBrands = [...new Set((allProducts as any[]).map(product => product.brand))].filter(Boolean);
+  // Get brands and models from dedicated database
+  const { data: searchedBrands = [] } = useSearchBrands(formData.brand || '');
+  const { data: modelsByBrand = [] } = useModelsByBrand(formData.brand);
   
-  // Filter models based on selected brand for smarter suggestions
-  const getModelsForBrand = (selectedBrand: string) => {
-    if (!selectedBrand) {
-      return [...new Set((allProducts as any[]).map(product => product.model))].filter(Boolean);
-    }
-    return [...new Set((allProducts as any[])
-      .filter(product => product.brand.toLowerCase().includes(selectedBrand.toLowerCase()))
-      .map(product => product.model))].filter(Boolean);
-  };
-  
-  const existingModels = getModelsForBrand(formData.brand);
+  // Convert to suggestion arrays
+  const brandSuggestions = searchedBrands.map(b => b.name);
+  const modelSuggestions = modelsByBrand.map(m => m.name);
 
   // Check if category requires serial numbers (accessories are optional)
   const requiresSerial = formData.category_id !== "2";
@@ -265,7 +257,7 @@ export function AddProductForm() {
             <AutocompleteInput
               value={formData.brand}
               onChange={(value) => updateField('brand', value)}
-              suggestions={existingBrands}
+              suggestions={brandSuggestions}
               placeholder="Apple, Samsung, Google..."
             />
           </div>
@@ -275,7 +267,7 @@ export function AddProductForm() {
             <AutocompleteInput
               value={formData.model}
               onChange={(value) => updateField('model', value)}
-              suggestions={existingModels}
+              suggestions={modelSuggestions}
               placeholder="iPhone 13 Pro Max, Galaxy S23..."
             />
           </div>
