@@ -6,7 +6,7 @@ class SalesReactQueryServiceClass extends BaseReactQueryService<Sale, CreateSale
   constructor() {
     const apiService = new SalesApiService();
     super(apiService, 'sales', { 
-      queryConfig: 'moderate',
+      queryConfig: 'realtime',
       optimistic: true 
     });
   }
