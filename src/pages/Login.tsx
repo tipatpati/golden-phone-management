@@ -100,7 +100,7 @@ export default function Login() {
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   placeholder="Inserisci la tua password" 
-                  className="h-12 pr-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:bg-white/15 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
+                  className="h-12 pr-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:border-white/40 transition-all duration-200 focus:scale-[1.02]" 
                   maxLength={128} 
                   minLength={6} 
                   required 
