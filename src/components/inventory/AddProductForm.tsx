@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Smartphone, Printer } from "lucide-react";
+import { Plus, Smartphone, Printer, Scan } from "lucide-react";
 import { BaseDialog, FormField } from "@/components/common";
 import { useForm } from "@/hooks/useForm";
 import { CreateProductSchema } from "@/schemas/validation";
@@ -14,6 +14,8 @@ import { toast } from "@/components/ui/sonner";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { useSearchBrands, useModelsByBrand } from "@/services/brands/BrandsReactQueryService";
 import { logger } from "@/utils/logger";
+import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 
 // Category mapping
 const CATEGORY_OPTIONS = [
@@ -46,6 +48,7 @@ export function AddProductForm() {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   
   const createProduct = useCreateProduct();
+  const { data: products } = useProducts();
   
   // Form with validation - using individual state since we have complex custom validation
   const [formData, setFormData] = useState({
@@ -75,6 +78,37 @@ export function AddProductForm() {
 
   // Check if category requires serial numbers (accessories are optional)
   const requiresSerial = formData.category_id !== "2";
+
+  // Handle barcode scan to auto-populate product info
+  const handleBarcodeScanned = (scannedBarcode: string) => {
+    // Look for existing product with this barcode
+    const existingProduct = Array.isArray(products) ? products.find(p => p.barcode === scannedBarcode) : undefined;
+    
+    if (existingProduct) {
+      // Auto-populate form with existing product data
+      setFormData({
+        brand: existingProduct.brand || '',
+        model: existingProduct.model || '',
+        year: existingProduct.year?.toString() || '',
+        category_id: existingProduct.category_id?.toString() || '',
+        price: existingProduct.price?.toString() || '',
+        min_price: existingProduct.min_price?.toString() || '',
+        max_price: existingProduct.max_price?.toString() || '',
+        stock: existingProduct.stock || 0,
+        threshold: existingProduct.threshold?.toString() || '5',
+        has_serial: existingProduct.has_serial || false,
+      });
+      
+      // If product has serial numbers, populate them
+      if (existingProduct.serial_numbers && existingProduct.serial_numbers.length > 0) {
+        setSerialNumbers(existingProduct.serial_numbers.join('\n'));
+      }
+      
+      toast.success(`Product information loaded from barcode: ${existingProduct.brand} ${existingProduct.model}`);
+    } else {
+      toast.info(`Barcode scanned: ${scannedBarcode}. No existing product found - you can add this as a new product.`);
+    }
+  };
 
   const handleSubmit = async () => {
     // Validation
@@ -248,6 +282,26 @@ export function AddProductForm() {
         submitText={createProduct.isPending ? "Adding..." : "Add Product"}
         maxWidth="2xl"
       >
+        {/* Barcode Scanner Section */}
+        <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-primary mb-1">Quick Fill from Barcode</h4>
+              <p className="text-xs text-muted-foreground">
+                Scan an existing product barcode to auto-populate form fields
+              </p>
+            </div>
+            <BarcodeScannerTrigger
+              onScan={handleBarcodeScanned}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Scan className="h-4 w-4" />
+              Scan Barcode
+            </BarcodeScannerTrigger>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Brand *</label>
