@@ -79,6 +79,11 @@ export class BaseReactQueryService<
         // Invalidate and refetch
         queryClient.invalidateQueries({ queryKey: [this.queryKey] });
         
+        // For sales, also invalidate products since stock changes
+        if (this.queryKey === 'sales') {
+          queryClient.invalidateQueries({ queryKey: ['products'] });
+        }
+        
         // Optimistic update for lists
         if (this.options.optimistic) {
           queryClient.setQueryData([this.queryKey, 'list'], (old: T[] | undefined) => {
@@ -184,22 +189,19 @@ export class BaseReactQueryService<
     return ['name'];
   }
 
-  // Cache utilities
-  prefetchItem(id: string) {
-    const queryClient = useQueryClient();
+  // Cache utilities - these should be used within components or mutation callbacks
+  prefetchItem(queryClient: any, id: string) {
     return queryClient.prefetchQuery({
       queryKey: [this.queryKey, 'detail', id],
       queryFn: () => this.apiService.getById(id),
     });
   }
 
-  invalidateAll() {
-    const queryClient = useQueryClient();
+  invalidateAll(queryClient: any) {
     queryClient.invalidateQueries({ queryKey: [this.queryKey] });
   }
 
-  getCachedData(id?: string): T | T[] | undefined {
-    const queryClient = useQueryClient();
+  getCachedData(queryClient: any, id?: string): T | T[] | undefined {
     if (id) {
       return queryClient.getQueryData([this.queryKey, 'detail', id]);
     }

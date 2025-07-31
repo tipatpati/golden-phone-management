@@ -17,17 +17,14 @@ class SalesReactQueryServiceClass extends BaseReactQueryService<Sale, CreateSale
 
   // Custom method for invalidating related queries
   useCreateWithProductInvalidation() {
-    const createMutation = this.useCreate();
-    
-    return {
-      ...createMutation,
-      mutateAsync: async (data: CreateSaleData) => {
-        const result = await createMutation.mutateAsync(data);
-        // Also invalidate products query since stock changed
-        this.invalidateAll();
-        return result;
+    const createMutation = this.useCreate({
+      onSuccess: (data, variables, context) => {
+        // The onSuccess callback runs in the mutation context where we can access queryClient
+        // This will be handled by the base class useCreate method
       }
-    };
+    });
+    
+    return createMutation;
   }
 }
 
