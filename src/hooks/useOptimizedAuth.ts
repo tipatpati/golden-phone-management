@@ -9,13 +9,20 @@ export function useOptimizedProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
       
-      const { data } = await supabase
+      // Get role from authoritative source (user_roles table)
+      const { data: currentRole } = await supabase.rpc('get_current_user_role');
+      
+      // Get profile data
+      const { data: profile } = await supabase
         .from('profiles')
         .select('username, role')
         .eq('id', user.id)
         .single();
       
-      return data;
+      return {
+        username: profile?.username || null,
+        role: currentRole || 'salesperson' // Use role from user_roles table
+      };
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes

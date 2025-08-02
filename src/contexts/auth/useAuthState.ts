@@ -21,30 +21,39 @@ export function useAuthState() {
     }
 
     try {
-      log.debug('Fetching user profile', { userId: user.id }, 'AuthState');
+      log.debug('Fetching user profile and role', { userId: user.id }, 'AuthState');
       
-      const { data: profile, error } = await supabase
+      // Get current role from user_roles table (authoritative source)
+      const { data: currentRole, error: roleError } = await supabase.rpc('get_current_user_role');
+      
+      // Get profile data
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('username, role')
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error) {
-        log.error('Error fetching user profile', error, 'AuthState');
+      if (roleError) {
+        log.error('Error fetching user role', roleError, 'AuthState');
         setUserRole('salesperson');
         setInterfaceRole('salesperson');
-        return;
+      } else if (currentRole) {
+        log.debug('Role fetched successfully', { role: currentRole }, 'AuthState');
+        setUserRole(currentRole);
+        setInterfaceRole(currentRole);
+      } else {
+        log.warn('No role found for user', { userId: user.id }, 'AuthState');
+        setUserRole('salesperson');
+        setInterfaceRole('salesperson');
       }
 
-      if (profile) {
+      if (profileError) {
+        log.error('Error fetching user profile', profileError, 'AuthState');
+      } else if (profile) {
         log.debug('Profile fetched successfully', profile, 'AuthState');
-        setUserRole(profile.role);
-        setInterfaceRole(profile.role);
         setUsername(profile.username);
       } else {
         log.warn('No profile found for user', { userId: user.id }, 'AuthState');
-        setUserRole('salesperson');
-        setInterfaceRole('salesperson');
       }
     } catch (error) {
       log.error('Failed to fetch user profile', error, 'AuthState');
@@ -75,7 +84,11 @@ export function useAuthState() {
             if (!isComponentMounted) return;
             
             try {
-              const { data: profile, error } = await supabase
+              // Get role from user_roles table (authoritative source)
+              const { data: currentRole, error: roleError } = await supabase.rpc('get_current_user_role');
+              
+              // Get profile data
+              const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('username, role')
                 .eq('id', session.user.id)
@@ -83,13 +96,17 @@ export function useAuthState() {
               
               if (!isComponentMounted) return;
               
-              if (error || !profile) {
+              if (roleError || !currentRole) {
                 setUserRole('salesperson');
                 setInterfaceRole('salesperson');
+              } else {
+                setUserRole(currentRole);
+                setInterfaceRole(currentRole);
+              }
+
+              if (profileError || !profile) {
                 setUsername(null);
               } else {
-                setUserRole(profile.role);
-                setInterfaceRole(profile.role);
                 setUsername(profile.username);
               }
             } catch {
@@ -130,7 +147,11 @@ export function useAuthState() {
           if (!isComponentMounted) return;
           
           try {
-            const { data: profile, error } = await supabase
+            // Get role from user_roles table (authoritative source)
+            const { data: currentRole, error: roleError } = await supabase.rpc('get_current_user_role');
+            
+            // Get profile data
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('username, role')
               .eq('id', session.user.id)
@@ -138,13 +159,17 @@ export function useAuthState() {
             
             if (!isComponentMounted) return;
             
-            if (error || !profile) {
+            if (roleError || !currentRole) {
               setUserRole('salesperson');
               setInterfaceRole('salesperson');
+            } else {
+              setUserRole(currentRole);
+              setInterfaceRole(currentRole);
+            }
+
+            if (profileError || !profile) {
               setUsername(null);
             } else {
-              setUserRole(profile.role);
-              setInterfaceRole(profile.role);
               setUsername(profile.username);
             }
           } catch {
