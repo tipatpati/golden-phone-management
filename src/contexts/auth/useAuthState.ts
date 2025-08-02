@@ -54,18 +54,26 @@ export function useAuthState() {
   };
 
   useEffect(() => {
-    let initialized = false;
+    let isComponentMounted = true;
+    
+    // Immediately set initialized to prevent loading loops
+    setIsInitialized(true);
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isComponentMounted) return;
+        
         log.debug(`Auth event: ${event}`, { hasSession: !!session }, 'AuthState');
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Defer profile fetch to prevent deadlocks
           setTimeout(async () => {
+            if (!isComponentMounted) return;
+            
             try {
               const { data: profile, error } = await supabase
                 .from('profiles')
@@ -73,78 +81,91 @@ export function useAuthState() {
                 .eq('id', session.user.id)
                 .maybeSingle();
               
-              if (error) {
+              if (!isComponentMounted) return;
+              
+              if (error || !profile) {
                 setUserRole('salesperson');
                 setInterfaceRole('salesperson');
-              } else if (profile) {
+                setUsername(null);
+              } else {
                 setUserRole(profile.role);
                 setInterfaceRole(profile.role);
                 setUsername(profile.username);
-              } else {
-                setUserRole('salesperson');
-                setInterfaceRole('salesperson');
               }
             } catch {
-              setUserRole('salesperson');
-              setInterfaceRole('salesperson');
+              if (isComponentMounted) {
+                setUserRole('salesperson');
+                setInterfaceRole('salesperson');
+                setUsername(null);
+              }
             }
-          }, 0);
+          }, 100);
         } else {
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
-        }
-        
-        if (!initialized) {
-          initialized = true;
-          setIsInitialized(true);
         }
       }
     );
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!isComponentMounted) return;
+      
       if (error) {
         log.error('Failed to get initial session', error, 'AuthState');
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          setTimeout(async () => {
-            try {
-              const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('username, role')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (error) {
-                setUserRole('salesperson');
-                setInterfaceRole('salesperson');
-              } else if (profile) {
-                setUserRole(profile.role);
-                setInterfaceRole(profile.role);
-                setUsername(profile.username);
-              } else {
-                setUserRole('salesperson');
-                setInterfaceRole('salesperson');
-              }
-            } catch {
+        setSession(null);
+        setUser(null);
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
+        return;
+      }
+
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        setTimeout(async () => {
+          if (!isComponentMounted) return;
+          
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('username, role')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            
+            if (!isComponentMounted) return;
+            
+            if (error || !profile) {
               setUserRole('salesperson');
               setInterfaceRole('salesperson');
+              setUsername(null);
+            } else {
+              setUserRole(profile.role);
+              setInterfaceRole(profile.role);
+              setUsername(profile.username);
             }
-          }, 0);
-        }
-      }
-      
-      if (!initialized) {
-        initialized = true;
-        setIsInitialized(true);
+          } catch {
+            if (isComponentMounted) {
+              setUserRole('salesperson');
+              setInterfaceRole('salesperson');
+              setUsername(null);
+            }
+          }
+        }, 100);
+      } else {
+        setUserRole(null);
+        setInterfaceRole(null);
+        setUsername(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isComponentMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return {
