@@ -35,24 +35,29 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children, includeAuth = false }: AppProvidersProps) {
-  console.log('AppProviders rendering, includeAuth:', includeAuth);
+  console.log('🏗️ AppProviders rendering, includeAuth:', includeAuth);
   
-  const content = includeAuth ? (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  ) : (
-    children
-  );
+  try {
+    const content = includeAuth ? (
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    ) : (
+      children
+    );
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {/* SecurityProvider completely disabled for all environments */}
-        {content}
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          {/* SecurityProvider completely disabled for all environments */}
+          {content}
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  } catch (error) {
+    console.error('💥 AppProviders error:', error);
+    return <div>EMERGENCY: AppProviders failed</div>;
+  }
 }
