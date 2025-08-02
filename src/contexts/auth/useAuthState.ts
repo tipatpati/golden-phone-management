@@ -117,7 +117,11 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Don't set initialized immediately - wait for auth state
+    // Set initialized immediately for Lovable preview compatibility
+    const isLovablePreview = window.location.hostname.includes('lovable.app');
+    if (isLovablePreview) {
+      setIsInitialized(true);
+    }
 
     const cleanup = () => {
       mounted = false;
@@ -150,7 +154,9 @@ export function useAuthState() {
         }
         
         // Always ensure we're initialized after auth state changes
-        setIsInitialized(true);
+        if (mounted) {
+          setIsInitialized(true);
+        }
       }
     );
 
@@ -170,7 +176,9 @@ export function useAuthState() {
       }
       
       // Always initialize after getting session
-      setIsInitialized(true);
+      if (mounted) {
+        setIsInitialized(true);
+      }
     }).catch(error => {
       log.error('Failed to get initial session', error, 'AuthState');
       // Even on error, initialize to prevent stuck loading
