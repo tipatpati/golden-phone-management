@@ -47,111 +47,122 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               margin: 0;
             }
             body {
-              font-family: 'Arial', sans-serif;
-              font-size: 10px;
-              line-height: 1.2;
+              font-family: 'Courier New', monospace;
+              font-size: 11px;
+              line-height: 1.1;
               margin: 0;
-              padding: 5mm;
-              width: 70mm;
+              padding: 3mm;
+              width: 74mm;
               color: #000;
               background: white;
             }
             .company-header {
               text-align: center;
-              margin-bottom: 8px;
-              padding-bottom: 6px;
+              margin-bottom: 6px;
+              padding-bottom: 4px;
               border-bottom: 1px solid #000;
             }
             .company-name {
-              font-size: 12px;
+              font-size: 14px;
               font-weight: bold;
-              margin-bottom: 2px;
+              margin-bottom: 1px;
+              letter-spacing: 1px;
             }
             .company-details {
-              font-size: 8px;
-              line-height: 1.1;
+              font-size: 9px;
+              line-height: 1.2;
+              margin-bottom: 0;
             }
             .receipt-info {
-              margin: 8px 0;
-              padding: 4px 0;
+              margin: 6px 0;
+              padding: 3px 0;
               border-bottom: 1px dashed #000;
             }
             .receipt-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 2px;
-              font-size: 9px;
+              margin-bottom: 1px;
+              font-size: 10px;
+              font-weight: normal;
             }
             .items-header {
-              margin: 8px 0 4px 0;
+              margin: 6px 0 3px 0;
               font-weight: bold;
-              font-size: 9px;
+              font-size: 10px;
               text-align: center;
+              border-bottom: 1px solid #000;
+              padding-bottom: 2px;
             }
             .items-section {
-              margin: 8px 0;
-              padding: 4px 0;
+              margin: 6px 0;
+              padding: 2px 0;
             }
             .item-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 3px;
-              font-size: 8px;
+              margin-bottom: 2px;
+              font-size: 9px;
+              align-items: flex-start;
             }
             .item-desc {
               flex: 1;
-              margin-right: 8px;
+              margin-right: 6px;
+              word-wrap: break-word;
+              max-width: 45mm;
             }
             .item-qty {
-              width: 15mm;
+              width: 12mm;
               text-align: center;
+              font-weight: bold;
             }
             .item-price {
-              width: 15mm;
+              width: 18mm;
               text-align: right;
+              font-weight: bold;
             }
             .totals-section {
-              margin-top: 8px;
-              padding-top: 4px;
+              margin-top: 6px;
+              padding-top: 3px;
               border-top: 1px dashed #000;
             }
             .total-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 2px;
-              font-size: 9px;
+              margin-bottom: 1px;
+              font-size: 10px;
             }
             .final-total {
               font-weight: bold;
-              font-size: 11px;
-              border-top: 1px solid #000;
-              padding-top: 3px;
-              margin-top: 3px;
+              font-size: 12px;
+              border-top: 2px solid #000;
+              padding-top: 2px;
+              margin-top: 2px;
             }
             .payment-section {
-              margin: 8px 0;
-              padding: 4px 0;
+              margin: 6px 0;
+              padding: 3px 0;
               border-top: 1px dashed #000;
               border-bottom: 1px dashed #000;
             }
             .qr-section {
               text-align: center;
-              margin: 8px 0;
+              margin: 8px 0 6px 0;
             }
             .qr-code {
-              width: 60px;
-              height: 60px;
-              margin: 4px auto;
+              width: 50px;
+              height: 50px;
+              margin: 2px auto;
             }
             .footer {
               text-align: center;
-              margin-top: 8px;
-              font-size: 8px;
-              line-height: 1.2;
+              margin-top: 6px;
+              font-size: 9px;
+              line-height: 1.3;
             }
             .thank-you {
               font-weight: bold;
-              margin-bottom: 4px;
+              margin-bottom: 2px;
+              font-size: 10px;
             }
             @media print {
               body { width: auto; }
