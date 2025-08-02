@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
@@ -14,39 +14,115 @@ interface SaleReceiptDialogProps {
 // ITALIAN RECEIPT FORMAT COMPONENT
 
 export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
-  const getClientName = (client: any) => {
-    if (!client) return "Cliente Occasionale";
-    return client.type === "business" 
-      ? client.company_name 
-      : `${client.first_name} ${client.last_name}`;
-  };
+  const renderCount = useRef(0);
+  const printCount = useRef(0);
+  
+  // 🔍 DEBUG: Track component lifecycle
+  useEffect(() => {
+    renderCount.current += 1;
+    console.group(`🔍 SaleReceiptDialog Render #${renderCount.current}`);
+    console.log('📊 Props:', { 
+      saleId: sale?.id, 
+      saleNumber: sale?.sale_number,
+      open, 
+      hasOnOpenChange: !!onOpenChange 
+    });
+    console.log('📈 Memory usage:', {
+      heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
+      heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
+    });
+    console.groupEnd();
 
-  const generateQRCode = (saleData: Sale) => {
-    const qrContent = `PHONE PLANET|Ricevuta: ${saleData.sale_number}|Data: ${format(new Date(saleData.sale_date), "dd/MM/yyyy")}|Totale: €${saleData.total_amount.toFixed(2)}`;
-    return `data:image/svg+xml;base64,${btoa(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-        <rect width="80" height="80" fill="white"/>
-        <rect x="10" y="10" width="60" height="60" fill="none" stroke="black" stroke-width="2"/>
-        <text x="40" y="45" text-anchor="middle" font-size="8" fill="black">QR CODE</text>
-      </svg>
-    `)}`;
-  };
+    return () => {
+      console.log(`🧹 SaleReceiptDialog cleanup for sale #${sale?.sale_number}`);
+    };
+  }, [sale?.id, sale?.sale_number, open, onOpenChange]);
+
+  // 🚀 OPTIMIZED: Memoize client name calculation
+  const clientName = useMemo(() => {
+    console.log('🔄 Calculating client name for:', sale?.client);
+    const start = performance.now();
+    
+    let result;
+    if (!sale?.client) {
+      result = "Cliente Occasionale";
+    } else {
+      result = sale.client.type === "business" 
+        ? sale.client.company_name 
+        : `${sale.client.first_name} ${sale.client.last_name}`;
+    }
+    
+    const duration = performance.now() - start;
+    console.log(`⚡ Client name calculated in ${duration.toFixed(2)}ms:`, result);
+    return result;
+  }, [sale?.client]);
+
+  // 🚀 OPTIMIZED: Memoize QR code generation
+  const qrCodeDataUrl = useMemo(() => {
+    if (!sale) return '';
+    
+    console.log('🔄 Generating QR code for sale:', sale.sale_number);
+    const start = performance.now();
+    
+    try {
+      const qrContent = `PHONE PLANET|Ricevuta: ${sale.sale_number}|Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}|Totale: €${sale.total_amount.toFixed(2)}`;
+      const svgString = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+          <rect width="80" height="80" fill="white"/>
+          <rect x="10" y="10" width="60" height="60" fill="none" stroke="black" stroke-width="2"/>
+          <text x="40" y="45" text-anchor="middle" font-size="8" fill="black">QR CODE</text>
+        </svg>
+      `;
+      const result = `data:image/svg+xml;base64,${btoa(svgString)}`;
+      
+      const duration = performance.now() - start;
+      console.log(`⚡ QR code generated in ${duration.toFixed(2)}ms, size: ${result.length} chars`);
+      return result;
+    } catch (error) {
+      console.error('❌ QR code generation failed:', error);
+      return '';
+    }
+  }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
 
   const handlePrint = () => {
+    printCount.current += 1;
+    console.group(`🖨️ Print Operation #${printCount.current} for sale ${sale.sale_number}`);
+    
+    const startTime = performance.now();
     const receiptId = `receipt-content-${sale.id}`;
+    
+    console.log('🔍 Looking for receipt element with ID:', receiptId);
     const receiptContent = document.getElementById(receiptId);
+    
     if (!receiptContent) {
-      console.error('Receipt content not found with ID:', receiptId);
+      console.error('❌ Receipt content not found with ID:', receiptId);
+      console.log('📋 Available elements with receipt-content prefix:', 
+        Array.from(document.querySelectorAll('[id^="receipt-content"]')).map(el => el.id)
+      );
+      console.groupEnd();
       return;
     }
+    
+    console.log('✅ Receipt content found, size:', receiptContent.innerHTML.length, 'chars');
+    console.log('📈 Memory before print window:', {
+      heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
+      heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
+    });
 
+    console.log('🔄 Opening print window...');
     const printWindow = window.open('', '_blank');
+    
     if (!printWindow) {
-      console.error('Could not open print window');
+      console.error('❌ Could not open print window - popup blocked?');
+      console.groupEnd();
       return;
     }
-
-    printWindow.document.write(`
+    
+    console.log('✅ Print window opened successfully');
+    
+    try {
+      console.log('🔄 Writing HTML content to print window...');
+      const htmlContent = `
       <html>
         <head>
           <title>Ricevuta #${sale.sale_number}</title>
@@ -205,12 +281,42 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
           </div>
         </body>
       </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+      `;
+      
+      console.log('📝 HTML content size:', htmlContent.length, 'chars');
+      printWindow.document.write(htmlContent);
+      
+      console.log('✅ HTML written successfully');
+      console.log('🔄 Closing, focusing, and triggering print...');
+      
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+      
+      const duration = performance.now() - startTime;
+      console.log(`⚡ Print operation completed in ${duration.toFixed(2)}ms`);
+      console.log('📈 Memory after print:', {
+        heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
+        heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
+      });
+      
+    } catch (error) {
+      console.error('❌ Print operation failed:', error);
+      console.log('📊 Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
+      
+      try {
+        printWindow.close();
+        console.log('🧹 Print window closed after error');
+      } catch (closeError) {
+        console.error('❌ Failed to close print window:', closeError);
+      }
+    }
+    
+    console.groupEnd();
   };
 
   return (
@@ -243,7 +349,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Cliente:</span>
-              <span>{getClientName(sale.client)}</span>
+              <span>{clientName}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Operatore:</span>
@@ -306,7 +412,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               </div>
               <div className="receipt-row">
                 <span>Cliente:</span>
-                <span>{getClientName(sale.client)}</span>
+                <span>{clientName}</span>
               </div>
               <div className="receipt-row">
                 <span>Operatore:</span>
@@ -384,7 +490,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
             <div className="qr-section">
               <img 
-                src={generateQRCode(sale)} 
+                src={qrCodeDataUrl} 
                 alt="QR Code" 
                 className="qr-code"
               />
