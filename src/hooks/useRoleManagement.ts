@@ -7,9 +7,16 @@ import { toast } from '@/components/ui/sonner';
 export function useCurrentUserRole() {
   const { user } = useAuth();
   
+  console.log('🔑 useCurrentUserRole called with user:', user?.id);
+  
   return useQuery({
     queryKey: ['currentUserRole', user?.id],
-    queryFn: () => user?.id ? roleService.getCurrentUserRole() : null,
+    queryFn: async () => {
+      console.log('🔄 Fetching role for user:', user?.id);
+      const result = await roleService.getCurrentUserRole();
+      console.log('📋 Role fetch result:', result);
+      return result;
+    },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

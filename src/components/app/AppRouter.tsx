@@ -32,15 +32,26 @@ const PageLoader = () => (
 
 export function AppRouter() {
   const { isLoggedIn, user, isInitialized } = useAuth();
-  const { data: currentRole, isLoading: roleLoading } = useCurrentUserRole();
+  const { data: currentRole, isLoading: roleLoading, error: roleError } = useCurrentUserRole();
+  
+  console.log('🚀 AppRouter Debug:', {
+    isLoggedIn,
+    userId: user?.id,
+    isInitialized,
+    currentRole,
+    roleLoading,
+    roleError: roleError?.message
+  });
 
   // Show loading while auth is being initialized
   if (!isInitialized || roleLoading) {
+    console.log('⏳ AppRouter showing loading...', { isInitialized, roleLoading });
     return <PageLoader />;
   }
 
   // Use a robust fallback role to prevent any crashes
   const effectiveRole = currentRole || 'salesperson';
+  console.log('✅ AppRouter proceeding with role:', effectiveRole);
 
   return (
     <BrowserRouter>

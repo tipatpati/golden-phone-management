@@ -18,6 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isInitialized: authState.isInitialized 
   });
   
+  console.log('🏗️ AuthProvider creating auth actions...');
+  
   // Disable custom session security to rely on Supabase's built-in token management
   // const { isSessionValid, resetActivity } = useSessionSecurity({
   //   timeoutMinutes: 1440, // 24 hours
