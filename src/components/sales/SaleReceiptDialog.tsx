@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,10 +13,21 @@ interface SaleReceiptDialogProps {
 
 export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
   const getClientName = (client: any) => {
-    if (!client) return "Walk-in Customer";
+    if (!client) return "Cliente Occasionale";
     return client.type === "business" 
       ? client.company_name 
       : `${client.first_name} ${client.last_name}`;
+  };
+
+  const generateQRCode = (saleData: Sale) => {
+    const qrContent = `PHONE PLANET|Ricevuta: ${saleData.sale_number}|Data: ${format(new Date(saleData.sale_date), "dd/MM/yyyy")}|Totale: €${saleData.total_amount.toFixed(2)}`;
+    return `data:image/svg+xml;base64,${btoa(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+        <rect width="80" height="80" fill="white"/>
+        <rect x="10" y="10" width="60" height="60" fill="none" stroke="black" stroke-width="2"/>
+        <text x="40" y="45" text-anchor="middle" font-size="8" fill="black">QR CODE</text>
+      </svg>
+    `)}`;
   };
 
   const handlePrint = () => {
@@ -30,69 +40,118 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     printWindow.document.write(`
       <html>
         <head>
-          <title>Receipt #${sale.sale_number}</title>
+          <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
               size: 80mm auto;
-              margin: 5mm;
+              margin: 0;
             }
             body {
-              font-family: 'Courier New', monospace;
-              font-size: 12px;
+              font-family: 'Arial', sans-serif;
+              font-size: 10px;
               line-height: 1.2;
               margin: 0;
-              padding: 8px;
+              padding: 5mm;
               width: 70mm;
               color: #000;
+              background: white;
             }
-            .receipt-header {
+            .company-header {
               text-align: center;
-              border-bottom: 1px dashed #000;
-              padding-bottom: 8px;
               margin-bottom: 8px;
+              padding-bottom: 6px;
+              border-bottom: 1px solid #000;
             }
-            .receipt-title {
-              font-size: 16px;
+            .company-name {
+              font-size: 12px;
               font-weight: bold;
-              margin-bottom: 4px;
+              margin-bottom: 2px;
             }
-            .receipt-number {
-              font-size: 11px;
-              color: #666;
+            .company-details {
+              font-size: 8px;
+              line-height: 1.1;
             }
-            .receipt-section {
-              margin-bottom: 8px;
+            .receipt-info {
+              margin: 8px 0;
+              padding: 4px 0;
+              border-bottom: 1px dashed #000;
             }
             .receipt-row {
               display: flex;
               justify-content: space-between;
               margin-bottom: 2px;
+              font-size: 9px;
             }
-            .receipt-items {
-              border-top: 1px dashed #000;
-              border-bottom: 1px dashed #000;
-              padding: 8px 0;
+            .items-header {
+              margin: 8px 0 4px 0;
+              font-weight: bold;
+              font-size: 9px;
+              text-align: center;
+            }
+            .items-section {
               margin: 8px 0;
+              padding: 4px 0;
             }
-            .receipt-item {
+            .item-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 3px;
+              font-size: 8px;
+            }
+            .item-desc {
+              flex: 1;
+              margin-right: 8px;
+            }
+            .item-qty {
+              width: 15mm;
+              text-align: center;
+            }
+            .item-price {
+              width: 15mm;
+              text-align: right;
+            }
+            .totals-section {
+              margin-top: 8px;
+              padding-top: 4px;
+              border-top: 1px dashed #000;
+            }
+            .total-row {
               display: flex;
               justify-content: space-between;
               margin-bottom: 2px;
-              font-size: 11px;
+              font-size: 9px;
             }
-            .receipt-totals {
-              margin-top: 8px;
-            }
-            .receipt-total {
+            .final-total {
               font-weight: bold;
+              font-size: 11px;
               border-top: 1px solid #000;
-              padding-top: 4px;
+              padding-top: 3px;
+              margin-top: 3px;
             }
-            .receipt-footer {
+            .payment-section {
+              margin: 8px 0;
+              padding: 4px 0;
+              border-top: 1px dashed #000;
+              border-bottom: 1px dashed #000;
+            }
+            .qr-section {
               text-align: center;
-              margin-top: 12px;
-              font-size: 10px;
-              color: #666;
+              margin: 8px 0;
+            }
+            .qr-code {
+              width: 60px;
+              height: 60px;
+              margin: 4px auto;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 8px;
+              font-size: 8px;
+              line-height: 1.2;
+            }
+            .thank-you {
+              font-weight: bold;
+              margin-bottom: 4px;
             }
             @media print {
               body { width: auto; }
@@ -123,135 +182,188 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
       )}
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Sale Receipt</DialogTitle>
+          <DialogTitle>Ricevuta di Vendita</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 text-sm">
+          {/* Preview of receipt */}
           <div className="text-center border-b pb-4">
-            <h3 className="font-bold text-lg">Sales Receipt</h3>
-            <p className="text-muted-foreground">Sale #{sale.sale_number}</p>
+            <h3 className="font-bold text-lg">PHONE PLANET</h3>
+            <p className="text-xs text-muted-foreground">di AMIRALI MOHAMADALI</p>
+            <p className="text-xs">Ricevuta #{sale.sale_number}</p>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="font-medium">Date:</span>
-              <span>{format(new Date(sale.sale_date), "MMM dd, yyyy HH:mm")}</span>
+              <span className="font-medium">Data:</span>
+              <span>{format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium">Customer:</span>
+              <span className="font-medium">Cliente:</span>
               <span>{getClientName(sale.client)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium">Salesperson:</span>
-              <span>{sale.salesperson?.username || "Unknown"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Payment:</span>
-              <span className="capitalize">{sale.payment_method.replace('_', ' ')}</span>
+              <span className="font-medium">Operatore:</span>
+              <span>{sale.salesperson?.username || "Sconosciuto"}</span>
             </div>
           </div>
 
           <div className="border-t pt-4">
-            <h4 className="font-medium mb-2">Items:</h4>
+            <h4 className="font-medium mb-2 text-center">ARTICOLI</h4>
             <div className="space-y-1">
               {sale.sale_items?.map((item, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span>{item.quantity}× {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}</span>
-                  <span>${item.total_price.toFixed(2)}</span>
+                  <span className="flex-1">{item.product ? `${item.product.brand} ${item.product.model}` : "Prodotto"}</span>
+                  <span className="w-12 text-center">{item.quantity}</span>
+                  <span className="w-16 text-right">€{item.total_price.toFixed(2)}</span>
                 </div>
-              )) || <p className="text-muted-foreground text-xs">No items</p>}
+              )) || <p className="text-muted-foreground text-xs">Nessun articolo</p>}
             </div>
           </div>
 
           <div className="border-t pt-4 space-y-1">
             <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>${sale.subtotal.toFixed(2)}</span>
+              <span>Subtotale:</span>
+              <span>€{sale.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Tax:</span>
-              <span>${sale.tax_amount.toFixed(2)}</span>
+              <span>IVA:</span>
+              <span>€{sale.tax_amount.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-bold">
-              <span>Total:</span>
-              <span>${sale.total_amount.toFixed(2)}</span>
+            <div className="flex justify-between font-bold text-lg border-t pt-2">
+              <span>TOTALE:</span>
+              <span>€{sale.total_amount.toFixed(2)}</span>
             </div>
           </div>
 
-          {sale.notes && (
-            <div className="border-t pt-4">
-              <span className="font-medium">Notes:</span>
-              <p className="text-muted-foreground mt-1">{sale.notes}</p>
-            </div>
-          )}
-
           {/* Hidden receipt content for printing */}
           <div id="receipt-content" style={{display: 'none'}}>
-            <div className="receipt-header">
-              <div className="receipt-title">SALES RECEIPT</div>
-              <div className="receipt-number">#{sale.sale_number}</div>
+            <div className="company-header">
+              <div className="company-name">PHONE PLANET</div>
+              <div className="company-details">
+                di AMIRALI MOHAMADALI<br/>
+                Via Example 123, 00100 Roma RM<br/>
+                Tel: +39 06 123456789<br/>
+                P.IVA: 12345678901
+              </div>
             </div>
 
-            <div className="receipt-section">
+            <div className="receipt-info">
               <div className="receipt-row">
-                <span>Date:</span>
-                <span>{format(new Date(sale.sale_date), "MMM dd, yyyy HH:mm")}</span>
+                <span>Data:</span>
+                <span>{format(new Date(sale.sale_date), "dd/MM/yyyy")}</span>
               </div>
               <div className="receipt-row">
-                <span>Customer:</span>
+                <span>Ora:</span>
+                <span>{format(new Date(sale.sale_date), "HH:mm")}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Ricevuta N°:</span>
+                <span>{sale.sale_number}</span>
+              </div>
+              <div className="receipt-row">
+                <span>Cliente:</span>
                 <span>{getClientName(sale.client)}</span>
               </div>
               <div className="receipt-row">
-                <span>Cashier:</span>
-                <span>{sale.salesperson?.username || "Unknown"}</span>
-              </div>
-              <div className="receipt-row">
-                <span>Payment:</span>
-                <span style={{textTransform: 'capitalize'}}>{sale.payment_method.replace('_', ' ')}</span>
+                <span>Operatore:</span>
+                <span>{sale.salesperson?.username || "Sconosciuto"}</span>
               </div>
             </div>
 
-            <div className="receipt-items">
+            <div className="items-header">
+              DETTAGLIO ACQUISTO
+            </div>
+
+            <div className="items-section">
+              <div className="item-row" style={{fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '2px', marginBottom: '4px'}}>
+                <span className="item-desc">DESCRIZIONE</span>
+                <span className="item-qty">QTÀ</span>
+                <span className="item-price">PREZZO</span>
+              </div>
               {sale.sale_items?.map((item, index) => (
-                <div key={index} className="receipt-item">
-                  <span>{item.quantity}× {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}</span>
-                  <span>${item.total_price.toFixed(2)}</span>
+                <div key={index} className="item-row">
+                  <span className="item-desc">
+                    {item.product ? `${item.product.brand} ${item.product.model}${item.product.year ? ` (${item.product.year})` : ''}` : "Prodotto"}
+                    {item.serial_number && <div style={{fontSize: '7px', color: '#666'}}>S/N: {item.serial_number}</div>}
+                  </span>
+                  <span className="item-qty">{item.quantity}</span>
+                  <span className="item-price">€{item.total_price.toFixed(2)}</span>
                 </div>
-              )) || <div className="receipt-item">No items</div>}
+              )) || <div className="item-row">Nessun articolo</div>}
             </div>
 
-            <div className="receipt-totals">
-              <div className="receipt-row">
-                <span>Subtotal:</span>
-                <span>${sale.subtotal.toFixed(2)}</span>
+            <div className="totals-section">
+              <div className="total-row">
+                <span>Subtotale:</span>
+                <span>€{sale.subtotal.toFixed(2)}</span>
               </div>
-              <div className="receipt-row">
-                <span>Tax:</span>
-                <span>${sale.tax_amount.toFixed(2)}</span>
+              <div className="total-row">
+                <span>IVA (22%):</span>
+                <span>€{sale.tax_amount.toFixed(2)}</span>
               </div>
-              <div className="receipt-row receipt-total">
-                <span>TOTAL:</span>
-                <span>${sale.total_amount.toFixed(2)}</span>
+              <div className="total-row final-total">
+                <span>TOTALE:</span>
+                <span>€{sale.total_amount.toFixed(2)}</span>
               </div>
+            </div>
+
+            <div className="payment-section">
+              <div className="total-row">
+                <span>Metodo Pagamento:</span>
+                <span style={{textTransform: 'capitalize'}}>
+                  {sale.payment_method === 'cash' ? 'Contanti' : 
+                   sale.payment_method === 'card' ? 'Carta' :
+                   sale.payment_method === 'bank_transfer' ? 'Bonifico' : 
+                   sale.payment_method.replace('_', ' ')}
+                </span>
+              </div>
+              {sale.payment_method === 'cash' && (
+                <>
+                  <div className="total-row">
+                    <span>Contanti Ricevuti:</span>
+                    <span>€{sale.total_amount.toFixed(2)}</span>
+                  </div>
+                  <div className="total-row">
+                    <span>Resto:</span>
+                    <span>€0.00</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {sale.notes && (
-              <div className="receipt-section">
-                <div style={{marginBottom: '4px'}}>Notes:</div>
-                <div style={{fontSize: '10px', color: '#666'}}>{sale.notes}</div>
+              <div className="receipt-info">
+                <div style={{fontWeight: 'bold', marginBottom: '2px'}}>Note:</div>
+                <div style={{fontSize: '8px'}}>{sale.notes}</div>
               </div>
             )}
 
-            <div className="receipt-footer">
-              Thank you for your business!<br/>
-              {format(new Date(), "MMM dd, yyyy HH:mm")}
+            <div className="qr-section">
+              <img 
+                src={generateQRCode(sale)} 
+                alt="QR Code" 
+                className="qr-code"
+              />
+              <div style={{fontSize: '7px', marginTop: '2px'}}>
+                Scansiona per info ricevuta
+              </div>
+            </div>
+
+            <div className="footer">
+              <div className="thank-you">GRAZIE PER LA FIDUCIA!</div>
+              <div>Arrivederci e a presto</div>
+              <div style={{marginTop: '4px', fontSize: '7px'}}>
+                Documento commerciale non fiscale<br/>
+                Stampato il: {format(new Date(), "dd/MM/yyyy HH:mm")}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="flex gap-2">
           <Button onClick={handlePrint} className="flex-1">
-            Print Receipt
+            Stampa Ricevuta
           </Button>
         </div>
       </DialogContent>
