@@ -8,7 +8,6 @@ import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { AccountSetupScreen } from "@/components/app/AccountSetupScreen";
 
 // Lazy load major route components for better performance
 const Dashboard = React.lazy(() => import("@/pages/Dashboard"));
@@ -32,21 +31,13 @@ const PageLoader = () => (
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
-  console.log('AppRouter state:', { isLoggedIn, userRole, isInitialized, userId: user?.id });
-
   // Show loading while auth is being initialized
   if (!isInitialized) {
     return <PageLoader />;
   }
 
-  // Show loading if user is logged in but role is still being fetched
-  if (isLoggedIn && userRole === null) {
-    console.log('User logged in but role not loaded yet, showing loading...');
-    return <AccountSetupScreen variant="loading" />;
-  }
-
-  // Determine effective role based on authenticated user data only - no fallbacks
-  const effectiveRole = userRole;
+  // Use a fallback role if userRole is null to prevent app crashes
+  const effectiveRole = userRole || 'salesperson';
 
   return (
     <BrowserRouter>

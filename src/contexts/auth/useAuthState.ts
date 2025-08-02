@@ -117,8 +117,7 @@ export function useAuthState() {
   useEffect(() => {
     let mounted = true;
     
-    // Set initialized immediately for faster UX, auth state will be handled by the listener
-    setIsInitialized(true);
+    // Don't set initialized immediately - wait for auth state
 
     const cleanup = () => {
       mounted = false;
@@ -151,9 +150,7 @@ export function useAuthState() {
         }
         
         // Always ensure we're initialized after auth state changes
-        if (!isInitialized) {
-          setIsInitialized(true);
-        }
+        setIsInitialized(true);
       }
     );
 
@@ -172,8 +169,7 @@ export function useAuthState() {
         });
       }
       
-      // Always initialize immediately, don't wait for profile
-      log.debug('Setting initialized to true immediately', null, 'AuthState');
+      // Always initialize after getting session
       setIsInitialized(true);
     }).catch(error => {
       log.error('Failed to get initial session', error, 'AuthState');
