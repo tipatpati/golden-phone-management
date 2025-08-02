@@ -104,12 +104,73 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     }
     
     console.log('✅ Receipt content found, size:', receiptContent.innerHTML.length, 'chars');
-    console.log('📈 Memory before print window:', {
-      heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
-      heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
-    });
 
-    console.log('🔄 Opening print window...');
+    // Check if we're in an iframe (Lovable preview)
+    const isInIframe = window !== window.parent;
+    console.log('🔍 Environment check:', { isInIframe });
+    
+    if (isInIframe) {
+      // Iframe-safe printing using browser's native print
+      console.log('🔄 Using iframe-safe print method...');
+      
+      // Create a temporary container for printing
+      const printContainer = document.createElement('div');
+      printContainer.innerHTML = receiptContent.innerHTML;
+      printContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 80mm;
+        max-width: 80mm;
+        font-family: 'Courier New', monospace;
+        font-size: 6px;
+        line-height: 1.0;
+        color: #000;
+        background: white;
+        padding: 1mm;
+        z-index: 10000;
+        overflow: hidden;
+      `;
+      
+      // Add print styles
+      const printStyles = document.createElement('style');
+      printStyles.textContent = `
+        @media print {
+          body * { visibility: hidden; }
+          #print-container, #print-container * { visibility: visible; }
+          #print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm !important;
+            max-width: 80mm !important;
+          }
+          @page { size: 80mm auto; margin: 0; }
+        }
+      `;
+      
+      printContainer.id = 'print-container';
+      document.head.appendChild(printStyles);
+      document.body.appendChild(printContainer);
+      
+      // Trigger print
+      window.print();
+      
+      // Cleanup after print
+      setTimeout(() => {
+        document.head.removeChild(printStyles);
+        document.body.removeChild(printContainer);
+        console.log('🧹 Print cleanup completed');
+      }, 1000);
+      
+      const duration = performance.now() - startTime;
+      console.log(`⚡ Iframe print completed in ${duration.toFixed(2)}ms`);
+      console.groupEnd();
+      return;
+    }
+
+    // Original print window method for regular browsers
+    console.log('🔄 Using print window method...');
     const printWindow = window.open('', '_blank');
     
     if (!printWindow) {
@@ -121,7 +182,6 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     console.log('✅ Print window opened successfully');
     
     try {
-      console.log('🔄 Writing HTML content to print window...');
       const htmlContent = `
       <html>
         <head>
@@ -283,34 +343,19 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
       </html>
       `;
       
-      console.log('📝 HTML content size:', htmlContent.length, 'chars');
       printWindow.document.write(htmlContent);
-      
-      console.log('✅ HTML written successfully');
-      console.log('🔄 Closing, focusing, and triggering print...');
-      
       printWindow.document.close();
       printWindow.focus();
       printWindow.print();
       printWindow.close();
       
       const duration = performance.now() - startTime;
-      console.log(`⚡ Print operation completed in ${duration.toFixed(2)}ms`);
-      console.log('📈 Memory after print:', {
-        heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
-        heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
-      });
+      console.log(`⚡ Print window operation completed in ${duration.toFixed(2)}ms`);
       
     } catch (error) {
       console.error('❌ Print operation failed:', error);
-      console.log('📊 Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
-      
       try {
         printWindow.close();
-        console.log('🧹 Print window closed after error');
       } catch (closeError) {
         console.error('❌ Failed to close print window:', closeError);
       }
