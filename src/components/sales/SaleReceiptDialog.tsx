@@ -57,133 +57,155 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             @page {
               size: 80mm auto;
               margin: 0;
+              padding: 0;
+            }
+            * {
+              box-sizing: border-box;
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 7px;
+              font-size: 6px;
               line-height: 1.0;
               margin: 0;
-              padding: 1mm;
-              width: 72mm;
-              max-width: 72mm;
+              padding: 0;
+              width: 80mm;
+              max-width: 80mm;
               color: #000;
               background: white;
+              overflow-x: hidden;
+            }
+            .receipt-container {
+              width: 80mm;
+              max-width: 80mm;
+              padding: 1mm;
+              margin: 0;
+              overflow: hidden;
             }
             .company-header {
               text-align: center;
-              margin-bottom: 6px;
-              padding-bottom: 4px;
+              margin-bottom: 4px;
+              padding-bottom: 2px;
               border-bottom: 1px solid #000;
             }
             .company-name {
-              font-size: 14px;
+              font-size: 8px;
               font-weight: bold;
               margin-bottom: 1px;
-              letter-spacing: 1px;
+              letter-spacing: 0.5px;
             }
             .company-details {
-              font-size: 9px;
-              line-height: 1.2;
+              font-size: 5px;
+              line-height: 1.1;
               margin-bottom: 0;
             }
             .receipt-info {
-              margin: 6px 0;
-              padding: 3px 0;
+              margin: 3px 0;
+              padding: 2px 0;
               border-bottom: 1px dashed #000;
             }
             .receipt-row {
               display: flex;
               justify-content: space-between;
               margin-bottom: 1px;
-              font-size: 10px;
+              font-size: 6px;
               font-weight: normal;
             }
             .items-header {
-              margin: 6px 0 3px 0;
+              margin: 3px 0 2px 0;
               font-weight: bold;
-              font-size: 10px;
+              font-size: 6px;
               text-align: center;
               border-bottom: 1px solid #000;
-              padding-bottom: 2px;
+              padding-bottom: 1px;
             }
             .items-section {
-              margin: 6px 0;
-              padding: 2px 0;
+              margin: 3px 0;
+              padding: 1px 0;
             }
             .item-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 2px;
-              font-size: 9px;
+              margin-bottom: 1px;
+              font-size: 5px;
               align-items: flex-start;
             }
             .item-desc {
               flex: 1;
-              margin-right: 6px;
+              margin-right: 2px;
               word-wrap: break-word;
               max-width: 45mm;
+              overflow: hidden;
             }
             .item-qty {
-              width: 12mm;
+              width: 8mm;
               text-align: center;
               font-weight: bold;
             }
             .item-price {
-              width: 18mm;
+              width: 15mm;
               text-align: right;
               font-weight: bold;
             }
             .totals-section {
-              margin-top: 6px;
-              padding-top: 3px;
+              margin-top: 3px;
+              padding-top: 2px;
               border-top: 1px dashed #000;
             }
             .total-row {
               display: flex;
               justify-content: space-between;
               margin-bottom: 1px;
-              font-size: 10px;
+              font-size: 6px;
             }
             .final-total {
               font-weight: bold;
-              font-size: 12px;
+              font-size: 7px;
               border-top: 2px solid #000;
-              padding-top: 2px;
-              margin-top: 2px;
+              padding-top: 1px;
+              margin-top: 1px;
             }
             .payment-section {
-              margin: 6px 0;
-              padding: 3px 0;
+              margin: 3px 0;
+              padding: 2px 0;
               border-top: 1px dashed #000;
               border-bottom: 1px dashed #000;
             }
             .qr-section {
               text-align: center;
-              margin: 8px 0 6px 0;
+              margin: 4px 0 3px 0;
             }
             .qr-code {
-              width: 50px;
-              height: 50px;
-              margin: 2px auto;
+              width: 30px;
+              height: 30px;
+              margin: 1px auto;
             }
             .footer {
               text-align: center;
-              margin-top: 6px;
-              font-size: 9px;
-              line-height: 1.3;
+              margin-top: 3px;
+              font-size: 5px;
+              line-height: 1.2;
             }
             .thank-you {
               font-weight: bold;
-              margin-bottom: 2px;
-              font-size: 10px;
+              margin-bottom: 1px;
+              font-size: 6px;
             }
             @media print {
-              body { width: auto; }
+              body { 
+                width: 80mm;
+                max-width: 80mm;
+              }
+              .receipt-container {
+                width: 80mm;
+                max-width: 80mm;
+              }
             }
           </style>
         </head>
         <body>
-          ${receiptContent.innerHTML}
+          <div class="receipt-container">
+            ${receiptContent.innerHTML}
+          </div>
         </body>
       </html>
     `);
@@ -266,7 +288,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               <div className="company-name">PHONE PLANET</div>
               <div className="company-details">
                 di AMIRALI MOHAMADALI<br/>
-                Via Example 123, 00100 Roma RM<br/>
+                Via Example 123, Roma<br/>
                 Tel: +39 06 123456789<br/>
                 P.IVA: 12345678901
               </div>
@@ -300,16 +322,16 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             </div>
 
             <div className="items-section">
-              <div className="item-row" style={{fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '2px', marginBottom: '4px'}}>
+              <div className="item-row" style={{fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '1px', marginBottom: '2px'}}>
                 <span className="item-desc">DESCRIZIONE</span>
-                <span className="item-qty">QTÀ</span>
+                <span className="item-qty">Q</span>
                 <span className="item-price">PREZZO</span>
               </div>
               {sale.sale_items?.map((item, index) => (
                 <div key={index} className="item-row">
                   <span className="item-desc">
                     {item.product ? `${item.product.brand} ${item.product.model}${item.product.year ? ` (${item.product.year})` : ''}` : "Prodotto"}
-                    {item.serial_number && <div style={{fontSize: '7px', color: '#666'}}>S/N: {item.serial_number}</div>}
+                    {item.serial_number && <div style={{fontSize: '4px', color: '#666'}}>S/N: {item.serial_number}</div>}
                   </span>
                   <span className="item-qty">{item.quantity}</span>
                   <span className="item-price">€{item.total_price.toFixed(2)}</span>
@@ -334,7 +356,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
             <div className="payment-section">
               <div className="total-row">
-                <span>Metodo Pagamento:</span>
+                <span>Metodo:</span>
                 <span style={{textTransform: 'capitalize'}}>
                   {sale.payment_method === 'cash' ? 'Contanti' : 
                    sale.payment_method === 'card' ? 'Carta' :
@@ -345,7 +367,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               {sale.payment_method === 'cash' && (
                 <>
                   <div className="total-row">
-                    <span>Contanti Ricevuti:</span>
+                    <span>Ricevuti:</span>
                     <span>€{sale.total_amount.toFixed(2)}</span>
                   </div>
                   <div className="total-row">
@@ -358,8 +380,8 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
             {sale.notes && (
               <div className="receipt-info">
-                <div style={{fontWeight: 'bold', marginBottom: '2px'}}>Note:</div>
-                <div style={{fontSize: '8px'}}>{sale.notes}</div>
+                <div style={{fontWeight: 'bold', marginBottom: '1px'}}>Note:</div>
+                <div style={{fontSize: '5px'}}>{sale.notes}</div>
               </div>
             )}
 
@@ -369,17 +391,17 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
                 alt="QR Code" 
                 className="qr-code"
               />
-              <div style={{fontSize: '7px', marginTop: '2px'}}>
-                Scansiona per info ricevuta
+              <div style={{fontSize: '4px', marginTop: '1px'}}>
+                Scansiona per info
               </div>
             </div>
 
             <div className="footer">
-              <div className="thank-you">GRAZIE PER LA FIDUCIA!</div>
+              <div className="thank-you">GRAZIE!</div>
               <div>Arrivederci e a presto</div>
-              <div style={{marginTop: '4px', fontSize: '7px'}}>
-                Documento commerciale non fiscale<br/>
-                Stampato il: {format(new Date(), "dd/MM/yyyy HH:mm")}
+              <div style={{marginTop: '2px', fontSize: '4px'}}>
+                Documento non fiscale<br/>
+                Stampato: {format(new Date(), "dd/MM/yyyy HH:mm")}
               </div>
             </div>
           </div>
