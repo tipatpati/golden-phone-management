@@ -2,7 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
+import { UserRole } from "@/types/roles";
 
 interface ModuleNavCardsProps {
   currentModule?: string;
@@ -10,7 +12,7 @@ interface ModuleNavCardsProps {
 
 export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
   const navigate = useNavigate();
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
 
   const allActions = [
     {
@@ -19,7 +21,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: PackageSearch,
       href: "/inventory",
       module: "inventory",
-      roles: ['salesperson', 'technician', 'inventory_manager', 'manager', 'admin', 'super_admin']
+      requiredPermissions: ['inventory_view']
     },
     {
       title: "Create Sale",
@@ -27,7 +29,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",
-      roles: ['salesperson', 'manager', 'admin', 'super_admin']
+      requiredPermissions: ['sales_management']
     },
     {
       title: "Find Client",
@@ -35,7 +37,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Users,
       href: "/clients",
       module: "clients",
-      roles: ['salesperson', 'technician', 'manager', 'admin', 'super_admin']
+      requiredPermissions: ['client_management']
     },
     {
       title: "New Repair",
@@ -43,7 +45,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Wrench,
       href: "/repairs",
       module: "repairs",
-      roles: ['technician', 'manager', 'admin', 'super_admin']
+      requiredPermissions: ['repair_management']
     },
     {
       title: "Suppliers",
@@ -51,16 +53,20 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Building2,
       href: "/suppliers",
       module: "suppliers",
-      roles: ['inventory_manager', 'manager', 'admin', 'super_admin']
+      requiredPermissions: ['supplier_management']
     }
   ];
 
-  // Filter actions based on role and exclude current module
-  const filteredActions = allActions.filter(action => 
-    userRole && 
-    action.roles.includes(userRole) && 
-    action.module !== currentModule
-  );
+  // Filter actions based on role permissions and exclude current module
+  const filteredActions = allActions.filter(action => {
+    if (action.module === currentModule) return false;
+    if (!currentRole) return false;
+    
+    // Check if user has any of the required permissions
+    return action.requiredPermissions.some(permission => 
+      roleUtils.hasPermission(currentRole, permission)
+    );
+  });
 
   if (filteredActions.length === 0) return null;
 

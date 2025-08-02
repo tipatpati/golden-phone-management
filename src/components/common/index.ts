@@ -9,6 +9,7 @@ export { SearchAndFilter } from "./SearchAndFilter";
 export { LoadingState } from "./LoadingState";
 export { EmptyState } from "./EmptyState";
 export { ConfirmDialog } from "./ConfirmDialog";
+export { RoleGuard, AdminOnly, SuperAdminOnly, ManagerOrAbove } from "./RoleGuard";
 
 // Hooks (re-export from hooks directory)
 export { useTableData } from "../../hooks/useTableData";

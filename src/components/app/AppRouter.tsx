@@ -4,6 +4,8 @@ import { TabletLayout } from "@/components/layout/TabletLayout";
 import { EmployeeLayout } from "@/components/layout/EmployeeLayout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
@@ -29,15 +31,16 @@ const PageLoader = () => (
 );
 
 export function AppRouter() {
-  const { isLoggedIn, userRole, user, isInitialized } = useAuth();
+  const { isLoggedIn, user, isInitialized } = useAuth();
+  const { data: currentRole, isLoading: roleLoading } = useCurrentUserRole();
 
   // Show loading while auth is being initialized
-  if (!isInitialized) {
+  if (!isInitialized || roleLoading) {
     return <PageLoader />;
   }
 
   // Use a robust fallback role to prevent any crashes
-  const effectiveRole = userRole || 'salesperson';
+  const effectiveRole = currentRole || 'salesperson';
 
   return (
     <BrowserRouter>
@@ -45,7 +48,7 @@ export function AppRouter() {
         {/* Root route - login if not authenticated, main app if authenticated */}
         <Route path="/" element={
           isLoggedIn ? (
-            effectiveRole === 'super_admin' || effectiveRole === 'admin' ? (
+            roleUtils.hasPermissionLevel(effectiveRole, 'admin') ? (
               <ProtectedRoute>
                 <TabletLayout userRole={effectiveRole}>
                   <Suspense fallback={<PageLoader />}>
@@ -79,7 +82,7 @@ export function AppRouter() {
         {isLoggedIn && (
           <>
             {/* Super Admin and Admin users get full admin interface */}
-            {effectiveRole === 'super_admin' || effectiveRole === 'admin' ? (
+            {roleUtils.hasPermissionLevel(effectiveRole, 'admin') ? (
               <>
                 <Route path="/sales" element={
                   <ProtectedRoute>
@@ -180,7 +183,7 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  ['salesperson', 'manager'].includes(effectiveRole || '') ? (
+                  roleUtils.canAccessFeature(effectiveRole, 'sales_management') ? (
                     <ProtectedRoute>
                       <TabletLayout userRole={effectiveRole}>
                         <Suspense fallback={<PageLoader />}>
