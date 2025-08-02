@@ -32,10 +32,16 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
   const handlePrint = () => {
     const receiptContent = document.getElementById('receipt-content');
-    if (!receiptContent) return;
+    if (!receiptContent) {
+      console.error('Receipt content not found');
+      return;
+    }
 
     const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    if (!printWindow) {
+      console.error('Could not open print window');
+      return;
+    }
 
     printWindow.document.write(`
       <html>
