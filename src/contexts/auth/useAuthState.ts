@@ -31,7 +31,6 @@ export function useAuthState() {
 
       if (error) {
         log.error('Error fetching user profile', error, 'AuthState');
-        // Set default role for users without profiles
         setUserRole('salesperson');
         setInterfaceRole('salesperson');
         return;
@@ -44,128 +43,107 @@ export function useAuthState() {
         setUsername(profile.username);
       } else {
         log.warn('No profile found for user', { userId: user.id }, 'AuthState');
-        // Set default role for users without profiles
         setUserRole('salesperson');
         setInterfaceRole('salesperson');
       }
     } catch (error) {
       log.error('Failed to fetch user profile', error, 'AuthState');
-      // Set default role on any error
       setUserRole('salesperson');
       setInterfaceRole('salesperson');
     }
   };
 
   useEffect(() => {
-    let mounted = true;
-    let authSubscription: any;
-
-    const initAuth = async () => {
-      try {
-        // Get current session
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        log.debug(`Auth event: ${event}`, { hasSession: !!session }, 'AuthState');
         
-        if (!mounted) return;
+        // Only synchronous state updates here
+        setSession(session);
+        setUser(session?.user ?? null);
         
-        if (error) {
-          log.error('Error getting session', error, 'AuthState');
-          setIsInitialized(true);
-          return;
+        // Defer Supabase calls with setTimeout to prevent deadlocks
+        if (session?.user && event === 'SIGNED_IN') {
+          setTimeout(async () => {
+            try {
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('username, role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (error) {
+                setUserRole('salesperson');
+                setInterfaceRole('salesperson');
+              } else if (profile) {
+                setUserRole(profile.role);
+                setInterfaceRole(profile.role);
+                setUsername(profile.username);
+              } else {
+                setUserRole('salesperson');
+                setInterfaceRole('salesperson');
+              }
+            } catch {
+              setUserRole('salesperson');
+              setInterfaceRole('salesperson');
+            }
+          }, 0);
+        } else if (!session?.user) {
+          setUserRole(null);
+          setInterfaceRole(null);
+          setUsername(null);
         }
+        
+        // Mark as initialized after first auth event
+        setIsInitialized(true);
+      }
+    );
 
-        // Set session and user
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        log.error('Failed to get initial session', error, 'AuthState');
+        setIsInitialized(true);
+        return;
+      }
 
-        // Fetch profile if user exists
-        if (currentSession?.user) {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      // Defer profile fetch for existing session
+      if (session?.user) {
+        setTimeout(async () => {
           try {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('username, role')
-              .eq('id', currentSession.user.id)
+              .eq('id', session.user.id)
               .maybeSingle();
-
-            if (mounted && profile) {
+            
+            if (error) {
+              setUserRole('salesperson');
+              setInterfaceRole('salesperson');
+            } else if (profile) {
               setUserRole(profile.role);
               setInterfaceRole(profile.role);
               setUsername(profile.username);
-            } else if (mounted) {
-              // Default role for users without profiles
+            } else {
               setUserRole('salesperson');
               setInterfaceRole('salesperson');
             }
-          } catch (profileError) {
-            log.error('Profile fetch error', profileError, 'AuthState');
-            if (mounted) {
-              setUserRole('salesperson');
-              setInterfaceRole('salesperson');
-            }
-          }
-        }
-
-        if (mounted) {
-          setIsInitialized(true);
-        }
-      } catch (error) {
-        log.error('Auth initialization error', error, 'AuthState');
-        if (mounted) {
-          setIsInitialized(true);
-        }
-      }
-    };
-
-    // Set up auth state listener
-    authSubscription = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      
-      log.debug(`Auth event: ${event}`, { hasSession: !!session }, 'AuthState');
-      
-      setSession(session);
-      setUser(session?.user || null);
-
-      if (session?.user && event === 'SIGNED_IN') {
-        // Fetch profile for signed in user
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username, role')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (mounted && profile) {
-            setUserRole(profile.role);
-            setInterfaceRole(profile.role);
-            setUsername(profile.username);
-          } else if (mounted) {
+          } catch {
             setUserRole('salesperson');
             setInterfaceRole('salesperson');
           }
-        } catch (error) {
-          log.error('Profile fetch on sign in failed', error, 'AuthState');
-          if (mounted) {
-            setUserRole('salesperson');
-            setInterfaceRole('salesperson');
-          }
-        }
-      } else if (!session?.user) {
-        // Clear user state on sign out
-        setUserRole(null);
-        setInterfaceRole(null);
-        setUsername(null);
+        }, 0);
       }
+      
+      setIsInitialized(true);
     });
 
-    // Initialize auth
-    initAuth();
-
-    // Cleanup function
-    return () => {
-      mounted = false;
-      if (authSubscription?.subscription) {
-        authSubscription.subscription.unsubscribe();
-      }
-    };
+    // Cleanup subscription
+    return () => subscription.unsubscribe();
   }, []); // Only run once on mount
 
   return {
