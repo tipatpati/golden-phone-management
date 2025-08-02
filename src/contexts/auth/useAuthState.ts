@@ -54,17 +54,17 @@ export function useAuthState() {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let initialized = false;
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         log.debug(`Auth event: ${event}`, { hasSession: !!session }, 'AuthState');
         
-        // Only synchronous state updates here
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer Supabase calls with setTimeout to prevent deadlocks
-        if (session?.user && event === 'SIGNED_IN') {
+        if (session?.user) {
           setTimeout(async () => {
             try {
               const { data: profile, error } = await supabase
@@ -89,62 +89,63 @@ export function useAuthState() {
               setInterfaceRole('salesperson');
             }
           }, 0);
-        } else if (!session?.user) {
+        } else {
           setUserRole(null);
           setInterfaceRole(null);
           setUsername(null);
         }
         
-        // Mark as initialized after first auth event
-        setIsInitialized(true);
+        if (!initialized) {
+          initialized = true;
+          setIsInitialized(true);
+        }
       }
     );
 
-    // THEN check for existing session
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         log.error('Failed to get initial session', error, 'AuthState');
-        setIsInitialized(true);
-        return;
-      }
-
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Defer profile fetch for existing session
-      if (session?.user) {
-        setTimeout(async () => {
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('username, role')
-              .eq('id', session.user.id)
-              .maybeSingle();
-            
-            if (error) {
-              setUserRole('salesperson');
-              setInterfaceRole('salesperson');
-            } else if (profile) {
-              setUserRole(profile.role);
-              setInterfaceRole(profile.role);
-              setUsername(profile.username);
-            } else {
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(async () => {
+            try {
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('username, role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (error) {
+                setUserRole('salesperson');
+                setInterfaceRole('salesperson');
+              } else if (profile) {
+                setUserRole(profile.role);
+                setInterfaceRole(profile.role);
+                setUsername(profile.username);
+              } else {
+                setUserRole('salesperson');
+                setInterfaceRole('salesperson');
+              }
+            } catch {
               setUserRole('salesperson');
               setInterfaceRole('salesperson');
             }
-          } catch {
-            setUserRole('salesperson');
-            setInterfaceRole('salesperson');
-          }
-        }, 0);
+          }, 0);
+        }
       }
       
-      setIsInitialized(true);
+      if (!initialized) {
+        initialized = true;
+        setIsInitialized(true);
+      }
     });
 
-    // Cleanup subscription
     return () => subscription.unsubscribe();
-  }, []); // Only run once on mount
+  }, []);
 
   return {
     user,
