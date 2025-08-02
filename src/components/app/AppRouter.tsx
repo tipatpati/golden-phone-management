@@ -31,27 +31,25 @@ const PageLoader = () => (
 );
 
 export function AppRouter() {
-  const { isLoggedIn, user, isInitialized } = useAuth();
-  const { data: currentRole, isLoading: roleLoading, error: roleError } = useCurrentUserRole();
+  const { isLoggedIn, user, isInitialized, userRole } = useAuth();
   
   console.log('🚀 AppRouter Debug:', {
     isLoggedIn,
     userId: user?.id,
     isInitialized,
-    currentRole,
-    roleLoading,
-    roleError: roleError?.message
+    userRole
   });
 
-  // Show loading while auth is being initialized
-  if (!isInitialized || roleLoading) {
-    console.log('⏳ AppRouter showing loading...', { isInitialized, roleLoading });
+  // TEMPORARY FIX: Use the role from AuthContext instead of the problematic hook
+  const effectiveRole = userRole || 'salesperson';
+  
+  console.log('✅ AppRouter proceeding with role from AuthContext:', effectiveRole);
+
+  // Show loading only while auth is being initialized
+  if (!isInitialized) {
+    console.log('⏳ AppRouter showing loading for auth initialization...');
     return <PageLoader />;
   }
-
-  // Use a robust fallback role to prevent any crashes
-  const effectiveRole = currentRole || 'salesperson';
-  console.log('✅ AppRouter proceeding with role:', effectiveRole);
 
   return (
     <BrowserRouter>

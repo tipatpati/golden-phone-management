@@ -13,6 +13,10 @@ export function useCurrentUserRole() {
     queryKey: ['currentUserRole', user?.id],
     queryFn: async () => {
       console.log('🔄 Fetching role for user:', user?.id);
+      if (!user?.id) {
+        console.log('❌ No user ID, returning null');
+        return null;
+      }
       const result = await roleService.getCurrentUserRole();
       console.log('📋 Role fetch result:', result);
       return result;
@@ -21,6 +25,8 @@ export function useCurrentUserRole() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
+    retry: 1, // Only retry once to prevent infinite loops
+    retryDelay: 1000, // 1 second delay
   });
 }
 
