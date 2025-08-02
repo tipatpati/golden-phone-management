@@ -35,6 +35,8 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children, includeAuth = false }: AppProvidersProps) {
+  console.log('AppProviders rendering, includeAuth:', includeAuth);
+  
   const content = includeAuth ? (
     <AuthProvider>
       {children}

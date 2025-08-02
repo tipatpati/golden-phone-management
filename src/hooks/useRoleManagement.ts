@@ -9,7 +9,7 @@ export function useCurrentUserRole() {
   
   return useQuery({
     queryKey: ['currentUserRole', user?.id],
-    queryFn: () => user?.id ? roleService.getCurrentUserRole(user.id) : null,
+    queryFn: () => user?.id ? roleService.getCurrentUserRole() : null,
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

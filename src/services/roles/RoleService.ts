@@ -13,8 +13,9 @@ export class RoleService {
   }
 
   // Get user's current role from user_roles table (authoritative source)
-  async getCurrentUserRole(userId: string): Promise<UserRole | null> {
+  async getCurrentUserRole(userId?: string): Promise<UserRole | null> {
     try {
+      // get_current_user_role() uses auth.uid() internally, so no parameters needed
       const { data, error } = await supabase.rpc('get_current_user_role');
       
       if (error) {
