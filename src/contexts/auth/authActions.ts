@@ -15,10 +15,11 @@ interface AuthActionsParams {
   setUsername: (username: string | null) => void;
   setUser: (user: User | null) => void;
   setSession: (session: any) => void;
+  fetchUserProfile: (userId: string) => Promise<void>;
 }
 
 export function createAuthActions(params: AuthActionsParams) {
-  const { user, setUserRole, setInterfaceRole, setUsername, setUser, setSession } = params;
+  const { user, setUserRole, setInterfaceRole, setUsername, setUser, setSession, fetchUserProfile } = params;
 
   const updateUserRole = async (targetUserId: string, role: UserRole) => {
     if (!user) {
@@ -194,6 +195,11 @@ export function createAuthActions(params: AuthActionsParams) {
 
   const checkAuthStatus = () => {
     log.debug('Auth status check triggered', null, 'AuthActions');
+    if (user?.id) {
+      fetchUserProfile(user.id).catch(error => {
+        log.warn('Failed to refresh user profile', error, 'AuthActions');
+      });
+    }
   };
 
   return {

@@ -187,6 +187,12 @@ export function useAuthState() {
     };
   }, []); // Remove isInitialized dependency to prevent infinite recreation
 
+  const checkAuthStatus = () => {
+    if (user?.id) {
+      fetchUserProfile(user.id);
+    }
+  };
+
   return {
     user,
     session,
@@ -199,6 +205,7 @@ export function useAuthState() {
     setUsername,
     setUser,
     setSession,
-    fetchUserProfile
+    fetchUserProfile,
+    checkAuthStatus
   };
 }

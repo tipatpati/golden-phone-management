@@ -25,7 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setInterfaceRole: authState.setInterfaceRole,
     setUsername: authState.setUsername,
     setUser: authState.setUser,
-    setSession: authState.setSession
+    setSession: authState.setSession,
+    fetchUserProfile: authState.fetchUserProfile
   });
 
   const isLoggedIn = !!authState.session || !!authState.user;
