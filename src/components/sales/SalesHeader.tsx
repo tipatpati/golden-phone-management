@@ -1,5 +1,7 @@
 import React from "react";
 import { NewSaleDialog } from "./NewSaleDialog";
+import { RoleGate } from "@/components/common/RoleGate";
+import { PERMISSIONS } from "@/utils/rolePermissions";
 
 export function SalesHeader() {
   return (
@@ -13,9 +15,11 @@ export function SalesHeader() {
             Gestisci le transazioni di vendita, elabora i rimborsi e monitora le prestazioni con analisi complete.
           </p>
         </div>
-        <div className="flex-shrink-0">
-          <NewSaleDialog />
-        </div>
+        <RoleGate permission={PERMISSIONS.SALES_CREATE as any}>
+          <div className="flex-shrink-0">
+            <NewSaleDialog />
+          </div>
+        </RoleGate>
       </div>
     </div>
   );
