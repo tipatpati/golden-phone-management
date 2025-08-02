@@ -38,7 +38,7 @@ export function NewSaleDialog() {
   const [showReceipt, setShowReceipt] = useState(false);
 
   const createSale = useCreateSale();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
 
   console.log('NewSaleDialog - Current user:', user?.id);
 
@@ -138,6 +138,20 @@ export function NewSaleDialog() {
 
     try {
       console.log('Submitting sale with user ID:', user.id);
+      console.log('User role:', userRole);
+      console.log('Sale data being submitted:', {
+        client_id: selectedClient?.id,
+        salesperson_id: user.id,
+        payment_method: paymentMethod,
+        notes,
+        sale_items: saleItems.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          serial_number: item.serial_number
+        }))
+      });
+      
       const createdSaleData = await createSale.mutateAsync({
         client_id: selectedClient?.id,
         salesperson_id: user.id,

@@ -36,7 +36,7 @@ export function AppRouter() {
     return <PageLoader />;
   }
 
-  // Use a fallback role if userRole is null to prevent app crashes
+  // Use a robust fallback role to prevent any crashes
   const effectiveRole = userRole || 'salesperson';
 
   return (
