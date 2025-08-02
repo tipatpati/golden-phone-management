@@ -38,12 +38,11 @@ export function NewSaleDialog() {
   const [showReceipt, setShowReceipt] = useState(false);
 
   const createSale = useCreateSale();
-  const { user, userRole } = useAuth();
+  const { user } = useAuth();
 
-  console.log('NewSaleDialog - Current user:', user?.id);
+  
 
   const addProduct = (product: any) => {
-    console.log('Adding product:', product);
     const existingItem = saleItems.find(item => item.product_id === product.id);
     if (existingItem) {
       setSaleItems(items => 
@@ -109,18 +108,10 @@ export function NewSaleDialog() {
   // Check if form is valid
   const isFormValid = saleItems.length > 0 && paymentMethod && user?.id;
 
-  console.log('Form validation:', {
-    hasItems: saleItems.length > 0,
-    hasPaymentMethod: !!paymentMethod,
-    hasUserId: !!user?.id,
-    isValid: isFormValid
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      console.log('Form validation failed');
       return;
     }
 
@@ -137,21 +128,6 @@ export function NewSaleDialog() {
     }
 
     try {
-      console.log('Submitting sale with user ID:', user.id);
-      console.log('User role:', userRole);
-      console.log('Sale data being submitted:', {
-        client_id: selectedClient?.id,
-        salesperson_id: user.id,
-        payment_method: paymentMethod,
-        notes,
-        sale_items: saleItems.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          serial_number: item.serial_number
-        }))
-      });
-      
       const createdSaleData = await createSale.mutateAsync({
         client_id: selectedClient?.id,
         salesperson_id: user.id,
@@ -185,13 +161,11 @@ export function NewSaleDialog() {
 
   // Handle direct barcode scanning for quick product addition
   const handleDirectBarcodeScanned = async (barcode: string) => {
-    console.log('Direct barcode scanned:', barcode);
     
     try {
       const scannedProducts = await supabaseProductApi.getProducts(barcode);
       
       if (scannedProducts && scannedProducts.length === 1) {
-        console.log('Auto-adding scanned product:', scannedProducts[0]);
         addProduct(scannedProducts[0]);
         toast.success(`Added ${scannedProducts[0].brand} ${scannedProducts[0].model} to sale`);
       } else if (scannedProducts && scannedProducts.length > 1) {
