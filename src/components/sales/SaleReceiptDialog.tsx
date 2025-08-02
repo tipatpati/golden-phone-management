@@ -60,11 +60,12 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 9px;
-              line-height: 1.1;
+              font-size: 7px;
+              line-height: 1.0;
               margin: 0;
-              padding: 2mm;
-              width: 76mm;
+              padding: 1mm;
+              width: 72mm;
+              max-width: 72mm;
               color: #000;
               background: white;
             }
