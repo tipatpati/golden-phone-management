@@ -10,6 +10,7 @@ export { LoadingState } from "./LoadingState";
 export { EmptyState } from "./EmptyState";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { RoleGuard, AdminOnly, SuperAdminOnly, ManagerOrAbove } from "./RoleGuard";
+export { FeatureGate, BetaFeature } from "./FeatureGate";
 
 // Hooks (re-export from hooks directory)
 export { useTableData } from "../../hooks/useTableData";

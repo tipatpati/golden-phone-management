@@ -1,16 +1,16 @@
-
 import React from "react";
 import { PackageSearch } from "lucide-react";
 import { ProductImportDialog } from "./ProductImportDialog";
 import { ProductExportDialog } from "./ProductExportDialog";
 import { BulkBarcodeGenerator } from "./BulkBarcodeGenerator";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
 
 export function InventoryHeader() {
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   
-  // Check if user can modify products
-  const canModifyProducts = userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
+  // Check if user can modify products using permission-based check
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
 
   return (
     <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 lg:gap-6 w-full md-enter-refined md-stagger-container">

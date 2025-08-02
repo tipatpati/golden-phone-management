@@ -5,19 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 import { Edit, Trash, Printer, Smartphone, Barcode } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState, EmptyState } from "@/components/common";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
 
 export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchTerm?: string; viewMode?: "list" | "grid" }) {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Product>();
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   
   const { data: products = [], isLoading, error } = useProducts(searchTerm) as { data: Product[], isLoading: boolean, error: Error | null };
   const deleteProduct = useDeleteProduct();
   const updateProduct = useUpdateProduct();
 
-  // Check if user can modify products
-  const canModifyProducts = userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
+  // Check if user can modify products using permission-based check
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);

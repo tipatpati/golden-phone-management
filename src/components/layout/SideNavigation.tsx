@@ -20,6 +20,8 @@ import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types/roles";
 import { Logo } from "@/components/shared/Logo";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
 
 type NavItem = {
   title: string;
@@ -101,7 +103,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const { logout, userRole, username } = useAuth();
+  const { logout, username } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
 
   const menuIsOpen = isOpen !== undefined ? isOpen : internalIsOpen;
   const setMenuOpen = setIsOpen || setInternalIsOpen;
@@ -110,7 +113,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
   const shouldBehaveLikeMobile = isMobile || isTablet || (isOpen !== undefined);
 
   const filteredNavItems = navItems.filter((item) =>
-    userRole && item.permission.includes(userRole)
+    currentRole && roleUtils.hasPermissionLevel(currentRole, 'salesperson') && 
+    item.permission.some(role => roleUtils.hasPermissionLevel(currentRole, role))
   );
 
   return (
@@ -172,7 +176,9 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium truncate">{username || 'Utente'}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{userRole || 'Sconosciuto'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                    {currentRole ? roleUtils.getRoleName(currentRole) : 'Sconosciuto'}
+                  </p>
                 </div>
               </div>
               <Button 

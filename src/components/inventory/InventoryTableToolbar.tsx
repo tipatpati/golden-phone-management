@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { AddProductForm } from "./AddProductForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { roleUtils } from "@/utils/roleUtils";
 
 interface InventoryTableToolbarProps {
   onSearchChange: (searchTerm: string) => void;
@@ -24,10 +24,10 @@ export function InventoryTableToolbar({
 }: InventoryTableToolbarProps) {
   const queryClient = useQueryClient();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   
-  // Check if user can add products
-  const canModifyProducts = userRole && ['inventory_manager', 'manager', 'admin', 'super_admin'].includes(userRole);
+  // Check if user can add products using permission-based check
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
   
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {

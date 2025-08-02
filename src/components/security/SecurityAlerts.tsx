@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Bell, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCurrentUserRole } from '@/hooks/useRoleManagement';
+import { AdminOnly } from '@/components/common/RoleGuard';
 
 interface SecurityAlert {
   id: string;
@@ -17,12 +18,12 @@ interface SecurityAlert {
 }
 
 export function SecurityAlerts() {
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (userRole !== 'admin' && userRole !== 'super_admin') return;
+    if (!currentRole || !['admin', 'super_admin'].includes(currentRole)) return;
 
     const fetchRecentAlerts = async () => {
       const { data, error } = await supabase
@@ -76,7 +77,7 @@ export function SecurityAlerts() {
     return () => {
       channel.unsubscribe();
     };
-  }, [userRole]);
+  }, [currentRole]);
 
   const getSeverity = (eventType: string): string => {
     switch (eventType) {
@@ -98,11 +99,9 @@ export function SecurityAlerts() {
 
   const visibleAlerts = alerts.filter(alert => !dismissedAlerts.has(alert.id));
 
-  if ((userRole !== 'admin' && userRole !== 'super_admin') || visibleAlerts.length === 0) {
-    return null;
-  }
-
   return (
+    <AdminOnly fallback={null}>
+      {visibleAlerts.length === 0 ? null : (
     <Card className="mb-6 border-orange-200 bg-orange-50/50">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-orange-800">
@@ -147,5 +146,7 @@ export function SecurityAlerts() {
         )}
       </CardContent>
     </Card>
+      )}
+    </AdminOnly>
   );
 }

@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCurrentUserRole } from '@/hooks/useRoleManagement';
+import { AdminOnly } from '@/components/common/RoleGuard';
 import { Filter, Download, AlertTriangle } from 'lucide-react';
 
 interface AuditLogEntry {
@@ -19,7 +20,7 @@ interface AuditLogEntry {
 }
 
 export const SecurityAuditLog: React.FC = () => {
-  const { userRole } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   const [eventFilter, setEventFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   
@@ -51,23 +52,9 @@ export const SecurityAuditLog: React.FC = () => {
       
       return filteredData;
     },
-    enabled: userRole === 'admin' || userRole === 'super_admin',
+    enabled: currentRole && ['admin', 'super_admin'].includes(currentRole),
     refetchInterval: 30000 // Auto-refresh every 30 seconds
   });
-
-  // Only admins can view security logs
-  if (userRole !== 'admin' && userRole !== 'super_admin') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Access Denied</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Only administrators can view security audit logs.</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const getEventSeverity = (eventType: string): string => {
     switch (eventType) {
@@ -126,92 +113,103 @@ export const SecurityAuditLog: React.FC = () => {
   ).length || 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Security Audit Log</span>
-          <div className="flex items-center gap-2">
-            {criticalEvents > 0 && (
-              <Badge variant="destructive" className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {criticalEvents} Critical
-              </Badge>
-            )}
-            <Button onClick={exportAuditLog} size="sm" variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <Select value={eventFilter} onValueChange={setEventFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by event type" />
+    <AdminOnly fallback={
+      <Card>
+        <CardHeader>
+          <CardTitle>Access Denied</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Only administrators can view security audit logs.</p>
+        </CardContent>
+      </Card>
+    }>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Security Audit Log</span>
+            <div className="flex items-center gap-2">
+              {criticalEvents > 0 && (
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  {criticalEvents} Critical
+                </Badge>
+              )}
+              <Button onClick={exportAuditLog} size="sm" variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <Select value={eventFilter} onValueChange={setEventFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by event type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Events</SelectItem>
+                  <SelectItem value="role_change">Role Changes</SelectItem>
+                  <SelectItem value="failed_auth_attempt">Failed Auth</SelectItem>
+                  <SelectItem value="unauthorized_access_attempt">Unauthorized Access</SelectItem>
+                  <SelectItem value="suspicious_activity">Suspicious Activity</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Severity" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Events</SelectItem>
-                <SelectItem value="role_change">Role Changes</SelectItem>
-                <SelectItem value="failed_auth_attempt">Failed Auth</SelectItem>
-                <SelectItem value="unauthorized_access_attempt">Unauthorized Access</SelectItem>
-                <SelectItem value="suspicious_activity">Suspicious Activity</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
-          <Select value={severityFilter} onValueChange={setSeverityFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Severity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {isLoading ? (
-          <p>Loading audit logs...</p>
-        ) : !auditLogs?.length ? (
-          <p>No security events recorded.</p>
-        ) : (
-          <div className="space-y-4">
-            {auditLogs.map((log) => (
-              <div key={log.id} className="border rounded p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getEventBadgeVariant(log.event_type)}>
-                      {log.event_type.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {getEventSeverity(log.event_type).toUpperCase()}
-                    </Badge>
+          {isLoading ? (
+            <p>Loading audit logs...</p>
+          ) : !auditLogs?.length ? (
+            <p>No security events recorded.</p>
+          ) : (
+            <div className="space-y-4">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="border rounded p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={getEventBadgeVariant(log.event_type)}>
+                        {log.event_type.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {getEventSeverity(log.event_type).toUpperCase()}
+                      </Badge>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
-                  </span>
+                  {log.event_data && (
+                    <div className="text-sm">
+                      <pre className="bg-muted p-2 rounded text-xs overflow-auto">
+                        {JSON.stringify(log.event_data, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  {log.ip_address && (
+                    <div className="text-xs text-muted-foreground">
+                      IP: {log.ip_address}
+                    </div>
+                  )}
                 </div>
-                {log.event_data && (
-                  <div className="text-sm">
-                    <pre className="bg-muted p-2 rounded text-xs overflow-auto">
-                      {JSON.stringify(log.event_data, null, 2)}
-                    </pre>
-                  </div>
-                )}
-                {log.ip_address && (
-                  <div className="text-xs text-muted-foreground">
-                    IP: {log.ip_address}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </AdminOnly>
   );
 };
