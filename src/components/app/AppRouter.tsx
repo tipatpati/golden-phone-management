@@ -31,8 +31,9 @@ const PageLoader = () => (
 export function AppRouter() {
   const { isLoggedIn, userRole, user, isInitialized } = useAuth();
 
-  // Show loading while auth is being initialized
-  if (!isInitialized || (isLoggedIn && !userRole)) {
+  // Show loading only while auth is being initialized
+  // Don't block on missing userRole as it might be loading in background
+  if (!isInitialized) {
     return <PageLoader />;
   }
 
