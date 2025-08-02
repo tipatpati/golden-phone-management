@@ -12,6 +12,9 @@ interface SaleReceiptDialogProps {
 }
 
 export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
+  // Force re-render by adding a unique key
+  const componentKey = `receipt-${sale.id}-${Date.now()}`;
+  
   const getClientName = (client: any) => {
     if (!client) return "Cliente Occasionale";
     return client.type === "business" 
@@ -31,9 +34,10 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
   };
 
   const handlePrint = () => {
-    const receiptContent = document.getElementById('receipt-content');
+    const receiptId = `receipt-content-${sale.id}`;
+    const receiptContent = document.getElementById(receiptId);
     if (!receiptContent) {
-      console.error('Receipt content not found');
+      console.error('Receipt content not found with ID:', receiptId);
       return;
     }
 
@@ -254,7 +258,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
           </div>
 
           {/* Hidden receipt content for printing */}
-          <div id="receipt-content" style={{display: 'none'}}>
+          <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             <div className="company-header">
               <div className="company-name">PHONE PLANET</div>
               <div className="company-details">
