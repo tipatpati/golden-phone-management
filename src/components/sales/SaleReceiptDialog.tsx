@@ -14,9 +14,6 @@ interface SaleReceiptDialogProps {
 // ITALIAN RECEIPT FORMAT COMPONENT
 
 export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
-  // Force re-render by adding a unique key
-  const componentKey = `receipt-${sale.id}-${Date.now()}`;
-  
   const getClientName = (client: any) => {
     if (!client) return "Cliente Occasionale";
     return client.type === "business" 
