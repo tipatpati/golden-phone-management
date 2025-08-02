@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PermissionDebugger } from "@/components/common/PermissionDebugger";
 // import { SecurityProvider } from "@/components/security/SecurityProvider"; // Disabled
 
 interface AppProvidersProps {
@@ -50,6 +51,7 @@ export function AppProviders({ children, includeAuth = false }: AppProvidersProp
         {content}
         <Toaster />
         <Sonner />
+        <PermissionDebugger />
       </TooltipProvider>
     </QueryClientProvider>
   );

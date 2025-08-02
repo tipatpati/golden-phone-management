@@ -2,7 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { RoleGate } from "@/components/common/RoleGate";
 
 interface ModuleNavCardsProps {
   currentModule?: string;
@@ -10,7 +11,7 @@ interface ModuleNavCardsProps {
 
 export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
   const navigate = useNavigate();
-  const { userRole } = useAuth();
+  const rolePermissions = useRolePermissions();
 
   const allActions = [
     {
@@ -19,7 +20,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: PackageSearch,
       href: "/inventory",
       module: "inventory",
-      roles: ['salesperson', 'technician', 'inventory_manager', 'manager', 'admin', 'super_admin']
+      canAccess: () => rolePermissions.canAccessModule("inventory")
     },
     {
       title: "Create Sale",
@@ -27,7 +28,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",
-      roles: ['salesperson', 'manager', 'admin', 'super_admin']
+      canAccess: () => rolePermissions.canAccessModule("sales")
     },
     {
       title: "Find Client",
@@ -35,7 +36,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Users,
       href: "/clients",
       module: "clients",
-      roles: ['salesperson', 'technician', 'manager', 'admin', 'super_admin']
+      canAccess: () => rolePermissions.canAccessModule("clients")
     },
     {
       title: "New Repair",
@@ -43,7 +44,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Wrench,
       href: "/repairs",
       module: "repairs",
-      roles: ['technician', 'manager', 'admin', 'super_admin']
+      canAccess: () => rolePermissions.canAccessModule("repairs")
     },
     {
       title: "Suppliers",
@@ -51,15 +52,13 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Building2,
       href: "/suppliers",
       module: "suppliers",
-      roles: ['inventory_manager', 'manager', 'admin', 'super_admin']
+      canAccess: () => rolePermissions.canAccessModule("suppliers")
     }
   ];
 
-  // Filter actions based on role and exclude current module
+  // Filter actions based on permissions and exclude current module
   const filteredActions = allActions.filter(action => 
-    userRole && 
-    action.roles.includes(userRole) && 
-    action.module !== currentModule
+    action.canAccess() && action.module !== currentModule
   );
 
   if (filteredActions.length === 0) return null;
