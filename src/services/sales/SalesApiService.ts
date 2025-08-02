@@ -42,6 +42,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       quantity: item.quantity
     }));
     
+    console.log('Validating stock for items:', productItems);
     const { error: stockError } = await this.supabase.rpc('validate_product_stock', {
       product_items: productItems
     });
@@ -51,6 +52,8 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       throw new Error(stockError.message || 'Insufficient stock for one or more products');
     }
     
+    console.log('Stock validation passed');
+    
     // Calculate totals
     const subtotal = saleData.sale_items.reduce((sum, item) => 
       sum + (item.unit_price * item.quantity), 0
@@ -58,7 +61,10 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
     const tax_amount = subtotal * 0.1; // 10% tax
     const total_amount = subtotal + tax_amount;
     
+    console.log('Calculated totals:', { subtotal, tax_amount, total_amount });
+    
     // Create the sale - let database generate sale_number via trigger
+    console.log('Inserting sale record...');
     const { data: sale, error: saleError } = await this.supabase
       .from(this.tableName as any)
       .insert({
@@ -76,8 +82,11 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       .single();
     
     if (saleError) {
+      console.error('Sale creation error:', saleError);
       this.handleError('creating', saleError);
     }
+    
+    console.log('Sale created successfully:', sale);
     
     if (!sale) {
       throw new Error('Failed to create sale');
