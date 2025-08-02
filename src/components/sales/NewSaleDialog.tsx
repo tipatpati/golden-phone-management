@@ -128,6 +128,19 @@ export function NewSaleDialog() {
     }
 
     try {
+      console.log('About to create sale with data:', {
+        client_id: selectedClient?.id,
+        salesperson_id: user.id,
+        payment_method: paymentMethod,
+        notes,
+        sale_items: saleItems.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          serial_number: item.serial_number
+        }))
+      });
+      
       const createdSaleData = await createSale.mutateAsync({
         client_id: selectedClient?.id,
         salesperson_id: user.id,
@@ -140,6 +153,8 @@ export function NewSaleDialog() {
           serial_number: item.serial_number
         }))
       });
+      
+      console.log('Sale creation completed:', createdSaleData);
       
       // Store the created sale and show receipt
       setCreatedSale(createdSaleData);
