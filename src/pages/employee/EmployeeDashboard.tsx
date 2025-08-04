@@ -113,22 +113,6 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
-              <div className={`rounded-full bg-gradient-to-br ${stat.gradient} p-2.5 shadow-md`}>
-                <stat.icon className="h-4 w-4 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
