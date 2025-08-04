@@ -120,11 +120,11 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
         position: fixed;
         top: 0;
         left: 0;
-        width: 80mm;
-        max-width: 80mm;
+        width: 58mm;
+        max-width: 58mm;
         font-family: 'Courier New', monospace;
-        font-size: 6px;
-        line-height: 1.0;
+        font-size: 5px;
+        line-height: 0.9;
         color: #000;
         background: white;
         padding: 1mm;
@@ -142,10 +142,10 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             position: absolute;
             left: 0;
             top: 0;
-            width: 80mm !important;
-            max-width: 80mm !important;
+            width: 58mm !important;
+            max-width: 58mm !important;
           }
-          @page { size: 80mm auto; margin: 0; }
+          @page { size: 58mm auto; margin: 0; }
         }
       `;
       
@@ -188,7 +188,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm auto;
+              size: 58mm auto;
               margin: 0;
               padding: 0;
             }
@@ -197,19 +197,19 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 6px;
-              line-height: 1.0;
+              font-size: 5px;
+              line-height: 0.9;
               margin: 0;
               padding: 0;
-              width: 80mm;
-              max-width: 80mm;
+              width: 58mm;
+              max-width: 58mm;
               color: #000;
               background: white;
               overflow-x: hidden;
             }
             .receipt-container {
-              width: 80mm;
-              max-width: 80mm;
+              width: 58mm;
+              max-width: 58mm;
               padding: 1mm;
               margin: 0;
               overflow: hidden;
@@ -221,14 +221,14 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               border-bottom: 1px solid #000;
             }
             .company-name {
-              font-size: 8px;
+              font-size: 7px;
               font-weight: bold;
               margin-bottom: 1px;
-              letter-spacing: 0.5px;
+              letter-spacing: 0.3px;
             }
             .company-details {
-              font-size: 5px;
-              line-height: 1.1;
+              font-size: 4px;
+              line-height: 1.0;
               margin-bottom: 0;
             }
             .receipt-info {
@@ -240,13 +240,13 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               display: flex;
               justify-content: space-between;
               margin-bottom: 1px;
-              font-size: 6px;
+              font-size: 5px;
               font-weight: normal;
             }
             .items-header {
               margin: 3px 0 2px 0;
               font-weight: bold;
-              font-size: 6px;
+              font-size: 5px;
               text-align: center;
               border-bottom: 1px solid #000;
               padding-bottom: 1px;
@@ -259,23 +259,23 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               display: flex;
               justify-content: space-between;
               margin-bottom: 1px;
-              font-size: 5px;
+              font-size: 4px;
               align-items: flex-start;
             }
             .item-desc {
               flex: 1;
               margin-right: 2px;
               word-wrap: break-word;
-              max-width: 45mm;
+              max-width: 35mm;
               overflow: hidden;
             }
             .item-qty {
-              width: 8mm;
+              width: 6mm;
               text-align: center;
               font-weight: bold;
             }
             .item-price {
-              width: 15mm;
+              width: 12mm;
               text-align: right;
               font-weight: bold;
             }
@@ -288,11 +288,11 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               display: flex;
               justify-content: space-between;
               margin-bottom: 1px;
-              font-size: 6px;
+              font-size: 5px;
             }
             .final-total {
               font-weight: bold;
-              font-size: 7px;
+              font-size: 6px;
               border-top: 2px solid #000;
               padding-top: 1px;
               margin-top: 1px;
@@ -308,29 +308,29 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
               margin: 4px 0 3px 0;
             }
             .qr-code {
-              width: 30px;
-              height: 30px;
+              width: 25px;
+              height: 25px;
               margin: 1px auto;
             }
             .footer {
               text-align: center;
               margin-top: 3px;
-              font-size: 5px;
-              line-height: 1.2;
+              font-size: 4px;
+              line-height: 1.1;
             }
             .thank-you {
               font-weight: bold;
               margin-bottom: 1px;
-              font-size: 6px;
+              font-size: 5px;
             }
             @media print {
               body { 
-                width: 80mm;
-                max-width: 80mm;
+                width: 58mm;
+                max-width: 58mm;
               }
               .receipt-container {
-                width: 80mm;
-                max-width: 80mm;
+                width: 58mm;
+                max-width: 58mm;
               }
             }
           </style>
