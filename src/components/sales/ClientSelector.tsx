@@ -26,11 +26,11 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Cliente (Opzionale)</Label>
+    <div className="space-y-3">
+      <Label className="text-base font-medium">Cliente (Opzionale)</Label>
       {selectedClient ? (
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">
+        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+          <Badge variant="outline" className="text-sm px-3 py-1.5">
             {getClientDisplayName(selectedClient)}
           </Badge>
           <Button
@@ -38,37 +38,38 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
             variant="ghost"
             size="sm"
             onClick={onClientClear}
+            className="min-h-[36px] min-w-[36px] p-0 hover:bg-destructive/10 hover:text-destructive"
           >
-            <X className="h-3 w-3" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cerca clienti..."
               value={clientSearch}
               onChange={(e) => setClientSearch(e.target.value)}
-              className="pl-8"
+              className="pl-10 h-12 text-base"
               type="search"
             />
           </div>
           {clientSearch && clients.length > 0 && (
-            <div className="border rounded-md max-h-32 overflow-y-auto">
+            <div className="border rounded-lg max-h-48 overflow-y-auto bg-background shadow-lg">
               {clients.slice(0, 5).map((client) => (
                 <div
                   key={client.id}
-                  className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+                  className="p-4 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors active:bg-muted"
                   onClick={() => {
                     onClientSelect(client);
                     setClientSearch("");
                   }}
                 >
-                  <div className="font-medium">
+                  <div className="font-medium text-base">
                     {getClientDisplayName(client)}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground mt-1">
                     {client.email} • {client.phone}
                   </div>
                 </div>
@@ -76,7 +77,7 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
             </div>
           )}
           {clientSearch && clients.length === 0 && (
-            <div className="border rounded-md p-3 text-center space-y-2">
+            <div className="border rounded-lg p-4 text-center space-y-3 bg-background">
               <p className="text-sm text-muted-foreground">Nessun cliente trovato per "{clientSearch}"</p>
               <NewClientDialogInSales 
                 onClientCreated={(newClient) => {
@@ -87,7 +88,7 @@ export function ClientSelector({ selectedClient, onClientSelect, onClientClear }
             </div>
           )}
           {!clientSearch && (
-            <div className="flex justify-center mt-2">
+            <div className="flex justify-center mt-3">
               <NewClientDialogInSales 
                 onClientCreated={(newClient) => {
                   onClientSelect(newClient);

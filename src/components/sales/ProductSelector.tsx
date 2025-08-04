@@ -72,36 +72,36 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Aggiungi Prodotti</Label>
+    <div className="space-y-3">
+      <Label className="text-base font-medium">Aggiungi Prodotti</Label>
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground z-10" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
         <AutocompleteInput
           value={productSearch}
           onChange={setProductSearch}
           suggestions={existingProductNames}
           placeholder="Cerca per nome, seriale/IMEI, barcode o scansiona..."
-          className="pl-8 pr-12"
+          className="pl-10 pr-12 h-12 text-base"
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
           <BarcodeScannerTrigger
             onScan={handleBarcodeScanned}
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-8 w-8 hover:bg-muted/50"
           />
         </div>
       </div>
       {productSearch && products.length > 0 && (
-        <div className="border rounded-md max-h-40 overflow-y-auto bg-background/95 backdrop-blur z-50">
+        <div className="border rounded-lg max-h-64 overflow-y-auto bg-background shadow-lg">
           {products.slice(0, 8).map((product) => (
             <div
               key={product.id}
-              className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors"
+              className="p-4 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors active:bg-muted"
               onClick={() => handleProductSelect(product)}
             >
-              <div className="font-medium text-sm">{product.brand} {product.model}</div>
-              <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
+              <div className="font-medium text-base">{product.brand} {product.model}</div>
+              <div className="text-sm text-muted-foreground flex flex-wrap gap-2 mt-2">
                 <span>
                   {product.serial_numbers?.[0] ? 
                     `Serial: ${product.serial_numbers[0]}` : 
@@ -117,7 +117,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
                 )}
               </div>
               {product.serial_numbers && product.serial_numbers.length > 0 && (
-                <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                <div className="text-sm text-muted-foreground mt-2 space-y-1">
                   {product.serial_numbers.slice(0, 2).map((serial, index) => {
                     const parts = serial.split(' ');
                     const serialNumber = parts.slice(0, -1).join(' ') || parts[0];
@@ -133,11 +133,11 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
                     );
                   })}
                   {product.serial_numbers.length > 2 && (
-                    <div className="text-xs">+{product.serial_numbers.length - 2} more</div>
+                    <div className="text-sm">+{product.serial_numbers.length - 2} more</div>
                   )}
                 </div>
               )}
-              <div className="text-xs text-green-600 font-medium mt-1">
+              <div className="text-sm text-green-600 font-medium mt-2">
                 Range: ${product.min_price} - ${product.max_price}
               </div>
             </div>
@@ -145,7 +145,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
         </div>
       )}
       {productSearch && products.length === 0 && (
-        <div className="border rounded-md p-2 text-center text-muted-foreground">
+        <div className="border rounded-lg p-4 text-center text-muted-foreground bg-background">
           Nessun prodotto trovato per "{productSearch}"
         </div>
       )}

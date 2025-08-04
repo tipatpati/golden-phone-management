@@ -202,25 +202,25 @@ export function NewSaleDialog() {
           Nuova Vendita
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-w-6xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-h-[90vh] overflow-y-auto p-3 sm:p-4 md:p-6">
         <DialogHeader>
           <DialogTitle>Crea Nuova Vendita</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           {/* Quick Barcode Scanner */}
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border">
-            <div>
-              <h3 className="font-medium text-blue-900">Scansione Rapida</h3>
-              <p className="text-sm text-blue-700">Scansiona i codici a barre dei prodotti per aggiungerli istantaneamente</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-blue-50 rounded-lg border">
+            <div className="flex-1">
+              <h3 className="font-medium text-blue-900 text-base sm:text-lg">Scansione Rapida</h3>
+              <p className="text-sm sm:text-base text-blue-700 mt-1">Scansiona i codici a barre dei prodotti per aggiungerli istantaneamente</p>
             </div>
             <BarcodeScannerTrigger
               onScan={handleDirectBarcodeScanned}
               variant="default"
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] px-4 sm:px-6 text-sm sm:text-base font-medium shrink-0 w-full sm:w-auto"
             >
-              <Scan className="h-4 w-4 mr-2" />
+              <Scan className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Scansiona Codice
             </BarcodeScannerTrigger>
           </div>
@@ -254,49 +254,52 @@ export function NewSaleDialog() {
 
           {/* Payment Method and Notes - Side by side on larger screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-2">
-              <Label>Metodo di Pagamento *</Label>
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Metodo di Pagamento *</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleziona metodo di pagamento" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Contanti</SelectItem>
-                  <SelectItem value="card">Carta</SelectItem>
-                  <SelectItem value="bank_transfer">Bonifico Bancario</SelectItem>
-                  <SelectItem value="other">Altro</SelectItem>
+                  <SelectItem value="cash" className="h-12 text-base">Contanti</SelectItem>
+                  <SelectItem value="card" className="h-12 text-base">Carta</SelectItem>
+                  <SelectItem value="bank_transfer" className="h-12 text-base">Bonifico Bancario</SelectItem>
+                  <SelectItem value="other" className="h-12 text-base">Altro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Note</Label>
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Note</Label>
               <Textarea
                 placeholder="Note aggiuntive..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[2.5rem]"
+                className="min-h-[48px] text-base resize-none"
+                rows={3}
               />
             </div>
           </div>
 
           <SaleTotals saleItems={saleItems} />
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4 pt-4 border-t">
+            <Button 
+              type="submit" 
+              disabled={!isFormValid || createSale.isPending}
+              className="w-full min-h-[48px] text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
+              size="lg"
+            >
+              {createSale.isPending ? "Creazione..." : "Crea Vendita"}
+            </Button>
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setOpen(false)}
-              className="w-full sm:w-auto"
+              className="w-full min-h-[44px] text-base"
+              size="lg"
             >
               Annulla
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={!isFormValid || createSale.isPending}
-              className="w-full sm:w-auto sm:flex-1"
-            >
-              {createSale.isPending ? "Creazione..." : "Crea Vendita"}
             </Button>
           </div>
         </form>
