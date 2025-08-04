@@ -87,7 +87,7 @@ Best regards,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -99,37 +99,35 @@ Best regards,
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
+          <div className="space-y-3">
+            <Label htmlFor="subject" className="text-base font-medium">Subject</Label>
             <Input
               id="subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Enter email subject"
+              className="h-12 text-base"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
+          <div className="space-y-3">
+            <Label htmlFor="message" className="text-base font-medium">Message</Label>
             <Textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Enter your message"
-              rows={8}
-              className="resize-none"
+              rows={6}
+              className="resize-none text-base"
             />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+        <DialogFooter className="flex flex-col sm:flex-row gap-3">
           <Button 
             onClick={handleSendMessage} 
             disabled={isLoading || !subject.trim() || !message.trim()}
-            className="flex items-center gap-2"
+            className="w-full min-h-[44px] text-base flex items-center gap-2"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -137,6 +135,13 @@ Best regards,
               <Send className="h-4 w-4" />
             )}
             {isLoading ? "Sending..." : "Send Message"}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="w-full min-h-[44px] text-base"
+          >
+            Cancel
           </Button>
         </DialogFooter>
       </DialogContent>

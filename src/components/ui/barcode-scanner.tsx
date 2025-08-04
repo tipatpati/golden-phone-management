@@ -65,7 +65,7 @@ export function BarcodeScanner({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5" />
@@ -117,17 +117,24 @@ export function BarcodeScanner({
             </div>
           )}
           
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClose}>
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
             {hasCamera && !isScanning && (
-              <Button onClick={startCameraScanner}>
+              <Button 
+                onClick={startCameraScanner}
+                className="w-full min-h-[44px] text-base"
+              >
                 <Scan className="h-4 w-4 mr-2" />
                 Start Scanning
               </Button>
             )}
+            <Button 
+              variant="outline" 
+              onClick={handleClose}
+              className="w-full min-h-[44px] text-base"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
           </div>
         </div>
       </DialogContent>

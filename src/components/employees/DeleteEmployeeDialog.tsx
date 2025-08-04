@@ -57,7 +57,7 @@ export function DeleteEmployeeDialog({ employee, open, onClose, onSuccess }: Del
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -69,14 +69,20 @@ export function DeleteEmployeeDialog({ employee, open, onClose, onSuccess }: Del
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onClose}
+            className="w-full sm:w-auto min-h-[44px] text-base"
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleDelete} 
             disabled={isLoading}
             variant="destructive"
+            className="w-full sm:w-auto min-h-[44px] text-base"
           >
             {isLoading ? "Deleting..." : "Delete Employee"}
           </Button>

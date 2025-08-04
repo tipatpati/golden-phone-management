@@ -374,7 +374,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Ricevuta di Vendita</DialogTitle>
         </DialogHeader>

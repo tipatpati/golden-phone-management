@@ -70,7 +70,7 @@ export function ProductExportDialog() {
           <span className="sm:hidden">Export</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
@@ -111,11 +111,12 @@ export function ProductExportDialog() {
             </ul>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleExport} disabled={exporting}>
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+            <Button 
+              onClick={handleExport} 
+              disabled={exporting}
+              className="w-full min-h-[44px] text-base"
+            >
               {exporting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -127,6 +128,13 @@ export function ProductExportDialog() {
                   Export Excel
                 </>
               )}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="w-full min-h-[44px] text-base"
+            >
+              Cancel
             </Button>
           </div>
         </div>

@@ -145,7 +145,7 @@ export function ChangePasswordDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
@@ -161,8 +161,8 @@ export function ChangePasswordDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {requireCurrentPassword && (
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
+            <div className="space-y-3">
+              <Label htmlFor="current-password" className="text-base font-medium">Current Password</Label>
               <div className="relative">
                 <Input
                   id="current-password"
@@ -170,13 +170,13 @@ export function ChangePasswordDialog({
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
-                  className={errors.current ? 'border-destructive' : ''}
+                  className={`h-12 text-base ${errors.current ? 'border-destructive' : ''}`}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 hover:bg-transparent"
                   onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
                 >
                   {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -188,8 +188,8 @@ export function ChangePasswordDialog({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="new-password">New Password</Label>
+          <div className="space-y-3">
+            <Label htmlFor="new-password" className="text-base font-medium">New Password</Label>
             <div className="relative">
               <Input
                 id="new-password"
@@ -197,13 +197,13 @@ export function ChangePasswordDialog({
                 value={newPassword}
                 onChange={(e) => handleNewPasswordChange(e.target.value)}
                 placeholder="Enter new password"
-                className={errors.new ? 'border-destructive' : ''}
+                className={`h-12 text-base ${errors.new ? 'border-destructive' : ''}`}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 hover:bg-transparent"
                 onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
               >
                 {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -215,8 +215,8 @@ export function ChangePasswordDialog({
             <PasswordStrengthIndicator password={newPassword} />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm New Password</Label>
+          <div className="space-y-3">
+            <Label htmlFor="confirm-password" className="text-base font-medium">Confirm New Password</Label>
             <div className="relative">
               <Input
                 id="confirm-password"
@@ -224,13 +224,13 @@ export function ChangePasswordDialog({
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 placeholder="Confirm new password"
-                className={errors.confirm ? 'border-destructive' : ''}
+                className={`h-12 text-base ${errors.confirm ? 'border-destructive' : ''}`}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 hover:bg-transparent"
                 onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
               >
                 {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -241,21 +241,21 @@ export function ChangePasswordDialog({
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <Button
+              type="submit"
+              disabled={loading || !isFormValid}
+              className="w-full min-h-[44px] text-base"
+            >
+              {loading ? 'Changing...' : 'Change Password'}
+            </Button>
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="flex-1"
+              className="w-full min-h-[44px] text-base"
             >
               Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading || !isFormValid}
-              className="flex-1"
-            >
-              {loading ? 'Changing...' : 'Change Password'}
             </Button>
           </div>
         </form>

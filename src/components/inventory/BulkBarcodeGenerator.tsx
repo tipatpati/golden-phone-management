@@ -98,7 +98,7 @@ export function BulkBarcodeGenerator() {
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Barcode className="h-5 w-5" />
@@ -151,17 +151,11 @@ export function BulkBarcodeGenerator() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsOpen(false)}
-                  disabled={isGenerating}
-                >
-                  Cancel
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
                   onClick={generateBarcodesForAll}
                   disabled={isGenerating || productsWithoutBarcodes.length === 0}
+                  className="w-full min-h-[44px] text-base"
                 >
                   {isGenerating ? (
                     <>
@@ -174,6 +168,14 @@ export function BulkBarcodeGenerator() {
                       Generate All
                     </>
                   )}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsOpen(false)}
+                  disabled={isGenerating}
+                  className="w-full min-h-[44px] text-base"
+                >
+                  Cancel
                 </Button>
               </div>
             </>
