@@ -121,6 +121,104 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_profiles: {
+        Row: {
+          achievements: Json | null
+          avg_repair_time_hours: number | null
+          badges: Json | null
+          bonus_threshold: number | null
+          commission_rate: number | null
+          cost_savings_monthly: number | null
+          created_at: string
+          current_bonus_earned: number | null
+          current_monthly_sales: number | null
+          current_quarterly_sales: number | null
+          current_yearly_sales: number | null
+          customer_satisfaction_rating: number | null
+          employee_id: string
+          goal_end_date: string | null
+          goal_start_date: string | null
+          id: string
+          inventory_accuracy_rate: number | null
+          milestones: Json | null
+          monthly_sales_target: number | null
+          performance_score: number | null
+          quarterly_sales_target: number | null
+          repair_success_rate: number | null
+          repairs_completed_monthly: number | null
+          stock_turnover_rate: number | null
+          updated_at: string
+          user_id: string
+          yearly_sales_target: number | null
+        }
+        Insert: {
+          achievements?: Json | null
+          avg_repair_time_hours?: number | null
+          badges?: Json | null
+          bonus_threshold?: number | null
+          commission_rate?: number | null
+          cost_savings_monthly?: number | null
+          created_at?: string
+          current_bonus_earned?: number | null
+          current_monthly_sales?: number | null
+          current_quarterly_sales?: number | null
+          current_yearly_sales?: number | null
+          customer_satisfaction_rating?: number | null
+          employee_id: string
+          goal_end_date?: string | null
+          goal_start_date?: string | null
+          id?: string
+          inventory_accuracy_rate?: number | null
+          milestones?: Json | null
+          monthly_sales_target?: number | null
+          performance_score?: number | null
+          quarterly_sales_target?: number | null
+          repair_success_rate?: number | null
+          repairs_completed_monthly?: number | null
+          stock_turnover_rate?: number | null
+          updated_at?: string
+          user_id: string
+          yearly_sales_target?: number | null
+        }
+        Update: {
+          achievements?: Json | null
+          avg_repair_time_hours?: number | null
+          badges?: Json | null
+          bonus_threshold?: number | null
+          commission_rate?: number | null
+          cost_savings_monthly?: number | null
+          created_at?: string
+          current_bonus_earned?: number | null
+          current_monthly_sales?: number | null
+          current_quarterly_sales?: number | null
+          current_yearly_sales?: number | null
+          customer_satisfaction_rating?: number | null
+          employee_id?: string
+          goal_end_date?: string | null
+          goal_start_date?: string | null
+          id?: string
+          inventory_accuracy_rate?: number | null
+          milestones?: Json | null
+          monthly_sales_target?: number | null
+          performance_score?: number | null
+          quarterly_sales_target?: number | null
+          repair_success_rate?: number | null
+          repairs_completed_monthly?: number | null
+          stock_turnover_rate?: number | null
+          updated_at?: string
+          user_id?: string
+          yearly_sales_target?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_profiles_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           created_at: string
@@ -224,6 +322,62 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_logs: {
+        Row: {
+          achievement_data: Json | null
+          achievement_type: string | null
+          created_at: string
+          employee_profile_id: string
+          id: string
+          metric_target: number | null
+          metric_type: string
+          metric_value: number
+          notes: string | null
+          period_end: string
+          period_start: string
+          period_type: string
+          user_id: string
+        }
+        Insert: {
+          achievement_data?: Json | null
+          achievement_type?: string | null
+          created_at?: string
+          employee_profile_id: string
+          id?: string
+          metric_target?: number | null
+          metric_type: string
+          metric_value: number
+          notes?: string | null
+          period_end: string
+          period_start: string
+          period_type?: string
+          user_id: string
+        }
+        Update: {
+          achievement_data?: Json | null
+          achievement_type?: string | null
+          created_at?: string
+          employee_profile_id?: string
+          id?: string
+          metric_target?: number | null
+          metric_type?: string
+          metric_value?: number
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_logs_employee_profile_id_fkey"
+            columns: ["employee_profile_id"]
+            isOneToOne: false
+            referencedRelation: "employee_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -832,6 +986,10 @@ export type Database = {
           new_role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      calculate_employee_bonuses: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       check_failed_auth_attempts: {
         Args: { user_email: string }
