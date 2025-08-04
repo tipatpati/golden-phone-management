@@ -62,7 +62,6 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
         return [
           { title: "New Sale", description: "Create a new sale transaction", href: "/sales" },
           { title: "Find Client", description: "Search and manage clients", href: "/clients" },
-          { title: "View Inventory", description: "Check product availability", href: "/inventory" },
         ];
       case 'inventory_manager':
         return [
