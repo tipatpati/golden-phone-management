@@ -1,11 +1,13 @@
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, Search } from "lucide-react";
 import { useProducts } from "@/services/useProducts";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
 type SaleItem = {
   product_id: string;
@@ -24,6 +26,99 @@ type SaleItemsListProps = {
   onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
   onRemoveItem: (productId: string) => void;
 };
+
+// Serial Search Component
+function SerialNumberInput({ 
+  productId, 
+  value, 
+  onSerialNumberUpdate, 
+  allProducts 
+}: { 
+  productId: string; 
+  value: string; 
+  onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
+  allProducts: any[];
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Find matching serials by last 4 digits
+  const matchingSerials = useMemo(() => {
+    if (searchTerm.length < 2) return [];
+    
+    const results: Array<{ productId: string; productName: string; serial: string }> = [];
+    
+    allProducts.forEach(product => {
+      if (product.serial_numbers && Array.isArray(product.serial_numbers)) {
+        product.serial_numbers.forEach((serial: string) => {
+          // Match by last 4 digits or full serial
+          const last4 = serial.slice(-4);
+          if (serial.toLowerCase().includes(searchTerm.toLowerCase()) || 
+              last4.includes(searchTerm)) {
+            results.push({
+              productId: product.id,
+              productName: `${product.brand} ${product.model}`,
+              serial: serial
+            });
+          }
+        });
+      }
+    });
+    
+    return results.slice(0, 10); // Limit to 10 results
+  }, [searchTerm, allProducts]);
+
+  const handleSelect = (serial: string) => {
+    onSerialNumberUpdate(productId, serial);
+    setSearchTerm("");
+    setIsOpen(false);
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <div className="relative">
+        <Input
+          placeholder="Cerca IMEI/Serial (ultime 4 cifre)..."
+          value={value || searchTerm}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            if (!value) {
+              setSearchTerm(newValue);
+              setIsOpen(newValue.length >= 2);
+            } else {
+              onSerialNumberUpdate(productId, newValue);
+            }
+          }}
+          onFocus={() => {
+            if (!value && searchTerm.length >= 2) {
+              setIsOpen(true);
+            }
+          }}
+          className="h-10 md:h-12 font-mono text-sm md:text-base bg-background pr-10"
+        />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        
+        {isOpen && matchingSerials.length > 0 && (
+          <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-lg">
+            <div className="p-2 max-h-48 overflow-y-auto">
+              {matchingSerials.map((item, index) => (
+                <div
+                  key={`${item.productId}-${item.serial}-${index}`}
+                  className="flex flex-col p-2 hover:bg-accent rounded cursor-pointer"
+                  onClick={() => handleSelect(item.serial)}
+                >
+                  <div className="font-mono text-sm font-medium">{item.serial}</div>
+                  <div className="text-xs text-muted-foreground">{item.productName}</div>
+                  <div className="text-xs text-blue-600">Ultime 4: {item.serial.slice(-4)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </Popover>
+  );
+}
 
 export function SaleItemsList({ 
   saleItems, 
@@ -170,15 +265,15 @@ export function SaleItemsList({
               <div className="space-y-3 md:space-y-4 md:col-span-2 lg:col-span-1">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                    Numero di Serie
+                    IMEI/Serial
                   </Label>
                   <span className="text-xs md:text-sm text-muted-foreground">Opzionale</span>
                 </div>
-                <Input
-                  placeholder="Inserisci numero di serie..."
+                <SerialNumberInput
+                  productId={item.product_id}
                   value={item.serial_number || ""}
-                  onChange={(e) => onSerialNumberUpdate(item.product_id, e.target.value)}
-                  className="h-10 md:h-12 font-mono text-sm md:text-base bg-background"
+                  onSerialNumberUpdate={onSerialNumberUpdate}
+                  allProducts={allProducts}
                 />
               </div>
             </div>
