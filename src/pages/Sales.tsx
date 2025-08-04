@@ -11,11 +11,17 @@ import { useErrorHandler } from "@/services/core/ErrorHandlingService";
 import { useDebouncedSearch, useOptimizedFilter } from "@/utils/performanceOptimizations";
 import { OptimizedLoadingBoundary, StatsSkeleton, TableSkeleton } from "@/components/common/OptimizedLoadingBoundary";
 import { useAppPrefetch } from "@/hooks/useAppPrefetch";
+import { useAuth } from "@/contexts/AuthContext";
+import { roleUtils } from "@/utils/roleUtils";
 
 const Sales = () => {
   const { searchTerm, debouncedSearchTerm, setSearchTerm } = useDebouncedSearch();
   const { data: sales = [], isLoading, error } = useSales(debouncedSearchTerm);
   const { handleError } = useErrorHandler('Sales');
+  const { userRole } = useAuth();
+  
+  // Check if user has admin-level permissions to see analytics
+  const canViewAnalytics = userRole && roleUtils.hasPermissionLevel(userRole, 'admin');
   
   // Ensure sales is always an array
   const salesArray = Array.isArray(sales) ? sales : [];
@@ -31,11 +37,14 @@ const Sales = () => {
         <SalesHeader />
         <SalesNavCards />
         
-        <OptimizedLoadingBoundary fallback={<StatsSkeleton />}>
-          <Suspense fallback={<StatsSkeleton />}>
-            <SalesStats sales={salesArray} />
-          </Suspense>
-        </OptimizedLoadingBoundary>
+        {/* Only show analytics for admin users */}
+        {canViewAnalytics && (
+          <OptimizedLoadingBoundary fallback={<StatsSkeleton />}>
+            <Suspense fallback={<StatsSkeleton />}>
+              <SalesStats sales={salesArray} />
+            </Suspense>
+          </OptimizedLoadingBoundary>
+        )}
         
         <SalesSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         
