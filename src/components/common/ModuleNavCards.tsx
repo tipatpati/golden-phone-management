@@ -21,7 +21,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: PackageSearch,
       href: "/inventory",
       module: "inventory",
-      requiredPermissions: ['inventory_view']
+      requiredPermissions: ['inventory', 'dashboard'] // Updated to match role permissions
     },
     {
       title: "Create Sale",
@@ -29,7 +29,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",
-      requiredPermissions: ['sales_management']
+      requiredPermissions: ['sales'] // Updated to match role permissions
     },
     {
       title: "Find Client",
@@ -37,7 +37,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Users,
       href: "/clients",
       module: "clients",
-      requiredPermissions: ['client_management']
+      requiredPermissions: ['clients'] // Updated to match role permissions
     },
     {
       title: "New Repair",
@@ -45,7 +45,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Wrench,
       href: "/repairs",
       module: "repairs",
-      requiredPermissions: ['repair_management']
+      requiredPermissions: ['repairs'] // Updated to match role permissions
     },
     {
       title: "Suppliers",
@@ -53,7 +53,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: Building2,
       href: "/suppliers",
       module: "suppliers",
-      requiredPermissions: ['supplier_management']
+      requiredPermissions: ['suppliers'] // Updated to match role permissions
     }
   ];
 
