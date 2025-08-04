@@ -119,11 +119,17 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
         {actions.map((action, index) => (
           <Card 
             key={index} 
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg bg-white hover:scale-105"
+            className={`group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg hover:scale-105 ${
+              action.title === "New Sale" 
+                ? "bg-gradient-to-br from-green-50 to-green-100" 
+                : "bg-white"
+            }`}
             onClick={() => navigate(action.href)}
           >
             <CardHeader>
-              <CardTitle className="text-lg text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+              <CardTitle className={`text-lg group-hover:text-blue-600 transition-colors duration-300 ${
+                action.title === "New Sale" ? "text-green-700" : "text-gray-900"
+              }`}>
                 {action.title}
               </CardTitle>
               <CardDescription className="group-hover:text-gray-700 transition-colors duration-300">
@@ -131,7 +137,9 @@ export function EmployeeDashboard({ userRole }: EmployeeDashboardProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300">
+              <div className={`inline-flex items-center hover:text-blue-700 text-sm font-medium group-hover:translate-x-1 transition-transform duration-300 ${
+                action.title === "New Sale" ? "text-green-600" : "text-blue-600"
+              }`}>
                 Go to {action.title}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </div>
