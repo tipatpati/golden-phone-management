@@ -21,7 +21,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       icon: PackageSearch,
       href: "/inventory",
       module: "inventory",
-      requiredPermissions: ['inventory', 'dashboard'] // Updated to match role permissions
+      requiredPermissions: ['inventory'] // Salespeople shouldn't access inventory
     },
     {
       title: "Create Sale",
