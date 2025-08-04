@@ -192,7 +192,7 @@ export function AppRouter() {
               /* Employee interface for non-admin roles */
               <>
                 <Route path="/sales" element={
-                  roleUtils.canAccessFeature(effectiveRole, 'sales_management') ? (
+                  (roleUtils.canAccessFeature(effectiveRole, 'sales_management') || effectiveRole === 'salesperson') ? (
                     <ProtectedRoute>
                       <TabletLayout userRole={effectiveRole}>
                         <Suspense fallback={<PageLoader />}>
