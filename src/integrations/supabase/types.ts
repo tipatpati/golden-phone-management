@@ -1023,6 +1023,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_employee_profile: {
+        Args: { target_user_id?: string }
+        Returns: {
+          id: string
+          employee_id: string
+          user_id: string
+          monthly_sales_target: number
+          quarterly_sales_target: number
+          yearly_sales_target: number
+          current_monthly_sales: number
+          current_quarterly_sales: number
+          current_yearly_sales: number
+          commission_rate: number
+          current_bonus_earned: number
+          performance_score: number
+          customer_satisfaction_rating: number
+          achievements: Json
+          badges: Json
+        }[]
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]

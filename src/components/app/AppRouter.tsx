@@ -20,6 +20,7 @@ const Suppliers = React.lazy(() => import("@/pages/Suppliers"));
 const Repairs = React.lazy(() => import("@/pages/Repairs"));
 const EmployeeManagement = React.lazy(() => import("@/pages/EmployeeManagement"));
 const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDashboard"));
+const Profile = React.lazy(() => import("@/pages/Profile"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
 
@@ -169,6 +170,15 @@ export function AppRouter() {
                     </TabletLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Profile />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/documentation" element={
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
@@ -256,6 +266,15 @@ export function AppRouter() {
                     <Navigate to="/" replace />
                   )
                 } />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Profile />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                } />
               </>
             )}
           </>
@@ -264,6 +283,7 @@ export function AppRouter() {
         {/* Redirect unauthenticated users trying to access protected routes */}
         {!isLoggedIn && (
           <>
+            <Route path="/profile" element={<Navigate to="/" replace />} />
             <Route path="/employees" element={<Navigate to="/" replace />} />
             <Route path="/sales" element={<Navigate to="/" replace />} />
             <Route path="/clients" element={<Navigate to="/" replace />} />

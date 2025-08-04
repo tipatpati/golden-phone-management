@@ -14,7 +14,8 @@ import {
   X,
   LogOut,
   UserCog,
-  Euro
+  Euro,
+  User
 } from "lucide-react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,6 +85,12 @@ const navItems: NavItem[] = [
     href: "/employees",
     icon: UserCog,
     permission: ["admin", "super_admin"],
+  },
+  {
+    title: "Profilo",
+    href: "/profile",
+    icon: User,
+    permission: ["salesperson", "technician", "inventory_manager", "manager", "admin", "super_admin"],
   },
   {
     title: "Impostazioni",
