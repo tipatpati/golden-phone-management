@@ -13,7 +13,7 @@ export function SalesHeader() {
             Gestisci le transazioni di vendita, elabora i rimborsi e monitora le prestazioni con analisi complete.
           </p>
         </div>
-        <div className="flex-shrink-0">
+        <div className="w-full lg:w-auto">
           <NewSaleDialog />
         </div>
       </div>

@@ -197,7 +197,7 @@ export function NewSaleDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="w-full lg:w-auto bg-green-600 hover:bg-green-700 text-white min-h-[48px] text-base font-medium">
           <Plus className="mr-2 h-4 w-4" />
           Nuova Vendita
         </Button>
