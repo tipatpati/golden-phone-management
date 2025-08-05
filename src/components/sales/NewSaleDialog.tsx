@@ -16,6 +16,8 @@ import { ProductRecommendations } from "./ProductRecommendations";
 import { SaleItemsList } from "./SaleItemsList";
 import { SaleTotals } from "./SaleTotals";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
+import { DiscountManager } from "./DiscountManager";
+import { HybridPaymentManager } from "./HybridPaymentManager";
 import { toast } from "@/components/ui/sonner";
 
 type SaleItem = {
@@ -36,6 +38,15 @@ export function NewSaleDialog() {
   const [notes, setNotes] = useState("");
   const [createdSale, setCreatedSale] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  
+  // Discount state
+  const [discountType, setDiscountType] = useState<'percentage' | 'amount' | null>(null);
+  const [discountValue, setDiscountValue] = useState(0);
+  
+  // Hybrid payment state
+  const [cashAmount, setCashAmount] = useState(0);
+  const [cardAmount, setCardAmount] = useState(0);
+  const [bankTransferAmount, setBankTransferAmount] = useState(0);
 
   const createSale = useCreateSale();
   const { user } = useAuth();
@@ -105,13 +116,63 @@ export function NewSaleDialog() {
     );
   };
 
+  // Calculate totals with discount
+  const subtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const discountAmount = discountType === 'percentage' 
+    ? (subtotal * discountValue) / 100
+    : discountType === 'amount' 
+    ? discountValue 
+    : 0;
+  const finalSubtotal = subtotal - discountAmount;
+  const taxAmount = finalSubtotal * 0.22; // 22% IVA
+  const totalAmount = finalSubtotal + taxAmount;
+  
+  // Payment amount validation for hybrid payments
+  const totalPaid = cashAmount + cardAmount + bankTransferAmount;
+  const isHybridPayment = paymentMethod === 'hybrid';
+  const isPaymentValid = isHybridPayment 
+    ? Math.abs(totalPaid - totalAmount) < 0.01 
+    : Boolean(paymentMethod);
+
   // Check if form is valid
-  const isFormValid = saleItems.length > 0 && paymentMethod && user?.id;
+  const isFormValid = saleItems.length > 0 && isPaymentValid && user?.id;
+
+  // Discount change handler
+  const handleDiscountChange = (type: 'percentage' | 'amount' | null, value: number) => {
+    setDiscountType(type);
+    setDiscountValue(value);
+  };
+
+  // Hybrid payment change handler
+  const handlePaymentChange = (type: 'cash' | 'card' | 'bank_transfer', amount: number) => {
+    switch (type) {
+      case 'cash':
+        setCashAmount(amount);
+        break;
+      case 'card':
+        setCardAmount(amount);
+        break;
+      case 'bank_transfer':
+        setBankTransferAmount(amount);
+        break;
+    }
+  };
+
+  // Reset hybrid payment amounts when switching from hybrid
+  const handlePaymentMethodChange = (method: string) => {
+    setPaymentMethod(method);
+    if (method !== 'hybrid') {
+      setCashAmount(0);
+      setCardAmount(0);
+      setBankTransferAmount(0);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isFormValid) {
+      toast.error("Per favore compila tutti i campi obbligatori");
       return;
     }
 
@@ -123,28 +184,27 @@ export function NewSaleDialog() {
     
     if (invalidPriceItems.length > 0) {
       const invalidNames = invalidPriceItems.map(item => item.product_name).join(', ');
-      alert(`The following items have prices outside the allowed range: ${invalidNames}`);
+      toast.error(`I seguenti articoli hanno prezzi fuori dal range consentito: ${invalidNames}`);
+      return;
+    }
+
+    // Validate hybrid payment total
+    if (isHybridPayment && Math.abs(totalPaid - totalAmount) > 0.01) {
+      toast.error(`Il totale pagato (€${totalPaid.toFixed(2)}) non corrisponde al totale dovuto (€${totalAmount.toFixed(2)})`);
       return;
     }
 
     try {
-      console.log('About to create sale with data:', {
-        client_id: selectedClient?.id,
-        salesperson_id: user.id,
-        payment_method: paymentMethod,
-        notes,
-        sale_items: saleItems.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          serial_number: item.serial_number
-        }))
-      });
-      
-      const createdSaleData = await createSale.mutateAsync({
+      const saleData = {
         client_id: selectedClient?.id,
         salesperson_id: user.id,
         payment_method: paymentMethod as any,
+        payment_type: isHybridPayment ? 'hybrid' as const : 'single' as const,
+        cash_amount: isHybridPayment ? cashAmount : (paymentMethod === 'cash' ? totalAmount : 0),
+        card_amount: isHybridPayment ? cardAmount : (paymentMethod === 'card' ? totalAmount : 0),
+        bank_transfer_amount: isHybridPayment ? bankTransferAmount : (paymentMethod === 'bank_transfer' ? totalAmount : 0),
+        discount_amount: discountAmount,
+        discount_percentage: discountType === 'percentage' ? discountValue : 0,
         notes,
         sale_items: saleItems.map(item => ({
           product_id: item.product_id,
@@ -152,7 +212,11 @@ export function NewSaleDialog() {
           unit_price: item.unit_price,
           serial_number: item.serial_number
         }))
-      });
+      };
+      
+      console.log('About to create sale with data:', saleData);
+      
+      const createdSaleData = await createSale.mutateAsync(saleData);
       
       console.log('Sale creation completed:', createdSaleData);
       
@@ -164,13 +228,18 @@ export function NewSaleDialog() {
       setSelectedClient(null);
       setSaleItems([]);
       setPaymentMethod("");
+      setDiscountType(null);
+      setDiscountValue(0);
+      setCashAmount(0);
+      setCardAmount(0);
+      setBankTransferAmount(0);
       setNotes("");
       setOpen(false);
       
-      toast.success("Sale created successfully! Receipt is ready to print.");
+      toast.success("Vendita creata con successo! La ricevuta è pronta per la stampa.");
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error("Failed to create sale. Please try again.");
+      toast.error("Errore nella creazione della vendita. Riprova.");
     }
   };
 
@@ -252,11 +321,21 @@ export function NewSaleDialog() {
             onRemoveItem={removeProduct}
           />
 
+          {/* Discount Manager */}
+          {saleItems.length > 0 && (
+            <DiscountManager
+              subtotal={subtotal}
+              discountType={discountType}
+              discountValue={discountValue}
+              onDiscountChange={handleDiscountChange}
+            />
+          )}
+
           {/* Payment Method and Notes - Side by side on larger screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-3">
               <Label className="text-base font-medium">Metodo di Pagamento *</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
+              <Select value={paymentMethod} onValueChange={handlePaymentMethodChange} required>
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleziona metodo di pagamento" />
                 </SelectTrigger>
@@ -264,6 +343,7 @@ export function NewSaleDialog() {
                   <SelectItem value="cash" className="h-12 text-base">Contanti</SelectItem>
                   <SelectItem value="card" className="h-12 text-base">Carta</SelectItem>
                   <SelectItem value="bank_transfer" className="h-12 text-base">Bonifico Bancario</SelectItem>
+                  <SelectItem value="hybrid" className="h-12 text-base">Pagamento Ibrido</SelectItem>
                   <SelectItem value="other" className="h-12 text-base">Altro</SelectItem>
                 </SelectContent>
               </Select>
@@ -281,7 +361,24 @@ export function NewSaleDialog() {
             </div>
           </div>
 
-          <SaleTotals saleItems={saleItems} />
+          {/* Hybrid Payment Manager */}
+          {isHybridPayment && (
+            <HybridPaymentManager
+              totalAmount={totalAmount}
+              cashAmount={cashAmount}
+              cardAmount={cardAmount}
+              bankTransferAmount={bankTransferAmount}
+              onPaymentChange={handlePaymentChange}
+            />
+          )}
+
+          <SaleTotals 
+            saleItems={saleItems} 
+            discountAmount={discountAmount}
+            finalSubtotal={finalSubtotal}
+            taxAmount={taxAmount}
+            totalAmount={totalAmount}
+          />
 
           <div className="flex flex-col gap-3 sm:gap-4 pt-4 border-t">
             <Button 

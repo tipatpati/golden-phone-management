@@ -700,11 +700,17 @@ export type Database = {
       }
       sales: {
         Row: {
+          bank_transfer_amount: number | null
+          card_amount: number | null
+          cash_amount: number | null
           client_id: string | null
           created_at: string
+          discount_amount: number | null
+          discount_percentage: number | null
           id: string
           notes: string | null
           payment_method: string
+          payment_type: string | null
           sale_date: string
           sale_number: string
           salesperson_id: string
@@ -715,11 +721,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bank_transfer_amount?: number | null
+          card_amount?: number | null
+          cash_amount?: number | null
           client_id?: string | null
           created_at?: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
           id?: string
           notes?: string | null
           payment_method: string
+          payment_type?: string | null
           sale_date?: string
           sale_number: string
           salesperson_id: string
@@ -730,11 +742,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bank_transfer_amount?: number | null
+          card_amount?: number | null
+          cash_amount?: number | null
           client_id?: string | null
           created_at?: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
           id?: string
           notes?: string | null
           payment_method?: string
+          payment_type?: string | null
           sale_date?: string
           sale_number?: string
           salesperson_id?: string

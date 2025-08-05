@@ -11,31 +11,57 @@ type SaleItem = {
 
 type SaleTotalsProps = {
   saleItems: SaleItem[];
+  discountAmount?: number;
+  finalSubtotal?: number;
+  taxAmount?: number;
+  totalAmount?: number;
 };
 
-export function SaleTotals({ saleItems }: SaleTotalsProps) {
+export function SaleTotals({ 
+  saleItems, 
+  discountAmount = 0,
+  finalSubtotal,
+  taxAmount,
+  totalAmount
+}: SaleTotalsProps) {
   if (saleItems.length === 0) {
     return null;
   }
 
-  const subtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  // Use configurable tax rate - for now defaulting to 22% (Italian standard VAT)
-  const tax = subtotal * 0.22;
-  const total = subtotal + tax;
+  const originalSubtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const computedFinalSubtotal = finalSubtotal ?? (originalSubtotal - discountAmount);
+  const computedTaxAmount = taxAmount ?? (computedFinalSubtotal * 0.22);
+  const computedTotalAmount = totalAmount ?? (computedFinalSubtotal + computedTaxAmount);
 
   return (
     <div className="border-t pt-4 space-y-2">
       <div className="flex justify-between">
         <span>Subtotale:</span>
-        <span>€{subtotal.toFixed(2)}</span>
+        <span>€{originalSubtotal.toFixed(2)}</span>
       </div>
+      
+      {discountAmount > 0 && (
+        <div className="flex justify-between text-orange-600">
+          <span>Sconto:</span>
+          <span>-€{discountAmount.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {discountAmount > 0 && (
+        <div className="flex justify-between">
+          <span>Subtotale Scontato:</span>
+          <span>€{computedFinalSubtotal.toFixed(2)}</span>
+        </div>
+      )}
+      
       <div className="flex justify-between">
         <span>IVA (22%):</span>
-        <span>€{tax.toFixed(2)}</span>
+        <span>€{computedTaxAmount.toFixed(2)}</span>
       </div>
-      <div className="flex justify-between font-bold text-lg">
+      
+      <div className="flex justify-between font-bold text-lg border-t pt-2">
         <span>TOTALE:</span>
-        <span>€{total.toFixed(2)}</span>
+        <span>€{computedTotalAmount.toFixed(2)}</span>
       </div>
     </div>
   );

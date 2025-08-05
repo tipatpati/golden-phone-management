@@ -483,17 +483,62 @@ Totale: €${sale.total_amount.toFixed(2)}`;
 
             {/* Payment Details */}
             <div style={{marginBottom: '8px', fontSize: '6px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <span>Pagato con Carta:</span>
-                <span>0.00</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <span>Pagato in Contanti:</span>
-                <span>{sale.total_amount.toFixed(2)}</span>
-              </div>
+              {sale.discount_amount && sale.discount_amount > 0 && (
+                <>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span>Subtotale:</span>
+                    <span>{(sale.subtotal + sale.discount_amount).toFixed(2)} €</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', color: '#d97706'}}>
+                    <span>Sconto:</span>
+                    <span>-{sale.discount_amount.toFixed(2)} €</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span>Subtotale Scontato:</span>
+                    <span>{sale.subtotal.toFixed(2)} €</span>
+                  </div>
+                </>
+              )}
+              
+              {sale.payment_type === 'hybrid' ? (
+                <>
+                  <div style={{fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #000', paddingBottom: '2px'}}>
+                    PAGAMENTO IBRIDO:
+                  </div>
+                  {sale.cash_amount && sale.cash_amount > 0 && (
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span>Pagato in Contanti:</span>
+                      <span>{sale.cash_amount.toFixed(2)} €</span>
+                    </div>
+                  )}
+                  {sale.card_amount && sale.card_amount > 0 && (
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span>Pagato con Carta:</span>
+                      <span>{sale.card_amount.toFixed(2)} €</span>
+                    </div>
+                  )}
+                  {sale.bank_transfer_amount && sale.bank_transfer_amount > 0 && (
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span>Pagato con Bonifico:</span>
+                      <span>{sale.bank_transfer_amount.toFixed(2)} €</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                  <span>Pagato con {
+                    sale.payment_method === 'cash' ? 'Contanti' :
+                    sale.payment_method === 'card' ? 'Carta' :
+                    sale.payment_method === 'bank_transfer' ? 'Bonifico' :
+                    'Altro'
+                  }:</span>
+                  <span>{sale.total_amount.toFixed(2)} €</span>
+                </div>
+              )}
+              
               <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <span>Sconto:</span>
-                <span>0.00 €</span>
+                <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', paddingTop: '2px', marginTop: '2px'}}>
                 <span>Totale:</span>
