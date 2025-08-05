@@ -70,7 +70,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
       const start = performance.now();
       
       try {
-        const qrContent = `PHONE PLANET
+      const qrContent = `GOLDEN PHONE
 Ricevuta: ${sale.sale_number}
 Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}
 Totale: €${sale.total_amount.toFixed(2)}`;
@@ -394,7 +394,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
         <div className="space-y-4 text-sm">
           {/* Preview of receipt */}
           <div className="text-center border-b pb-4">
-            <h3 className="font-bold text-lg">PHONE PLANET</h3>
+            <h3 className="font-bold text-lg">GOLDEN PHONE</h3>
             <p className="text-xs text-muted-foreground">di AMIRALI MOHAMADALI</p>
             <p className="text-xs">Ricevuta #{sale.sale_number}</p>
           </div>
