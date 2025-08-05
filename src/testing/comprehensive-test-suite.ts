@@ -4,7 +4,7 @@
  */
 
 import { createEnhancedTestRunner, type TestReport, type EnhancedTestRunner } from './enhanced-test-runner';
-import { mockDataFactory } from './mock-data-factory';
+import { MockDataFactory } from './mock-data-factory';
 
 // Import all test suites
 import { salesE2ETestSuite } from './suites/sales-e2e-tests';
@@ -69,7 +69,7 @@ export class ComprehensiveTestRunner {
       console.log(`📊 Total test suites: ${this.suiteRegistry.length}`);
       
       // Reset mock data factory
-      mockDataFactory.reset();
+      MockDataFactory.getInstance().reset();
       
       // Setup global test environment
       if (typeof global !== 'undefined') {
@@ -145,7 +145,15 @@ export class ComprehensiveTestRunner {
     console.log('⚡ Running performance tests...');
     
     // Generate performance test data
-    const performanceData = mockDataFactory.createPerformanceTestData();
+    const factory = MockDataFactory.getInstance();
+    const performanceData = {
+      products: factory.createProducts(1000),
+      clients: factory.createClients(500),
+      employees: factory.createEmployees(50),
+      sales: [] as any[],
+      repairs: [] as any[],
+      suppliers: factory.createSuppliers(100)
+    };
     console.log(`📊 Generated test data:
       - Products: ${performanceData.products.length}
       - Clients: ${performanceData.clients.length}
@@ -164,7 +172,7 @@ export class ComprehensiveTestRunner {
     console.log('🎯 Running edge case tests...');
     
     // Generate edge case data
-    const edgeCaseData = mockDataFactory.createEdgeCaseData();
+    const factory = MockDataFactory.getInstance();
     console.log('📊 Generated edge case test data');
 
     return this.runByTags(['edge-case']);

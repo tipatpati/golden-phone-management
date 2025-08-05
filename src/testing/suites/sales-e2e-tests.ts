@@ -230,7 +230,10 @@ export const salesE2ETestSuite: TestSuite = {
 
         // Test insufficient stock scenario
         await expect.toThrowAsync(
-          async () => await mockInventoryService.updateStock(product.id, 15),
+          async () => {
+            await mockInventoryService.updateStock(product.id, 15);
+            return Promise.resolve();
+          },
           'Insufficient stock'
         );
       }
@@ -399,7 +402,10 @@ export const salesE2ETestSuite: TestSuite = {
 
         // Assert second sale fails
         await expect.toThrowAsync(
-          async () => await mockConcurrentSalesService.createSaleWithStockValidation(product.id, sale2Quantity),
+          async () => {
+            await mockConcurrentSalesService.createSaleWithStockValidation(product.id, sale2Quantity);
+            return Promise.resolve();
+          },
           'Insufficient stock'
         );
       }
