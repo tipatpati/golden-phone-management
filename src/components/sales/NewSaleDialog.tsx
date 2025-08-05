@@ -116,22 +116,26 @@ export function NewSaleDialog() {
     );
   };
 
-  // Calculate totals with discount
-  const subtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const discountAmount = discountType === 'percentage' 
-    ? (subtotal * discountValue) / 100
-    : discountType === 'amount' 
-    ? discountValue 
-    : 0;
-  const finalSubtotal = subtotal - discountAmount;
-  const taxAmount = finalSubtotal * 0.22; // 22% IVA
-  const totalAmount = finalSubtotal + taxAmount;
+  // Calculate totals with discount - FIXED MATH
+  const subtotal = Number(saleItems.reduce((sum, item) => sum + (Number(item.unit_price) * Number(item.quantity)), 0).toFixed(2));
   
-  // Payment amount validation for hybrid payments
-  const totalPaid = cashAmount + cardAmount + bankTransferAmount;
+  // Calculate discount amount with proper validation
+  let discountAmount = 0;
+  if (discountType === 'percentage' && discountValue > 0) {
+    discountAmount = Number(((subtotal * Number(discountValue)) / 100).toFixed(2));
+  } else if (discountType === 'amount' && discountValue > 0) {
+    discountAmount = Math.min(Number(discountValue), subtotal); // Can't discount more than subtotal
+  }
+  
+  const finalSubtotal = Number((subtotal - discountAmount).toFixed(2));
+  const taxAmount = Number((finalSubtotal * 0.22).toFixed(2)); // 22% IVA
+  const totalAmount = Number((finalSubtotal + taxAmount).toFixed(2));
+  
+  // Payment amount validation for hybrid payments - IMPROVED PRECISION
+  const totalPaid = Number((Number(cashAmount) + Number(cardAmount) + Number(bankTransferAmount)).toFixed(2));
   const isHybridPayment = paymentMethod === 'hybrid';
   const isPaymentValid = isHybridPayment 
-    ? Math.abs(totalPaid - totalAmount) < 0.01 
+    ? Math.abs(totalPaid - totalAmount) < 0.005 // Improved tolerance for floating point precision
     : Boolean(paymentMethod);
 
   // Check if form is valid
@@ -143,17 +147,20 @@ export function NewSaleDialog() {
     setDiscountValue(value);
   };
 
-  // Hybrid payment change handler
+  // Hybrid payment change handler - IMPROVED VALIDATION
   const handlePaymentChange = (type: 'cash' | 'card' | 'bank_transfer', amount: number) => {
+    // Ensure amount is not negative and doesn't exceed total
+    const validAmount = Math.max(0, Math.min(Number(amount) || 0, totalAmount));
+    
     switch (type) {
       case 'cash':
-        setCashAmount(amount);
+        setCashAmount(validAmount);
         break;
       case 'card':
-        setCardAmount(amount);
+        setCardAmount(validAmount);
         break;
       case 'bank_transfer':
-        setBankTransferAmount(amount);
+        setBankTransferAmount(validAmount);
         break;
     }
   };
@@ -188,9 +195,15 @@ export function NewSaleDialog() {
       return;
     }
 
-    // Validate hybrid payment total
-    if (isHybridPayment && Math.abs(totalPaid - totalAmount) > 0.01) {
-      toast.error(`Il totale pagato (€${totalPaid.toFixed(2)}) non corrisponde al totale dovuto (€${totalAmount.toFixed(2)})`);
+    // Validate hybrid payment total with improved precision
+    if (isHybridPayment && Math.abs(totalPaid - totalAmount) > 0.005) {
+      toast.error(`Il totale pagato (€${totalPaid.toFixed(2)}) non corrisponde al totale dovuto (€${totalAmount.toFixed(2)}). Differenza: €${Math.abs(totalPaid - totalAmount).toFixed(2)}`);
+      return;
+    }
+
+    // Validate discount doesn't exceed subtotal
+    if (discountAmount > subtotal) {
+      toast.error(`Lo sconto (€${discountAmount.toFixed(2)}) non può essere superiore al subtotale (€${subtotal.toFixed(2)})`);
       return;
     }
 
@@ -200,21 +213,21 @@ export function NewSaleDialog() {
         salesperson_id: user.id,
         payment_method: paymentMethod as any,
         payment_type: isHybridPayment ? 'hybrid' as const : 'single' as const,
-        cash_amount: isHybridPayment ? cashAmount : (paymentMethod === 'cash' ? totalAmount : 0),
-        card_amount: isHybridPayment ? cardAmount : (paymentMethod === 'card' ? totalAmount : 0),
-        bank_transfer_amount: isHybridPayment ? bankTransferAmount : (paymentMethod === 'bank_transfer' ? totalAmount : 0),
-        discount_amount: discountAmount,
-        discount_percentage: discountType === 'percentage' ? discountValue : 0,
+        cash_amount: isHybridPayment ? Number(cashAmount.toFixed(2)) : (paymentMethod === 'cash' ? Number(totalAmount.toFixed(2)) : 0),
+        card_amount: isHybridPayment ? Number(cardAmount.toFixed(2)) : (paymentMethod === 'card' ? Number(totalAmount.toFixed(2)) : 0),
+        bank_transfer_amount: isHybridPayment ? Number(bankTransferAmount.toFixed(2)) : (paymentMethod === 'bank_transfer' ? Number(totalAmount.toFixed(2)) : 0),
+        discount_amount: Number(discountAmount.toFixed(2)),
+        discount_percentage: discountType === 'percentage' ? Number(discountValue) : 0,
         notes,
         sale_items: saleItems.map(item => ({
           product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
+          quantity: Number(item.quantity),
+          unit_price: Number(Number(item.unit_price).toFixed(2)),
           serial_number: item.serial_number
         }))
       };
       
-      console.log('About to create sale with data:', saleData);
+      console.log('Creating sale with validated data:', saleData);
       
       const createdSaleData = await createSale.mutateAsync(saleData);
       
@@ -224,7 +237,7 @@ export function NewSaleDialog() {
       setCreatedSale(createdSaleData);
       setShowReceipt(true);
       
-      // Reset form
+      // Reset form with proper validation
       setSelectedClient(null);
       setSaleItems([]);
       setPaymentMethod("");
@@ -239,7 +252,7 @@ export function NewSaleDialog() {
       toast.success("Vendita creata con successo! La ricevuta è pronta per la stampa.");
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error("Errore nella creazione della vendita. Riprova.");
+      toast.error("Errore nella creazione della vendita. Verificare i dati e riprovare.");
     }
   };
 

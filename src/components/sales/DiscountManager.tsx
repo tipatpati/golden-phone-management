@@ -68,54 +68,53 @@ export function DiscountManager({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-sm">Tipo di Sconto</Label>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Tipo di Sconto</Label>
           <Select 
             value={discountType || 'none'} 
             onValueChange={handleDiscountTypeChange}
           >
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-12 text-base touch-manipulation">
               <SelectValue placeholder="Seleziona tipo sconto" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nessuno Sconto</SelectItem>
-              <SelectItem value="percentage">Percentuale (%)</SelectItem>
-              <SelectItem value="amount">Importo Fisso (€)</SelectItem>
+            <SelectContent className="bg-white z-50">
+              <SelectItem value="none" className="h-12 text-base touch-manipulation">Nessuno Sconto</SelectItem>
+              <SelectItem value="percentage" className="h-12 text-base touch-manipulation">Percentuale (%)</SelectItem>
+              <SelectItem value="amount" className="h-12 text-base touch-manipulation">Importo Fisso (€)</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {discountType && (
-          <div className="space-y-2">
-            <Label className="text-sm">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">
               {discountType === 'percentage' ? 'Percentuale' : 'Importo'} Sconto
             </Label>
             <div className="relative">
               <Input
                 type="number"
-                value={discountValue}
+                value={discountValue || ''}
                 onChange={(e) => handleDiscountValueChange(e.target.value)}
                 placeholder={discountType === 'percentage' ? '0' : '0.00'}
                 step={discountType === 'percentage' ? '1' : '0.01'}
                 min="0"
                 max={discountType === 'percentage' ? maxDiscountPercentage : maxDiscountAmount}
-                className="h-10"
+                className="h-12 text-base touch-manipulation pr-10"
+                inputMode={discountType === 'percentage' ? 'numeric' : 'decimal'}
               />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base text-muted-foreground pointer-events-none">
                 {discountType === 'percentage' ? '%' : '€'}
               </span>
             </div>
-            {discountType === 'percentage' && (
-              <p className="text-xs text-muted-foreground">
-                Massimo {maxDiscountPercentage}% (€{((subtotal * maxDiscountPercentage) / 100).toFixed(2)})
-              </p>
-            )}
-            {discountType === 'amount' && (
-              <p className="text-xs text-muted-foreground">
-                Massimo €{maxDiscountAmount.toFixed(2)}
-              </p>
-            )}
+            <div className="text-xs text-muted-foreground space-y-1">
+              {discountType === 'percentage' && (
+                <p>Massimo {maxDiscountPercentage}% (€{((subtotal * maxDiscountPercentage) / 100).toFixed(2)})</p>
+              )}
+              {discountType === 'amount' && (
+                <p>Massimo €{maxDiscountAmount.toFixed(2)}</p>
+              )}
+            </div>
           </div>
         )}
       </div>

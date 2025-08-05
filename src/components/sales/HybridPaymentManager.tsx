@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CreditCard, Banknote, Building } from "lucide-react";
 
 interface HybridPaymentManagerProps {
@@ -25,113 +26,122 @@ export function HybridPaymentManager({
   const isFullyPaid = Math.abs(remainingAmount) < 0.01;
 
   const handleAmountChange = (type: 'cash' | 'card' | 'bank_transfer', value: string) => {
-    const amount = parseFloat(value) || 0;
-    const clampedAmount = Math.max(0, Math.min(amount, totalAmount));
-    onPaymentChange(type, clampedAmount);
+    const amount = Math.max(0, Math.min(parseFloat(value) || 0, totalAmount));
+    onPaymentChange(type, amount);
   };
 
   const quickFillRemaining = (type: 'cash' | 'card' | 'bank_transfer') => {
     if (remainingAmount > 0) {
-      onPaymentChange(type, remainingAmount);
+      const currentOtherTotal = (type === 'cash' ? 0 : cashAmount) + 
+                               (type === 'card' ? 0 : cardAmount) + 
+                               (type === 'bank_transfer' ? 0 : bankTransferAmount);
+      const maxAllowed = totalAmount - currentOtherTotal;
+      onPaymentChange(type, Math.min(remainingAmount, maxAllowed));
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-base font-medium">Pagamento Ibrido</Label>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <Label className="text-lg font-semibold">Pagamento Ibrido</Label>
         <Badge 
           variant={isFullyPaid ? "default" : "destructive"}
-          className={isFullyPaid ? "bg-green-600" : ""}
+          className={`text-sm px-3 py-1 ${isFullyPaid ? "bg-green-600" : ""}`}
         >
-          {isFullyPaid ? "Completato" : `Mancano €${remainingAmount.toFixed(2)}`}
+          {isFullyPaid ? "✓ Completato" : `Mancano €${remainingAmount.toFixed(2)}`}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         {/* Cash Payment */}
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <Banknote className="h-5 w-5 text-green-600" />
-            <Label className="font-medium">Contanti</Label>
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Banknote className="h-6 w-6 text-green-600" />
+            <Label className="text-lg font-semibold">Contanti</Label>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               type="number"
-              value={cashAmount}
+              value={cashAmount || ''}
               onChange={(e) => handleAmountChange('cash', e.target.value)}
               placeholder="0.00"
               step="0.01"
               min="0"
               max={totalAmount}
-              className="h-10"
+              className="h-12 text-lg touch-manipulation"
+              inputMode="decimal"
             />
             {remainingAmount > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => quickFillRemaining('cash')}
-                className="text-xs text-green-600 hover:text-green-800 underline"
+                className="w-full h-10 text-sm touch-manipulation"
               >
-                Paga resto con contanti (€{remainingAmount.toFixed(2)})
-              </button>
+                💰 Paga resto: €{remainingAmount.toFixed(2)}
+              </Button>
             )}
           </div>
         </Card>
 
         {/* Card Payment */}
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-blue-600" />
-            <Label className="font-medium">Carta</Label>
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="h-6 w-6 text-blue-600" />
+            <Label className="text-lg font-semibold">Carta</Label>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               type="number"
-              value={cardAmount}
+              value={cardAmount || ''}
               onChange={(e) => handleAmountChange('card', e.target.value)}
               placeholder="0.00"
               step="0.01"
               min="0"
               max={totalAmount}
-              className="h-10"
+              className="h-12 text-lg touch-manipulation"
+              inputMode="decimal"
             />
             {remainingAmount > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => quickFillRemaining('card')}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                className="w-full h-10 text-sm touch-manipulation"
               >
-                Paga resto con carta (€{remainingAmount.toFixed(2)})
-              </button>
+                💳 Paga resto: €{remainingAmount.toFixed(2)}
+              </Button>
             )}
           </div>
         </Card>
 
         {/* Bank Transfer Payment */}
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <Building className="h-5 w-5 text-purple-600" />
-            <Label className="font-medium">Bonifico</Label>
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Building className="h-6 w-6 text-purple-600" />
+            <Label className="text-lg font-semibold">Bonifico Bancario</Label>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               type="number"
-              value={bankTransferAmount}
+              value={bankTransferAmount || ''}
               onChange={(e) => handleAmountChange('bank_transfer', e.target.value)}
               placeholder="0.00"
               step="0.01"
               min="0"
               max={totalAmount}
-              className="h-10"
+              className="h-12 text-lg touch-manipulation"
+              inputMode="decimal"
             />
             {remainingAmount > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => quickFillRemaining('bank_transfer')}
-                className="text-xs text-purple-600 hover:text-purple-800 underline"
+                className="w-full h-10 text-sm touch-manipulation"
               >
-                Paga resto con bonifico (€{remainingAmount.toFixed(2)})
-              </button>
+                🏦 Paga resto: €{remainingAmount.toFixed(2)}
+              </Button>
             )}
           </div>
         </Card>
