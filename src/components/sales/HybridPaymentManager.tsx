@@ -21,22 +21,33 @@ export function HybridPaymentManager({
   bankTransferAmount,
   onPaymentChange
 }: HybridPaymentManagerProps) {
-  const totalPaid = cashAmount + cardAmount + bankTransferAmount;
-  const remainingAmount = totalAmount - totalPaid;
-  const isFullyPaid = Math.abs(remainingAmount) < 0.01;
+  // Calculate totals with proper 2-decimal precision
+  const totalPaid = Number((Number(cashAmount) + Number(cardAmount) + Number(bankTransferAmount)).toFixed(2));
+  const remainingAmount = Number((totalAmount - totalPaid).toFixed(2));
+  const isFullyPaid = Math.abs(remainingAmount) < 0.005; // Use small tolerance for floating point precision
 
   const handleAmountChange = (type: 'cash' | 'card' | 'bank_transfer', value: string) => {
     const amount = Math.max(0, Math.min(parseFloat(value) || 0, totalAmount));
-    onPaymentChange(type, amount);
+    // Ensure 2 decimal precision
+    const roundedAmount = Number(amount.toFixed(2));
+    onPaymentChange(type, roundedAmount);
   };
 
   const quickFillRemaining = (type: 'cash' | 'card' | 'bank_transfer') => {
     if (remainingAmount > 0) {
+      // Calculate current total from other payment methods
       const currentOtherTotal = (type === 'cash' ? 0 : cashAmount) + 
                                (type === 'card' ? 0 : cardAmount) + 
                                (type === 'bank_transfer' ? 0 : bankTransferAmount);
-      const maxAllowed = totalAmount - currentOtherTotal;
-      onPaymentChange(type, Math.min(remainingAmount, maxAllowed));
+      
+      // Calculate the exact remaining amount with 2 decimal precision
+      const exactRemaining = Number((totalAmount - currentOtherTotal).toFixed(2));
+      
+      // Ensure we don't exceed the total amount and round to 2 decimals
+      const fillAmount = Math.max(0, Math.min(exactRemaining, totalAmount));
+      const finalAmount = Number(fillAmount.toFixed(2));
+      
+      onPaymentChange(type, finalAmount);
     }
   };
 
