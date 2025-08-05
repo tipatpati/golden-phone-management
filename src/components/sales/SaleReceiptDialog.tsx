@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
 import { type Sale } from "@/services";
 import { format } from "date-fns";
+import QRCode from "qrcode";
 
 interface SaleReceiptDialogProps {
   sale: Sale;
@@ -57,31 +58,42 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     return result;
   }, [sale?.client]);
 
-  // 🚀 OPTIMIZED: Memoize QR code generation
-  const qrCodeDataUrl = useMemo(() => {
-    if (!sale) return '';
+  // QR code generation state
+  const [qrCode, setQrCode] = React.useState<string>('');
+
+  // Generate QR code
+  React.useEffect(() => {
+    if (!sale) return;
     
-    console.log('🔄 Generating QR code for sale:', sale.sale_number);
-    const start = performance.now();
-    
-    try {
-      const qrContent = `PHONE PLANET|Ricevuta: ${sale.sale_number}|Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}|Totale: €${sale.total_amount.toFixed(2)}`;
-      const svgString = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-          <rect width="80" height="80" fill="white"/>
-          <rect x="10" y="10" width="60" height="60" fill="none" stroke="black" stroke-width="2"/>
-          <text x="40" y="45" text-anchor="middle" font-size="8" fill="black">QR CODE</text>
-        </svg>
-      `;
-      const result = `data:image/svg+xml;base64,${btoa(svgString)}`;
+    const generateQRCode = async () => {
+      console.log('🔄 Generating QR code for sale:', sale.sale_number);
+      const start = performance.now();
       
-      const duration = performance.now() - start;
-      console.log(`⚡ QR code generated in ${duration.toFixed(2)}ms, size: ${result.length} chars`);
-      return result;
-    } catch (error) {
-      console.error('❌ QR code generation failed:', error);
-      return '';
-    }
+      try {
+        const qrContent = `PHONE PLANET
+Ricevuta: ${sale.sale_number}
+Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}
+Totale: €${sale.total_amount.toFixed(2)}`;
+        
+        const qrDataUrl = await QRCode.toDataURL(qrContent, {
+          width: 80,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        });
+        
+        const duration = performance.now() - start;
+        console.log(`⚡ QR code generated in ${duration.toFixed(2)}ms`);
+        setQrCode(qrDataUrl);
+      } catch (error) {
+        console.error('❌ QR code generation failed:', error);
+        setQrCode('');
+      }
+    };
+
+    generateQRCode();
   }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
 
   const handlePrint = () => {
@@ -432,125 +444,90 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
           {/* Hidden receipt content for printing */}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
-            <div className="company-header">
-              <div className="company-name">PHONE PLANET</div>
-              <div className="company-details">
-                di AMIRALI MOHAMADALI<br/>
-                Via Example 123, Roma<br/>
-                Tel: +39 06 123456789<br/>
-                P.IVA: 12345678901
+            {/* Company Header */}
+            <div style={{textAlign: 'center', marginBottom: '8px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>
+                GOLDEN TRADE O&A SRL
+              </div>
+              <div style={{fontSize: '6px', lineHeight: '1.2'}}>
+                Corso Buenos Aires, 90,<br/>
+                20124 Milano - MI<br/>
+                P. IVA: 12345678901<br/>
+                Tel: +39 351 565 6095
               </div>
             </div>
 
-            <div className="receipt-info">
-              <div className="receipt-row">
-                <span>Data:</span>
-                <span>{format(new Date(sale.sale_date), "dd/MM/yyyy")}</span>
-              </div>
-              <div className="receipt-row">
-                <span>Ora:</span>
-                <span>{format(new Date(sale.sale_date), "HH:mm")}</span>
-              </div>
-              <div className="receipt-row">
-                <span>Ricevuta N°:</span>
-                <span>{sale.sale_number}</span>
-              </div>
-              <div className="receipt-row">
-                <span>Cliente:</span>
-                <span>{clientName}</span>
-              </div>
-              <div className="receipt-row">
-                <span>Operatore:</span>
-                <span>{sale.salesperson?.username || "Sconosciuto"}</span>
-              </div>
+            {/* Document Header */}
+            <div style={{textAlign: 'center', marginBottom: '8px', borderBottom: '1px dashed #000', paddingBottom: '4px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '7px'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '7px'}}>GARANZIA</div>
             </div>
 
-            <div className="items-header">
-              DETTAGLIO ACQUISTO
-            </div>
-
-            <div className="items-section">
-              <div className="item-row" style={{fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '1px', marginBottom: '2px'}}>
-                <span className="item-desc">DESCRIZIONE</span>
-                <span className="item-qty">Q</span>
-                <span className="item-price">PREZZO</span>
-              </div>
+            {/* Product Info */}
+            <div style={{marginBottom: '8px', fontSize: '6px'}}>
               {sale.sale_items?.map((item, index) => (
-                <div key={index} className="item-row">
-                  <span className="item-desc">
-                    {item.product ? `${item.product.brand} ${item.product.model}${item.product.year ? ` (${item.product.year})` : ''}` : "Prodotto"}
-                    {item.serial_number && <div style={{fontSize: '4px', color: '#666'}}>S/N: {item.serial_number}</div>}
-                  </span>
-                  <span className="item-qty">{item.quantity}</span>
-                  <span className="item-price">€{item.total_price.toFixed(2)}</span>
+                <div key={index} style={{marginBottom: '4px'}}>
+                  <div style={{fontWeight: 'bold'}}>
+                    {item.product ? `${item.product.brand} ${item.product.model}` : "Smartphone"}
+                  </div>
+                  {item.product?.model && (
+                    <div>{item.product.model} Pro Max</div>
+                  )}
+                  {item.serial_number && (
+                    <div>SN: {item.serial_number}</div>
+                  )}
+                  <div>Garanzia: 1 anno</div>
                 </div>
-              )) || <div className="item-row">Nessun articolo</div>}
+              ))}
             </div>
 
-            <div className="totals-section">
-              <div className="total-row">
-                <span>Subtotale:</span>
-                <span>€{sale.subtotal.toFixed(2)}</span>
+            {/* Payment Details */}
+            <div style={{marginBottom: '8px', fontSize: '6px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <span>Pagato con Carta:</span>
+                <span>0.00</span>
               </div>
-              <div className="total-row">
-                <span>IVA (22%):</span>
-                <span>€{sale.tax_amount.toFixed(2)}</span>
+              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <span>Pagato in Contanti:</span>
+                <span>{sale.total_amount.toFixed(2)}</span>
               </div>
-              <div className="total-row final-total">
-                <span>TOTALE:</span>
-                <span>€{sale.total_amount.toFixed(2)}</span>
+              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <span>Sconto:</span>
+                <span>0.00 €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', paddingTop: '2px', marginTop: '2px'}}>
+                <span>Totale:</span>
+                <span>{sale.total_amount.toFixed(2)} €</span>
               </div>
             </div>
 
-            <div className="payment-section">
-              <div className="total-row">
-                <span>Metodo:</span>
-                <span style={{textTransform: 'capitalize'}}>
-                  {sale.payment_method === 'cash' ? 'Contanti' : 
-                   sale.payment_method === 'card' ? 'Carta' :
-                   sale.payment_method === 'bank_transfer' ? 'Bonifico' : 
-                   sale.payment_method.replace('_', ' ')}
-                </span>
-              </div>
-              {sale.payment_method === 'cash' && (
-                <>
-                  <div className="total-row">
-                    <span>Ricevuti:</span>
-                    <span>€{sale.total_amount.toFixed(2)}</span>
-                  </div>
-                  <div className="total-row">
-                    <span>Resto:</span>
-                    <span>€0.00</span>
-                  </div>
-                </>
+            {/* Date and Receipt Number */}
+            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '6px'}}>
+              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
+            </div>
+
+            {/* Terms */}
+            <div style={{fontSize: '5px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
+              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.<br/><br/>
+              IL NEGOZIO NON SI ASSUME RESPONSABILITA PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/><br/>
+              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            </div>
+
+            {/* QR Code */}
+            <div style={{textAlign: 'center', marginBottom: '8px'}}>
+              {qrCode && (
+                <img 
+                  src={qrCode} 
+                  alt="QR Code" 
+                  style={{width: '60px', height: '60px'}}
+                />
               )}
             </div>
 
-            {sale.notes && (
-              <div className="receipt-info">
-                <div style={{fontWeight: 'bold', marginBottom: '1px'}}>Note:</div>
-                <div style={{fontSize: '5px'}}>{sale.notes}</div>
-              </div>
-            )}
-
-            <div className="qr-section">
-              <img 
-                src={qrCodeDataUrl} 
-                alt="QR Code" 
-                className="qr-code"
-              />
-              <div style={{fontSize: '4px', marginTop: '1px'}}>
-                Scansiona per info
-              </div>
-            </div>
-
-            <div className="footer">
-              <div className="thank-you">GRAZIE!</div>
-              <div>Arrivederci e a presto</div>
-              <div style={{marginTop: '2px', fontSize: '4px'}}>
-                Documento non fiscale<br/>
-                Stampato: {format(new Date(), "dd/MM/yyyy HH:mm")}
-              </div>
+            {/* Footer */}
+            <div style={{textAlign: 'center', fontSize: '5px', marginTop: '8px'}}>
+              <div>Questo documento non è</div>
+              <div>un documento fiscale.</div>
             </div>
           </div>
         </div>
