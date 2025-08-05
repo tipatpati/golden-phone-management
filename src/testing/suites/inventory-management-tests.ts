@@ -4,7 +4,7 @@
  */
 
 import { createEnhancedTestRunner, expect, type TestSuite } from '../enhanced-test-runner';
-import { mockDataFactory } from '../mock-data-factory';
+import { MockDataFactory } from '../mock-data-factory';
 import type { MockProduct } from '../mock-data-factory';
 
 export const inventoryManagementTestSuite: TestSuite = {

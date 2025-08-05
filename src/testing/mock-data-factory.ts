@@ -120,6 +120,19 @@ export class MockDataFactory {
   }
 
   /**
+   * Reset all counters
+   */
+  reset(): void {
+    this.clientCounter = 1;
+    this.employeeCounter = 1;
+    this.productCounter = 1;
+    this.saleCounter = 1;
+    this.repairCounter = 1;
+    this.supplierCounter = 1;
+    this.userCounter = 1;
+  }
+
+  /**
    * Generate a random date within the last year
    */
   private randomDate(daysBack: number = 365): string {
@@ -506,97 +519,17 @@ export class MockDataFactory {
   }
 
   /**
-   * Create edge case data for testing
+   * Get summary statistics
    */
-  createEdgeCaseData() {
+  getSummary() {
     return {
-      // Empty/null values
-      emptyClient: this.createClient({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: ''
-      }),
-
-      // Invalid email
-      invalidEmailClient: this.createClient({
-        email: 'invalid-email'
-      }),
-
-      // Very long strings
-      longStringClient: this.createClient({
-        notes: 'A'.repeat(1000)
-      }),
-
-      // Special characters
-      specialCharClient: this.createClient({
-        first_name: 'José María',
-        last_name: "O'Connor-Smith",
-        notes: 'Client with special chars: àáâãäåæçèéêë'
-      }),
-
-      // Zero/negative prices
-      zeroPriceProduct: this.createProduct({
-        price: 0,
-        min_price: 0,
-        max_price: 0
-      }),
-
-      negativePriceProduct: this.createProduct({
-        price: -100,
-        min_price: -200,
-        max_price: -50
-      }),
-
-      // Large numbers
-      largeNumberProduct: this.createProduct({
-        price: 999999.99,
-        stock: 999999
-      }),
-
-      // Unicode and emoji
-      unicodeClient: this.createClient({
-        first_name: '测试',
-        last_name: 'العربية',
-        notes: 'Client with emojis: 😀 📱 💯'
-      })
+      clientsCreated: this.clientCounter - 1,
+      employeesCreated: this.employeeCounter - 1,
+      productsCreated: this.productCounter - 1,
+      salesCreated: this.saleCounter - 1,
+      repairsCreated: this.repairCounter - 1,
+      suppliersCreated: this.supplierCounter - 1,
+      usersCreated: this.userCounter - 1
     };
-  }
-
-  /**
-   * Create performance test data (large datasets)
-   */
-  createPerformanceTestData() {
-    const products = this.createProducts(1000);
-    const clients = this.createClients(500);
-    const employees = this.createEmployees(50);
-    const sales = this.createSales(2000, products, clients, employees);
-    const repairs = this.createRepairs(800, clients, employees);
-    const suppliers = this.createSuppliers(100);
-
-    return {
-      products,
-      clients,
-      employees,
-      sales,
-      repairs,
-      suppliers
-    };
-  }
-
-  /**
-   * Reset all counters
-   */
-  reset() {
-    this.clientCounter = 1;
-    this.employeeCounter = 1;
-    this.productCounter = 1;
-    this.saleCounter = 1;
-    this.repairCounter = 1;
-    this.supplierCounter = 1;
-    this.userCounter = 1;
   }
 }
-
-// Export singleton instance
-export const mockDataFactory = MockDataFactory.getInstance();
