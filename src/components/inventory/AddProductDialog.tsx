@@ -144,6 +144,16 @@ export function AddProductDialog() {
         title="Add Product with Serial Numbers"
         open={open}
         onClose={() => setOpen(false)}
+        onSubmit={async () => {
+          console.log('🔄 FormDialog onSubmit called');
+          const handler = (window as any).__currentFormSubmit;
+          if (handler && typeof handler === 'function') {
+            console.log('🔄 Calling window.__currentFormSubmit');
+            await handler();
+          } else {
+            console.log('❌ No window.__currentFormSubmit found');
+          }
+        }}
         isLoading={createProduct.isPending}
         submitText={createProduct.isPending ? "Adding..." : "Add Product"}
         maxWidth="2xl"
