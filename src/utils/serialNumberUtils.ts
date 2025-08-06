@@ -91,6 +91,20 @@ export function validateSerialWithBattery(serialString: string): { isValid: bool
   }
 
   const parts = trimmed.split(/\s+/);
+  const firstPart = parts[0];
+  
+  // Check if it's a potential IMEI (15 digits)
+  const numericOnly = firstPart.replace(/\D/g, '');
+  if (numericOnly.length === 15) {
+    // IMEI validation - basic length check (full Luhn validation done in imeiValidation.ts)
+    if (!/^\d{15}$/.test(numericOnly)) {
+      return { isValid: false, error: "IMEI must be exactly 15 digits" };
+    }
+  } else if (!/^[A-Za-z0-9]+$/.test(firstPart)) {
+    return { isValid: false, error: "Serial number must contain only letters and numbers" };
+  } else if (firstPart.length < 3) {
+    return { isValid: false, error: "Serial number must be at least 3 characters long" };
+  }
   
   if (parts.length === 1) {
     // Just serial number, that's fine

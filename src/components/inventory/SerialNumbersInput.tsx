@@ -130,14 +130,12 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                     id={`serial-mobile-${entry.id}`}
                     value={entry.serial}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, ''); // Only numbers
-                      if (value.length <= 13) { // EAN13 limit of 13 digits
-                        updateEntry(entry.id, 'serial', value);
-                      }
+                     const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                     updateEntry(entry.id, 'serial', value);
                     }}
-                    placeholder="1234567890123"
-                    className="text-sm h-9"
-                    maxLength={13}
+                   placeholder="IMEI (15 digits) e.g. 123456789012345"
+                   className="text-sm h-9 font-mono"
+                   maxLength={15}
                   />
                 </div>
                 
@@ -193,15 +191,13 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                  <Input
                   id={`serial-desktop-${entry.id}`}
                   value={entry.serial}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, ''); // Only numbers
-                    if (value.length <= 13) { // EAN13 limit of 13 digits
-                      updateEntry(entry.id, 'serial', value);
-                    }
-                  }}
-                  placeholder="1234567890123"
-                  className="text-sm h-9"
-                  maxLength={13}
+                   onChange={(e) => {
+                     const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                     updateEntry(entry.id, 'serial', value);
+                   }}
+                 placeholder="IMEI (15 digits) e.g. 123456789012345"
+                 className="text-sm h-9 font-mono"
+                 maxLength={15}
                 />
               </div>
               
@@ -274,7 +270,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
         <p className="text-xs font-medium text-amber-800 mb-2">💡 Serial Number Guidelines:</p>
         <div className="text-xs text-amber-700 space-y-1">
-           <p><strong>IMEI Format:</strong> 13 digits for EAN13 (e.g., 1234567890123)</p>
+           <p><strong>IMEI Format:</strong> 15 digits following ITU-T standard (e.g., 123456789012345)</p>
           <p><strong>Serial Format:</strong> Alphanumeric (e.g., ABC123DEF456)</p>
           <p><strong>EAN13 Barcodes:</strong> Generated when serial has 8+ digits</p>
           <p><strong>Stock Management:</strong> One entry = one unit in stock</p>
