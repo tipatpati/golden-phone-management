@@ -150,12 +150,34 @@ export function ProductForm({
         onBarcodeGenerated={(barcode) => updateField('barcode', barcode)}
       />
 
-      {/* Form-level error display */}
-      {getFieldError('serial_numbers') && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-sm text-destructive">{getFieldError('serial_numbers')}</p>
-        </div>
-      )}
+      {/* Form-level error display - Show all validation errors */}
+      {React.useMemo(() => {
+        const allErrors = [];
+        const fields = ['brand', 'model', 'category_id', 'price', 'min_price', 'max_price', 'threshold', 'serial_numbers'];
+        
+        for (const field of fields) {
+          const error = getFieldError(field);
+          if (error) {
+            allErrors.push({ field, error });
+          }
+        }
+        
+        if (allErrors.length > 0) {
+          return (
+            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <h4 className="text-sm font-semibold text-destructive mb-2">Please fix these errors:</h4>
+              <ul className="space-y-1">
+                {allErrors.map(({ field, error }) => (
+                  <li key={field} className="text-sm text-destructive">
+                    • {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
+        return null;
+      }, [getFieldError])}
     </div>
   );
 }
