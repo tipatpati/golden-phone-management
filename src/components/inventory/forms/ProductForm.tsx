@@ -55,6 +55,44 @@ export function ProductForm({
 
   return (
     <div className="space-y-6">
+      {/* Product Form Guidance */}
+      <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+        <h3 className="text-sm font-semibold text-blue-900 mb-3">📋 Adding Products Guide</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-blue-800">
+          <div>
+            <p className="font-medium mb-1">📦 Product Information:</p>
+            <ul className="space-y-1 list-disc list-inside pl-2">
+              <li>Brand and Model are required</li>
+              <li>Set price range (min/max prices)</li>
+              <li>Choose appropriate category</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium mb-1">🔢 Serial Numbers:</p>
+            <ul className="space-y-1 list-disc list-inside pl-2">
+              <li>Add IMEI/Serial for each unit</li>
+              <li>Include color and battery level</li>
+              <li>Stock calculated automatically</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium mb-1">📊 Barcodes:</p>
+            <ul className="space-y-1 list-disc list-inside pl-2">
+              <li>EAN13 (13 digits) preferred</li>
+              <li>CODE128 for complex formats</li>
+              <li>Auto-generated from serials</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium mb-1">⚡ Quick Tips:</p>
+            <ul className="space-y-1 list-disc list-inside pl-2">
+              <li>Use barcode scanner for existing items</li>
+              <li>Set low stock threshold</li>
+              <li>Add supplier for tracking</li>
+            </ul>
+          </div>
+        </div>
+      </div>
       {/* Basic Product Information */}
       <ProductFormFields
         formData={formData}

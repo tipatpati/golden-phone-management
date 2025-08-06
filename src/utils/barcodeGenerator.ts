@@ -26,11 +26,29 @@ export function validateEAN13Barcode(barcode: string): boolean {
   return checkDigit === calculatedCheckDigit;
 }
 
-export function generateSerialBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
-  // Simple format: IMEI/Serial + Battery Level
-  const cleanSerial = serial.replace(/[^A-Za-z0-9]/g, '');
-  const batteryCode = batteryLevel !== undefined ? batteryLevel.toString() : '0';
+export function generateValidEAN13Barcode(prefix: string = "123456789012"): string {
+  // Ensure we have 12 digits for the prefix
+  const sanitizedPrefix = prefix.replace(/[^0-9]/g, '').slice(0, 12);
+  const paddedPrefix = sanitizedPrefix.padEnd(12, '0');
   
+  // Calculate and append check digit
+  const checkDigit = calculateEAN13CheckDigit(paddedPrefix);
+  return paddedPrefix + checkDigit;
+}
+
+export function generateSerialBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
+  // Try to generate a valid EAN13 barcode first
+  const cleanSerial = serial.replace(/[^A-Za-z0-9]/g, '');
+  const numericSerial = cleanSerial.replace(/[^0-9]/g, '');
+  
+  // If we have enough digits, try to create EAN13
+  if (numericSerial.length >= 8) {
+    const prefix = numericSerial.slice(0, 12).padEnd(12, '0');
+    return generateValidEAN13Barcode(prefix);
+  }
+  
+  // Otherwise, use alphanumeric format for CODE128
+  const batteryCode = batteryLevel !== undefined ? batteryLevel.toString() : '0';
   return cleanSerial + batteryCode;
 }
 

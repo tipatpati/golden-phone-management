@@ -15,7 +15,7 @@ export function BarcodeGenerator({
   width = 2,
   height = 100,
   displayValue = true,
-  format = 'CODE128',
+  format = 'EAN13',
   className = ''
 }: BarcodeGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
