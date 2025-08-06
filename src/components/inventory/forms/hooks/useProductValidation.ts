@@ -37,12 +37,17 @@ export function useProductValidation() {
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required' });
     }
 
-    // Price range validation
-    if (data.min_price && data.max_price && data.min_price >= data.max_price) {
+    // Min/Max price relationship validation - only validate if both values are present
+    if (data.min_price && data.max_price && 
+        typeof data.min_price === 'number' && typeof data.max_price === 'number' &&
+        data.min_price >= data.max_price) {
       newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
     }
 
-    if (data.price && data.min_price && data.max_price) {
+    // Price range validation - only validate if all three values are present and valid
+    if (data.price && data.min_price && data.max_price && 
+        typeof data.price === 'number' && typeof data.min_price === 'number' && typeof data.max_price === 'number') {
+      console.log('🔍 Price validation:', { price: data.price, min: data.min_price, max: data.max_price });
       if (data.price < data.min_price || data.price > data.max_price) {
         newErrors.push({ field: 'price', message: 'Price must be between minimum and maximum prices' });
       }
