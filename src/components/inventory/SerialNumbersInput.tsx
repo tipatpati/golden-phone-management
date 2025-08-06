@@ -126,12 +126,18 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   <Label htmlFor={`serial-mobile-${entry.id}`} className="text-xs">
                     Numero IMEI/Seriale
                   </Label>
-                  <Input
+                   <Input
                     id={`serial-mobile-${entry.id}`}
                     value={entry.serial}
-                    onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, ''); // Only numbers
+                      if (value.length <= 15) { // IMEI limit of 15 digits
+                        updateEntry(entry.id, 'serial', value);
+                      }
+                    }}
                     placeholder="352908764123456"
                     className="text-sm h-9"
+                    maxLength={15}
                   />
                 </div>
                 
@@ -184,12 +190,18 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                 <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
                   Numero IMEI/Seriale
                 </Label>
-                <Input
+                 <Input
                   id={`serial-desktop-${entry.id}`}
                   value={entry.serial}
-                  onChange={(e) => updateEntry(entry.id, 'serial', e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Only numbers
+                    if (value.length <= 15) { // IMEI limit of 15 digits
+                      updateEntry(entry.id, 'serial', value);
+                    }
+                  }}
                   placeholder="352908764123456"
                   className="text-sm h-9"
+                  maxLength={15}
                 />
               </div>
               

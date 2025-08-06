@@ -140,7 +140,12 @@ export function ProductFormFields({
         type="input"
         inputType="number"
         value={formData.threshold?.toString() || ''}
-        onChange={(value) => onFieldChange('threshold', value ? parseInt(value) : 0)}
+        onChange={(value) => {
+          const num = parseInt(value) || 0;
+          if (num >= 0) { // Only allow natural numbers (0 and positive integers)
+            onFieldChange('threshold', num);
+          }
+        }}
         placeholder="5"
         required
         className="md:col-span-1"
