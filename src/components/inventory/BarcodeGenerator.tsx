@@ -15,7 +15,7 @@ export function BarcodeGenerator({
   width = 2,
   height = 100,
   displayValue = true,
-  format = 'EAN13',
+  format = 'CODE128',
   className = ''
 }: BarcodeGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,12 +25,24 @@ export function BarcodeGenerator({
       try {
         // Auto-detect format based on barcode length and content
         let detectedFormat = format;
-        if (format === 'EAN13' && value.length !== 13) {
-          // If it's not 13 digits, use CODE128 which is more flexible
-          detectedFormat = 'CODE128';
-        } else if (format === 'EAN13' && !/^\d+$/.test(value)) {
-          // If it contains non-numeric characters, use CODE128
-          detectedFormat = 'CODE128';
+        if (format === 'EAN13') {
+          // For EAN13, check if it's exactly 13 digits and has valid check digit
+          if (value.length !== 13 || !/^\d{13}$/.test(value)) {
+            detectedFormat = 'CODE128';
+          } else {
+            // Validate EAN13 check digit
+            const checkDigit = value.slice(-1);
+            const partial = value.slice(0, -1);
+            let sum = 0;
+            for (let i = 0; i < partial.length; i++) {
+              const digit = parseInt(partial[i]);
+              sum += digit * ((i % 2 === 0) ? 1 : 3);
+            }
+            const calculatedCheck = ((10 - (sum % 10)) % 10).toString();
+            if (checkDigit !== calculatedCheck) {
+              detectedFormat = 'CODE128';
+            }
+          }
         }
 
         JsBarcode(canvasRef.current, value, {
