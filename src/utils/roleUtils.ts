@@ -57,7 +57,8 @@ export const roleUtils = {
   // Check if role has specific permission
   hasPermission(userRole: UserRole, permission: string): boolean {
     const roleConfig = ROLE_CONFIGS[userRole];
-    return roleConfig?.permissions.includes(permission) || false;
+    // Check for wildcard permission (*) or specific permission
+    return roleConfig?.permissions.includes("*") || roleConfig?.permissions.includes(permission) || false;
   },
 
   // Get all available roles (for admins)
