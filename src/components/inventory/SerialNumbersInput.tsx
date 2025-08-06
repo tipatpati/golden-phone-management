@@ -131,13 +131,13 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                     value={entry.serial}
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, ''); // Only numbers
-                      if (value.length <= 15) { // IMEI limit of 15 digits
+                      if (value.length <= 13) { // EAN13 limit of 13 digits
                         updateEntry(entry.id, 'serial', value);
                       }
                     }}
-                    placeholder="352908764123456"
+                    placeholder="1234567890123"
                     className="text-sm h-9"
-                    maxLength={15}
+                    maxLength={13}
                   />
                 </div>
                 
@@ -195,13 +195,13 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
                   value={entry.serial}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, ''); // Only numbers
-                    if (value.length <= 15) { // IMEI limit of 15 digits
+                    if (value.length <= 13) { // EAN13 limit of 13 digits
                       updateEntry(entry.id, 'serial', value);
                     }
                   }}
-                  placeholder="352908764123456"
+                  placeholder="1234567890123"
                   className="text-sm h-9"
-                  maxLength={15}
+                  maxLength={13}
                 />
               </div>
               
@@ -274,7 +274,7 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
         <p className="text-xs font-medium text-amber-800 mb-2">💡 Serial Number Guidelines:</p>
         <div className="text-xs text-amber-700 space-y-1">
-          <p><strong>IMEI Format:</strong> 15 digits (e.g., 352908764123456)</p>
+           <p><strong>IMEI Format:</strong> 13 digits for EAN13 (e.g., 1234567890123)</p>
           <p><strong>Serial Format:</strong> Alphanumeric (e.g., ABC123DEF456)</p>
           <p><strong>EAN13 Barcodes:</strong> Generated when serial has 8+ digits</p>
           <p><strong>Stock Management:</strong> One entry = one unit in stock</p>
