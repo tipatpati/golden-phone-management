@@ -101,7 +101,7 @@ export function RecentSales() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end flex-shrink-0 ml-2">
-                    <p className="font-medium text-sm sm:text-lg">${sale.total_amount.toFixed(2)}</p>
+                    <p className="font-medium text-sm sm:text-lg">€{sale.total_amount.toFixed(2)}</p>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
                       {format(new Date(sale.sale_date), "MMM dd, HH:mm")}
                     </p>

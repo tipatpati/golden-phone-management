@@ -105,7 +105,7 @@ export function AddProductDialog() {
     <>
       <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
         <Plus className="h-4 w-4" />
-        Add Product
+        Aggiungi Prodotto
       </Button>
 
       {showPrintDialog && createdProduct && (
@@ -141,7 +141,7 @@ export function AddProductDialog() {
       )}
 
       <FormDialog
-        title="Add Product with Serial Numbers"
+        title="Aggiungi Prodotto con Numeri Seriali"
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={async () => {
@@ -155,7 +155,7 @@ export function AddProductDialog() {
           }
         }}
         isLoading={createProduct.isPending}
-        submitText={createProduct.isPending ? "Adding..." : "Add Product"}
+        submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         maxWidth="2xl"
       >
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
@@ -180,7 +180,7 @@ export function AddProductDialog() {
         <ProductForm
           onSubmit={handleSubmit}
           isLoading={createProduct.isPending}
-          submitText={createProduct.isPending ? "Adding..." : "Add Product"}
+          submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         />
       </FormDialog>
     </>

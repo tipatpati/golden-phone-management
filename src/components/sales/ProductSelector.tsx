@@ -138,7 +138,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
                 </div>
               )}
               <div className="text-sm text-green-600 font-medium mt-2">
-                Range: ${product.min_price} - ${product.max_price}
+                Range: €{product.min_price} - €{product.max_price}
               </div>
             </div>
           ))}

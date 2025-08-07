@@ -35,7 +35,7 @@ export function ClientMetrics({
       <div className="bg-background border rounded-lg p-4 space-y-2">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Total Clients</span>
+          <span className="text-sm font-medium">Totale Clienti</span>
         </div>
         <div className="text-2xl font-bold">{totalClients.toLocaleString()}</div>
         <div className="flex gap-2">
@@ -60,7 +60,7 @@ export function ClientMetrics({
           {businessClients.toLocaleString()}
         </div>
         <div className="text-xs text-muted-foreground">
-          {businessPercentage.toFixed(1)}% of total
+          {businessPercentage.toFixed(1)}% del totale
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export function ClientMetrics({
           {individualClients.toLocaleString()}
         </div>
         <div className="text-xs text-muted-foreground">
-          {(100 - businessPercentage).toFixed(1)}% of total
+          {(100 - businessPercentage).toFixed(1)}% del totale
         </div>
       </div>
 

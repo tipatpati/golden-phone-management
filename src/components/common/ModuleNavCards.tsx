@@ -16,40 +16,40 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
 
   const allActions = [
     {
-      title: "View Inventory",
-      description: "Browse all inventory items",
+      title: "Visualizza Inventario",
+      description: "Sfoglia tutti gli articoli in inventario",
       icon: PackageSearch,
       href: "/inventory",
       module: "inventory",
       requiredPermissions: ['inventory'] // Salespeople shouldn't access inventory
     },
     {
-      title: "Create Sale",
-      description: "Start a new product sale",
+      title: "Crea Vendita",
+      description: "Inizia una nuova vendita prodotto",
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",
       requiredPermissions: ['sales'] // Updated to match role permissions
     },
     {
-      title: "Find Client",
-      description: "Search for existing clients",
+      title: "Trova Cliente",
+      description: "Cerca clienti esistenti",
       icon: Users,
       href: "/clients",
       module: "clients",
       requiredPermissions: ['clients'] // Updated to match role permissions
     },
     {
-      title: "New Repair",
-      description: "Create repair order",
+      title: "Nuova Riparazione",
+      description: "Crea ordine di riparazione",
       icon: Wrench,
       href: "/repairs",
       module: "repairs",
       requiredPermissions: ['repairs'] // Updated to match role permissions
     },
     {
-      title: "Suppliers",
-      description: "Manage suppliers",
+      title: "Fornitori",
+      description: "Gestisci fornitori",
       icon: Building2,
       href: "/suppliers",
       module: "suppliers",
@@ -80,27 +80,27 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
             // Define colors for each module type
             const getModuleColors = (title: string) => {
               switch (title.toLowerCase()) {
-                case 'create sale':
+                case 'crea vendita':
                   return {
                     bgColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
                     textColor: "text-white"
                   };
-                case 'find client':
+                case 'trova cliente':
                   return {
                     bgColor: "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700",
                     textColor: "text-white"
                   };
-                case 'view inventory':
+                case 'visualizza inventario':
                   return {
                     bgColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
                     textColor: "text-white"
                   };
-                case 'new repair':
+                case 'nuova riparazione':
                   return {
                     bgColor: "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
                     textColor: "text-white"
                   };
-                case 'suppliers':
+                case 'fornitori':
                   return {
                     bgColor: "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
                     textColor: "text-white"

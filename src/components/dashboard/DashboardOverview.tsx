@@ -64,7 +64,7 @@ export function DashboardOverview() {
   const overviewData = [
     {
       title: "Ricavi Totali",
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: `€${totalRevenue.toFixed(2)}`,
       change: `${revenueChange}%`,
       isPositive: parseFloat(revenueChange) >= 0,
       icon: DollarSign,

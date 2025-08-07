@@ -222,7 +222,7 @@ export const SalesOverview = React.memo(() => {
             <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">Vendite di Oggi</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-blue-900">${todayRevenue.toFixed(2)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-900">€{todayRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-blue-600">
               <TrendingUp className="mr-1 h-3 w-3" />
               <span>{todaySales.length} transazioni</span>
@@ -235,7 +235,7 @@ export const SalesOverview = React.memo(() => {
             <CardTitle className="text-xs sm:text-sm font-medium text-green-700">Questa Settimana</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-green-900">${thisWeekRevenue.toFixed(2)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-900">€{thisWeekRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-green-600">
               <TrendingUp className="mr-1 h-3 w-3" />
               <span>{thisWeekSales.length} transazioni</span>
@@ -248,7 +248,7 @@ export const SalesOverview = React.memo(() => {
             <CardTitle className="text-xs sm:text-sm font-medium text-purple-700">Questo Mese</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-purple-900">${thisMonthRevenue.toFixed(2)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-900">€{thisMonthRevenue.toFixed(2)}</div>
             <div className="flex items-center text-xs text-purple-600">
               <TrendingUp className="mr-1 h-3 w-3" />
               <span>{thisMonthSales.length} transazioni</span>
@@ -320,7 +320,7 @@ export const SalesOverview = React.memo(() => {
                   <div className="text-xs sm:text-sm text-muted-foreground">{product.sold} unità vendute</div>
                 </div>
                 <div className="text-right ml-2">
-                  <div className="font-medium text-sm sm:text-base">${(product.revenue as number).toFixed(2)}</div>
+                  <div className="font-medium text-sm sm:text-base">€{(product.revenue as number).toFixed(2)}</div>
                 </div>
               </div>) : <div className="text-center py-6 sm:py-8 text-muted-foreground">
                 <div className="text-xs sm:text-sm">Nessun dato di vendita disponibile</div>

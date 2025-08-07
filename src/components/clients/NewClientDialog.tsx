@@ -19,10 +19,10 @@ export function NewClientDialog() {
         status: data.status || 'active'
       });
       
-      toast.success("Client created successfully!");
+      toast.success("Cliente creato con successo!");
       setOpen(false);
     } catch (error: any) {
-      toast.error(`Failed to create client: ${error.message}`);
+      toast.error(`Errore nella creazione del cliente: ${error.message}`);
     }
   };
 
@@ -30,21 +30,21 @@ export function NewClientDialog() {
     <>
       <Button onClick={() => setOpen(true)}>
         <Plus className="mr-2 h-4 w-4" />
-        Add Client
+        Aggiungi Cliente
       </Button>
 
       <FormDialog
-        title="Add New Client"
+        title="Aggiungi Nuovo Cliente"
         open={open}
         onClose={() => setOpen(false)}
         isLoading={createClient.isPending}
-        submitText="Add Client"
+        submitText="Aggiungi Cliente"
         maxWidth="2xl"
       >
         <ClientForm
           onSubmit={handleSubmit}
           isLoading={createClient.isPending}
-          submitText="Add Client"
+          submitText="Aggiungi Cliente"
         />
       </FormDialog>
     </>
