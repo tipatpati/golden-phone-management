@@ -32,7 +32,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   };
 
   const getClientInfo = () => {
-    if (!sale.client) return { name: "Walk-in Customer", type: "individual" };
+    if (!sale.client) return { name: "Cliente Occasionale", type: "individual" };
     
     if (sale.client.type === "business") {
       return {
@@ -60,7 +60,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         {trigger || (
           <Button variant="outline" size="sm" className="h-9 px-3 font-medium">
             <Eye className="h-4 w-4 mr-2" />
-            View Details
+            Dettagli Vendita
           </Button>
         )}
       </DialogTrigger>
@@ -68,10 +68,10 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5" />
-            Sale Details - {sale.sale_number}
+            Dettagli Vendita - {sale.sale_number}
           </DialogTitle>
           <DialogDescription>
-            Complete information for sale #{sale.sale_number}
+            Informazioni complete per la vendita #{sale.sale_number}
           </DialogDescription>
         </DialogHeader>
 
@@ -81,17 +81,17 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Receipt className="h-5 w-5" />
-                Sale Information
+                Informazioni Vendita
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Sale Number</label>
+                  <label className="text-sm font-medium text-muted-foreground">Numero Vendita</label>
                   <p className="font-mono font-semibold">{sale.sale_number}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
+                  <label className="text-sm font-medium text-muted-foreground">Stato</label>
                   <div className="pt-1">
                     <Badge variant={getStatusColor(sale.status)} className="text-xs">
                       {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
@@ -104,16 +104,16 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                     <CalendarDays className="h-3 w-3" />
-                    Sale Date
+                    Data Vendita
                   </label>
                   <p className="font-medium">
-                    {format(new Date(sale.sale_date), "PPP")} at {format(new Date(sale.sale_date), "HH:mm")}
+                    {format(new Date(sale.sale_date), "dd/MM/yyyy")} alle {format(new Date(sale.sale_date), "HH:mm")}
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                     <CreditCard className="h-3 w-3" />
-                    Payment Method
+                    Metodo di Pagamento
                   </label>
                   <p className="font-medium capitalize">
                     {sale.payment_method.replace('_', ' ')}
@@ -124,14 +124,14 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               <div>
                 <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  Salesperson
+                  Venditore
                 </label>
                 <p className="font-medium">{sale.salesperson?.username || "Unknown"}</p>
               </div>
 
               {sale.notes && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Notes</label>
+                  <label className="text-sm font-medium text-muted-foreground">Note</label>
                   <p className="text-sm bg-muted p-3 rounded-md">{sale.notes}</p>
                 </div>
               )}
@@ -143,27 +143,27 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <User className="h-5 w-5" />
-                Client Information
+                Informazioni Cliente
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Client Name</label>
+                <label className="text-sm font-medium text-muted-foreground">Nome Cliente</label>
                 <p className="font-semibold">{clientInfo.name}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Client Type</label>
+                <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
                 <div className="pt-1">
                   <Badge variant="outline" className="text-xs">
-                    {clientInfo.type === "business" ? "Business" : "Individual"}
+                    {clientInfo.type === "business" ? "Azienda" : "Privato"}
                   </Badge>
                 </div>
               </div>
 
               {clientInfo.contact && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Contact Person</label>
+                  <label className="text-sm font-medium text-muted-foreground">Persona di Contatto</label>
                   <p className="font-medium">{clientInfo.contact}</p>
                 </div>
               )}
@@ -177,7 +177,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
 
               {clientInfo.phone && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                  <label className="text-sm font-medium text-muted-foreground">Telefono</label>
                   <p className="font-medium">{clientInfo.phone}</p>
                 </div>
               )}
@@ -190,7 +190,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Package className="h-5 w-5" />
-              Sale Items ({sale.sale_items?.length || 0})
+              Articoli Vendita ({sale.sale_items?.length || 0})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -211,16 +211,16 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     </div>
                     <div className="text-right space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Qty:</span>
+                        <span className="text-sm text-muted-foreground">Qtà:</span>
                         <span className="font-medium">{item.quantity}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Unit:</span>
-                        <span className="font-medium">${item.unit_price.toFixed(2)}</span>
+                        <span className="font-medium">€{item.unit_price.toFixed(2)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Total:</span>
-                        <span className="font-bold">${item.total_price.toFixed(2)}</span>
+                        <span className="text-sm text-muted-foreground">Totale:</span>
+                        <span className="font-bold">€{item.total_price.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -228,7 +228,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No items found for this sale
+                Nessun articolo trovato per questa vendita
               </div>
             )}
           </CardContent>
@@ -239,23 +239,23 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <DollarSign className="h-5 w-5" />
-              Sale Summary
+              Riepilogo Vendita
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">${sale.subtotal.toFixed(2)}</span>
+                <span className="text-muted-foreground">Subtotale</span>
+                <span className="font-medium">€{sale.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Tax Amount</span>
-                <span className="font-medium">${sale.tax_amount.toFixed(2)}</span>
+                <span className="text-muted-foreground">Importo IVA</span>
+                <span className="font-medium">€{sale.tax_amount.toFixed(2)}</span>
               </div>
               <Separator />
               <div className="flex justify-between items-center text-lg">
-                <span className="font-semibold">Total Amount</span>
-                <span className="font-bold text-primary">${sale.total_amount.toFixed(2)}</span>
+                <span className="font-semibold">Importo Totale</span>
+                <span className="font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>
               </div>
             </div>
           </CardContent>

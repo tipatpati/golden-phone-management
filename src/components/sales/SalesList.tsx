@@ -83,11 +83,11 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     },
     {
       key: 'sale_date' as keyof Sale,
-      header: 'Date',
+      header: 'Data',
       align: 'right' as const,
       render: (value: string) => (
         <div className="text-sm">
-          {format(new Date(value), "MMM dd, yyyy")}
+          {format(new Date(value), "dd/MM/yyyy")}
         </div>
       )
     }
@@ -170,11 +170,11 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                 )
               },
               {
-                label: "Date",
+                label: "Data",
                 value: (
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                    {format(new Date(sale.sale_date), "MMM dd, yyyy")}
+                    {format(new Date(sale.sale_date), "dd/MM/yyyy")}
                   </div>
                 )
               }

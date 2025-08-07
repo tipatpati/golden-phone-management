@@ -26,7 +26,7 @@ export function SaleCard({ sale }: SaleCardProps) {
   };
 
   const getClientName = (client: any) => {
-    if (!client) return "Walk-in Customer";
+    if (!client) return "Cliente Occasionale";
     return client.type === "business" 
       ? client.company_name 
       : `${client.first_name} ${client.last_name}`;
@@ -40,7 +40,7 @@ export function SaleCard({ sale }: SaleCardProps) {
           <div className="xl:col-span-3 space-y-1">
             <div className="font-bold text-lg text-gray-900">{sale.sale_number}</div>
             <div className="text-sm text-muted-foreground">
-              {format(new Date(sale.sale_date), "MMM dd, yyyy")} • {format(new Date(sale.sale_date), "HH:mm")}
+              {format(new Date(sale.sale_date), "dd/MM/yyyy")} • {format(new Date(sale.sale_date), "HH:mm")}
             </div>
           </div>
 
@@ -55,7 +55,7 @@ export function SaleCard({ sale }: SaleCardProps) {
           {/* Salesperson */}
           <div className="xl:col-span-2 space-y-1">
             <div className="font-semibold text-gray-900">{sale.salesperson?.username || "Unknown"}</div>
-            <div className="text-sm text-muted-foreground">Sales Representative</div>
+            <div className="text-sm text-muted-foreground">Rappresentante Vendite</div>
           </div>
 
           {/* Items Summary */}
@@ -76,7 +76,7 @@ export function SaleCard({ sale }: SaleCardProps) {
 
           {/* Payment & Total */}
           <div className="xl:col-span-2 space-y-1">
-            <div className="font-bold text-xl text-gray-900">${sale.total_amount.toFixed(2)}</div>
+            <div className="font-bold text-xl text-gray-900">€{sale.total_amount.toFixed(2)}</div>
             <div className="text-sm text-muted-foreground capitalize font-medium">
               {sale.payment_method.replace('_', ' ')}
             </div>
@@ -93,7 +93,7 @@ export function SaleCard({ sale }: SaleCardProps) {
                 trigger={
                   <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
                     <Eye className="h-3 w-3 mr-1.5" />
-                    View
+                    Visualizza
                   </Button>
                 }
               />
