@@ -52,7 +52,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: ShoppingCart,
       route: "/sales",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+      bgColor: "bg-[#2563eb] hover:bg-[#1e40af]", // Blue like "GARANZIA" in reference
       feature: "elaborazione_vendite"
     },
     {
@@ -60,7 +60,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Wrench,
       route: "/repairs",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
+      bgColor: "bg-[#dc2626] hover:bg-[#b91c1c]", // Red like "RIPARAZIONE" in reference
       feature: "gestione_riparazioni"
     },
     {
@@ -68,7 +68,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Package,
       route: "/inventory",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+      bgColor: "bg-[#059669] hover:bg-[#047857]", // Green like "MAGAZZINO" in reference
       feature: "gestione_inventario"
     },
     {
@@ -76,7 +76,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Users,
       route: "/clients",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700",
+      bgColor: "bg-[#0891b2] hover:bg-[#0e7490]", // Cyan like "Stato Garanzia" in reference
       feature: "gestione_clienti"
     },
     {
@@ -84,7 +84,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Building2,
       route: "/suppliers",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
+      bgColor: "bg-[#f59e0b] hover:bg-[#d97706]", // Orange/Yellow like "ORDINE" in reference
       feature: "gestione_ordini"
     },
     {
@@ -92,7 +92,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: BarChart3,
       route: "/reports",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800",
+      bgColor: "bg-[#6b7280] hover:bg-[#4b5563]", // Gray like "Statistiche" in reference
       feature: "analisi_e_report_completi"
     },
     {
@@ -100,7 +100,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: DollarSign,
       route: "/finances",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
+      bgColor: "bg-[#7c3aed] hover:bg-[#6d28d9]", // Purple like "PANORAMICA" in reference
       feature: "gestione_finanziaria"
     },
     {
@@ -108,7 +108,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Settings,
       route: "/profile",
       color: "text-white",
-      bgColor: "bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700"
+      bgColor: "bg-[#1f2937] hover:bg-[#111827]" // Dark like "Documento di Garanzia" in reference
     }
   ];
 
