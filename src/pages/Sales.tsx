@@ -1,23 +1,20 @@
-import React, { Suspense } from "react";
-import { useSales, type Sale } from "@/services";
+import React, { useState } from "react";
+import { useSales } from "@/services/sales/SalesReactQueryService";
+import type { Sale } from "@/services/sales/types";
 import { SalesHeader } from "@/components/sales/SalesHeader";
 import { SalesStats } from "@/components/sales/SalesStats";
 import { SalesNavCards } from "@/components/sales/SalesNavCards";
 import { SalesSearchBar } from "@/components/sales/SalesSearchBar";
 import { SalesList } from "@/components/sales/SalesList";
-import { EmptySalesList } from "@/components/sales/EmptySalesList";
-import { EnhancedLoading } from "@/components/ui/enhanced-loading";
-import { useErrorHandler } from "@/services/core/ErrorHandlingService";
-import { useDebouncedSearch, useOptimizedFilter } from "@/utils/performanceOptimizations";
-import { OptimizedLoadingBoundary, StatsSkeleton, TableSkeleton } from "@/components/common/OptimizedLoadingBoundary";
-import { useAppPrefetch } from "@/hooks/useAppPrefetch";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleUtils } from "@/utils/roleUtils";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
 
 const Sales = () => {
-  const { searchTerm, debouncedSearchTerm, setSearchTerm } = useDebouncedSearch();
-  const { data: sales = [], isLoading, error } = useSales(debouncedSearchTerm);
-  const { handleError } = useErrorHandler('Sales');
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: sales = [], isLoading, error } = useSales();
   const { userRole } = useAuth();
   
   // Check if user has admin-level permissions to see analytics
@@ -26,9 +23,37 @@ const Sales = () => {
   // Ensure sales is always an array
   const salesArray = Array.isArray(sales) ? sales : [];
 
-  // Handle error state
+  // Filter sales based on search term
+  const filteredSales = salesArray.filter(sale => 
+    sale.id?.toString().includes(searchTerm.toLowerCase()) ||
+    sale.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sale.status?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   if (error) {
-    handleError(error, 'loadSales', false);
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center space-y-4 p-6">
+            <AlertCircle className="h-8 w-8 text-destructive" />
+            <div className="text-center">
+              <h3 className="font-semibold">Errore nel caricamento</h3>
+              <p className="text-sm text-muted-foreground">
+                Impossibile caricare le vendite. Riprova più tardi.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -39,26 +64,12 @@ const Sales = () => {
         
         {/* Only show analytics for admin users */}
         {canViewAnalytics && (
-          <OptimizedLoadingBoundary fallback={<StatsSkeleton />}>
-            <Suspense fallback={<StatsSkeleton />}>
-              <SalesStats sales={salesArray} />
-            </Suspense>
-          </OptimizedLoadingBoundary>
+          <SalesStats sales={salesArray} />
         )}
         
         <SalesSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         
-        <OptimizedLoadingBoundary fallback={<TableSkeleton />}>
-          <EnhancedLoading
-            isLoading={isLoading}
-            error={error ? error.message : null}
-            isEmpty={salesArray.length === 0}
-            onRetry={() => window.location.reload()}
-            emptyText={searchTerm ? `Nessuna vendita trovata per "${searchTerm}"` : 'Nessuna vendita trovata'}
-          >
-            <SalesList sales={salesArray} />
-          </EnhancedLoading>
-        </OptimizedLoadingBoundary>
+        <SalesList sales={filteredSales} />
       </div>
     </div>
   );
