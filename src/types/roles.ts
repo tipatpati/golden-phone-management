@@ -24,7 +24,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       "gestione_vendite",
       "gestione_riparazioni",
       "gestione_clienti",
-      "gestione_finanziaria"
+      "gestione_finanziaria",
+      "gestione_ordini"
     ],
     permissions: ["*"]
   },
@@ -38,7 +39,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
       "impostazioni_sistema",
       "gestione_vendite",
       "gestione_riparazioni",
-      "gestione_clienti"
+      "gestione_clienti",
+      "gestione_ordini"
     ],
     permissions: ["*"]
   },

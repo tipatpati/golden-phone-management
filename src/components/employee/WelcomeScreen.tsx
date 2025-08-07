@@ -53,7 +53,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       route: "/sales",
       color: "text-white",
       bgColor: "bg-[#2563eb] hover:bg-[#1e40af]", // Blue like "GARANZIA" in reference
-      feature: "elaborazione_vendite"
+      feature: "gestione_vendite"
     },
     {
       title: "RIPARAZIONI",
@@ -69,7 +69,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       route: "/inventory",
       color: "text-white",
       bgColor: "bg-[#059669] hover:bg-[#047857]", // Green like "MAGAZZINO" in reference
-      feature: "gestione_inventario"
+      feature: "gestione_completa_inventario"
     },
     {
       title: "CLIENTI",
