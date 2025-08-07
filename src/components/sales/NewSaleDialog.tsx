@@ -279,9 +279,9 @@ export function NewSaleDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full lg:w-auto bg-green-600 hover:bg-green-700 text-white min-h-[48px] text-base font-medium">
-          <Plus className="mr-2 h-4 w-4" />
-          Nuova Vendita
+        <Button className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg font-bold py-6 px-8 min-h-[60px]">
+          <Plus className="mr-3 h-7 w-7" />
+          NUOVA VENDITA
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-6xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-h-[90vh] overflow-y-auto p-3 sm:p-4 md:p-6">

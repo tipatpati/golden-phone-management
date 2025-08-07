@@ -60,19 +60,15 @@ export function AppRouter() {
           isLoggedIn ? (
             roleUtils.hasPermissionLevel(effectiveRole, 'admin') ? (
               <ProtectedRoute>
-                <TabletLayout userRole={effectiveRole}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Dashboard />
-                  </Suspense>
-                </TabletLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <EmployeeDashboard userRole={effectiveRole} />
+                </Suspense>
               </ProtectedRoute>
             ) : (
               <ProtectedRoute>
-                <TabletLayout userRole={effectiveRole}>
-                  <Suspense fallback={<PageLoader />}>
-                    <EmployeeDashboard userRole={effectiveRole} />
-                  </Suspense>
-                </TabletLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <EmployeeDashboard userRole={effectiveRole} />
+                </Suspense>
               </ProtectedRoute>
             )
           ) : (

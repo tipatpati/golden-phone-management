@@ -28,7 +28,7 @@ export function InventoryHeader() {
       </div>
       
       {canModifyProducts && (
-        <div className="flex gap-2 sm:gap-3 md-stagger-container">
+        <div className="flex gap-3 sm:gap-4 md-stagger-container">
           <BulkBarcodeGenerator />
           <ProductExportDialog />
           <ProductImportDialog />
