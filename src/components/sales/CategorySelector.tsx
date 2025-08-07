@@ -1,7 +1,8 @@
 import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb } from "lucide-react";
+import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package } from "lucide-react";
+import { useCategories } from "@/services/useProducts";
 
 interface Category {
   id: number;
@@ -10,18 +11,36 @@ interface Category {
   color: string;
 }
 
-const categories: Category[] = [
-  { id: 1, name: "Smartphone", icon: Smartphone, color: "bg-[#4F46E5] hover:bg-[#4338CA]" },
-  { id: 2, name: "SIM", icon: Shield, color: "bg-[#DC2626] hover:bg-[#B91C1C]" }, 
-  { id: 3, name: "Cover", icon: Shield, color: "bg-[#059669] hover:bg-[#047857]" },
-  { id: 4, name: "Glass", icon: Shield, color: "bg-[#0891B2] hover:bg-[#0E7490]" },
-  { id: 5, name: "Tablet", icon: Tablet, color: "bg-[#CA8A04] hover:bg-[#A16207]" },
-  { id: 6, name: "Laptop", icon: Laptop, color: "bg-[#DC2626] hover:bg-[#B91C1C]" },
-  { id: 7, name: "Cavo", icon: Cable, color: "bg-[#166534] hover:bg-[#14532D]" },
-  { id: 8, name: "Alimentatore", icon: Plug, color: "bg-[#6B7280] hover:bg-[#4B5563]" },
-  { id: 9, name: "Caricatore", icon: Battery, color: "bg-[#166534] hover:bg-[#14532D]" },
-  { id: 10, name: "Power Charger", icon: Usb, color: "bg-[#6B7280] hover:bg-[#4B5563]" }
-];
+// Icon mapping for categories
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Smartphone": Smartphone,
+  "Accessories": Shield,
+  "Audio": Battery,
+  "Electronics": Plug,
+  "Tablet": Tablet,
+  "Laptop": Laptop,
+  "Cable": Cable,
+  "Charger": Battery,
+  "SIM": Shield,
+  "Cover": Shield,
+  "Glass": Shield,
+  "Cavo": Cable,
+  "Alimentatore": Plug,
+  "Caricatore": Battery,
+  "Power Charger": Usb,
+};
+
+// Color mapping for categories
+const categoryColors: Record<string, string> = {
+  "Smartphone": "bg-primary hover:bg-primary/90",
+  "Accessories": "bg-destructive hover:bg-destructive/90", 
+  "Audio": "bg-accent hover:bg-accent/90",
+  "Electronics": "bg-secondary hover:bg-secondary/90",
+  "Tablet": "bg-warning hover:bg-warning/90",
+  "Laptop": "bg-info hover:bg-info/90",
+  "Cable": "bg-success hover:bg-success/90",
+  "Charger": "bg-muted hover:bg-muted/90",
+};
 
 interface CategorySelectorProps {
   selectedCategory: number | null;
@@ -29,6 +48,33 @@ interface CategorySelectorProps {
 }
 
 export function CategorySelector({ selectedCategory, onCategoryChange }: CategorySelectorProps) {
+  const { data: dbCategories, isLoading } = useCategories();
+
+  // Transform database categories to include icons and colors
+  const categories: Category[] = React.useMemo(() => {
+    if (!dbCategories) return [];
+    
+    return dbCategories.map((dbCategory) => ({
+      id: dbCategory.id,
+      name: dbCategory.name,
+      icon: categoryIcons[dbCategory.name] || Package,
+      color: categoryColors[dbCategory.name] || "bg-muted hover:bg-muted/90"
+    }));
+  }, [dbCategories]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Categorie Prodotti</Label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-[80px] bg-muted animate-pulse rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Label className="text-base font-medium">Categorie Prodotti</Label>
