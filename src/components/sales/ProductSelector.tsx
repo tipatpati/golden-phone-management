@@ -11,16 +11,28 @@ import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
 type ProductSelectorProps = {
   onProductAdd: (product: any) => void;
+  selectedCategory?: number | null;
 };
 
-export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
+export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
   const { data: products = [] } = useProducts(productSearch);
   const { data: allProducts = [] } = useProducts(""); // For autocomplete suggestions
+  
+  // Filter products by category if one is selected
+  const filteredProducts = React.useMemo(() => {
+    if (!selectedCategory) return products;
+    return products.filter(product => product.category_id === selectedCategory);
+  }, [products, selectedCategory]);
+  
+  const filteredAllProducts = React.useMemo(() => {
+    if (!selectedCategory) return allProducts;
+    return allProducts.filter(product => product.category_id === selectedCategory);
+  }, [allProducts, selectedCategory]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // Get existing product names for autocomplete
-  const existingProductNames = allProducts.map(product => `${product.brand} ${product.model}`);
+  // Get existing product names for autocomplete (filtered by category)
+  const existingProductNames = filteredAllProducts.map(product => `${product.brand} ${product.model}`);
 
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
@@ -92,9 +104,9 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
           />
         </div>
       </div>
-      {productSearch && products.length > 0 && (
+      {productSearch && filteredProducts.length > 0 && (
         <div className="border rounded-lg max-h-64 overflow-y-auto bg-background shadow-lg">
-          {products.slice(0, 8).map((product) => (
+          {filteredProducts.slice(0, 8).map((product) => (
             <div
               key={product.id}
               className="p-4 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors active:bg-muted"
@@ -144,7 +156,7 @@ export function ProductSelector({ onProductAdd }: ProductSelectorProps) {
           ))}
         </div>
       )}
-      {productSearch && products.length === 0 && (
+      {productSearch && filteredProducts.length === 0 && (
         <div className="border rounded-lg p-4 text-center text-muted-foreground bg-background">
           Nessun prodotto trovato per "{productSearch}"
         </div>

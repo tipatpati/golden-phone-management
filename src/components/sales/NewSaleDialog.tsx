@@ -18,6 +18,7 @@ import { SaleTotals } from "./SaleTotals";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { DiscountManager } from "./DiscountManager";
 import { HybridPaymentManager } from "./HybridPaymentManager";
+import { CategorySelector } from "./CategorySelector";
 import { toast } from "@/components/ui/sonner";
 
 type SaleItem = {
@@ -38,6 +39,7 @@ export function NewSaleDialog() {
   const [notes, setNotes] = useState("");
   const [createdSale, setCreatedSale] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   
   // Discount state
   const [discountType, setDiscountType] = useState<'percentage' | 'amount' | null>(null);
@@ -247,6 +249,7 @@ export function NewSaleDialog() {
       setCardAmount(0);
       setBankTransferAmount(0);
       setNotes("");
+      setSelectedCategory(null);
       setOpen(false);
       
       toast.success("Vendita creata con successo! La ricevuta è pronta per la stampa.");
@@ -307,6 +310,12 @@ export function NewSaleDialog() {
             </BarcodeScannerTrigger>
           </div>
 
+          {/* Category Selection */}
+          <CategorySelector
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+
           {/* Client and Product Selection - Side by side on larger screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <ClientSelector
@@ -315,7 +324,10 @@ export function NewSaleDialog() {
               onClientClear={() => setSelectedClient(null)}
             />
 
-            <ProductSelector onProductAdd={addProduct} />
+            <ProductSelector 
+              onProductAdd={addProduct} 
+              selectedCategory={selectedCategory}
+            />
           </div>
 
           {saleItems.length > 0 && (
