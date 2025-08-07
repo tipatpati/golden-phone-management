@@ -310,25 +310,25 @@ export function NewSaleDialog() {
             </BarcodeScannerTrigger>
           </div>
 
+          {/* Client Selection */}
+          <ClientSelector
+            selectedClient={selectedClient}
+            onClientSelect={setSelectedClient}
+            onClientClear={() => setSelectedClient(null)}
+          />
+
           {/* Category Selection */}
           <CategorySelector
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
 
-          {/* Client and Product Selection - Side by side on larger screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <ClientSelector
-              selectedClient={selectedClient}
-              onClientSelect={setSelectedClient}
-              onClientClear={() => setSelectedClient(null)}
-            />
-
-            <ProductSelector 
-              onProductAdd={addProduct} 
-              selectedCategory={selectedCategory}
-            />
-          </div>
+          {/* Product Selection */}
+          <ProductSelector 
+            onProductAdd={addProduct} 
+            selectedCategory={selectedCategory}
+          />
+        
 
           {saleItems.length > 0 && (
             <ProductRecommendations 
