@@ -1,7 +1,7 @@
 import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package } from "lucide-react";
+import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package, Headphones, Wrench } from "lucide-react";
 import { useCategories } from "@/services/useProducts";
 
 interface Category {
@@ -15,11 +15,13 @@ interface Category {
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Smartphone": Smartphone,
   "Phones": Smartphone,
-  "Accessories": Shield,
-  "Audio": Battery,
-  "Electronics": Plug,
+  "Tablets": Tablet,
   "Tablet": Tablet,
+  "Computers": Laptop,
   "Laptop": Laptop,
+  "Accessories": Shield,
+  "Audio": Headphones,
+  "Electronics": Plug,
   "Cable": Cable,
   "Charger": Battery,
   "SIM": Shield,
@@ -29,19 +31,23 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   "Alimentatore": Plug,
   "Caricatore": Battery,
   "Power Charger": Usb,
+  "Repairs": Wrench,
 };
 
 // Color mapping for categories
 const categoryColors: Record<string, string> = {
   "Smartphone": "bg-primary hover:bg-primary/90",
   "Phones": "bg-primary hover:bg-primary/90",
+  "Tablets": "bg-warning hover:bg-warning/90",
+  "Tablet": "bg-warning hover:bg-warning/90",
+  "Computers": "bg-info hover:bg-info/90",
+  "Laptop": "bg-info hover:bg-info/90",
   "Accessories": "bg-destructive hover:bg-destructive/90", 
   "Audio": "bg-accent hover:bg-accent/90",
-  "Electronics": "bg-primary hover:bg-primary/90", // Changed from secondary to primary for better visibility
-  "Tablet": "bg-warning hover:bg-warning/90",
-  "Laptop": "bg-info hover:bg-info/90",
+  "Electronics": "bg-primary hover:bg-primary/90", // Better visibility
   "Cable": "bg-success hover:bg-success/90",
-  "Charger": "bg-warning hover:bg-warning/90", // Changed from muted to warning for better visibility
+  "Charger": "bg-warning hover:bg-warning/90",
+  "Repairs": "bg-destructive hover:bg-destructive/90",
 };
 
 interface CategorySelectorProps {
