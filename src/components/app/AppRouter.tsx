@@ -23,7 +23,7 @@ const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDash
 const Profile = React.lazy(() => import("@/pages/Profile"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
-
+const Tests = React.lazy(() => import("@/pages/Tests"));
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -87,6 +87,15 @@ export function AppRouter() {
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
           <>
+            <Route path="/tests" element={
+              <ProtectedRoute>
+                <TabletLayout userRole={effectiveRole}>
+                  <Suspense fallback={<PageLoader />}>
+                    <Tests />
+                  </Suspense>
+                </TabletLayout>
+              </ProtectedRoute>
+            } />
             {/* Super Admin and Admin users get full admin interface */}
             {roleUtils.hasPermissionLevel(effectiveRole, 'admin') ? (
               <>
