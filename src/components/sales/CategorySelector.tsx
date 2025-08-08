@@ -14,6 +14,7 @@ interface Category {
 // Icon mapping for categories
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Smartphone": Smartphone,
+  "Phones": Smartphone,
   "Accessories": Shield,
   "Audio": Battery,
   "Electronics": Plug,
@@ -33,6 +34,7 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
 // Color mapping for categories
 const categoryColors: Record<string, string> = {
   "Smartphone": "bg-primary hover:bg-primary/90",
+  "Phones": "bg-primary hover:bg-primary/90",
   "Accessories": "bg-destructive hover:bg-destructive/90", 
   "Audio": "bg-accent hover:bg-accent/90",
   "Electronics": "bg-primary hover:bg-primary/90", // Changed from secondary to primary for better visibility
