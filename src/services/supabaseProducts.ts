@@ -125,11 +125,15 @@ export const supabaseProductApi = {
         category:categories(id, name)
       `)
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error fetching product:', error);
       throw error;
+    }
+    
+    if (!data) {
+      throw new Error('Product not found');
     }
     
     return {

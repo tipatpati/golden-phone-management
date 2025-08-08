@@ -9,7 +9,7 @@ export function useOptimizedProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
       
-      // Get role from authoritative source (user_roles table)
+      // Get role from authoritative source (user_roles table); tolerate null
       const { data: currentRole } = await supabase.rpc('get_current_user_role');
       
       // Get profile data
@@ -17,7 +17,7 @@ export function useOptimizedProfile() {
         .from('profiles')
         .select('username, role')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       return {
         username: profile?.username || null,
@@ -41,7 +41,7 @@ export function useOptimizedEmployee() {
         .from('employees')
         .select('first_name, last_name, position')
         .eq('profile_id', user.id)
-        .single();
+        .maybeSingle();
       
       return data;
     },

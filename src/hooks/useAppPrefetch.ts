@@ -22,7 +22,7 @@ export function useAppPrefetch() {
             .from('profiles')
             .select('username, role')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           return data;
         },
         staleTime: 10 * 60 * 1000, // 10 minutes

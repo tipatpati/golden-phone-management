@@ -50,11 +50,15 @@ export const supabaseClientApi = {
       .from('clients')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error fetching client:', error);
       throw error;
+    }
+    
+    if (!data) {
+      throw new Error('Client not found');
     }
     
     return data;
