@@ -7,6 +7,7 @@ import { useCategories } from "@/services/useProducts";
 interface Category {
   id: number;
   name: string;
+  displayName: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
 }
@@ -50,6 +51,12 @@ const categoryColors: Record<string, string> = {
   "Repairs": "bg-destructive hover:bg-destructive/90",
 };
 
+// Display name mapping to standardize labels shown in UI
+const categoryDisplayNames: Record<string, string> = {
+  "Tablet": "Tablets",
+  "Tablets": "Tablets",
+};
+
 interface CategorySelectorProps {
   selectedCategory: number | null;
   onCategoryChange: (categoryId: number | null) => void;
@@ -65,6 +72,7 @@ export function CategorySelector({ selectedCategory, onCategoryChange }: Categor
     return dbCategories.map((dbCategory) => ({
       id: dbCategory.id,
       name: dbCategory.name,
+      displayName: categoryDisplayNames[dbCategory.name] || dbCategory.name,
       icon: categoryIcons[dbCategory.name] || Package,
       color: categoryColors[dbCategory.name] || "bg-muted hover:bg-muted/90"
     }));
@@ -130,7 +138,7 @@ export function CategorySelector({ selectedCategory, onCategoryChange }: Categor
                 `}
               >
                 <IconComponent className={`h-6 w-6 mb-2 ${isSelected ? 'text-white' : 'text-primary'}`} />
-                <span className="text-sm font-medium">{category.name}</span>
+                <span className="text-sm font-medium">{category.displayName}</span>
               </Label>
             </div>
           );
