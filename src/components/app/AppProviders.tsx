@@ -51,7 +51,6 @@ export function AppProviders({ children, includeAuth = false }: AppProvidersProp
         <TooltipProvider>
           {/* SecurityProvider completely disabled for all environments */}
           {content}
-          <Toaster />
           <Sonner />
         </TooltipProvider>
       </QueryClientProvider>
