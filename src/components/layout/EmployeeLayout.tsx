@@ -27,7 +27,7 @@ export function EmployeeLayout({ children, userRole }: EmployeeLayoutProps) {
       />
       
       <div className="flex-1 min-w-0">
-        <header className="sticky top-0 z-40 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
+        <header className="sticky top-0 z-40 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 md:px-8">
           {/* Menu Button for all screen sizes */}
           <Button 
             variant="ghost" 
@@ -55,8 +55,8 @@ export function EmployeeLayout({ children, userRole }: EmployeeLayoutProps) {
           
         
         <div className="flex-1 overflow-auto">
-          <main className="container mx-auto max-w-none p-3 md:p-4 lg:p-6 xl:p-8">
-            <div className="w-full max-w-none overflow-hidden">
+          <main className="page-container py-3 sm:py-4 md:py-6">
+            <div className="w-full overflow-hidden">
               {children}
             </div>
           </main>

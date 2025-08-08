@@ -14,7 +14,7 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
   
   return (
     <header 
-      className="sticky top-0 z-30 flex h-16 w-full items-center justify-between bg-surface border-b border-border px-4 sm:px-6 lg:px-8"
+      className="sticky top-0 z-30 flex h-16 w-full items-center justify-between bg-surface border-b border-border px-4 sm:px-6 md:px-8"
       style={{ boxShadow: 'var(--elevation-2)' }}
     >
       {/* Mobile menu button */}
