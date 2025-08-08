@@ -26,7 +26,7 @@ interface ModuleButton {
   route: string;
   color: string;
   bgColor: string;
-  feature?: string;
+  feature?: string | string[];
   permission?: string;
 }
 
@@ -53,7 +53,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       route: "/sales",
       color: "text-white",
       bgColor: "bg-[#2563eb] hover:bg-[#1e40af]", // Blue like "GARANZIA" in reference
-      feature: "gestione_vendite"
+      feature: ["gestione_vendite", "elaborazione_vendite", "supervisione_vendite"]
     },
     {
       title: "RIPARAZIONI",
@@ -115,6 +115,9 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
   // Filter modules based on user role and features
   const availableModules = allModules.filter(module => {
     if (!module.feature) return true; // Always show modules without feature restrictions (like profile)
+    if (Array.isArray(module.feature)) {
+      return module.feature.some(f => config.features.includes(f));
+    }
     return config.features.includes(module.feature);
   });
 
