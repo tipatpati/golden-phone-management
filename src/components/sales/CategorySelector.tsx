@@ -35,11 +35,11 @@ const categoryColors: Record<string, string> = {
   "Smartphone": "bg-primary hover:bg-primary/90",
   "Accessories": "bg-destructive hover:bg-destructive/90", 
   "Audio": "bg-accent hover:bg-accent/90",
-  "Electronics": "bg-secondary hover:bg-secondary/90",
+  "Electronics": "bg-primary hover:bg-primary/90", // Changed from secondary to primary for better visibility
   "Tablet": "bg-warning hover:bg-warning/90",
   "Laptop": "bg-info hover:bg-info/90",
   "Cable": "bg-success hover:bg-success/90",
-  "Charger": "bg-muted hover:bg-muted/90",
+  "Charger": "bg-warning hover:bg-warning/90", // Changed from muted to warning for better visibility
 };
 
 interface CategorySelectorProps {
