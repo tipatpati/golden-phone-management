@@ -42,13 +42,13 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
       </Button>
       
       <BaseDialog
-        title={`Edit Sale - ${sale.sale_number}`}
+        title={`Modifica Garentille - ${sale.sale_number}`}
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={handleSubmit}
         isLoading={updateSale.isPending}
-        submitText={updateSale.isPending ? "Updating..." : "Update Sale"}
-        cancelText="Cancel"
+        submitText={updateSale.isPending ? "Aggiornando..." : "Aggiorna Garentille"}
+        cancelText="Annulla"
         maxWidth="md"
       >
         <div className="space-y-4">

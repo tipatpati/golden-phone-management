@@ -388,7 +388,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       )}
       <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Ricevuta di Vendita</DialogTitle>
+          <DialogTitle>Ricevuta di Garentille</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 text-sm">
@@ -460,7 +460,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             {/* Document Header */}
             <div style={{textAlign: 'center', marginBottom: '8px', borderBottom: '1px dashed #000', paddingBottom: '4px'}}>
               <div style={{fontWeight: 'bold', fontSize: '7px'}}>DOCUMENTO DI</div>
-              <div style={{fontWeight: 'bold', fontSize: '7px'}}>GARANZIA</div>
+              <div style={{fontWeight: 'bold', fontSize: '7px'}}>GARENTILLE</div>
             </div>
 
             {/* Product Info */}

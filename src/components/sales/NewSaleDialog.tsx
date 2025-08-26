@@ -252,10 +252,10 @@ export function NewSaleDialog() {
       setSelectedCategory(null);
       setOpen(false);
       
-      toast.success("Vendita creata con successo! La ricevuta è pronta per la stampa.");
+      toast.success("Garentille creata con successo! La ricevuta è pronta per la stampa.");
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error("Errore nella creazione della vendita. Verificare i dati e riprovare.");
+      toast.error("Errore nella creazione della garentille. Verificare i dati e riprovare.");
     }
   };
 
@@ -284,12 +284,12 @@ export function NewSaleDialog() {
       <DialogTrigger asChild>
         <Button className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg font-bold py-6 px-8 min-h-[60px]">
           <Plus className="mr-3 h-7 w-7" />
-          NUOVA VENDITA
+          NUOVA GARENTILLE
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-6xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-h-[90vh] overflow-y-auto p-3 sm:p-4 md:p-6">
         <DialogHeader>
-          <DialogTitle>Crea Nuova Vendita</DialogTitle>
+          <DialogTitle>Crea Nuova Garentille</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
@@ -412,7 +412,7 @@ export function NewSaleDialog() {
               className="w-full min-h-[48px] text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
               size="lg"
             >
-              {createSale.isPending ? "Creazione..." : "Crea Vendita"}
+              {createSale.isPending ? "Creazione..." : "Crea Garentille"}
             </Button>
             <Button 
               type="button" 

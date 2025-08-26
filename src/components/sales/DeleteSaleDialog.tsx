@@ -29,20 +29,20 @@ export function DeleteSaleDialog({ sale }: DeleteSaleDialogProps) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Sale</AlertDialogTitle>
+          <AlertDialogTitle>Elimina Garentille</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete sale {sale.sale_number}? This action cannot be undone.
-            This will permanently remove the sale record and all associated items.
+            Sei sicuro di voler eliminare la garentille {sale.sale_number}? Questa azione non può essere annullata.
+            Questo rimuoverà permanentemente la registrazione della garentille e tutti gli elementi associati.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Annulla</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDelete}
             disabled={deleteSale.isPending}
             className="bg-red-600 hover:bg-red-700"
           >
-            {deleteSale.isPending ? "Deleting..." : "Delete Sale"}
+            {deleteSale.isPending ? "Eliminando..." : "Elimina Garentille"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
