@@ -6,17 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 export function RecentSales() {
-  const { data: allSales = [], isLoading } = useSales();
+  const { data: allGarentille = [], isLoading } = useSales();
   
   // Type cast the data array
-  const salesArray = (allSales as any[]) || [];
+  const garentilleArray = (allGarentille as any[]) || [];
 
-  // Set up real-time subscription for sales updates with unique channel name
+  // Set up real-time subscription for garentille updates with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('recent-sales-changes')
+      .channel('recent-garentille-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
-        console.log('Recent sales: Sales data updated');
+        console.log('Recent garentille: Garentille data updated');
       })
       .subscribe();
 
@@ -25,8 +25,8 @@ export function RecentSales() {
     };
   }, []);
   
-  // Get the 5 most recent sales
-  const recentSales = salesArray.slice(0, 5);
+  // Get the 5 most recent garentille
+  const recentGarentille = garentilleArray.slice(0, 5);
 
   const getClientName = (client: any) => {
     if (!client) return "Cliente Occasionale";
@@ -47,8 +47,8 @@ export function RecentSales() {
     return (
     <Card className="col-span-1 lg:col-span-2 border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Vendite Recenti</CardTitle>
-        <CardDescription className="text-xs sm:text-sm">Caricamento vendite recenti...</CardDescription>
+        <CardTitle className="text-base sm:text-lg">Garentille Recenti</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Caricamento garentille recenti...</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3 sm:space-y-4">
@@ -74,15 +74,15 @@ export function RecentSales() {
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Vendite Recenti</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Garentille Recenti</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {salesArray.length > 0 ? `Hai ${salesArray.length} vendite totali` : "Nessuna vendita ancora"}
+          {garentilleArray.length > 0 ? `Hai ${garentilleArray.length} garentille totali` : "Nessuna garentille ancora"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {recentSales.length > 0 ? (
+        {recentGarentille.length > 0 ? (
           <div className="space-y-3 sm:space-y-4">
-            {recentSales.map((sale) => {
+            {recentGarentille.map((sale) => {
               const clientName = getClientName(sale.client);
               const clientEmail = getClientEmail(sale.client);
               const initials = getClientInitials(clientName);
@@ -117,7 +117,7 @@ export function RecentSales() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna vendita ancora. Crea la tua prima vendita!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna garentille ancora. Crea la tua prima garentille!</p>
           </div>
         )}
       </CardContent>

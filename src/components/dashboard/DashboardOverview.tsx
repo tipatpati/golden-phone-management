@@ -47,7 +47,7 @@ export function DashboardOverview() {
   const handleCardClick = (title: string) => {
     switch (title) {
       case "Ricavi Totali":
-      case "Vendite Totali":
+      case "Garentille Totali":
         navigate("/sales");
         break;
       case "Nuovi Clienti":
@@ -71,7 +71,7 @@ export function DashboardOverview() {
       gradient: "from-blue-500 to-blue-600",
     },
     {
-      title: "Vendite Totali",
+      title: "Garentille Totali",
       value: todaySales.length.toString(),
       change: `${yesterdaySales.length > 0 ? ((todaySales.length - yesterdaySales.length) / yesterdaySales.length * 100).toFixed(1) : '0'}%`,
       isPositive: todaySales.length >= yesterdaySales.length,

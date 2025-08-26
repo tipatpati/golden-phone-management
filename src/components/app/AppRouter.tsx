@@ -14,7 +14,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 // Lazy load major route components for better performance
 const Dashboard = React.lazy(() => import("@/pages/Dashboard"));
 const Clients = React.lazy(() => import("@/pages/Clients"));
-const Sales = React.lazy(() => import("@/pages/Sales"));
+const Garentille = React.lazy(() => import("@/pages/Sales"));
 const Inventory = React.lazy(() => import("@/pages/Inventory"));
 const Suppliers = React.lazy(() => import("@/pages/Suppliers"));
 const Repairs = React.lazy(() => import("@/pages/Repairs"));
@@ -103,7 +103,7 @@ export function AppRouter() {
                   <ProtectedRoute>
                     <TabletLayout userRole={effectiveRole}>
                       <Suspense fallback={<PageLoader />}>
-                        <Sales />
+                        <Garentille />
                       </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>
@@ -211,7 +211,7 @@ export function AppRouter() {
                     <ProtectedRoute>
                       <TabletLayout userRole={effectiveRole}>
                         <Suspense fallback={<PageLoader />}>
-                          <Sales />
+                          <Garentille />
                         </Suspense>
                       </TabletLayout>
                     </ProtectedRoute>

@@ -12,19 +12,19 @@ import { roleUtils } from "@/utils/roleUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 
-const Sales = () => {
+const Garentille = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: sales = [], isLoading, error } = useSales();
+  const { data: garentille = [], isLoading, error } = useSales();
   const { userRole } = useAuth();
   
   // Check if user has admin-level permissions to see analytics
   const canViewAnalytics = userRole && roleUtils.hasPermissionLevel(userRole, 'admin');
   
-  // Ensure sales is always an array
-  const salesArray = Array.isArray(sales) ? sales : [];
+  // Ensure garentille is always an array
+  const garentilleArray = Array.isArray(garentille) ? garentille : [];
 
-  // Filter sales based on search term
-  const filteredSales = salesArray.filter(sale => 
+  // Filter garentille based on search term
+  const filteredGarentille = garentilleArray.filter(sale => 
     sale.id?.toString().includes(searchTerm.toLowerCase()) ||
     sale.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.status?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -47,7 +47,7 @@ const Sales = () => {
             <div className="text-center">
               <h3 className="font-semibold">Errore nel caricamento</h3>
               <p className="text-sm text-muted-foreground">
-                Impossibile caricare le vendite. Riprova più tardi.
+                Impossibile caricare le garentille. Riprova più tardi.
               </p>
             </div>
           </CardContent>
@@ -64,15 +64,15 @@ const Sales = () => {
         
         {/* Only show analytics for admin users */}
         {canViewAnalytics && (
-          <SalesStats sales={salesArray} />
+          <SalesStats sales={garentilleArray} />
         )}
         
         <SalesSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         
-        <SalesList sales={filteredSales} />
+        <SalesList sales={filteredGarentille} />
       </div>
     </div>
   );
 };
 
-export default Sales;
+export default Garentille;

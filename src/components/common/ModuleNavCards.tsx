@@ -24,8 +24,8 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       requiredPermissions: ['inventory'] // Salespeople shouldn't access inventory
     },
     {
-      title: "Crea Vendita",
-      description: "Inizia una nuova vendita prodotto",
+      title: "Crea Garentille",
+      description: "Inizia una nuova garentille prodotto",
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",
@@ -80,7 +80,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
             // Define colors for each module type
             const getModuleColors = (title: string) => {
               switch (title.toLowerCase()) {
-                case 'crea vendita':
+                case 'crea garentille':
                   return {
                     bgColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
                     textColor: "text-white"

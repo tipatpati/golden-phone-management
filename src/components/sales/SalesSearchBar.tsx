@@ -17,7 +17,7 @@ export function SalesSearchBar({ searchTerm, onSearchChange }: SalesSearchBarPro
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cerca per numero vendita, nome cliente o note..."
+              placeholder="Cerca per numero garentille, nome cliente o note..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
