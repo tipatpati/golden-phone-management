@@ -55,26 +55,87 @@ serve(async (req) => {
     
     if (existingUser) {
       console.log('User already exists with email:', email)
-      
-      // Log failed attempt for security monitoring
+
+      // Instead of failing, ensure profile and role exist, then return success
+      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+
+      // Derive a username
+      const username = (first_name && last_name)
+        ? `${first_name}.${last_name}`.toLowerCase()
+        : (existingUser.user_metadata?.username || email.split('@')[0])
+
+      // Ensure profile exists
+      const { data: profileRow, error: profileFetchError } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('id', existingUser.id)
+        .single()
+
+      if (profileFetchError && profileFetchError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', profileFetchError)
+      }
+
+      if (!profileRow) {
+        const { error: profileCreateError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: existingUser.id,
+            username,
+            role
+          })
+        if (profileCreateError) {
+          console.error('Profile creation failed for existing user:', profileCreateError)
+          return new Response(
+            JSON.stringify({ error: "Errore nella creazione del profilo utente esistente" }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } else {
+        // Try to keep role in sync (best-effort)
+        const { error: profileUpdateError } = await supabaseAdmin
+          .from('profiles')
+          .update({ role })
+          .eq('id', existingUser.id)
+        if (profileUpdateError) {
+          console.warn('Could not update role on existing profile:', profileUpdateError)
+        }
+      }
+
+      // Ensure role mapping exists (idempotent)
+      const { error: roleUpsertError } = await supabaseAdmin
+        .from('user_roles')
+        .upsert({ user_id: existingUser.id, role }, { onConflict: 'user_id,role', ignoreDuplicates: true })
+      if (roleUpsertError) {
+        console.error('User role upsert failed for existing user:', roleUpsertError)
+        return new Response(
+          JSON.stringify({ error: 'Errore nella configurazione del ruolo utente esistente' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Audit log for linking existing auth user
       await supabaseAdmin
         .from('security_audit_log')
         .insert({
-          event_type: 'failed_employee_creation',
-          event_data: { 
-            reason: 'email_exists', 
-            email, 
-            client_ip: clientIP 
+          event_type: 'employee_linked_existing_auth',
+          event_data: {
+            reason: 'email_exists',
+            email,
+            existing_user_id: existingUser.id,
+            role,
+            client_ip: clientIP
           },
           ip_address: clientIP
         })
-      
+
       return new Response(
-        JSON.stringify({ 
-          error: 'Un utente con questa email esiste già nel sistema',
-          details: 'L\'indirizzo email fornito è già registrato nel sistema. Utilizzare un indirizzo email diverso.'
+        JSON.stringify({
+          user_id: existingUser.id,
+          email: existingUser.email,
+          success: true,
+          existing_user: true
         }),
-        { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
