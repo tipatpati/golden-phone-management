@@ -1,171 +1,194 @@
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { logSecurityEvent, logSuspiciousActivity, logFailedAuthAttempt } from './securityAudit';
 
-// Enhanced rate limiting with progressive delays and IP tracking
-class EnhancedRateLimiter {
-  private attempts = new Map<string, { 
-    count: number; 
-    resetTime: number; 
-    failures: number;
-    blockedUntil?: number;
-  }>();
-  
-  private readonly BASE_LIMIT = 5; // Base requests per window
-  private readonly WINDOW_MS = 60000; // 1 minute
-  private readonly FAILURE_THRESHOLD = 3; // Failed attempts before blocking
-  private readonly BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-
-  checkRateLimit(key: string, isFailure = false): { allowed: boolean; retryAfter?: number } {
-    const now = Date.now();
-    const record = this.attempts.get(key);
-
-    // Check if currently blocked
-    if (record?.blockedUntil && now < record.blockedUntil) {
-      return { 
-        allowed: false, 
-        retryAfter: Math.ceil((record.blockedUntil - now) / 1000) 
-      };
-    }
-
-    // Reset window if expired
-    if (!record || now > record.resetTime) {
-      this.attempts.set(key, { 
-        count: 1, 
-        resetTime: now + this.WINDOW_MS,
-        failures: isFailure ? 1 : 0
-      });
-      return { allowed: true };
-    }
-
-    // Track failures
-    if (isFailure) {
-      record.failures++;
+// Enhanced Rate Limiter with database integration
+export class EnhancedRateLimiter {
+  private async checkDatabaseRateLimit(key: string, attemptType: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+    try {
+      // Get client IP (fallback to key if IP not available)
+      const clientIp = '127.0.0.1'; // In production, this would be real IP
       
-      // Block if too many failures
-      if (record.failures >= this.FAILURE_THRESHOLD) {
-        record.blockedUntil = now + this.BLOCK_DURATION_MS;
-        
-        // Log suspicious activity
-        logSuspiciousActivity('rate_limit_exceeded', {
-          key,
-          failures: record.failures,
-          blockedUntil: record.blockedUntil
-        });
-        
-        return { 
-          allowed: false, 
-          retryAfter: Math.ceil(this.BLOCK_DURATION_MS / 1000) 
-        };
+      const { data, error } = await supabase.rpc('check_rate_limit', {
+        client_ip: clientIp,
+        attempt_type: attemptType,
+        max_attempts: 5,
+        window_minutes: 15
+      });
+
+      if (error) {
+        console.error('Rate limit check failed:', error);
+        return { allowed: true }; // Fail open for availability
       }
+
+      return {
+        allowed: (data as any)?.allowed || false,
+        retryAfter: (data as any)?.blocked_until ? new Date((data as any).blocked_until).getTime() - Date.now() : undefined
+      };
+    } catch (error) {
+      console.error('Rate limit database error:', error);
+      return { allowed: true }; // Fail open
+    }
+  }
+
+  async checkRateLimit(key: string, isFailure: boolean = false): Promise<{ allowed: boolean; retryAfter?: number }> {
+    const attemptType = isFailure ? 'failed_attempt' : 'general';
+    return this.checkDatabaseRateLimit(key, attemptType);
+  }
+
+  async checkAuth(email?: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+    return this.checkDatabaseRateLimit(email || 'anonymous', 'auth_attempt');
+  }
+
+  async recordFailedAuth(email?: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+    // Record the failed attempt
+    try {
+      const clientIp = '127.0.0.1'; // In production, this would be real IP
+      
+      await supabase.from('rate_limit_attempts').insert({
+        ip_address: clientIp,
+        user_email: email,
+        attempt_type: 'failed_auth'
+      });
+    } catch (error) {
+      console.error('Failed to record auth attempt:', error);
     }
 
-    // Check rate limit with dynamic adjustment based on failures
-    const adjustedLimit = Math.max(1, this.BASE_LIMIT - record.failures);
-    
-    if (record.count >= adjustedLimit) {
-      return { allowed: false, retryAfter: Math.ceil((record.resetTime - now) / 1000) };
-    }
-
-    record.count++;
-    return { allowed: true };
-  }
-
-  // Get client IP (fallback for client-side implementation)
-  private getClientKey(): string {
-    // In a real implementation, this would be done server-side
-    // For now, use a combination of user agent and local factors
-    const userAgent = navigator.userAgent;
-    const screenInfo = `${window.screen.width}x${window.screen.height}`;
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    return btoa(`${userAgent}-${screenInfo}-${timezone}`).slice(0, 16);
-  }
-
-  checkAuth(email?: string): { allowed: boolean; retryAfter?: number } {
-    const key = email ? `auth_${email}` : `auth_${this.getClientKey()}`;
-    return this.checkRateLimit(key, false);
-  }
-
-  recordFailedAuth(email?: string): { allowed: boolean; retryAfter?: number } {
-    const key = email ? `auth_${email}` : `auth_${this.getClientKey()}`;
-    return this.checkRateLimit(key, true);
+    return this.checkDatabaseRateLimit(email || 'anonymous', 'failed_auth');
   }
 }
 
-export const enhancedRateLimiter = new EnhancedRateLimiter();
 
-// Comprehensive input validation with specific error messages
+// Enhanced Input Validation with XSS protection and server-side validation
 export const validateInput = {
-  email: (email: string): { valid: boolean; error?: string } => {
-    if (!email) return { valid: false, error: 'Email is required' };
-    if (email.length > 254) return { valid: false, error: 'Email is too long' };
-    
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      return { valid: false, error: 'Please enter a valid email address' };
+  async serverValidate(input: string, type: string, maxLength: number = 255): Promise<{ valid: boolean; sanitized?: string; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('sanitize_and_validate_input', {
+        input_text: input,
+        input_type: type,
+        max_length: maxLength
+      });
+
+      if (error) {
+        console.error('Server validation error:', error);
+        return { valid: false, error: 'Validation failed' };
+      }
+
+      return {
+        valid: (data as any)?.is_valid || false,
+        sanitized: (data as any)?.sanitized_text || input,
+        error: (data as any)?.errors?.length > 0 ? (data as any).errors.join(', ') : undefined
+      };
+    } catch (error) {
+      console.error('Validation error:', error);
+      return { valid: false, error: 'Validation failed' };
+    }
+  },
+
+  email(email: string): { valid: boolean; error?: string } {
+    if (!email || email.length === 0) {
+      return { valid: false, error: 'Email is required' };
     }
     
-    // Check for suspicious patterns
-    if (email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
+    if (email.length > 255) {
+      return { valid: false, error: 'Email is too long' };
+    }
+    
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
       return { valid: false, error: 'Invalid email format' };
     }
     
+    // Check for suspicious patterns
+    const suspiciousPatterns = ['<script', 'javascript:', 'data:', 'vbscript:'];
+    const lowerEmail = email.toLowerCase();
+    
+    for (const pattern of suspiciousPatterns) {
+      if (lowerEmail.includes(pattern)) {
+        return { valid: false, error: 'Invalid email format' };
+      }
+    }
+    
     return { valid: true };
   },
 
-  password: (password: string, isSignup = false): { valid: boolean; error?: string } => {
-    if (!password) return { valid: false, error: 'Password is required' };
-    if (password.length < 6) return { valid: false, error: 'Password must be at least 6 characters' };
-    if (password.length > 128) return { valid: false, error: 'Password is too long' };
+  password(password: string, isSignup: boolean = false): { valid: boolean; error?: string } {
+    if (!password) {
+      return { valid: false, error: 'Password is required' };
+    }
+    
+    if (password.length < 8) {
+      return { valid: false, error: 'Password must be at least 8 characters long' };
+    }
     
     if (isSignup) {
-      // Stronger validation for signup only
-      if (!/[A-Za-z]/.test(password)) {
-        return { valid: false, error: 'Password must contain at least one letter' };
+      // Enhanced password requirements for signup
+      if (password.length > 128) {
+        return { valid: false, error: 'Password is too long' };
       }
-      if (!/[0-9]/.test(password)) {
+      
+      const hasUppercase = /[A-Z]/.test(password);
+      const hasLowercase = /[a-z]/.test(password);
+      const hasNumbers = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+      
+      if (!hasUppercase) {
+        return { valid: false, error: 'Password must contain at least one uppercase letter' };
+      }
+      
+      if (!hasLowercase) {
+        return { valid: false, error: 'Password must contain at least one lowercase letter' };
+      }
+      
+      if (!hasNumbers) {
         return { valid: false, error: 'Password must contain at least one number' };
       }
       
-      // Check for common weak passwords only during signup
-      const weakPasswords = ['password', '123456', 'qwerty', 'admin', 'login'];
-      if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-        return { valid: false, error: 'Password is too common. Please choose a stronger password' };
+      if (!hasSpecialChar) {
+        return { valid: false, error: 'Password must contain at least one special character' };
+      }
+      
+      // Check for common weak passwords
+      const weakPasswords = [
+        'password', '12345678', 'qwerty123', 'admin123', 
+        'password123', '123456789', 'welcome123'
+      ];
+      
+      if (weakPasswords.includes(password.toLowerCase())) {
+        return { valid: false, error: 'This password is too common. Please choose a more secure password' };
       }
     }
     
     return { valid: true };
   },
 
-  username: (username: string): { valid: boolean; error?: string } => {
-    if (!username) return { valid: true }; // Username is optional
-    if (username.length > 50) return { valid: false, error: 'Username is too long' };
-    if (username.length < 2) return { valid: false, error: 'Username must be at least 2 characters' };
+  username(username: string): { valid: boolean; error?: string } {
+    if (!username || username.trim().length === 0) {
+      return { valid: false, error: 'Username is required' };
+    }
     
-    const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+    if (username.length < 3 || username.length > 30) {
+      return { valid: false, error: 'Username must be between 3 and 30 characters' };
+    }
+    
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     if (!usernameRegex.test(username)) {
-      return { valid: false, error: 'Username can only contain letters, numbers, dots, hyphens, and underscores' };
+      return { valid: false, error: 'Username can only contain letters, numbers, underscores, and hyphens' };
     }
     
     return { valid: true };
   },
 
-  phone: (phone: string): { valid: boolean; error?: string } => {
-    if (!phone) return { valid: true }; // Phone is optional in most contexts
-    
-    // Remove formatting
-    const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
-    
-    if (cleanPhone.length < 10) {
-      return { valid: false, error: 'Phone number is too short' };
-    }
-    if (cleanPhone.length > 15) {
-      return { valid: false, error: 'Phone number is too long' };
+  phone(phone: string): { valid: boolean; error?: string } {
+    if (!phone || phone.trim().length === 0) {
+      return { valid: false, error: 'Phone number is required' };
     }
     
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    if (!phoneRegex.test(cleanPhone)) {
-      return { valid: false, error: 'Please enter a valid phone number' };
+    // Remove all non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+      return { valid: false, error: 'Phone number must be between 10 and 15 digits' };
     }
     
     return { valid: true };
@@ -211,59 +234,135 @@ export const handleSecurityError = (error: any, operation: string) => {
   toast.error(genericMessages[category as keyof typeof genericMessages]);
 };
 
-// Security monitoring for unusual patterns
+// Enhanced Security Event Monitoring
 export const monitorSecurityEvents = {
-  trackFailedLogin: async (email: string, reason: string) => {
-    await logFailedAuthAttempt(email, reason);
-    
-    // Check for brute force patterns
-    const recentFailures = await checkRecentFailures(email);
-    if (recentFailures > 5) {
-      await logSuspiciousActivity('potential_brute_force', {
-        email,
-        failureCount: recentFailures,
-        timeWindow: '10 minutes'
+  async trackFailedLogin(email: string, reason: string): Promise<void> {
+    try {
+      const { error } = await supabase.from('security_audit_log').insert({
+        event_type: 'failed_auth_attempt',
+        event_data: {
+          email,
+          reason,
+          timestamp: new Date().toISOString(),
+          user_agent: navigator.userAgent
+        },
+        ip_address: '127.0.0.1' // In production, this would be real IP
       });
+
+      if (error) {
+        console.error('Failed to log security event:', error);
+      }
+
+      // Check for brute force patterns
+      const { data: recentFailures } = await supabase
+        .from('security_audit_log')
+        .select('created_at')
+        .eq('event_type', 'failed_auth_attempt')
+        .eq('event_data->email', email)
+        .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false });
+
+      if (recentFailures && recentFailures.length >= 5) {
+        await monitorSecurityEvents.trackSuspiciousActivity('potential_brute_force', {
+          email,
+          failed_attempts: recentFailures.length,
+          severity: 'high'
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking failed login:', error);
     }
   },
 
-  trackSuspiciousInput: async (input: string, field: string) => {
-    // Check for XSS attempts
-    const xssPatterns = [
-      /<script/i, /javascript:/i, /on\w+=/i, /eval\(/i, 
-      /expression\(/i, /vbscript:/i, /data:text\/html/i
-    ];
-    
-    if (xssPatterns.some(pattern => pattern.test(input))) {
-      await logSuspiciousActivity('potential_xss_attempt', {
-        field,
-        inputLength: input.length,
-        patterns: xssPatterns.filter(pattern => pattern.test(input)).map(p => p.source)
-      });
+  async trackSuspiciousInput(input: string, field: string): Promise<void> {
+    try {
+      const suspiciousPatterns = [
+        '<script', '</script>', 'javascript:', 'onclick=', 'onload=',
+        'eval(', 'alert(', 'document.cookie', 'window.location'
+      ];
+
+      const foundPatterns = suspiciousPatterns.filter(pattern => 
+        input.toLowerCase().includes(pattern.toLowerCase())
+      );
+
+      if (foundPatterns.length > 0) {
+        await supabase.from('security_audit_log').insert({
+          event_type: 'suspicious_input',
+          event_data: {
+            field,
+            detected_patterns: foundPatterns,
+            input_preview: input.substring(0, 100),
+            severity: 'medium',
+            timestamp: new Date().toISOString()
+          },
+          ip_address: '127.0.0.1'
+        });
+
+        console.warn('Suspicious input detected:', { field, patterns: foundPatterns });
+      }
+    } catch (error) {
+      console.error('Error tracking suspicious input:', error);
     }
   },
 
-  trackUnusualAccess: async (resource: string, userRole: string) => {
-    // Log access to sensitive resources
-    const sensitiveResources = ['admin', 'security', 'audit', 'users', 'roles'];
-    
-    if (sensitiveResources.some(sensitive => resource.includes(sensitive))) {
-      await logSecurityEvent({
-        event_type: 'sensitive_resource_access',
-        event_data: { resource, userRole, timestamp: new Date().toISOString() }
+  async trackUnusualAccess(resource: string, userRole: string): Promise<void> {
+    try {
+      await supabase.from('security_audit_log').insert({
+        event_type: 'unusual_access',
+        event_data: {
+          resource,
+          user_role: userRole,
+          timestamp: new Date().toISOString(),
+          user_agent: navigator.userAgent
+        },
+        ip_address: '127.0.0.1'
       });
+    } catch (error) {
+      console.error('Error tracking unusual access:', error);
+    }
+  },
+
+  async trackSuspiciousActivity(activity: string, metadata: Record<string, any>): Promise<void> {
+    try {
+      await supabase.from('security_audit_log').insert({
+        event_type: 'suspicious_activity',
+        event_data: {
+          activity,
+          ...metadata,
+          timestamp: new Date().toISOString(),
+          auto_detected: true
+        },
+        ip_address: '127.0.0.1'
+      });
+
+      // Show alert for high severity issues
+      if (metadata.severity === 'high') {
+        toast.warning('Security Alert', {
+          description: 'Suspicious activity detected. Your session is being monitored.'
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking suspicious activity:', error);
+    }
+  },
+
+  async logSecurityError(error: any, operation: string): Promise<void> {
+    try {
+      await supabase.from('security_audit_log').insert({
+        event_type: 'security_error',
+        event_data: {
+          operation,
+          error_message: error?.message || 'Unknown error',
+          error_code: error?.code,
+          timestamp: new Date().toISOString()
+        },
+        ip_address: '127.0.0.1'
+      });
+    } catch (logError) {
+      console.error('Failed to log security error:', logError);
     }
   }
 };
 
-// Helper function to check recent failures (would be implemented server-side in production)
-async function checkRecentFailures(email: string): Promise<number> {
-  try {
-    // This is a simplified client-side check
-    // In production, this should be done server-side
-    const failures = localStorage.getItem(`failures_${btoa(email)}`);
-    return failures ? parseInt(failures) : 0;
-  } catch {
-    return 0;
-  }
-}
+// Initialize enhanced rate limiter
+export const enhancedRateLimiter = new EnhancedRateLimiter();

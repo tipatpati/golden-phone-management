@@ -530,6 +530,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_attempts: {
+        Row: {
+          attempt_type: string
+          blocked_until: string | null
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          user_email: string | null
+        }
+        Insert: {
+          attempt_type: string
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          user_email?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          user_email?: string | null
+        }
+        Relationships: []
+      }
       repair_parts: {
         Row: {
           created_at: string
@@ -1013,6 +1040,15 @@ export type Database = {
         Args: { user_email: string }
         Returns: number
       }
+      check_rate_limit: {
+        Args: {
+          attempt_type: string
+          client_ip: unknown
+          max_attempts?: number
+          window_minutes?: number
+        }
+        Returns: Json
+      }
       cleanup_invalid_auth_state: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1023,6 +1059,10 @@ export type Database = {
       }
       detect_concurrent_sessions: {
         Args: { user_uuid: string }
+        Returns: boolean
+      }
+      detect_suspicious_session_activity: {
+        Args: { target_user_id: string }
         Returns: boolean
       }
       generate_repair_number: {
@@ -1075,6 +1115,10 @@ export type Database = {
       is_ip_blocked: {
         Args: { client_ip: unknown }
         Returns: boolean
+      }
+      sanitize_and_validate_input: {
+        Args: { input_text: string; input_type: string; max_length?: number }
+        Returns: Json
       }
       validate_product_stock: {
         Args: { product_items: Json }

@@ -101,10 +101,10 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
     e.preventDefault();
     
     // Check rate limiting
-    const rateCheck = enhancedRateLimiter.checkAuth(email);
+    const rateCheck = await enhancedRateLimiter.checkAuth(email);
     if (!rateCheck.allowed) {
       setRetryAfter(rateCheck.retryAfter || 60);
-      toast.error(`Too many attempts. Please wait ${rateCheck.retryAfter} seconds.`);
+      toast.error(`Too many attempts. Please wait ${Math.ceil((rateCheck.retryAfter || 0) / 1000)} seconds.`);
       return;
     }
     
@@ -124,7 +124,7 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
       onLoginSuccess();
     } catch (error) {
       // Record failed attempt for rate limiting
-      const failureCheck = enhancedRateLimiter.recordFailedAuth(email);
+      const failureCheck = await enhancedRateLimiter.recordFailedAuth(email);
       if (!failureCheck.allowed) {
         setRetryAfter(failureCheck.retryAfter || 60);
       }
@@ -142,10 +142,10 @@ export function SecureLoginForm({ onLoginSuccess }: SecureLoginFormProps) {
     e.preventDefault();
     
     // Check rate limiting
-    const rateCheck = enhancedRateLimiter.checkAuth(email);
+    const rateCheck = await enhancedRateLimiter.checkAuth(email);
     if (!rateCheck.allowed) {
       setRetryAfter(rateCheck.retryAfter || 60);
-      toast.error(`Too many attempts. Please wait ${rateCheck.retryAfter} seconds.`);
+      toast.error(`Too many attempts. Please wait ${Math.ceil((rateCheck.retryAfter || 0) / 1000)} seconds.`);
       return;
     }
     

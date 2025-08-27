@@ -7,7 +7,7 @@ interface SecurityContextType {
   threatCount: number;
   isSecure: boolean;
   reportSuspiciousActivity: (activity: string, metadata?: Record<string, any>) => void;
-  checkRateLimit: (key: string) => boolean;
+  checkRateLimit: (key: string) => Promise<boolean>;
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
@@ -157,8 +157,9 @@ export function EnhancedSecurityProvider({ children }: { children: React.ReactNo
     }
   };
 
-  const checkRateLimit = (key: string): boolean => {
-    return enhancedRateLimiter.checkRateLimit(key).allowed;
+  const checkRateLimit = async (key: string): Promise<boolean> => {
+    const result = await enhancedRateLimiter.checkRateLimit(key);
+    return result.allowed;
   };
 
   return (
