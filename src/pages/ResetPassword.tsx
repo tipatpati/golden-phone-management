@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,29 +23,72 @@ export default function ResetPassword() {
   const [errors, setErrors] = useState({ password: '', confirm: '' });
   const [isValidSession, setIsValidSession] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [checkingLink, setCheckingLink] = useState(true);
 
   useEffect(() => {
-    // Check if we have valid reset tokens
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const refreshToken = hashParams.get('refresh_token');
-    
-    if (accessToken && refreshToken) {
-      setIsValidSession(true);
-      // Set the session with the tokens
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      } as any);
-    } else {
-      toast({
-        title: "Invalid reset link",
-        description: "This password reset link is invalid or has expired.",
-        variant: "destructive"
-      });
-      navigate('/');
-    }
-  }, [navigate]);
+    let isMounted = true;
+
+    const init = async () => {
+      try {
+        // 1) If we already have a session, we're good
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          if (!isMounted) return;
+          setIsValidSession(true);
+          return;
+        }
+
+        // 2) PKCE flow: try to exchange ?code=... for a session
+        const codeFromQuery = searchParams.get('code') || new URLSearchParams(window.location.hash.substring(1)).get('code');
+        if (codeFromQuery) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession({ code: codeFromQuery });
+          if (error) {
+            toast({
+              title: "Invalid reset link",
+              description: "This password reset link is invalid or has expired.",
+              variant: "destructive"
+            });
+            navigate('/');
+            return;
+          }
+          if (!isMounted) return;
+          setIsValidSession(true);
+          return;
+        }
+
+        // 3) Legacy/hash tokens fallback
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          } as any);
+          if (!isMounted) return;
+          setIsValidSession(true);
+          return;
+        }
+
+        // 4) Nothing worked: invalid link
+        toast({
+          title: "Invalid reset link",
+          description: "This password reset link is invalid or has expired.",
+          variant: "destructive"
+        });
+        navigate('/');
+      } finally {
+        if (isMounted) setCheckingLink(false);
+      }
+    };
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, searchParams]);
 
   const validatePassword = (password: string) => {
     const validation = validateInput.password(password, true);
@@ -133,6 +177,10 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  if (checkingLink && !success) {
+    return null;
+  }
 
   if (!isValidSession && !success) {
     return null; // Will redirect to home
