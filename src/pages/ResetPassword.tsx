@@ -41,7 +41,7 @@ export default function ResetPassword() {
         // 2) PKCE flow: try to exchange ?code=... for a session
         const codeFromQuery = searchParams.get('code') || new URLSearchParams(window.location.hash.substring(1)).get('code');
         if (codeFromQuery) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession({ code: codeFromQuery });
+          const { data, error } = await supabase.auth.exchangeCodeForSession(codeFromQuery);
           if (error) {
             toast({
               title: "Invalid reset link",
