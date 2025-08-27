@@ -8,15 +8,16 @@ import { toast } from "@/components/ui/sonner";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { Logo } from "@/components/shared/Logo";
 import { PasswordResetDialog } from "@/components/password/PasswordResetDialog";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
-  const {
-    login
-  } = useAuth();
+  
+  const { login } = useAuth();
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const sanitizedEmail = sanitizeEmail(email) || sanitizeInput(email);
@@ -45,6 +46,7 @@ export default function Login() {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Enhanced Background Pattern */}
@@ -62,11 +64,11 @@ export default function Login() {
             <div className="flex justify-center mb-6 transform transition-transform duration-300 hover:scale-105">
               <Logo size={160} className="mx-auto drop-shadow-lg" />
             </div>
-             <div className="space-y-2">
-               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-md">Bentornato!</h1>
-               <p className="text-white/90 text-sm sm:text-base leading-relaxed drop-shadow-sm">
-                 Accedi al Sistema di Gestione GOLDEN PHONE
-               </p>
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-md">Bentornato!</h1>
+              <p className="text-white/90 text-sm sm:text-base leading-relaxed drop-shadow-sm">
+                Accedi al Sistema di Gestione GOLDEN PHONE
+              </p>
             </div>
           </div>
 
@@ -141,14 +143,12 @@ export default function Login() {
             </Button>
 
             {/* Additional Info */}
-             <div className="text-center pt-2">
-               <p className="text-xs text-white/80 leading-relaxed drop-shadow-sm">
-                 Inserisci le tue credenziali per accedere al sistema. Il tuo ruolo e i permessi verranno rilevati automaticamente.
-               </p>
-             </div>
-           </form>
-
-          </div>
+            <div className="text-center pt-2">
+              <p className="text-xs text-white/80 leading-relaxed drop-shadow-sm">
+                Inserisci le tue credenziali per accedere al sistema. Il tuo ruolo e i permessi verranno rilevati automaticamente.
+              </p>
+            </div>
+          </form>
         </div>
 
         <PasswordResetDialog
