@@ -7,11 +7,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { sanitizeInput, sanitizeEmail } from "@/utils/inputSanitizer";
 import { Logo } from "@/components/shared/Logo";
+import { PasswordResetDialog } from "@/components/password/PasswordResetDialog";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const {
     login
   } = useAuth();
@@ -115,6 +117,18 @@ export default function Login() {
               </div>
             </div>
 
+            {/* Forgot Password Link */}
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-white/80 hover:text-white text-sm p-0 h-auto hover:bg-transparent"
+                onClick={() => setPasswordResetOpen(true)}
+              >
+                Hai dimenticato la password?
+              </Button>
+            </div>
+
             {/* Submit Button */}
             <Button 
               type="submit" 
@@ -133,14 +147,21 @@ export default function Login() {
              </div>
            </form>
 
-         </div>
+          </div>
+        </div>
 
-         {/* Footer */}
-         <div className="text-center">
-           <p className="text-xs text-white/50 opacity-75">
-             Sistema di Gestione GOLDEN PHONE
-           </p>
-         </div>
+        <PasswordResetDialog
+          open={passwordResetOpen}
+          onOpenChange={setPasswordResetOpen}
+        />
+
+        {/* Footer */}
+        <div className="text-center">
+          <p className="text-xs text-white/50 opacity-75">
+            Sistema di Gestione GOLDEN PHONE
+          </p>
+        </div>
       </div>
-    </div>;
+    </div>
+  );
 }
