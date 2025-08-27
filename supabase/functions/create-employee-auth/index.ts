@@ -112,31 +112,80 @@ serve(async (req) => {
 
     console.log('Auth user created successfully:', authUser.user.id)
     
-    // Log successful employee creation for security audit
-    await supabaseAdmin
-      .from('security_audit_log')
-      .insert({
-        event_type: 'employee_created',
-        event_data: { 
-          created_user_id: authUser.user.id,
-          created_email: authUser.user.email,
-          role,
-          client_ip: clientIP
-        },
-        ip_address: clientIP
-      })
+    try {
+      // Create profile entry for the new user
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          id: authUser.user.id,
+          username: first_name && last_name ? `${first_name}.${last_name}`.toLowerCase() : email.split('@')[0],
+          role: role
+        })
 
-    return new Response(
-      JSON.stringify({ 
-        user_id: authUser.user.id,
-        email: authUser.user.email,
-        success: true
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      if (profileError) {
+        console.error('Profile creation failed:', profileError)
+        // Clean up auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+        return new Response(
+          JSON.stringify({ error: 'Errore nella creazione del profilo utente' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
-    )
+
+      // Create user role entry
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: authUser.user.id,
+          role: role
+        })
+
+      if (roleError) {
+        console.error('User role creation failed:', roleError)
+        // Clean up auth user and profile if role creation fails
+        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+        return new Response(
+          JSON.stringify({ error: 'Errore nella creazione del ruolo utente' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log('Profile and role created successfully for user:', authUser.user.id)
+      
+      // Log successful employee creation for security audit
+      await supabaseAdmin
+        .from('security_audit_log')
+        .insert({
+          event_type: 'employee_created',
+          event_data: { 
+            created_user_id: authUser.user.id,
+            created_email: authUser.user.email,
+            role,
+            client_ip: clientIP
+          },
+          ip_address: clientIP
+        })
+
+      return new Response(
+        JSON.stringify({ 
+          user_id: authUser.user.id,
+          email: authUser.user.email,
+          success: true
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    } catch (error) {
+      console.error('Error in profile/role creation:', error)
+      // Clean up auth user if any step fails
+      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+      return new Response(
+        JSON.stringify({ error: 'Errore nella configurazione dell\'account' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
   } catch (error) {
     console.error('Edge function error:', error)

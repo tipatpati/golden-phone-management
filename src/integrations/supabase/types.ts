@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -986,22 +986,22 @@ export type Database = {
     Functions: {
       admin_add_user_role: {
         Args: {
-          target_user_id: string
           new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: boolean
       }
       admin_remove_user_role: {
         Args: {
-          target_user_id: string
           remove_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: boolean
       }
       admin_update_user_role: {
         Args: {
-          target_user_id: string
           new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: boolean
       }
@@ -1044,21 +1044,21 @@ export type Database = {
       get_employee_profile: {
         Args: { target_user_id?: string }
         Returns: {
-          id: string
-          employee_id: string
-          user_id: string
-          monthly_sales_target: number
-          quarterly_sales_target: number
-          yearly_sales_target: number
+          achievements: Json
+          badges: Json
+          commission_rate: number
+          current_bonus_earned: number
           current_monthly_sales: number
           current_quarterly_sales: number
           current_yearly_sales: number
-          commission_rate: number
-          current_bonus_earned: number
-          performance_score: number
           customer_satisfaction_rating: number
-          achievements: Json
-          badges: Json
+          employee_id: string
+          id: string
+          monthly_sales_target: number
+          performance_score: number
+          quarterly_sales_target: number
+          user_id: string
+          yearly_sales_target: number
         }[]
       }
       get_user_roles: {
@@ -1067,8 +1067,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
