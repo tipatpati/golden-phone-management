@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Key, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Key, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { PasswordStrengthIndicator, calculatePasswordStrength } from '@/components/password/PasswordStrengthIndicator';
@@ -24,60 +24,102 @@ export default function ResetPassword() {
   const [isValidSession, setIsValidSession] = useState(false);
   const [success, setSuccess] = useState(false);
   const [checkingLink, setCheckingLink] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<{
+    currentUrl: string;
+    hasCode: boolean;
+    hasHashTokens: boolean;
+    errorDetails?: string;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     const init = async () => {
       try {
+        // Collect debug information
+        const currentUrl = window.location.href;
+        const codeFromQuery = searchParams.get('code') || new URLSearchParams(window.location.hash.substring(1)).get('code');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        const debug = {
+          currentUrl,
+          hasCode: !!codeFromQuery,
+          hasHashTokens: !!(accessToken && refreshToken)
+        };
+
         // 1) If we already have a session, we're good
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           if (!isMounted) return;
+          setDebugInfo(debug);
           setIsValidSession(true);
           return;
         }
 
         // 2) PKCE flow: try to exchange ?code=... for a session
-        const codeFromQuery = searchParams.get('code') || new URLSearchParams(window.location.hash.substring(1)).get('code');
         if (codeFromQuery) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(codeFromQuery);
           if (error) {
+            const errorDetails = `PKCE Exchange Error: ${error.message} (Code: ${error.code || 'unknown'})`;
+            setDebugInfo({ ...debug, errorDetails });
+            
             toast({
               title: "Invalid reset link",
-              description: "This password reset link is invalid or has expired.",
+              description: `This password reset link is invalid or has expired. Error: ${error.message}`,
               variant: "destructive"
             });
-            navigate('/');
+            
+            // Don't navigate immediately in case of debug mode
+            setTimeout(() => navigate('/'), 5000);
             return;
           }
           if (!isMounted) return;
+          setDebugInfo(debug);
           setIsValidSession(true);
           return;
         }
 
         // 3) Legacy/hash tokens fallback
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        
         if (accessToken && refreshToken) {
-          await supabase.auth.setSession({
+          const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           } as any);
+          
+          if (error) {
+            const errorDetails = `Legacy Token Error: ${error.message} (Code: ${error.code || 'unknown'})`;
+            setDebugInfo({ ...debug, errorDetails });
+            
+            toast({
+              title: "Invalid reset link",
+              description: `Failed to authenticate with legacy tokens. Error: ${error.message}`,
+              variant: "destructive"
+            });
+            
+            setTimeout(() => navigate('/'), 5000);
+            return;
+          }
+          
           if (!isMounted) return;
+          setDebugInfo(debug);
           setIsValidSession(true);
           return;
         }
 
         // 4) Nothing worked: invalid link
+        const errorDetails = "No valid authentication tokens found in URL";
+        setDebugInfo({ ...debug, errorDetails });
+        
         toast({
           title: "Invalid reset link",
-          description: "This password reset link is invalid or has expired.",
+          description: "This password reset link is invalid or has expired. No authentication tokens found.",
           variant: "destructive"
         });
-        navigate('/');
+        
+        // Show debug info for 5 seconds before redirecting
+        setTimeout(() => navigate('/'), 5000);
       } finally {
         if (isMounted) setCheckingLink(false);
       }
@@ -183,6 +225,63 @@ export default function ResetPassword() {
   }
 
   if (!isValidSession && !success) {
+    // Show debug information if available
+    if (debugInfo && !checkingLink) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 p-3 bg-destructive/10 rounded-full w-fit">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+              </div>
+              <CardTitle>Reset Link Issue</CardTitle>
+              <CardDescription>
+                There was a problem with your password reset link
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Debug Information:</strong>
+                  <div className="mt-2 space-y-1 text-xs font-mono bg-muted p-2 rounded">
+                    <div>URL: {debugInfo.currentUrl}</div>
+                    <div>Has Code: {debugInfo.hasCode ? 'Yes' : 'No'}</div>
+                    <div>Has Hash Tokens: {debugInfo.hasHashTokens ? 'Yes' : 'No'}</div>
+                    <div>Current Domain: {window.location.origin}</div>
+                    {debugInfo.errorDetails && (
+                      <div className="text-destructive mt-2">
+                        Error: {debugInfo.errorDetails}
+                      </div>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+              
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Common Solutions:</strong>
+                  <ul className="mt-2 text-sm space-y-1">
+                    <li>• Check if the Site URL in Supabase matches: {window.location.origin}</li>
+                    <li>• Ensure redirect URLs include: {window.location.origin}/reset-password</li>
+                    <li>• Try requesting a new password reset email</li>
+                    <li>• Make sure the link hasn't expired (usually 1 hour)</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+              
+              <Button 
+                className="w-full" 
+                onClick={() => navigate('/')}
+              >
+                Back to Login
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
     return null; // Will redirect to home
   }
 
@@ -229,6 +328,18 @@ export default function ResetPassword() {
           <CardDescription>
             Enter a new secure password for your account
           </CardDescription>
+          {debugInfo && (
+            <Alert className="text-left mt-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <div className="text-xs">
+                  <strong>Session verified via:</strong> {window.location.origin}
+                  {debugInfo.hasCode && <span className="text-green-600"> ✓ PKCE Code</span>}
+                  {debugInfo.hasHashTokens && <span className="text-blue-600"> ✓ Hash Tokens</span>}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
