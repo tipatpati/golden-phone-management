@@ -76,13 +76,13 @@ export function AppRouter() {
           )
         } />
         
+        {/* Password reset route - accessible without authentication */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+        
         {/* Legacy login routes redirect to root */}
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/admin-login" element={<Navigate to="/" replace />} />
         <Route path="/employee-login" element={<Navigate to="/" replace />} />
-        
-        {/* Password reset route - accessible without authentication */}
-        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Protected routes for authenticated users */}
         {isLoggedIn && (
