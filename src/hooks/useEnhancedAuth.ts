@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { enhancedRateLimiter, validateInput, monitorSecurityEvents, handleSecurityError } from '@/utils/securityEnhancements';
 import { SessionSecurityManager } from '@/utils/sessionSecurity';
+import { getResetRedirectUrl, getSignupRedirectUrl } from '@/utils/authRedirect';
 
 interface AuthAttempt {
   email: string;
@@ -166,7 +167,7 @@ export function useEnhancedAuth() {
       }
 
       // Attempt signup
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = getSignupRedirectUrl();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -263,7 +264,7 @@ export function useEnhancedAuth() {
         return { success: false, error: emailValidation.error };
       }
 
-      const redirectUrl = `${window.location.origin}/reset-password`;
+      const redirectUrl = getResetRedirectUrl();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl
       });
