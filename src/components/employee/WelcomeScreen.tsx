@@ -88,12 +88,12 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       feature: "gestione_ordini"
     },
     {
-      title: "REPORT",
-      icon: BarChart3,
-      route: "/reports",
+      title: "DIPENDENTI",
+      icon: Users,
+      route: "/employees",
       color: "text-white",
       bgColor: "bg-[#6b7280] hover:bg-[#4b5563]", // Gray like "Statistiche" in reference
-      feature: "analisi_e_report_completi"
+      feature: "gestione_dipendenti"
     },
     {
       title: "FINANZE",
