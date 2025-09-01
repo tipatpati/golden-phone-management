@@ -13,7 +13,8 @@ import {
   Settings,
   DollarSign,
   CheckCircle,
-  Calendar
+  Calendar,
+  UserCheck
 } from "lucide-react";
 
 interface WelcomeScreenProps {
@@ -89,7 +90,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
     },
     {
       title: "DIPENDENTI",
-      icon: Users,
+      icon: UserCheck,
       route: "/employees",
       color: "text-white",
       bgColor: "bg-[#6b7280] hover:bg-[#4b5563]", // Gray like "Statistiche" in reference
