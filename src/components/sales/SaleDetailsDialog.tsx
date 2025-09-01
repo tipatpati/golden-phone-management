@@ -60,7 +60,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         {trigger || (
           <Button variant="outline" size="sm" className="h-9 px-3 font-medium">
             <Eye className="h-4 w-4 mr-2" />
-            Dettagli Vendita
+            Dettagli Garentille
           </Button>
         )}
       </DialogTrigger>
@@ -68,7 +68,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5" />
-            Dettagli Vendita - {sale.sale_number}
+            Dettagli Garentille - {sale.sale_number}
           </DialogTitle>
           <DialogDescription>
             Informazioni complete per la vendita #{sale.sale_number}
