@@ -15,14 +15,6 @@ export function generateThermalLabels(
   const { width, height, margin } = THERMAL_SETTINGS;
   
   const generateLabelContent = (label: ThermalLabelData) => {
-    // Format: Brand Model Color Battery
-    const formatProductName = () => {
-      let parts = [label.productName];
-      if (label.color) parts.push(label.color);
-      if (label.batteryLevel) parts.push(`${label.batteryLevel}%`);
-      return parts.join(' ');
-    };
-
     return `
       <div class="thermal-label">
         ${options.includeCompany && options.companyName ? `
@@ -32,8 +24,16 @@ export function generateThermalLabels(
         ` : ''}
         
         <div class="product-name">
-          ${formatProductName()}
+          ${label.productName}
         </div>
+        
+        ${(label.color || label.batteryLevel) ? `
+          <div class="unit-info">
+            ${label.color ? `${label.color}` : ''}
+            ${label.color && label.batteryLevel ? ' - ' : ''}
+            ${label.batteryLevel ? `${label.batteryLevel}%` : ''}
+          </div>
+        ` : ''}
         
         ${label.serialNumber ? `
           <div class="serial-number">
@@ -137,6 +137,13 @@ export function generateThermalLabels(
             line-height: 1.2;
             margin-bottom: 6px;
             color: #000;
+          }
+          
+          .unit-info {
+            font-size: 12px;
+            font-weight: 600;
+            color: #16a34a;
+            margin-bottom: 5px;
           }
           
           .serial-number {

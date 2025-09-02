@@ -48,14 +48,6 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     lineHeight: '1.2'
   };
 
-  // Format: Brand Model Color Battery
-  const formatProductName = () => {
-    let parts = [label.productName];
-    if (label.color) parts.push(label.color);
-    if (label.batteryLevel) parts.push(`${label.batteryLevel}%`);
-    return parts.join(' ');
-  };
-
   return (
     <div style={labelStyle}>
       {/* Company Header */}
@@ -71,15 +63,29 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
         </div>
       )}
 
-      {/* Product Name with Color and Battery */}
+      {/* Product Name */}
       <div style={{ 
         fontSize: options.format === 'compact' ? '10px' : '11px',
         fontWeight: 'bold',
         lineHeight: '1.1',
         marginBottom: '3px'
       }}>
-        {formatProductName()}
+        {label.productName}
       </div>
+
+      {/* Unit-specific Color and Battery */}
+      {(label.color || label.batteryLevel) && (
+        <div style={{ 
+          fontSize: '8px', 
+          fontWeight: '600', 
+          color: '#16a34a',
+          marginBottom: '3px'
+        }}>
+          {label.color && <span>{label.color}</span>}
+          {label.color && label.batteryLevel && <span> - </span>}
+          {label.batteryLevel && <span>{label.batteryLevel}%</span>}
+        </div>
+      )}
 
       {/* Serial Number */}
       {label.serialNumber && (
