@@ -38,6 +38,7 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     height: '227px',
     border: '1px solid #ddd',
     padding: '6px',
+    margin: '10px',
     fontSize: '9px',
     fontFamily: 'Arial, sans-serif',
     backgroundColor: 'white',
@@ -90,10 +91,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
         <div style={{ 
           fontSize: '8px', 
           fontWeight: '600', 
-          color: '#2563eb',
+          color: '#000',
           marginBottom: '3px'
         }}>
-          S/N: {label.serialNumber}
+          {label.serialNumber}
         </div>
       )}
 

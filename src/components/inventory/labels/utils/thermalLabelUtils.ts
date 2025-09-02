@@ -35,7 +35,7 @@ export function generateThermalLabels(
         
         ${label.serialNumber ? `
           <div class="serial-number">
-            S/N: ${label.serialNumber}
+            ${label.serialNumber}
           </div>
         ` : ''}
         
@@ -147,7 +147,7 @@ export function generateThermalLabels(
           .serial-number {
             font-size: 11px;
             font-weight: 600;
-            color: #2563eb;
+            color: #000;
             margin-bottom: 5px;
           }
           
