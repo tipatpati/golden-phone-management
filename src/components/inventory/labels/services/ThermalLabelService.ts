@@ -85,8 +85,9 @@ export class ThermalLabelService {
         .thermal-label {
           page-break-after: always;
           margin: 0 !important;
-          padding: 10px !important;
-          border: none !important;
+          padding: 8px !important;
+          border: 2px solid #e5e5e5 !important;
+          border-radius: 4px !important;
         }
         
         .thermal-label:last-child {
@@ -95,7 +96,7 @@ export class ThermalLabelService {
       }
       
       body {
-        font-family: Arial, sans-serif;
+        font-family: system-ui, -apple-system, sans-serif;
         margin: 0;
         padding: 20px;
         background: white;
@@ -104,9 +105,9 @@ export class ThermalLabelService {
       .thermal-label {
         width: ${width}px;
         height: ${height}px;
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
+        border: 2px solid #e5e5e5;
+        border-radius: 4px;
+        padding: 8px;
         background: white;
         box-sizing: border-box;
         overflow: hidden;
@@ -115,59 +116,140 @@ export class ThermalLabelService {
         justify-content: space-between;
         margin-bottom: 20px;
         page-break-inside: avoid;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .label-header {
+        min-height: 25px;
+        border-bottom: 1px solid #e5e5e5;
+        padding-bottom: 4px;
+        margin-bottom: 6px;
+        text-align: center;
       }
       
       .company-header {
-        font-size: 11px;
-        font-weight: bold;
-        color: #666;
+        font-size: 9px;
+        font-weight: 700;
+        color: #2563eb;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 5px;
+        letter-spacing: 0.8px;
+        line-height: 1.1;
+      }
+      
+      .category-label {
+        font-size: 8px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-top: 2px;
+      }
+      
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
       }
       
       .product-name {
-        font-size: ${options.format === 'compact' ? '15px' : '17px'};
-        font-weight: bold;
-        line-height: 1.2;
-        margin-bottom: 6px;
+        font-size: ${options.format === 'compact' ? '14px' : '16px'};
+        font-weight: 800;
+        line-height: 1.1;
         color: #000;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        max-height: 40px;
+        overflow: hidden;
+        text-align: center;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
       
-      .battery-level {
-        font-size: 10px;
-        font-weight: 600;
-        color: #16a34a;
-        margin-bottom: 5px;
+      .product-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 9px;
+        margin-top: 2px;
+        gap: 4px;
       }
       
       .serial-number {
-        font-size: 11px;
+        font-size: 9px;
         font-weight: 600;
-        color: #000;
-        margin-bottom: 5px;
+        color: #333;
+        font-family: monospace;
+        background-color: #f8f9fa;
+        padding: 2px 4px;
+        border-radius: 2px;
+        border: 1px solid #e9ecef;
+        white-space: nowrap;
       }
       
-      .category {
-        font-size: 10px;
-        color: #666;
-        margin-bottom: 5px;
+      .battery-level {
+        font-size: 9px;
+        font-weight: 600;
+        padding: 2px 4px;
+        border-radius: 2px;
+        border: 1px solid;
+        white-space: nowrap;
       }
       
-      .price {
-        font-size: 18px;
-        font-weight: bold;
+      .battery-high {
+        color: #16a34a;
+        background-color: #f0f9ff;
+        border-color: #e0f2fe;
+      }
+      
+      .battery-medium {
+        color: #ca8a04;
+        background-color: #fefce8;
+        border-color: #fef3c7;
+      }
+      
+      .battery-low {
         color: #dc2626;
-        margin: 8px 0;
+        background-color: #fef2f2;
+        border-color: #fecaca;
+      }
+      
+      .color-indicator {
+        font-size: 8px;
+        font-weight: 600;
+        color: #555;
+        text-align: center;
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin: 2px auto;
+        text-transform: capitalize;
+      }
+      
+      .price-section {
+        font-size: 20px;
+        font-weight: 900;
+        color: #2563eb;
+        text-align: center;
+        padding: 6px 0;
+        border-top: 2px solid #2563eb;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 6px;
+        background-color: #f8fafc;
+        letter-spacing: 0.5px;
       }
       
       .barcode-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        flex: 1;
-        min-height: 50px;
-        margin-top: 6px;
+        min-height: 45px;
+        background-color: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 2px;
+        padding: 2px;
       }
       
       .barcode-canvas {
@@ -175,6 +257,17 @@ export class ThermalLabelService {
         margin: 0 auto;
         max-width: 100%;
         height: auto;
+      }
+      
+      .quality-indicator {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        background-color: #2563eb;
+        border-radius: 50%;
+        opacity: 0.7;
       }
     `;
   }
@@ -186,72 +279,101 @@ export class ThermalLabelService {
     label: ThermalLabelData, 
     options: ThermalLabelOptions & { companyName?: string }
   ): string {
-    const elements: string[] = [];
-
-    // Company header
+    // Header section with company and category
+    const headerElements: string[] = [];
     if (options.includeCompany && options.companyName?.trim()) {
-      elements.push(`
+      headerElements.push(`
         <div class="company-header">
           ${this.escapeHtml(options.companyName)}
         </div>
       `);
     }
-
-    // Product name (required)
-    elements.push(`
-      <div class="product-name">
-        ${this.escapeHtml(label.productName)}
-      </div>
-    `);
-
-    // Battery level
-    if (label.batteryLevel && label.batteryLevel > 0) {
-      elements.push(`
-        <div class="battery-level">
-          Battery: ${label.batteryLevel}%
-        </div>
-      `);
-    }
-
-    // Serial number
-    if (label.serialNumber?.trim()) {
-      elements.push(`
-        <div class="serial-number">
-          ${this.escapeHtml(label.serialNumber)}
-        </div>
-      `);
-    }
-
-    // Category
     if (options.includeCategory && label.category?.trim()) {
-      elements.push(`
-        <div class="category">
+      headerElements.push(`
+        <div class="category-label">
           ${this.escapeHtml(label.category)}
         </div>
       `);
     }
 
-    // Price
-    if (options.includePrice && typeof label.price === 'number') {
-      elements.push(`
-        <div class="price">
-          €${label.price.toFixed(2)}
+    // Product details section
+    const detailsElements: string[] = [];
+    if (label.serialNumber?.trim()) {
+      detailsElements.push(`
+        <div class="serial-number">
+          SN: ${this.escapeHtml(label.serialNumber)}
         </div>
       `);
     }
 
-    // Barcode
+    if (label.batteryLevel && label.batteryLevel > 0) {
+      const batteryClass = label.batteryLevel > 80 ? 'battery-high' : 
+                          label.batteryLevel > 50 ? 'battery-medium' : 'battery-low';
+      detailsElements.push(`
+        <div class="battery-level ${batteryClass}">
+          🔋 ${label.batteryLevel}%
+        </div>
+      `);
+    }
+
+    // Color indicator
+    let colorIndicator = '';
+    if (label.color?.trim()) {
+      colorIndicator = `
+        <div class="color-indicator">
+          Color: ${this.escapeHtml(label.color)}
+        </div>
+      `;
+    }
+
+    // Price section
+    let priceSection = '';
+    if (options.includePrice && typeof label.price === 'number') {
+      priceSection = `
+        <div class="price-section">
+          €${label.price.toFixed(2)}
+        </div>
+      `;
+    }
+
+    // Barcode section
+    let barcodeSection = '';
     if (options.includeBarcode && label.barcode?.trim()) {
-      elements.push(`
+      barcodeSection = `
         <div class="barcode-container">
           <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(label.barcode)}"></canvas>
         </div>
-      `);
+      `;
     }
 
     return `
       <div class="thermal-label">
-        ${elements.join('')}
+        <!-- Header Section -->
+        <div class="label-header">
+          ${headerElements.join('')}
+        </div>
+
+        <!-- Main Content Section -->
+        <div class="main-content">
+          <div class="product-name">
+            ${this.escapeHtml(label.productName)}
+          </div>
+          
+          <div class="product-details">
+            ${detailsElements.join('')}
+          </div>
+          
+          ${colorIndicator}
+        </div>
+
+        <!-- Price Section -->
+        ${priceSection}
+
+        <!-- Barcode Section -->
+        ${barcodeSection}
+
+        <!-- Quality Indicator -->
+        <div class="quality-indicator"></div>
       </div>
     `;
   }

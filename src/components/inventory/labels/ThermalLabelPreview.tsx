@@ -15,14 +15,14 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       try {
         JsBarcode(canvasRef.current, label.barcode, {
           format: 'CODE128',
-          width: 1.6,
-          height: 50,
+          width: 1.8,
+          height: 55,
           displayValue: true,
-          fontSize: 11,
-          font: 'Arial',
+          fontSize: 10,
+          font: 'Arial, sans-serif',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 6,
+          margin: 4,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -32,108 +32,163 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // 6cm × 5cm at 96 DPI ≈ 227px × 189px (landscape orientation)
+  // Professional thermal label styling - 6cm × 5cm landscape
   const labelStyle = {
     width: '227px',
     height: '189px',
-    border: '1px solid #ddd',
-    padding: '10px',
-    margin: '10px',
+    border: '2px solid hsl(var(--border))',
+    borderRadius: '4px',
+    padding: '8px',
+    margin: '8px',
     fontSize: '9px',
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '1.2',
+    lineHeight: '1.3',
     boxSizing: 'border-box' as const,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    boxShadow: 'var(--elevation-2)',
+    position: 'relative' as const
   };
 
   return (
     <div style={labelStyle}>
-      {/* Company Header */}
-      {options.includeCompany && options.companyName && (
-        <div style={{ 
-          fontSize: '11px', 
-          fontWeight: 'bold', 
-          textTransform: 'uppercase',
-          color: '#666',
-          letterSpacing: '0.5px',
-          marginBottom: '5px'
-        }}>
-          {options.companyName}
-        </div>
-      )}
-
-      {/* Product Name */}
-      <div style={{ 
-        fontSize: options.format === 'compact' ? '15px' : '17px',
-        fontWeight: 'bold',
-        lineHeight: '1.2',
-        marginBottom: '6px',
-        color: '#000'
-      }}>
-        {label.productName}
+      {/* Header Section */}
+      <div style={{ minHeight: '25px', borderBottom: '1px solid #e5e5e5', paddingBottom: '4px', marginBottom: '6px' }}>
+        {options.includeCompany && options.companyName && (
+          <div style={{ 
+            fontSize: '9px', 
+            fontWeight: '700', 
+            textTransform: 'uppercase',
+            color: 'hsl(var(--primary))',
+            letterSpacing: '0.8px',
+            lineHeight: '1.1'
+          }}>
+            {options.companyName}
+          </div>
+        )}
+        {options.includeCategory && label.category && (
+          <div style={{ 
+            fontSize: '8px', 
+            color: 'hsl(var(--muted-foreground))',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
+            marginTop: '2px'
+          }}>
+            {label.category}
+          </div>
+        )}
       </div>
 
-      {/* Battery Level */}
-      {label.batteryLevel && (
+      {/* Main Content Section */}
+      <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px' }}>
+        {/* Product Name - Primary focus */}
         <div style={{ 
-          fontSize: '10px', 
-          fontWeight: '600', 
-          color: '#16a34a',
-          marginBottom: '5px'
-        }}>
-          Battery: {label.batteryLevel}%
-        </div>
-      )}
-
-      {/* Serial Number */}
-      {label.serialNumber && (
-        <div style={{ 
-          fontSize: '11px', 
-          fontWeight: '600', 
+          fontSize: options.format === 'compact' ? '14px' : '16px',
+          fontWeight: '800',
+          lineHeight: '1.1',
           color: '#000',
-          marginBottom: '5px'
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
+          maxHeight: '40px',
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: options.format === 'compact' ? 2 : 2,
+          WebkitBoxOrient: 'vertical'
         }}>
-          {label.serialNumber}
+          {label.productName}
         </div>
-      )}
 
-      {/* Category */}
-      {options.includeCategory && label.category && (
+        {/* Product Details Row */}
         <div style={{ 
-          fontSize: '10px', 
-          color: '#666',
-          marginBottom: '5px'
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          fontSize: '9px',
+          marginTop: '2px'
         }}>
-          {label.category}
-        </div>
-      )}
+          {/* Serial Number */}
+          {label.serialNumber && (
+            <div style={{ 
+              fontSize: '9px', 
+              fontWeight: '600', 
+              color: '#333',
+              fontFamily: 'monospace',
+              backgroundColor: '#f8f9fa',
+              padding: '2px 4px',
+              borderRadius: '2px',
+              border: '1px solid #e9ecef'
+            }}>
+              SN: {label.serialNumber}
+            </div>
+          )}
 
-      {/* Price */}
+          {/* Battery Level */}
+          {label.batteryLevel && label.batteryLevel > 0 && (
+            <div style={{ 
+              fontSize: '9px', 
+              fontWeight: '600', 
+              color: label.batteryLevel > 80 ? '#16a34a' : label.batteryLevel > 50 ? '#ca8a04' : '#dc2626',
+              backgroundColor: label.batteryLevel > 80 ? '#f0f9ff' : label.batteryLevel > 50 ? '#fefce8' : '#fef2f2',
+              padding: '2px 4px',
+              borderRadius: '2px',
+              border: `1px solid ${label.batteryLevel > 80 ? '#e0f2fe' : label.batteryLevel > 50 ? '#fef3c7' : '#fecaca'}`
+            }}>
+              🔋 {label.batteryLevel}%
+            </div>
+          )}
+        </div>
+
+        {/* Color indicator if available */}
+        {label.color && (
+          <div style={{
+            fontSize: '8px',
+            fontWeight: '600',
+            color: '#555',
+            textAlign: 'center',
+            backgroundColor: '#f8f9fa',
+            padding: '2px 6px',
+            borderRadius: '3px',
+            margin: '2px auto',
+            textTransform: 'capitalize'
+          }}>
+            Color: {label.color}
+          </div>
+        )}
+      </div>
+
+      {/* Price Section */}
       {options.includePrice && (
         <div style={{ 
-          fontSize: '18px', 
-          fontWeight: 'bold', 
-          color: '#dc2626',
-          margin: '8px 0'
+          fontSize: '20px', 
+          fontWeight: '900', 
+          color: 'hsl(var(--primary))',
+          textAlign: 'center',
+          padding: '6px 0',
+          borderTop: '2px solid hsl(var(--primary))',
+          borderBottom: '1px solid #e5e5e5',
+          marginBottom: '6px',
+          backgroundColor: '#f8fafc',
+          letterSpacing: '0.5px'
         }}>
           €{label.price.toFixed(2)}
         </div>
       )}
 
-      {/* Barcode */}
+      {/* Barcode Section */}
       {options.includeBarcode && label.barcode && (
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center',
-          flex: '1',
-          minHeight: '50px',
-          marginTop: '6px'
+          minHeight: '45px',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e5e5e5',
+          borderRadius: '2px',
+          padding: '2px'
         }}>
           <canvas 
             ref={canvasRef}
@@ -141,6 +196,18 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
           />
         </div>
       )}
+
+      {/* Quality Indicator Corner */}
+      <div style={{
+        position: 'absolute',
+        top: '4px',
+        right: '4px',
+        width: '8px',
+        height: '8px',
+        backgroundColor: 'hsl(var(--primary))',
+        borderRadius: '50%',
+        opacity: 0.7
+      }} />
     </div>
   );
 }
