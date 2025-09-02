@@ -15,14 +15,14 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       try {
         JsBarcode(canvasRef.current, label.barcode, {
           format: 'CODE128',
-          width: 1.0,
-          height: 25,
+          width: 1.6,
+          height: 50,
           displayValue: true,
-          fontSize: 7,
+          fontSize: 11,
           font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 3,
+          margin: 6,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -32,10 +32,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // 6cm × 5cm at 96 DPI ≈ 227px × 189px (landscape with vertical stacking)
+  // 5cm × 6cm at 96 DPI ≈ 189px × 227px (portrait orientation to match print)
   const labelStyle = {
-    width: '227px',
-    height: '189px',
+    width: '189px',
+    height: '227px',
     border: '1px solid #ddd',
     padding: '6px',
     fontSize: '9px',
@@ -73,17 +73,15 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
         {label.productName}
       </div>
 
-      {/* Unit-specific Color and Battery */}
-      {(label.color || label.batteryLevel) && (
+      {/* Battery Level */}
+      {label.batteryLevel && (
         <div style={{ 
           fontSize: '8px', 
           fontWeight: '600', 
           color: '#16a34a',
           marginBottom: '3px'
         }}>
-          {label.color && <span>{label.color}</span>}
-          {label.color && label.batteryLevel && <span> - </span>}
-          {label.batteryLevel && <span>{label.batteryLevel}%</span>}
+          Battery: {label.batteryLevel}%
         </div>
       )}
 

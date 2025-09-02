@@ -27,11 +27,9 @@ export function generateThermalLabels(
           ${label.productName}
         </div>
         
-        ${(label.color || label.batteryLevel) ? `
-          <div class="unit-info">
-            ${label.color ? `${label.color}` : ''}
-            ${label.color && label.batteryLevel ? ' - ' : ''}
-            ${label.batteryLevel ? `${label.batteryLevel}%` : ''}
+        ${label.batteryLevel ? `
+          <div class="battery-level">
+            Battery: ${label.batteryLevel}%
           </div>
         ` : ''}
         
@@ -139,8 +137,8 @@ export function generateThermalLabels(
             color: #000;
           }
           
-          .unit-info {
-            font-size: 12px;
+          .battery-level {
+            font-size: 10px;
             font-weight: 600;
             color: #16a34a;
             margin-bottom: 5px;
