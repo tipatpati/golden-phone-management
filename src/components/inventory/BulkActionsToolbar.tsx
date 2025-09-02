@@ -7,7 +7,8 @@ import {
   MoreHorizontal,
   X,
   Archive,
-  RotateCcw
+  RotateCcw,
+  Printer
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,10 +20,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BulkDeleteDialog } from "./dialogs/BulkDeleteDialog";
 import { BulkEditDialog } from "./dialogs/BulkEditDialog";
+import { BulkPrintDialog } from "./dialogs/BulkPrintDialog";
 import { cn } from "@/lib/utils";
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
+  selectedProducts: any[];
   onClearSelection: () => void;
   onBulkDelete: () => Promise<void>;
   onBulkUpdateStatus: (status: string) => Promise<void>;
@@ -33,6 +36,7 @@ interface BulkActionsToolbarProps {
 
 export function BulkActionsToolbar({
   selectedCount,
+  selectedProducts,
   onClearSelection,
   onBulkDelete,
   onBulkUpdateStatus,
@@ -42,6 +46,7 @@ export function BulkActionsToolbar({
 }: BulkActionsToolbarProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   if (selectedCount === 0) {
     return null;
@@ -87,6 +92,16 @@ export function BulkActionsToolbar({
             >
               <Edit3 className="h-4 w-4 mr-1" />
               Edit
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPrintDialog(true)}
+              disabled={isLoading}
+            >
+              <Printer className="h-4 w-4 mr-1" />
+              Print Labels
             </Button>
 
             {/* More Actions Dropdown */}
@@ -169,6 +184,13 @@ export function BulkActionsToolbar({
           }
           setShowEditDialog(false);
         }}
+        isLoading={isLoading}
+      />
+
+      <BulkPrintDialog
+        open={showPrintDialog}
+        onOpenChange={setShowPrintDialog}
+        products={selectedProducts}
         isLoading={isLoading}
       />
     </>

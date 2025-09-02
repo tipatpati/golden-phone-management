@@ -130,6 +130,7 @@ export function InventoryContent({
       
       <BulkActionsToolbar
         selectedCount={selectedCount}
+        selectedProducts={selectedItems.map(id => products?.find(p => p.id === id)).filter(Boolean)}
         onClearSelection={clearSelection}
         onBulkDelete={bulkDelete}
         onBulkUpdateStatus={bulkUpdateStatus}

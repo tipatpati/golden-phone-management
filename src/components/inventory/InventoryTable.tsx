@@ -15,10 +15,12 @@ import {
   Trash2, 
   Package, 
   AlertTriangle,
-  Barcode
+  Barcode,
+  Printer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/products/ProductReactQueryService";
+import { BarcodePrintDialog } from "./BarcodePrintDialog";
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -242,6 +244,22 @@ export function InventoryTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
+                    <BarcodePrintDialog
+                      productName={`${product.brand} ${product.model}`}
+                      barcode={product.barcode}
+                      price={product.price}
+                      specifications={product.category?.name}
+                      serialNumbers={product.serial_numbers}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
                     <Button
                       variant="ghost"
                       size="sm"
