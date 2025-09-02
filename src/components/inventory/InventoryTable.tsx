@@ -1,6 +1,6 @@
 import React, { useState, memo } from "react";
 import { useProducts, useDeleteProduct, useUpdateProduct, Product } from "@/services/products/ProductReactQueryService";
-import { EditProductForm } from "./EditProductForm";
+import { EditProductDialog } from "./EditProductDialog";
 import { Badge } from "@/components/ui/badge";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
 import { Edit, Trash, Printer, Smartphone, Barcode } from "lucide-react";
@@ -49,7 +49,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
 
   if (editingProduct) {
     return (
-      <EditProductForm
+      <EditProductDialog
         product={editingProduct}
         open={true}
         onClose={() => setEditingProduct(null)}

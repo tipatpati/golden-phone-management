@@ -214,5 +214,5 @@ export function ProductFormFields({
   );
 }
 
-// Export the category mapping for use in AddProductForm
+// Export the category mapping for use in product forms
 export { CATEGORY_OPTIONS };

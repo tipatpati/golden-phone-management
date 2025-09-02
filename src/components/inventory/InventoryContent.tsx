@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryTableToolbar } from "@/components/inventory/InventoryTableToolbar";
-import { AddProductForm } from "@/components/inventory/AddProductForm";
+import { AddProductDialog } from "@/components/inventory/AddProductDialog";
 import { Barcode } from "lucide-react";
 import { useProductsRealtime } from "@/services/products/ProductReactQueryService";
 
