@@ -5,6 +5,7 @@ import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/useProducts";
+import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
 import { BarcodePrintDialog } from "./BarcodePrintDialog";
@@ -78,10 +79,29 @@ export function AddProductDialog() {
     
     return new Promise<void>((resolve, reject) => {
       createProduct.mutate(newProduct, {
-        onSuccess: (responseData) => {
-          handleProductCreated({ ...newProduct, id: responseData?.id, serialEntries });
-          setOpen(false);
-          resolve();
+        onSuccess: async (responseData) => {
+          try {
+            // Create individual units with IMEI barcodes if product has serials
+            if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
+              const units = await ProductUnitsService.createUnitsForProduct(
+                responseData?.id,
+                data.serial_numbers
+              );
+              console.log(`✅ Created ${units.length} product units with IMEI barcodes`);
+            }
+            
+            handleProductCreated({ 
+              ...newProduct, 
+              id: responseData?.id, 
+              serialEntries 
+            });
+            setOpen(false);
+            resolve();
+          } catch (error) {
+            console.error('Error creating product units:', error);
+            toast.error('Product created but failed to generate unit barcodes');
+            reject(error);
+          }
         },
         onError: (error) => {
           logger.error('Product creation failed', error, 'AddProductDialog');
