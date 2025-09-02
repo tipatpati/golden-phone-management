@@ -33,7 +33,7 @@ export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
         console.log('🔄 Setting submit handler');
         setSubmitHandler(() => handler);
       }
-    }, [children, open]); // Added 'open' dependency to re-check when dialog opens
+    }, [open]); // Only re-check when dialog opens
 
     useImperativeHandle(ref, () => ({
       submit: async () => {

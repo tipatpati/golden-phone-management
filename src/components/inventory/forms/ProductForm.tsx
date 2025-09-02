@@ -31,6 +31,11 @@ export function ProductForm({
       console.log('🔧 ProductForm cleaning up submit handler');
       delete (window as any).__currentFormSubmit;
     };
+  }, []); // Remove handleSubmit dependency to prevent infinite loop
+  
+  // Update the submit handler when handleSubmit changes
+  React.useEffect(() => {
+    (window as any).__currentFormSubmit = handleSubmit;
   }, [handleSubmit]);
 
   const { data: products } = useProducts();
