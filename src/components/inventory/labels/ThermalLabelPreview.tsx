@@ -37,7 +37,7 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     width: '227px',
     height: '189px',
     border: '1px solid #ddd',
-    padding: '6px',
+    padding: '10px',
     margin: '10px',
     fontSize: '9px',
     fontFamily: 'Arial, sans-serif',
@@ -46,7 +46,9 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '1.2'
+    lineHeight: '1.2',
+    boxSizing: 'border-box' as const,
+    overflow: 'hidden'
   };
 
   return (
@@ -54,11 +56,12 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Company Header */}
       {options.includeCompany && options.companyName && (
         <div style={{ 
-          fontSize: '8px', 
+          fontSize: '11px', 
           fontWeight: 'bold', 
           textTransform: 'uppercase',
           color: '#666',
-          marginBottom: '4px'
+          letterSpacing: '0.5px',
+          marginBottom: '5px'
         }}>
           {options.companyName}
         </div>
@@ -66,10 +69,11 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
 
       {/* Product Name */}
       <div style={{ 
-        fontSize: options.format === 'compact' ? '10px' : '11px',
+        fontSize: options.format === 'compact' ? '15px' : '17px',
         fontWeight: 'bold',
-        lineHeight: '1.1',
-        marginBottom: '3px'
+        lineHeight: '1.2',
+        marginBottom: '6px',
+        color: '#000'
       }}>
         {label.productName}
       </div>
@@ -77,10 +81,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Battery Level */}
       {label.batteryLevel && (
         <div style={{ 
-          fontSize: '8px', 
+          fontSize: '10px', 
           fontWeight: '600', 
           color: '#16a34a',
-          marginBottom: '3px'
+          marginBottom: '5px'
         }}>
           Battery: {label.batteryLevel}%
         </div>
@@ -89,10 +93,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Serial Number */}
       {label.serialNumber && (
         <div style={{ 
-          fontSize: '8px', 
+          fontSize: '11px', 
           fontWeight: '600', 
           color: '#000',
-          marginBottom: '3px'
+          marginBottom: '5px'
         }}>
           {label.serialNumber}
         </div>
@@ -101,9 +105,9 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Category */}
       {options.includeCategory && label.category && (
         <div style={{ 
-          fontSize: '7px', 
+          fontSize: '10px', 
           color: '#666',
-          marginBottom: '3px'
+          marginBottom: '5px'
         }}>
           {label.category}
         </div>
@@ -112,10 +116,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Price */}
       {options.includePrice && (
         <div style={{ 
-          fontSize: '12px', 
+          fontSize: '18px', 
           fontWeight: 'bold', 
           color: '#dc2626',
-          margin: '4px 0'
+          margin: '8px 0'
         }}>
           €{label.price.toFixed(2)}
         </div>
@@ -128,7 +132,8 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
           justifyContent: 'center', 
           alignItems: 'center',
           flex: '1',
-          minHeight: '40px'
+          minHeight: '50px',
+          marginTop: '6px'
         }}>
           <canvas 
             ref={canvasRef}
