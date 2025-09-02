@@ -18,7 +18,7 @@ export function useProductValidation() {
       newErrors.push({ field: 'model', message: 'Model is required' });
     }
 
-    if (!data.category_id) {
+    if (!data.category_id || data.category_id === 0) {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
@@ -34,7 +34,7 @@ export function useProductValidation() {
       newErrors.push({ field: 'max_price', message: 'Valid maximum price is required' });
     }
 
-    if (!data.threshold || data.threshold < 0) {
+    if (data.threshold === undefined || data.threshold === null || data.threshold < 0) {
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required' });
     }
 
