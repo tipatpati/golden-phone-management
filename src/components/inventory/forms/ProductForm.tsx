@@ -23,20 +23,6 @@ export function ProductForm({
     hasErrors
   } = useProductForm({ initialData, onSubmit });
 
-  // Expose handleSubmit to parent components
-  React.useEffect(() => {
-    console.log('🔧 ProductForm setting submit handler');
-    (window as any).__currentFormSubmit = handleSubmit;
-    return () => {
-      console.log('🔧 ProductForm cleaning up submit handler');
-      delete (window as any).__currentFormSubmit;
-    };
-  }, []); // Remove handleSubmit dependency to prevent infinite loop
-  
-  // Update the submit handler when handleSubmit changes
-  React.useEffect(() => {
-    (window as any).__currentFormSubmit = handleSubmit;
-  }, [handleSubmit]);
 
   const { data: products } = useProducts();
 

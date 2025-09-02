@@ -13,7 +13,7 @@ interface FormDialogProps {
   submitText?: string;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
   children: React.ReactNode;
-  onSubmit?: () => Promise<void>;
+  onSubmit?: (...args: any[]) => Promise<void>;
 }
 
 /**
@@ -22,44 +22,19 @@ interface FormDialogProps {
  */
 export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
   ({ title, open, onClose, isLoading, submitText, maxWidth, children, onSubmit }, ref) => {
-    const [submitHandler, setSubmitHandler] = React.useState<(() => Promise<void>) | null>(null);
-
-    // Allow child components to register their submit handlers
-    React.useEffect(() => {
-      console.log('🔄 FormDialog checking for submit handler');
-      const handler = (window as any).__currentFormSubmit;
-      console.log('🔄 Found handler:', !!handler, typeof handler);
-      if (handler && typeof handler === 'function') {
-        console.log('🔄 Setting submit handler');
-        setSubmitHandler(() => handler);
-      } else {
-        // Clear handler if none found
-        setSubmitHandler(null);
+    const handleSubmit = async () => {
+      if (onSubmit) {
+        await onSubmit();
       }
-    }, [open, children]); // Check when dialog opens OR children change
+    };
 
     useImperativeHandle(ref, () => ({
       submit: async () => {
-        if (submitHandler) {
-          await submitHandler();
-        } else if (onSubmit) {
+        if (onSubmit) {
           await onSubmit();
         }
       }
     }));
-
-    const handleSubmit = async () => {
-      console.log('🔄 FormDialog handleSubmit called, submitHandler:', !!submitHandler, 'onSubmit:', !!onSubmit);
-      if (submitHandler) {
-        console.log('🔄 Calling submitHandler from FormDialog');
-        await submitHandler();
-      } else if (onSubmit) {
-        console.log('🔄 Calling onSubmit from FormDialog');
-        await onSubmit();
-      } else {
-        console.log('❌ No submit handler found in FormDialog');
-      }
-    };
 
     return (
       <BaseDialog
