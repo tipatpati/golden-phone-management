@@ -10,7 +10,7 @@ export function InventoryHeader() {
   const { data: currentRole } = useCurrentUserRole();
   
   // Check if user can modify products using permission-based check
-  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
 
   return (
     <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 lg:gap-6 w-full md-enter-refined md-stagger-container">

@@ -18,7 +18,7 @@ export function InventoryTable({ searchTerm = "", viewMode = "list" }: { searchT
   const updateProduct = useUpdateProduct();
 
   // Check if user can modify products using permission-based check
-  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);

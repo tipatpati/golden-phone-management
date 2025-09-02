@@ -27,7 +27,7 @@ export function InventoryTableToolbar({
   const { data: currentRole } = useCurrentUserRole();
   
   // Check if user can add products using permission-based check
-  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory_management');
+  const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
   
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
