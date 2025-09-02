@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, Eye } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Printer, Eye, History, AlertCircle } from "lucide-react";
 import { ThermalLabelPreview } from "./ThermalLabelPreview";
-import { generateThermalLabels } from "./utils/thermalLabelUtils";
+import { useThermalLabelPrint } from "./hooks/useThermalLabelPrint";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 
 interface ThermalLabelGeneratorProps {
@@ -34,28 +34,29 @@ export function ThermalLabelGenerator({
   });
   const [showPreview, setShowPreview] = useState(false);
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast({
-        title: "Print Error",
-        description: "Please allow popups to print labels",
-        variant: "destructive"
-      });
-      return;
-    }
+  const { printState, printLabels } = useThermalLabelPrint();
 
-    const htmlContent = generateThermalLabels(labels, { ...options, companyName });
-    
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.focus();
-    
+  // Memoized calculations for performance
+  const labelStats = useMemo(() => {
     const totalLabels = labels.length * options.copies;
-    toast({
-      title: "Print Prepared",
-      description: `Preparing to print ${totalLabels} thermal labels`
-    });
+    const uniqueProducts = new Set(labels.map(l => l.productName)).size;
+    const hasSerialNumbers = labels.some(l => l.serialNumber);
+    const hasBatteryLevels = labels.some(l => l.batteryLevel);
+    
+    return {
+      totalLabels,
+      uniqueProducts,
+      hasSerialNumbers,
+      hasBatteryLevels
+    };
+  }, [labels, options.copies]);
+
+  const handlePrint = async () => {
+    const success = await printLabels(labels, { ...options, companyName });
+    if (success) {
+      // Close dialog after successful print
+      setTimeout(() => onOpenChange(false), 1000);
+    }
   };
 
   const updateOption = <K extends keyof ThermalLabelOptions>(
@@ -70,12 +71,18 @@ export function ThermalLabelGenerator({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>No Labels to Print</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-warning" />
+              No Labels Available
+            </DialogTitle>
             <DialogDescription>
-              Please select products with serial numbers to generate thermal labels.
+              Please select products with valid data to generate thermal labels. 
+              Ensure products have names, prices, and barcodes.
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
+          <Button onClick={() => onOpenChange(false)} className="w-full">
+            Close
+          </Button>
         </DialogContent>
       </Dialog>
     );
@@ -87,11 +94,24 @@ export function ThermalLabelGenerator({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
-            Thermal Label Generator (6cm × 5cm - Landscape)
+            Professional Thermal Label Generator
           </DialogTitle>
-          <DialogDescription>
-            Generate individual thermal labels for {labels.length} unit{labels.length > 1 ? 's' : ''} 
-            {labels.length > 1 && ` across ${new Set(labels.map(l => l.productName)).size} product${new Set(labels.map(l => l.productName)).size > 1 ? 's' : ''}`}
+          <DialogDescription className="space-y-2">
+            <div>6cm × 5cm landscape format at 203 DPI for professional thermal printers</div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary">
+                {labelStats.totalLabels} total labels
+              </Badge>
+              <Badge variant="outline">
+                {labelStats.uniqueProducts} product{labelStats.uniqueProducts !== 1 ? 's' : ''}
+              </Badge>
+              {labelStats.hasSerialNumbers && (
+                <Badge variant="outline">Serial numbers</Badge>
+              )}
+              {labelStats.hasBatteryLevels && (
+                <Badge variant="outline">Battery levels</Badge>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 
@@ -185,12 +205,41 @@ export function ThermalLabelGenerator({
               </Button>
               <Button
                 onClick={handlePrint}
+                disabled={printState.isPrinting}
                 className="flex-1"
               >
-                <Printer className="h-4 w-4 mr-2" />
-                Print {labels.length * options.copies} Labels
+                {printState.isPrinting ? (
+                  <>Loading...</>
+                ) : (
+                  <>
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print {labelStats.totalLabels} Labels
+                  </>
+                )}
               </Button>
             </div>
+
+            {/* Print History */}
+            {printState.printHistory.length > 0 && (
+              <div className="pt-4 border-t">
+                <Label className="flex items-center gap-2 text-sm">
+                  <History className="h-4 w-4" />
+                  Recent Print Jobs
+                </Label>
+                <div className="mt-2 space-y-1">
+                  {printState.printHistory.slice(0, 3).map((entry, index) => (
+                    <div key={index} className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>
+                        {entry.labelCount} labels - {entry.timestamp.toLocaleTimeString()}
+                      </span>
+                      <Badge variant={entry.success ? "default" : "destructive"} className="text-xs">
+                        {entry.success ? "Success" : "Failed"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Preview Panel */}
