@@ -49,7 +49,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     setFormData(prev => ({ ...prev, [field]: value }));
     // Only clear errors when user actively changes fields, don't trigger validation
     clearErrors();
-  }, [clearErrors]);
+  }, []);
 
   const updateSerialNumbers = useCallback((value: string) => {
     setSerialNumbers(value);
@@ -57,12 +57,12 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     // Auto-update stock if has_serial is enabled
     if (formData.has_serial) {
       const lines = value.split('\n').filter(line => line.trim() !== '');
-      updateField('stock', lines.length);
+      setFormData(prev => ({ ...prev, stock: lines.length }));
     }
     
     // Only clear errors when user is actively typing, don't trigger validation
     clearErrors();
-  }, [formData.has_serial, updateField, clearErrors]);
+  }, [formData.has_serial]);
 
   const handleSubmit = useCallback(async () => {
     console.log('🔄 useProductForm handleSubmit called with formData:', formData);
