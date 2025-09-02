@@ -87,10 +87,9 @@ export function ProductForm({
 
   return (
     <div className="space-y-6">
-      {/* Development Auto-fill Button */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center justify-between">
+      {/* Development Auto-fill Button - Always visible for testing */}
+      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-center justify-between">
             <div>
               <h4 className="text-sm font-medium text-yellow-800">🧪 Development Tools</h4>
               <p className="text-xs text-yellow-700">Quick fill for testing purposes</p>
@@ -104,7 +103,7 @@ export function ProductForm({
             </button>
           </div>
         </div>
-      )}
+      )
 
       {/* Product Form Guidance */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
