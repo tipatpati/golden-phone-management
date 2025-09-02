@@ -103,7 +103,13 @@ export function AddProductDialog() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="flex items-center gap-2">
+      <Button 
+        onClick={() => {
+          console.log('🔵 Aggiungi Prodotto button clicked');
+          setOpen(true);
+        }} 
+        className="flex items-center gap-2"
+      >
         <Plus className="h-4 w-4" />
         Aggiungi Prodotto
       </Button>
