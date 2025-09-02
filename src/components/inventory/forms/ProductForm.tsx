@@ -10,7 +10,8 @@ export function ProductForm({
   initialData, 
   onSubmit, 
   isLoading, 
-  submitText = "Save Product" 
+  submitText = "Save Product",
+  onRegisterSubmit
 }: ProductFormProps) {
   const {
     formData,
@@ -23,6 +24,9 @@ export function ProductForm({
     hasErrors
   } = useProductForm({ initialData, onSubmit });
 
+  React.useEffect(() => {
+    onRegisterSubmit?.(handleSubmit);
+  }, [handleSubmit, onRegisterSubmit]);
 
   const { data: products } = useProducts();
 

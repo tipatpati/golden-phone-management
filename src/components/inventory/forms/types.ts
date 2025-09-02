@@ -33,6 +33,7 @@ export interface ProductFormProps {
   onSubmit: (data: ProductFormData) => Promise<void>;
   isLoading?: boolean;
   submitText?: string;
+  onRegisterSubmit?: (submit: () => Promise<void>) => void;
 }
 
 export interface SerialNumberManagerProps {

@@ -18,6 +18,7 @@ export function AddProductDialog() {
   const [open, setOpen] = useState(false);
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [submitForm, setSubmitForm] = useState<(() => Promise<void>) | null>(null);
   
   const createProduct = useCreateProduct();
   const { data: products } = useProducts();
@@ -153,6 +154,7 @@ export function AddProductDialog() {
         isLoading={createProduct.isPending}
         submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         maxWidth="2xl"
+        onSubmit={async () => { if (submitForm) { await submitForm(); } }}
       >
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center justify-between">
@@ -177,6 +179,7 @@ export function AddProductDialog() {
           onSubmit={handleSubmit}
           isLoading={createProduct.isPending}
           submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
+          onRegisterSubmit={setSubmitForm}
         />
       </FormDialog>
     </>
