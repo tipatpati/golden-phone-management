@@ -5,7 +5,7 @@ import { Search, Grid, List, FilterX } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
-import { AddProductForm } from "./AddProductForm";
+import { SimpleAddProductDialog } from "./SimpleAddProductDialog";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
 
@@ -108,16 +108,7 @@ export function InventoryTableToolbar({
       </form>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-        {canModifyProducts ? (
-          <>
-            {console.log('✅ Rendering AddProductForm because canModifyProducts is true')}
-            <AddProductForm />
-          </>
-        ) : (
-          <>
-            {console.log('❌ NOT rendering AddProductForm because canModifyProducts is false')}
-          </>
-        )}
+        {canModifyProducts && <SimpleAddProductDialog />}
         
         <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">
           <Button 
