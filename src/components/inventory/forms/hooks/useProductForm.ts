@@ -47,7 +47,8 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
     console.log(`🔄 updateField: ${field} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
-    clearErrors(); // Clear errors when user starts typing
+    // Only clear errors when user actively changes fields, don't trigger validation
+    clearErrors();
   }, [clearErrors]);
 
   const updateSerialNumbers = useCallback((value: string) => {
@@ -59,6 +60,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       updateField('stock', lines.length);
     }
     
+    // Only clear errors when user is actively typing, don't trigger validation
     clearErrors();
   }, [formData.has_serial, updateField, clearErrors]);
 

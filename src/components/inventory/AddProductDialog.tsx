@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Plus, Scan, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
@@ -28,7 +28,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   const setOpen = externalOnClose ? externalOnClose : setInternalOpen;
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
-  const [submitForm, setSubmitForm] = useState<(() => Promise<void>) | null>(null);
+  const formSubmitRef = useRef<(() => Promise<void>) | null>(null);
   
   const createProduct = useCreateProduct();
   const { data: products } = useProducts();
@@ -212,10 +212,13 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         </div>
 
         <ProductForm
+          key={open ? 'open' : 'closed'} // Force remount when dialog opens to reset state
           onSubmit={handleSubmit}
           isLoading={createProduct.isPending}
           submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
-          onRegisterSubmit={setSubmitForm}
+          onRegisterSubmit={(submitFn) => {
+            formSubmitRef.current = submitFn;
+          }}
         />
         
         {/* Custom submit button */}
@@ -238,8 +241,10 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
           <Button
             onClick={async () => {
               console.log('🔄 Manual submit button clicked');
-              if (submitForm) { 
-                await submitForm(); 
+              if (formSubmitRef.current) {
+                await formSubmitRef.current();
+              } else {
+                console.error('❌ Form submit function not available');
               }
             }}
             disabled={createProduct.isPending}

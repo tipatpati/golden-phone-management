@@ -25,7 +25,9 @@ export function ProductForm({
   } = useProductForm({ initialData, onSubmit });
 
   React.useEffect(() => {
-    onRegisterSubmit?.(handleSubmit);
+    if (onRegisterSubmit) {
+      onRegisterSubmit(handleSubmit);
+    }
   }, [handleSubmit, onRegisterSubmit]);
 
   const { data: products } = useProducts();
