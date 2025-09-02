@@ -109,4 +109,55 @@ export class ProductApiService extends BaseApiService<Product, CreateProductData
       priority: rec.priority
     })) : [];
   }
+
+  // Bulk operations
+  async bulkDelete(ids: string[]): Promise<void> {
+    console.log('🗑️ ProductApiService: Bulk deleting products', { ids });
+    
+    if (ids.length === 0) {
+      throw new Error('No product IDs provided for bulk delete');
+    }
+
+    const { error } = await this.supabase
+      .from('products')
+      .delete()
+      .in('id', ids);
+
+    if (error) {
+      console.error('❌ ProductApiService: Bulk delete failed', error);
+      throw new Error(`Failed to delete products: ${error.message}`);
+    }
+
+    console.log('✅ ProductApiService: Bulk delete successful');
+  }
+
+  async bulkUpdate(updates: Array<{ id: string; [key: string]: any }>): Promise<void> {
+    console.log('🔄 ProductApiService: Bulk updating products', { updates });
+    
+    if (updates.length === 0) {
+      throw new Error('No updates provided for bulk update');
+    }
+
+    // For bulk updates, we need to update each product individually
+    // since Supabase doesn't support bulk UPSERT with different values
+    const promises = updates.map(async (update) => {
+      const { id, ...updateData } = update;
+      const { error } = await this.supabase
+        .from('products')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(`Failed to update product ${id}: ${error.message}`);
+      }
+    });
+
+    try {
+      await Promise.all(promises);
+      console.log('✅ ProductApiService: Bulk update successful');
+    } catch (error) {
+      console.error('❌ ProductApiService: Bulk update failed', error);
+      throw error;
+    }
+  }
 }

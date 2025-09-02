@@ -1,10 +1,16 @@
 
 import React, { useState } from "react";
-import { InventoryTable } from "@/components/inventory/InventoryTable";
-import { InventoryTableToolbar } from "@/components/inventory/InventoryTableToolbar";
-import { AddProductDialog } from "@/components/inventory/AddProductDialog";
-import { Barcode } from "lucide-react";
-import { useProductsRealtime } from "@/services/products/ProductReactQueryService";
+import { InventoryTable } from "./InventoryTable";
+import { InventoryTableToolbar } from "./InventoryTableToolbar";
+import { AddProductDialog } from "./AddProductDialog";
+import { EditProductDialog } from "./EditProductDialog";
+import { BulkActionsToolbar } from "./BulkActionsToolbar";
+import { useProducts, useDeleteProduct } from "@/services/products/ProductReactQueryService";
+import { useBulkActions } from "./hooks/useBulkActions";
+import { toast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/common/EmptyState";
+import { LoadingState } from "@/components/common/LoadingState";
+import { Package } from "lucide-react";
 
 interface InventoryContentProps {
   showAddProduct: boolean;
@@ -19,9 +25,24 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   
-  // Enable real-time updates for inventory
-  useProductsRealtime();
+  const { data: products, isLoading, error } = useProducts(searchTerm);
+  const deleteProduct = useDeleteProduct();
+  
+  const {
+    selectedItems,
+    isAllSelected,
+    isIndeterminate,
+    toggleSelectAll,
+    toggleSelectItem,
+    clearSelection,
+    bulkDelete,
+    bulkUpdateStatus,
+    bulkUpdateCategory,
+    selectedCount,
+    isLoading: isBulkLoading,
+  } = useBulkActions(Array.isArray(products) ? products : []);
 
   const handleSearchChange = (newSearchTerm: string) => {
     setSearchTerm(newSearchTerm);
@@ -30,6 +51,70 @@ export function InventoryContent({
   const handleViewModeChange = (newViewMode: "list" | "grid") => {
     setViewMode(newViewMode);
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProduct.mutateAsync(id);
+      // Clear selection if deleted item was selected
+      if (selectedItems.includes(id)) {
+        toggleSelectItem(id);
+      }
+      toast({
+        title: "Product Deleted",
+        description: "Product has been successfully deleted",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    console.error('Products fetch error:', error);
+    return (
+      <EmptyState
+        icon={Package}
+        title="Error Loading Products"
+        description="Failed to load products. Please try again."
+      />
+    );
+  }
+
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    return (
+      <div className="space-y-6">
+        <InventoryTableToolbar 
+          onSearchChange={handleSearchChange}
+          onViewModeChange={handleViewModeChange}
+          searchTerm={searchTerm}
+          viewMode={viewMode}
+          onAddProduct={onAddProduct}
+        />
+        <EmptyState
+          icon={Package}
+          title="No Products Found"
+          description="Start by adding your first product to the inventory."
+          actionLabel="Add Product"
+          onAction={onAddProduct}
+        />
+        
+        {showAddProduct && (
+          <AddProductDialog 
+            open={showAddProduct}
+            onClose={onCancelAddProduct}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -40,8 +125,28 @@ export function InventoryContent({
         viewMode={viewMode}
         onAddProduct={onAddProduct}
       />
-      <InventoryTable searchTerm={searchTerm} viewMode={viewMode} />
       
+      <BulkActionsToolbar
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
+        onBulkDelete={bulkDelete}
+        onBulkUpdateStatus={bulkUpdateStatus}
+        onBulkUpdateCategory={bulkUpdateCategory}
+        isLoading={isBulkLoading}
+      />
+      
+      <InventoryTable
+        searchTerm={searchTerm}
+        viewMode={viewMode}
+        selectedItems={selectedItems}
+        onSelectItem={toggleSelectItem}
+        onSelectAll={toggleSelectAll}
+        isAllSelected={isAllSelected}
+        isIndeterminate={isIndeterminate}
+        onEdit={setEditingProduct}
+        onDelete={handleDelete}
+      />
+
       {/* Only render AddProductDialog when explicitly requested */}
       {showAddProduct && (
         <AddProductDialog 
@@ -50,22 +155,14 @@ export function InventoryContent({
         />
       )}
 
-      <div className="mt-4 flex items-center justify-center p-4 border border-dashed rounded-lg bg-muted/30">
-        <div className="flex flex-col items-center text-center max-w-md p-4">
-          <Barcode className="h-10 w-10 mb-2 text-primary" />
-          <h3 className="text-lg font-medium">Barcode Scanner Ready</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Use the camera scanner button in search fields or connect a hardware barcode scanner.
-            Hardware scanners work automatically when typing in search fields.
-          </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded-full">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Camera & Hardware Ready</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {editingProduct && (
+        <EditProductDialog
+          product={editingProduct}
+          open={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={() => setEditingProduct(null)}
+        />
+      )}
     </>
   );
 }

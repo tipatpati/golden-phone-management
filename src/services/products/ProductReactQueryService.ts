@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Product, CreateProductData } from './types';
+import { useMutation } from '@tanstack/react-query';
 
 class ProductReactQueryServiceClass extends BaseReactQueryService<Product, CreateProductData> {
   constructor() {
@@ -88,6 +89,30 @@ class ProductReactQueryServiceClass extends BaseReactQueryService<Product, Creat
       };
     }, [queryClient]);
   }
+
+  // Bulk operations
+  useBulkDelete() {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+      mutationFn: (ids: string[]) => (this.apiService as ProductApiService).bulkDelete(ids),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+      },
+    });
+  }
+
+  useBulkUpdate() {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+      mutationFn: (updates: Array<{ id: string; [key: string]: any }>) => 
+        (this.apiService as ProductApiService).bulkUpdate(updates),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+      },
+    });
+  }
 }
 
 export const productService = new ProductReactQueryServiceClass();
@@ -116,5 +141,9 @@ export const useProductRecommendations = (productId: string) =>
 
 export const useProductsRealtime = () => 
   productService.useProductsRealtime();
+
+// New bulk operation hooks
+export const useDeleteProducts = () => productService.useBulkDelete();
+export const useUpdateProducts = () => productService.useBulkUpdate();
 
 export type { Product, CreateProductData };
