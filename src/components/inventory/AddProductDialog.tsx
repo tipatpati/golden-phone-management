@@ -8,7 +8,7 @@ import { useCreateProduct } from "@/services/useProducts";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
-import { BarcodePrintDialog } from "./BarcodePrintDialog";
+import { ThermalLabelGenerator, useThermalLabels } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useProducts } from "@/services/products/ProductReactQueryService";
@@ -28,6 +28,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   const setOpen = externalOnClose ? externalOnClose : setInternalOpen;
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const formSubmitRef = useRef<(() => Promise<void>) | null>(null);
   
   const createProduct = useCreateProduct();
@@ -123,12 +124,18 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   const handleProductCreated = (data: any) => {
     toast.success(`Product added successfully with ${data.serialEntries?.length || 1} serial entries`);
     setCreatedProduct({ ...data, serialEntries: data.serialEntries || [] });
-    setShowPrintDialog(true);
+    setShowConfirmDialog(true);
   };
 
   const handlePrintDialogClose = () => {
     setShowPrintDialog(false);
+    setShowConfirmDialog(false);
     setCreatedProduct(null);
+  };
+
+  const handleShowPrintLabels = () => {
+    setShowConfirmDialog(false);
+    setShowPrintDialog(true);
   };
 
   return (
@@ -147,35 +154,45 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         </Button>
       )}
 
-      {showPrintDialog && createdProduct && (
-        <BarcodePrintDialog
-          productName={`${createdProduct.brand} ${createdProduct.model}`}
-          barcode={createdProduct.barcode}
-          price={createdProduct.price}
-          serialEntries={createdProduct.serialEntries}
-          onBarcodeGenerated={() => {}}
-          trigger={
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
-                <h3 className="text-lg font-semibold mb-4">Product Created Successfully!</h3>
-                <div className="text-center mb-4">
-                  <BarcodeGenerator value={createdProduct.barcode} />
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Would you like to print barcode labels for this product? ({createdProduct.serialEntries?.length || 1} labels)
-                </p>
-                <div className="flex gap-2">
-                  <Button onClick={handlePrintDialogClose} variant="outline" className="flex-1">
-                    Skip
-                  </Button>
-                  <Button onClick={() => {}} className="flex-1">
-                    <Printer className="h-4 w-4 mr-2" />
-                    Print Labels
-                  </Button>
-                </div>
-              </div>
+      {showConfirmDialog && createdProduct && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Product Created Successfully!</h3>
+            <div className="text-center mb-4">
+              <BarcodeGenerator value={createdProduct.barcode} />
             </div>
-          }
+            <p className="text-sm text-gray-600 mb-4">
+              Would you like to print thermal labels for this product? ({createdProduct.serialEntries?.length || 1} labels)
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={handlePrintDialogClose} variant="outline" className="flex-1">
+                Skip
+              </Button>
+              <Button onClick={handleShowPrintLabels} className="flex-1">
+                <Printer className="h-4 w-4 mr-2" />
+                Print Labels
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {createdProduct && (
+        <ThermalLabelGenerator
+          open={showPrintDialog}
+          onOpenChange={(open) => {
+            setShowPrintDialog(open);
+            if (!open) handlePrintDialogClose();
+          }}
+          labels={useThermalLabels([{
+            id: createdProduct.id,
+            brand: createdProduct.brand,
+            model: createdProduct.model,
+            price: createdProduct.price,
+            serial_numbers: createdProduct.serialEntries?.map((e: any) => e.serial),
+            category: createdProduct.category
+          }])}
+          companyName="GOLDEN PHONE SRL"
         />
       )}
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Table, 
   TableBody, 
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/products/ProductReactQueryService";
-import { BarcodePrintDialog } from "./BarcodePrintDialog";
+import { ThermalLabelGenerator, useThermalLabels } from "./labels";
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -65,11 +65,19 @@ export function InventoryTable({
   onEdit,
   onDelete
 }: InventoryTableProps) {
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
   // Import the actual products data
   const { data: products = [], isLoading } = useProducts(searchTerm);
   
   // Ensure products is always an array
   const productList = Array.isArray(products) ? products : [];
+
+  const handlePrintLabels = (product: Product) => {
+    setSelectedProduct(product);
+    setPrintDialogOpen(true);
+  };
 
   const getCategoryBadgeColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
@@ -130,8 +138,9 @@ export function InventoryTable({
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <>
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">
@@ -244,22 +253,14 @@ export function InventoryTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <BarcodePrintDialog
-                      productName={`${product.brand} ${product.model}`}
-                      barcode={product.barcode}
-                      price={product.price}
-                      specifications={product.category?.name}
-                      serialNumbers={product.serial_numbers}
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Printer className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePrintLabels(product)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -284,5 +285,15 @@ export function InventoryTable({
         </TableBody>
       </Table>
     </div>
+    
+    {selectedProduct && (
+      <ThermalLabelGenerator
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+        labels={useThermalLabels([selectedProduct])}
+        companyName="GOLDEN PHONE SRL"
+      />
+    )}
+    </>
   );
 }
