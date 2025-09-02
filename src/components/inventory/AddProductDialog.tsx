@@ -184,15 +184,24 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
             setShowPrintDialog(open);
             if (!open) handlePrintDialogClose();
           }}
-          labels={[{
-            productName: `${createdProduct.brand} ${createdProduct.model}${createdProduct.year ? ` (${createdProduct.year})` : ''}`,
-            serialNumber: createdProduct.serialEntries?.[0]?.serial,
-            barcode: createdProduct.barcode || `${createdProduct.brand}-${createdProduct.model}`,
-            price: createdProduct.price,
-            category: createdProduct.category?.name,
-            color: createdProduct.serialEntries?.[0]?.color,
-            batteryLevel: createdProduct.serialEntries?.[0]?.batteryLevel
-          }]}
+          labels={createdProduct.serialEntries && createdProduct.serialEntries.length > 0 ? 
+            createdProduct.serialEntries.map((entry: any) => ({
+              productName: `${createdProduct.brand} ${createdProduct.model}${createdProduct.year ? ` (${createdProduct.year})` : ''}`,
+              serialNumber: entry.serial,
+              barcode: entry.barcode || `${createdProduct.brand}-${createdProduct.model}-${entry.serial}`,
+              price: createdProduct.price,
+              category: createdProduct.category?.name,
+              color: entry.color,
+              batteryLevel: entry.batteryLevel
+            })) :
+            [{
+              productName: `${createdProduct.brand} ${createdProduct.model}${createdProduct.year ? ` (${createdProduct.year})` : ''}`,
+              serialNumber: undefined,
+              barcode: createdProduct.barcode || `${createdProduct.brand}-${createdProduct.model}`,
+              price: createdProduct.price,
+              category: createdProduct.category?.name
+            }]
+          }
           companyName="GOLDEN PHONE SRL"
         />
       )}

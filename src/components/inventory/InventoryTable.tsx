@@ -290,17 +290,33 @@ export function InventoryTable({
       <ThermalLabelGenerator
         open={printDialogOpen}
         onOpenChange={setPrintDialogOpen}
-        labels={[{
-          productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
-          serialNumber: selectedProduct.serial_numbers?.[0],
-          barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
-          price: selectedProduct.price,
-          category: selectedProduct.category?.name,
-          color: selectedProduct.serial_numbers?.[0] ? selectedProduct.serial_numbers[0].split(' ')[1] : undefined,
-          batteryLevel: selectedProduct.serial_numbers?.[0]?.includes('%') ? 
-            parseInt(selectedProduct.serial_numbers[0].split(' ').find(part => part.includes('%'))?.replace('%', '') || '0') : 
-            undefined
-        }]}
+        labels={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0 ? 
+          selectedProduct.serial_numbers.map((serialNumber, index) => {
+            // Parse serial number for color and battery info
+            const parts = serialNumber.split(' ');
+            const serial = parts[0];
+            const color = parts.find(part => !part.includes('%') && part !== serial);
+            const batteryPart = parts.find(part => part.includes('%'));
+            const batteryLevel = batteryPart ? parseInt(batteryPart.replace('%', '')) : undefined;
+            
+            return {
+              productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
+              serialNumber: serial,
+              barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}-${serial}`,
+              price: selectedProduct.price,
+              category: selectedProduct.category?.name,
+              color,
+              batteryLevel
+            };
+          }) : 
+          [{
+            productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
+            serialNumber: undefined,
+            barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
+            price: selectedProduct.price,
+            category: selectedProduct.category?.name
+          }]
+        }
         companyName="GOLDEN PHONE SRL"
       />
     )}

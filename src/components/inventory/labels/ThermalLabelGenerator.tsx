@@ -90,7 +90,8 @@ export function ThermalLabelGenerator({
             Thermal Label Generator (6cm × 5cm - Landscape)
           </DialogTitle>
           <DialogDescription>
-            Generate individual thermal labels for {labels.length} unit{labels.length > 1 ? 's' : ''}
+            Generate individual thermal labels for {labels.length} unit{labels.length > 1 ? 's' : ''} 
+            {labels.length > 1 && ` across ${new Set(labels.map(l => l.productName)).size} product${new Set(labels.map(l => l.productName)).size > 1 ? 's' : ''}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -197,15 +198,26 @@ export function ThermalLabelGenerator({
             <div className="space-y-4">
               <Label>Label Preview</Label>
               <div className="border rounded-lg p-4 bg-muted/30 max-h-96 overflow-y-auto">
-                <ThermalLabelPreview
-                  label={labels[0]}
-                  options={{ ...options, companyName }}
-                />
-                {labels.length > 1 && (
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Showing preview for first unit. All units will have similar format.
-                  </p>
-                )}
+                <div className="space-y-3">
+                  {labels.slice(0, 3).map((label, index) => (
+                    <div key={index}>
+                      <ThermalLabelPreview
+                        label={label}
+                        options={{ ...options, companyName }}
+                      />
+                      {index === 0 && labels.length > 1 && (
+                        <p className="text-xs text-muted-foreground mt-1 text-center">
+                          Unit {index + 1} of {labels.length}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {labels.length > 3 && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      ... and {labels.length - 3} more units
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
