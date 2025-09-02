@@ -53,16 +53,18 @@ export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }
     }
   }, [serialNumbers, entries.length]);
 
-  // Update serialNumbers string and stock when entries change
+  // Update serialNumbers string when entries change (but let parent handle stock)
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
       .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}`)
       .join('\n');
     
-    setSerialNumbers(serialString);
-    setStock(validEntries.length.toString());
-  }, [entries, setSerialNumbers, setStock]);
+    // Only update if the string has actually changed to prevent loops
+    if (serialString !== serialNumbers) {
+      setSerialNumbers(serialString);
+    }
+  }, [entries, setSerialNumbers, serialNumbers]);
 
   const addEntry = () => {
     const newEntry: SerialEntry = {

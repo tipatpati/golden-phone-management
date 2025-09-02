@@ -18,7 +18,7 @@ export function SerialNumberManager({
       <SerialNumbersInput
         serialNumbers={serialNumbers}
         setSerialNumbers={onSerialNumbersChange}
-        setStock={(value) => onStockChange(parseInt(value))}
+        setStock={() => {}} // Remove stock callback to prevent loops
       />
       
       <p className="text-xs text-muted-foreground">
