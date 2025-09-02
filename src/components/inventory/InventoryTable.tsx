@@ -295,7 +295,11 @@ export function InventoryTable({
           serialNumber: selectedProduct.serial_numbers?.[0],
           barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
           price: selectedProduct.price,
-          category: selectedProduct.category?.name
+          category: selectedProduct.category?.name,
+          color: selectedProduct.serial_numbers?.[0] ? selectedProduct.serial_numbers[0].split(' ')[1] : undefined,
+          batteryLevel: selectedProduct.serial_numbers?.[0]?.includes('%') ? 
+            parseInt(selectedProduct.serial_numbers[0].split(' ').find(part => part.includes('%'))?.replace('%', '') || '0') : 
+            undefined
         }]}
         companyName="GOLDEN PHONE SRL"
       />

@@ -87,7 +87,7 @@ export function ThermalLabelGenerator({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
-            Thermal Label Generator (5cm × 6cm)
+            Thermal Label Generator (6cm × 5cm - Landscape)
           </DialogTitle>
           <DialogDescription>
             Generate individual thermal labels for {labels.length} unit{labels.length > 1 ? 's' : ''}

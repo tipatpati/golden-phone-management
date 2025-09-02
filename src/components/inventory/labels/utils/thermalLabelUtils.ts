@@ -1,9 +1,9 @@
 import { ThermalLabelData, ThermalLabelOptions, ThermalPrintSettings } from "../types";
 
-// Thermal printer settings for 5cm × 6cm labels at 203 DPI
+// Thermal printer settings for 6cm × 5cm labels at 203 DPI (landscape)
 export const THERMAL_SETTINGS: ThermalPrintSettings = {
-  width: 400,   // 5cm at 203 DPI
-  height: 472,  // 6cm at 203 DPI
+  width: 472,   // 6cm at 203 DPI (landscape)
+  height: 400,  // 5cm at 203 DPI (landscape)
   dpi: 203,
   margin: 16
 };
@@ -15,6 +15,14 @@ export function generateThermalLabels(
   const { width, height, margin } = THERMAL_SETTINGS;
   
   const generateLabelContent = (label: ThermalLabelData) => {
+    // Format: Brand Model Color Battery
+    const formatProductName = () => {
+      let parts = [label.productName];
+      if (label.color) parts.push(label.color);
+      if (label.batteryLevel) parts.push(`${label.batteryLevel}%`);
+      return parts.join(' ');
+    };
+
     return `
       <div class="thermal-label">
         ${options.includeCompany && options.companyName ? `
@@ -23,41 +31,37 @@ export function generateThermalLabels(
           </div>
         ` : ''}
         
-        <div class="product-name">
-          ${label.productName}
-        </div>
-        
-        ${label.serialNumber ? `
-          <div class="serial-number">
-            S/N: ${label.serialNumber}
-          </div>
-        ` : ''}
-        
-        ${options.includeCategory && label.category ? `
-          <div class="category">
-            ${label.category}
-          </div>
-        ` : ''}
+        <div class="main-content">
+          <div class="product-info">
+            <div class="product-name">
+              ${formatProductName()}
+            </div>
+            
+            ${label.serialNumber ? `
+              <div class="serial-number">
+                S/N: ${label.serialNumber}
+              </div>
+            ` : ''}
+            
+            ${options.includeCategory && label.category ? `
+              <div class="category">
+                ${label.category}
+              </div>
+            ` : ''}
 
-        ${(label.color || label.batteryLevel) ? `
-          <div class="device-info">
-            ${label.color ? `Color: ${label.color}` : ''}
-            ${label.color && label.batteryLevel ? ' • ' : ''}
-            ${label.batteryLevel ? `Battery: ${label.batteryLevel}%` : ''}
+            ${options.includePrice ? `
+              <div class="price">
+                €${label.price.toFixed(2)}
+              </div>
+            ` : ''}
           </div>
-        ` : ''}
-        
-        ${options.includePrice ? `
-          <div class="price">
-            €${label.price.toFixed(2)}
-          </div>
-        ` : ''}
-        
-        ${options.includeBarcode ? `
-          <div class="barcode-container">
-            <canvas class="barcode-canvas" data-barcode="${label.barcode}"></canvas>
-          </div>
-        ` : ''}
+          
+          ${options.includeBarcode ? `
+            <div class="barcode-container">
+              <canvas class="barcode-canvas" data-barcode="${label.barcode}"></canvas>
+            </div>
+          ` : ''}
+        </div>
       </div>
     `;
   };
@@ -73,7 +77,7 @@ export function generateThermalLabels(
   return `
     <html>
       <head>
-        <title>Thermal Labels - 5cm × 6cm</title>
+        <title>Thermal Labels - 6cm × 5cm (Landscape)</title>
         <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
         <style>
           @media print {
@@ -110,68 +114,75 @@ export function generateThermalLabels(
             width: ${width}px;
             height: ${height}px;
             border: 1px solid #ddd;
-            padding: 12px;
-            text-align: center;
+            padding: 8px;
+            text-align: left;
             background: white;
             box-sizing: border-box;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             margin-bottom: 20px;
             page-break-inside: avoid;
           }
           
           .company-header {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+            text-align: center;
+          }
+          
+          .main-content {
+            display: flex;
+            height: 100%;
+            gap: 12px;
+          }
+          
+          .product-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
           }
           
           .product-name {
-            font-size: ${options.format === 'compact' ? '16px' : '18px'};
+            font-size: ${options.format === 'compact' ? '14px' : '16px'};
             font-weight: bold;
             line-height: 1.2;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #000;
           }
           
           .serial-number {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: #2563eb;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
           }
           
           .category {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 6px;
-          }
-          
-          .device-info {
             font-size: 10px;
             color: #666;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
           }
           
           .price {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #dc2626;
-            margin: 12px 0;
+            margin: 6px 0;
           }
           
           .barcode-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            flex: 1;
-            min-height: 50px;
-            margin-top: 8px;
+            width: 140px;
+            height: 100%;
           }
           
           canvas {
@@ -197,20 +208,20 @@ export function generateThermalLabels(
               const barcodeValue = canvas.getAttribute('data-barcode');
               if (!barcodeValue) return;
               
-              try {
-                JsBarcode(canvas, barcodeValue, {
-                  format: 'CODE128',
-                  width: 1.8,
-                  height: 60,
-                  displayValue: true,
-                  fontSize: 12,
-                  font: 'Arial',
-                  textAlign: 'center',
-                  textPosition: 'bottom',
-                  margin: 8,
-                  background: '#ffffff',
-                  lineColor: '#000000'
-                });
+                try {
+                  JsBarcode(canvas, barcodeValue, {
+                    format: 'CODE128',
+                    width: 1.4,
+                    height: 50,
+                    displayValue: true,
+                    fontSize: 10,
+                    font: 'Arial',
+                    textAlign: 'center',
+                    textPosition: 'bottom',
+                    margin: 4,
+                    background: '#ffffff',
+                    lineColor: '#000000'
+                  });
               } catch (error) {
                 console.error('Barcode generation failed:', error);
               }
