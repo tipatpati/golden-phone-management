@@ -80,6 +80,13 @@ export function useProductValidation() {
     }
 
     console.log('📋 Validation completed:', { totalErrors: newErrors.length, errors: newErrors });
+    
+    if (newErrors.length > 0) {
+      console.log('❌ Form validation failed with errors:', newErrors.map(e => `${e.field}: ${e.message}`));
+    } else {
+      console.log('✅ Form validation passed successfully');
+    }
+    
     setErrors(newErrors);
     return newErrors;
   }, []);

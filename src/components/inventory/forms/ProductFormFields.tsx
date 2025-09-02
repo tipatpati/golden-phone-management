@@ -69,8 +69,8 @@ export function ProductFormFields({
       <FormField
         label="Category"
         type="select"
-        value={formData.category_id?.toString() || ''}
-        onChange={(value) => onFieldChange('category_id', parseInt(value))}
+        value={formData.category_id?.toString() || '1'}
+        onChange={(value) => onFieldChange('category_id', parseInt(value) || 1)}
         options={CATEGORY_OPTIONS.map(cat => ({ 
           value: cat.id.toString(), 
           label: cat.name 
@@ -85,8 +85,8 @@ export function ProductFormFields({
         label="Price (€)"
         type="input"
         inputType="number"
-        value={formData.price?.toString() || ''}
-        onChange={(value) => onFieldChange('price', value ? parseFloat(value) : undefined)}
+        value={formData.price?.toString() || '0'}
+        onChange={(value) => onFieldChange('price', value ? parseFloat(value) : 0)}
         placeholder="0.00"
         required
         className="md:col-span-1"
@@ -98,8 +98,8 @@ export function ProductFormFields({
         label="Min Price (€)"
         type="input"
         inputType="number"
-        value={formData.min_price?.toString() || ''}
-        onChange={(value) => onFieldChange('min_price', value ? parseFloat(value) : undefined)}
+        value={formData.min_price?.toString() || '0'}
+        onChange={(value) => onFieldChange('min_price', value ? parseFloat(value) : 0)}
         placeholder="0.00"
         required
         className="md:col-span-1"
@@ -111,8 +111,8 @@ export function ProductFormFields({
         label="Max Price (€)"
         type="input"
         inputType="number"
-        value={formData.max_price?.toString() || ''}
-        onChange={(value) => onFieldChange('max_price', value ? parseFloat(value) : undefined)}
+        value={formData.max_price?.toString() || '0'}
+        onChange={(value) => onFieldChange('max_price', value ? parseFloat(value) : 0)}
         placeholder="0.00"
         required
         className="md:col-span-1"

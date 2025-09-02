@@ -19,7 +19,8 @@ export function ProductForm({
     updateField,
     updateSerialNumbers,
     handleSubmit,
-    getFieldError
+    getFieldError,
+    hasErrors
   } = useProductForm({ initialData, onSubmit });
 
   // Expose handleSubmit to parent components
@@ -180,6 +181,25 @@ export function ProductForm({
         }
         return null;
       }, [getFieldError])}
+
+      {/* Debug Information (development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-4 p-4 bg-gray-100 rounded-lg text-xs space-y-2">
+          <h4 className="font-semibold">Debug Info:</h4>
+          <div>
+            <strong>Form Data:</strong>
+            <pre className="mt-1 text-[10px] overflow-auto max-h-32">
+              {JSON.stringify(formData, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <strong>Serial Numbers:</strong> "{serialNumbers}"
+          </div>
+          <div>
+            <strong>Has Errors:</strong> {hasErrors ? 'Yes' : 'No'}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
