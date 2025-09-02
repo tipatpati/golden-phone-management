@@ -15,8 +15,17 @@ import { useProducts } from "@/services/products/ProductReactQueryService";
 import { toast } from "@/components/ui/sonner";
 import { logger } from "@/utils/logger";
 
-export function AddProductDialog() {
-  const [open, setOpen] = useState(false);
+interface AddProductDialogProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export function AddProductDialog({ open: externalOpen, onClose: externalOnClose }: AddProductDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external state if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnClose ? externalOnClose : setInternalOpen;
   const [createdProduct, setCreatedProduct] = useState<any>(null);
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [submitForm, setSubmitForm] = useState<(() => Promise<void>) | null>(null);
@@ -124,16 +133,19 @@ export function AddProductDialog() {
 
   return (
     <>
-      <Button 
-        onClick={() => {
-          console.log('🔵 Aggiungi Prodotto button clicked');
-          setOpen(true);
-        }} 
-        className="flex items-center gap-2"
-      >
-        <Plus className="h-4 w-4" />
-        Aggiungi Prodotto
-      </Button>
+      {/* Only show button if not controlled externally */}
+      {externalOpen === undefined && (
+        <Button 
+          onClick={() => {
+            console.log('🔵 Aggiungi Prodotto button clicked');
+            setInternalOpen(true);
+          }} 
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Aggiungi Prodotto
+        </Button>
+      )}
 
       {showPrintDialog && createdProduct && (
         <BarcodePrintDialog
@@ -170,7 +182,13 @@ export function AddProductDialog() {
       <FormDialog
         title="Aggiungi Prodotto con Numeri Seriali"
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          if (externalOnClose) {
+            externalOnClose();
+          } else {
+            setInternalOpen(false);
+          }
+        }}
         isLoading={createProduct.isPending}
         submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         maxWidth="2xl"

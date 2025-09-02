@@ -31,15 +31,6 @@ export function InventoryContent({
     setViewMode(newViewMode);
   };
 
-  // AddProductForm is now a dialog, no need for inline mode
-  // if (showAddProduct) {
-  //   return (
-  //     <div className="bg-muted/50 p-4 rounded-lg">
-  //       <AddProductForm />
-  //     </div>
-  //   );
-  // }
-
   return (
     <>
       <InventoryTableToolbar 
@@ -47,8 +38,17 @@ export function InventoryContent({
         onViewModeChange={handleViewModeChange}
         searchTerm={searchTerm}
         viewMode={viewMode}
+        onAddProduct={onAddProduct}
       />
       <InventoryTable searchTerm={searchTerm} viewMode={viewMode} />
+      
+      {/* Only render AddProductDialog when explicitly requested */}
+      {showAddProduct && (
+        <AddProductDialog 
+          open={showAddProduct}
+          onClose={onCancelAddProduct}
+        />
+      )}
 
       <div className="mt-4 flex items-center justify-center p-4 border border-dashed rounded-lg bg-muted/30">
         <div className="flex flex-col items-center text-center max-w-md p-4">
