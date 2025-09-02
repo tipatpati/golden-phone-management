@@ -27,8 +27,13 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           const parsed = parseSerialWithBattery(serialNumber);
           const barcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
+          // Format: Brand Model Color
+          const labelProductName = parsed.color 
+            ? `${product.brand} ${product.model} ${parsed.color}`
+            : productName;
+          
           labels.push({
-            productName,
+            productName: labelProductName,
             serialNumber: parsed.serial,
             barcode,
             price: product.price,
