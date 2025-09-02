@@ -7,6 +7,7 @@ export function useProductValidation() {
 
   const validateForm = useCallback((data: Partial<ProductFormData>, serialNumbers?: string): ProductFormValidationError[] => {
     const newErrors: ProductFormValidationError[] = [];
+    console.log('🔍 Validating form data:', { data, serialNumbers });
 
     // Required field validations
     if (!data.brand?.trim()) {
@@ -75,6 +76,7 @@ export function useProductValidation() {
       }
     }
 
+    console.log('📋 Validation completed:', { totalErrors: newErrors.length, errors: newErrors });
     setErrors(newErrors);
     return newErrors;
   }, []);
