@@ -1,9 +1,9 @@
 import { ThermalLabelData, ThermalLabelOptions, ThermalPrintSettings } from "../types";
 
-// Thermal printer settings for 6cm × 5cm labels at 203 DPI (landscape with vertical stacking)
+// Thermal printer settings for 6cm × 5cm labels at 203 DPI (portrait orientation)
 export const THERMAL_SETTINGS: ThermalPrintSettings = {
-  width: 472,   // 6cm at 203 DPI (landscape)
-  height: 400,  // 5cm at 203 DPI (landscape)
+  width: 400,   // 5cm at 203 DPI (portrait width)
+  height: 472,  // 6cm at 203 DPI (portrait height)  
   dpi: 203,
   margin: 16
 };
@@ -73,7 +73,7 @@ export function generateThermalLabels(
   return `
     <html>
       <head>
-        <title>Thermal Labels - 6cm × 5cm (Landscape - Vertical Stack)</title>
+        <title>Thermal Labels - 5cm × 6cm (Portrait)</title>
         <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
         <style>
           @media print {
