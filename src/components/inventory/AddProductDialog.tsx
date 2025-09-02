@@ -150,7 +150,6 @@ export function AddProductDialog() {
         title="Aggiungi Prodotto con Numeri Seriali"
         open={open}
         onClose={() => setOpen(false)}
-        onSubmit={() => handleSubmit(formData)}
         isLoading={createProduct.isPending}
         submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         maxWidth="2xl"
@@ -175,7 +174,7 @@ export function AddProductDialog() {
         </div>
 
         <ProductForm
-          onSubmit={() => {}} 
+          onSubmit={handleSubmit}
           isLoading={createProduct.isPending}
           submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         />
