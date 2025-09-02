@@ -50,12 +50,16 @@ export const roleUtils = {
 
   // Check if role can access a specific feature
   canAccessFeature(userRole: UserRole, feature: string): boolean {
+    // Super admin bypasses all feature restrictions
+    if (userRole === 'super_admin') return true;
     const roleConfig = ROLE_CONFIGS[userRole];
     return roleConfig?.features.includes(feature) || false;
   },
 
   // Check if role has specific permission
   hasPermission(userRole: UserRole, permission: string): boolean {
+    // Super admin bypasses all permission restrictions
+    if (userRole === 'super_admin') return true;
     const roleConfig = ROLE_CONFIGS[userRole];
     // Check for wildcard permission (*) or specific permission
     return roleConfig?.permissions.includes("*") || roleConfig?.permissions.includes(permission) || false;

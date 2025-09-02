@@ -21,7 +21,7 @@ export function useOptimizedProfile() {
       
       return {
         username: profile?.username || null,
-        role: currentRole || 'salesperson' // Use role from user_roles table
+        role: currentRole // Use role from user_roles table, no fallback
       };
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
