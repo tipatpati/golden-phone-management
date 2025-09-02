@@ -26,6 +26,13 @@ export function InventoryTableToolbar({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
+  // Debug logging
+  console.log('🔍 InventoryTableToolbar Debug:', {
+    currentRole,
+    hasInventoryPermission: currentRole ? roleUtils.hasPermission(currentRole, 'inventory') : false,
+    roleUtils_hasPermission_result: currentRole ? roleUtils.hasPermission(currentRole, 'inventory') : 'no role'
+  });
+  
   // Check if user can add products using permission-based check
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
   
@@ -101,7 +108,16 @@ export function InventoryTableToolbar({
       </form>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
-        {canModifyProducts && <AddProductForm />}
+        {canModifyProducts ? (
+          <>
+            {console.log('✅ Rendering AddProductForm because canModifyProducts is true')}
+            <AddProductForm />
+          </>
+        ) : (
+          <>
+            {console.log('❌ NOT rendering AddProductForm because canModifyProducts is false')}
+          </>
+        )}
         
         <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">
           <Button 
