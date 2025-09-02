@@ -58,6 +58,9 @@ export function BarcodePrintDialog({
   // Parse IMEI and battery information from serial numbers
   const imeiInfo = serialNumbers?.[0] ? parseSerialWithBattery(serialNumbers[0]) : null;
   const currentSize = labelSizes[labelSize as keyof typeof labelSizes];
+  
+  // Handle multiple units if serial numbers exist
+  const units = serialNumbers && serialNumbers.length > 0 ? serialNumbers : [null];
 
   const handlePrint = () => {
     if (!barcode) {
@@ -72,9 +75,13 @@ export function BarcodePrintDialog({
     }
 
     const copiesNum = parseInt(copies) || 1;
+    const totalLabels = units.length * copiesNum;
     
-    // Generate label content directly without canvas conversion
-    const generateLabelContent = () => {
+    // Generate label content for each unit
+    const generateLabelContentForUnit = (serialNumber?: string) => {
+      const currentImeiInfo = serialNumber ? parseSerialWithBattery(serialNumber) : imeiInfo;
+      const unitBarcode = serialNumber ? generateSKUBasedBarcode(serialNumber) : barcode;
+      
       if (labelFormat === "sticker") {
         return `
           <div class="sticker-content">
@@ -88,12 +95,18 @@ export function BarcodePrintDialog({
               ${productName}
             </div>
             
-            ${imeiInfo ? `
+            ${serialNumber ? `
+              <div class="text-sm font-semibold text-blue-600 mb-2">
+                S/N: ${serialNumber}
+              </div>
+            ` : ''}
+            
+            ${currentImeiInfo && !serialNumber ? `
               <div class="text-sm text-gray-800 mb-2">
-                <div class="font-semibold">IMEI: ${imeiInfo.serial}</div>
-                ${imeiInfo.batteryLevel ? `
+                <div class="font-semibold">IMEI: ${currentImeiInfo.serial}</div>
+                ${currentImeiInfo.batteryLevel ? `
                   <div class="text-green-600 font-medium">
-                    Battery: ${imeiInfo.batteryLevel}%
+                    Battery: ${currentImeiInfo.batteryLevel}%
                   </div>
                 ` : ''}
               </div>
@@ -117,12 +130,18 @@ export function BarcodePrintDialog({
               ${productName}
             </div>
             
-            ${imeiInfo ? `
+            ${serialNumber ? `
+              <div class="text-xs font-semibold text-blue-600 mb-2">
+                S/N: ${serialNumber}
+              </div>
+            ` : ''}
+            
+            ${currentImeiInfo && !serialNumber ? `
               <div class="text-xs text-gray-800 mb-2 space-y-1">
-                <div class="font-semibold">IMEI: ${imeiInfo.serial}</div>
-                ${imeiInfo.batteryLevel ? `
+                <div class="font-semibold">IMEI: ${currentImeiInfo.serial}</div>
+                ${currentImeiInfo.batteryLevel ? `
                   <div class="text-green-600 font-medium">
-                    Battery: ${imeiInfo.batteryLevel}%
+                    Battery: ${currentImeiInfo.batteryLevel}%
                   </div>
                 ` : ''}
               </div>
@@ -151,16 +170,18 @@ export function BarcodePrintDialog({
     };
 
     let allLabels = '';
-    for (let i = 0; i < copiesNum; i++) {
-      allLabels += `
-        <div class="print-label">
-          ${generateLabelContent()}
-        </div>
-      `;
-      if (i < copiesNum - 1) {
-        allLabels += '<div class="page-break"></div>';
+    units.forEach((serialNumber, unitIndex) => {
+      for (let i = 0; i < copiesNum; i++) {
+        allLabels += `
+          <div class="print-label">
+            ${generateLabelContentForUnit(serialNumber)}
+          </div>
+        `;
+        if (unitIndex < units.length - 1 || i < copiesNum - 1) {
+          allLabels += '<div class="page-break"></div>';
+        }
       }
-    }
+    });
 
     printWindow.document.write(`
       <html>
@@ -378,7 +399,7 @@ export function BarcodePrintDialog({
     printWindow.document.close();
     printWindow.focus();
     
-    toast.success(`Preparing to print ${copiesNum} label(s)`);
+    toast.success(`Preparing to print ${totalLabels} unit label(s)`);
   };
 
   const handleDownload = () => {
@@ -463,7 +484,7 @@ export function BarcodePrintDialog({
         <DialogHeader>
           <DialogTitle>Print Barcode Labels</DialogTitle>
           <DialogDescription>
-            Configure and print barcode labels for {productName}
+            Configure and print labels for {units.length} unit(s) of {productName}
           </DialogDescription>
         </DialogHeader>
 

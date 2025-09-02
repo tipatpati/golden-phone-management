@@ -14,6 +14,7 @@ interface Product {
   brand: string;
   model: string;
   price: number;
+  stock?: number;
   barcode?: string;
   serial_numbers?: string[];
   category?: { name: string };
@@ -61,10 +62,42 @@ export function BulkPrintDialog({
 
     const copiesNum = parseInt(copies) || 1;
     
-    const generateLabelContent = (product: Product) => {
+    // Generate labels for each unit/serial number
+    const generateLabelsForProduct = (product: Product) => {
       const productName = `${product.brand} ${product.model}${product.year ? ` (${product.year})` : ''}`;
-      const barcode = product.barcode || generateSKUBasedBarcode(productName);
+      const labels = [];
       
+      if (product.serial_numbers && product.serial_numbers.length > 0) {
+        // Generate one label per serial number
+        product.serial_numbers.forEach(serialNumber => {
+          const barcode = product.barcode || generateSKUBasedBarcode(serialNumber);
+          labels.push({
+            productName,
+            serialNumber,
+            barcode,
+            price: product.price,
+            category: product.category?.name
+          });
+        });
+      } else {
+        // For products without serial numbers, generate based on stock or minimum 1
+        const quantity = Math.max(1, Math.min(product.stock || 1, 10)); // Limit to max 10 per product
+        for (let i = 0; i < quantity; i++) {
+          const barcode = product.barcode || generateSKUBasedBarcode(`${productName}-${i + 1}`);
+          labels.push({
+            productName,
+            serialNumber: null,
+            barcode,
+            price: product.price,
+            category: product.category?.name
+          });
+        }
+      }
+      
+      return labels;
+    };
+    
+    const generateLabelContent = (labelData: any) => {
       return `
         <div class="label-content">
           <div class="text-xs font-bold mb-2 text-gray-700 uppercase tracking-wider">
@@ -72,39 +105,52 @@ export function BulkPrintDialog({
           </div>
           
           <div class="text-lg font-bold mb-2 leading-tight">
-            ${productName}
+            ${labelData.productName}
           </div>
           
-          ${product.category ? `
+          ${labelData.serialNumber ? `
+            <div class="text-sm font-semibold text-blue-600 mb-2">
+              S/N: ${labelData.serialNumber}
+            </div>
+          ` : ''}
+          
+          ${labelData.category ? `
             <div class="text-sm text-gray-600 mb-2">
-              ${product.category.name}
+              ${labelData.category}
             </div>
           ` : ''}
 
           ${includePrice ? `
             <div class="text-xl font-bold text-red-600 mb-3">
-              €${product.price.toFixed(2)}
+              €${labelData.price.toFixed(2)}
             </div>
           ` : ''}
           
           ${includeBarcode ? `
             <div class="barcode-container">
-              <canvas class="barcode-canvas" data-barcode="${barcode}"></canvas>
+              <canvas class="barcode-canvas" data-barcode="${labelData.barcode}"></canvas>
             </div>
           ` : ''}
         </div>
       `;
     };
 
+    // Generate all labels for all products and their units
     let allLabels = '';
+    let totalLabels = 0;
+    
     products.forEach(product => {
-      for (let i = 0; i < copiesNum; i++) {
-        allLabels += `
-          <div class="print-label">
-            ${generateLabelContent(product)}
-          </div>
-        `;
-      }
+      const productLabels = generateLabelsForProduct(product);
+      productLabels.forEach(labelData => {
+        for (let i = 0; i < copiesNum; i++) {
+          allLabels += `
+            <div class="print-label">
+              ${generateLabelContent(labelData)}
+            </div>
+          `;
+          totalLabels++;
+        }
+      });
     });
 
     printWindow.document.write(`
@@ -247,7 +293,7 @@ export function BulkPrintDialog({
     
     toast({
       title: "Print Prepared",
-      description: `Preparing to print ${products.length * copiesNum} labels`
+      description: `Preparing to print ${totalLabels} unit labels`
     });
   };
 
@@ -260,14 +306,16 @@ export function BulkPrintDialog({
             Print Labels
           </DialogTitle>
           <DialogDescription>
-            Print labels for {products.length} selected products
+            Print individual unit labels for {products.reduce((sum, p) => 
+              sum + Math.max(1, p.serial_numbers?.length || Math.min(p.stock || 1, 10)), 0
+            )} units across {products.length} products
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="copies">Copies per product</Label>
+              <Label htmlFor="copies">Copies per unit</Label>
               <Input
                 id="copies"
                 type="number"
