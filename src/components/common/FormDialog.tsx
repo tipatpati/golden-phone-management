@@ -32,8 +32,11 @@ export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
       if (handler && typeof handler === 'function') {
         console.log('🔄 Setting submit handler');
         setSubmitHandler(() => handler);
+      } else {
+        // Clear handler if none found
+        setSubmitHandler(null);
       }
-    }, [open]); // Only re-check when dialog opens
+    }, [open, children]); // Check when dialog opens OR children change
 
     useImperativeHandle(ref, () => ({
       submit: async () => {
