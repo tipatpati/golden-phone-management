@@ -18,23 +18,26 @@ export function useProductValidation() {
       newErrors.push({ field: 'model', message: 'Model is required' });
     }
 
-    if (!data.category_id || data.category_id === 0) {
+    // Category validation - ensure it's a valid category ID (1-4)
+    if (!data.category_id || data.category_id < 1 || data.category_id > 4) {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
-    if (!data.price || data.price <= 0) {
+    // Price validations with proper number checks
+    if (typeof data.price !== 'number' || data.price <= 0) {
       newErrors.push({ field: 'price', message: 'Valid price is required' });
     }
 
-    if (!data.min_price || data.min_price <= 0) {
+    if (typeof data.min_price !== 'number' || data.min_price <= 0) {
       newErrors.push({ field: 'min_price', message: 'Valid minimum price is required' });
     }
 
-    if (!data.max_price || data.max_price <= 0) {
+    if (typeof data.max_price !== 'number' || data.max_price <= 0) {
       newErrors.push({ field: 'max_price', message: 'Valid maximum price is required' });
     }
 
-    if (data.threshold === undefined || data.threshold === null || data.threshold < 0) {
+    // Threshold validation - allow 0 as valid threshold
+    if (typeof data.threshold !== 'number' || data.threshold < 0) {
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required' });
     }
 

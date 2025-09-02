@@ -24,9 +24,11 @@ export function ProductForm({
 
   // Expose handleSubmit to parent components
   React.useEffect(() => {
+    console.log('🔧 ProductForm setting submit handler');
     (window as any).__currentFormSubmit = handleSubmit;
     return () => {
-      (window as any).__currentFormSubmit = null;
+      console.log('🔧 ProductForm cleaning up submit handler');
+      delete (window as any).__currentFormSubmit;
     };
   }, [handleSubmit]);
 
