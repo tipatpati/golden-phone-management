@@ -7,48 +7,63 @@ export function useProductValidation() {
 
   const validateForm = useCallback((data: Partial<ProductFormData>, serialNumbers?: string): ProductFormValidationError[] => {
     const newErrors: ProductFormValidationError[] = [];
-    console.log('🔍 Validating form data:', { 
+    console.log('🔍 VALIDATION START - Validating form data:', { 
       data, 
       serialNumbers,
-      priceType: typeof data.price,
-      minPriceType: typeof data.min_price,
-      maxPriceType: typeof data.max_price,
-      thresholdType: typeof data.threshold
+      brand: data.brand,
+      model: data.model,
+      category_id: data.category_id,
+      price: data.price,
+      min_price: data.min_price,
+      max_price: data.max_price,
+      threshold: data.threshold,
+      has_serial: data.has_serial
     });
 
     // Required field validations
     if (!data.brand?.trim()) {
+      console.log('❌ Brand validation failed:', data.brand);
       newErrors.push({ field: 'brand', message: 'Brand is required' });
     }
 
     if (!data.model?.trim()) {
+      console.log('❌ Model validation failed:', data.model);
       newErrors.push({ field: 'model', message: 'Model is required' });
     }
 
     // Category validation - ensure it's a valid category ID (1-4)
     if (!data.category_id || data.category_id < 1 || data.category_id > 4) {
+      console.log('❌ Category validation failed:', data.category_id);
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
     // Price validations with proper number conversion and checks
     const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
-    if (typeof price !== 'number' || isNaN(price) || price < 0) {
+    console.log('🔍 Price validation:', { original: data.price, converted: price, type: typeof price });
+    if (price === undefined || price === null || (typeof price !== 'number') || isNaN(price) || price < 0) {
+      console.log('❌ Price validation failed:', { price, type: typeof price, isNaN: isNaN(price as number) });
       newErrors.push({ field: 'price', message: 'Valid price is required (must be 0 or greater)' });
     }
 
     const minPrice = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
-    if (typeof minPrice !== 'number' || isNaN(minPrice) || minPrice < 0) {
+    console.log('🔍 Min price validation:', { original: data.min_price, converted: minPrice, type: typeof minPrice });
+    if (minPrice === undefined || minPrice === null || (typeof minPrice !== 'number') || isNaN(minPrice) || minPrice < 0) {
+      console.log('❌ Min price validation failed:', { minPrice, type: typeof minPrice, isNaN: isNaN(minPrice as number) });
       newErrors.push({ field: 'min_price', message: 'Valid minimum price is required (must be 0 or greater)' });
     }
 
     const maxPrice = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
-    if (typeof maxPrice !== 'number' || isNaN(maxPrice) || maxPrice < 0) {
+    console.log('🔍 Max price validation:', { original: data.max_price, converted: maxPrice, type: typeof maxPrice });
+    if (maxPrice === undefined || maxPrice === null || (typeof maxPrice !== 'number') || isNaN(maxPrice) || maxPrice < 0) {
+      console.log('❌ Max price validation failed:', { maxPrice, type: typeof maxPrice, isNaN: isNaN(maxPrice as number) });
       newErrors.push({ field: 'max_price', message: 'Valid maximum price is required (must be 0 or greater)' });
     }
 
     // Threshold validation - allow 0 as valid threshold
     const threshold = typeof data.threshold === 'string' ? parseInt(data.threshold) : data.threshold;
-    if (typeof threshold !== 'number' || isNaN(threshold) || threshold < 0) {
+    console.log('🔍 Threshold validation:', { original: data.threshold, converted: threshold, type: typeof threshold });
+    if (threshold === undefined || threshold === null || (typeof threshold !== 'number') || isNaN(threshold) || threshold < 0) {
+      console.log('❌ Threshold validation failed:', { threshold, type: typeof threshold, isNaN: isNaN(threshold as number) });
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required (must be 0 or greater)' });
     }
 
