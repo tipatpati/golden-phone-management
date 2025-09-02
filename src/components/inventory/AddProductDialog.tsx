@@ -8,7 +8,7 @@ import { useCreateProduct } from "@/services/useProducts";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
-import { ThermalLabelGenerator, useThermalLabels } from "./labels";
+import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useProducts } from "@/services/products/ProductReactQueryService";
@@ -184,14 +184,15 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
             setShowPrintDialog(open);
             if (!open) handlePrintDialogClose();
           }}
-          labels={useThermalLabels([{
-            id: createdProduct.id,
-            brand: createdProduct.brand,
-            model: createdProduct.model,
+          labels={[{
+            productName: `${createdProduct.brand} ${createdProduct.model}${createdProduct.year ? ` (${createdProduct.year})` : ''}`,
+            serialNumber: createdProduct.serialEntries?.[0]?.serial,
+            barcode: createdProduct.barcode || `${createdProduct.brand}-${createdProduct.model}`,
             price: createdProduct.price,
-            serial_numbers: createdProduct.serialEntries?.map((e: any) => e.serial),
-            category: createdProduct.category
-          }])}
+            category: createdProduct.category?.name,
+            color: createdProduct.serialEntries?.[0]?.color,
+            batteryLevel: createdProduct.serialEntries?.[0]?.batteryLevel
+          }]}
           companyName="GOLDEN PHONE SRL"
         />
       )}

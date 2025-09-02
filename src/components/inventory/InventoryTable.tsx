@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/products/ProductReactQueryService";
-import { ThermalLabelGenerator, useThermalLabels } from "./labels";
+import { ThermalLabelGenerator } from "./labels";
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -290,7 +290,13 @@ export function InventoryTable({
       <ThermalLabelGenerator
         open={printDialogOpen}
         onOpenChange={setPrintDialogOpen}
-        labels={useThermalLabels([selectedProduct])}
+        labels={[{
+          productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
+          serialNumber: selectedProduct.serial_numbers?.[0],
+          barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
+          price: selectedProduct.price,
+          category: selectedProduct.category?.name
+        }]}
         companyName="GOLDEN PHONE SRL"
       />
     )}
