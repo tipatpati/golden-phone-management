@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Plus, Scan, Printer } from "lucide-react";
+import { Plus, Scan, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormDialog } from "@/components/common/FormDialog";
+import { BaseDialog } from "@/components/common/BaseDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/useProducts";
@@ -179,7 +179,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         />
       )}
 
-      <FormDialog
+      <BaseDialog
         title="Aggiungi Prodotto con Numeri Seriali"
         open={open}
         onClose={() => {
@@ -189,10 +189,8 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
             setInternalOpen(false);
           }
         }}
-        isLoading={createProduct.isPending}
-        submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
         maxWidth="2xl"
-        onSubmit={async () => { if (submitForm) { await submitForm(); } }}
+        showActions={false}
       >
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center justify-between">
@@ -219,7 +217,39 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
           submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
           onRegisterSubmit={setSubmitForm}
         />
-      </FormDialog>
+        
+        {/* Custom submit button */}
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t bg-muted/30 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (externalOnClose) {
+                externalOnClose();
+              } else {
+                setInternalOpen(false);
+              }
+            }}
+            disabled={createProduct.isPending}
+            className="w-full sm:w-auto order-2 sm:order-1"
+          >
+            Annulla
+          </Button>
+          <Button
+            onClick={async () => {
+              console.log('🔄 Manual submit button clicked');
+              if (submitForm) { 
+                await submitForm(); 
+              }
+            }}
+            disabled={createProduct.isPending}
+            className="w-full sm:w-auto min-w-[120px] order-1 sm:order-2"
+          >
+            {createProduct.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
+          </Button>
+        </div>
+      </BaseDialog>
     </>
   );
 }
