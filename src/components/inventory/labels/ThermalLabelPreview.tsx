@@ -32,10 +32,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // 5cm × 6cm at 96 DPI ≈ 189px × 227px (portrait orientation to match print)
+  // 6cm × 5cm at 96 DPI ≈ 227px × 189px (landscape orientation)
   const labelStyle = {
-    width: '189px',
-    height: '227px',
+    width: '227px',
+    height: '189px',
     border: '1px solid #ddd',
     padding: '6px',
     margin: '10px',
