@@ -18,8 +18,8 @@ export interface ThermalLabelOptions {
 }
 
 export interface ThermalPrintSettings {
-  width: number;   // 6cm in pixels at 203 DPI ≈ 472px (landscape)
-  height: number;  // 5cm in pixels at 203 DPI ≈ 400px (landscape)
+  width: number;   // 5cm in pixels at 203 DPI ≈ 400px (portrait)
+  height: number;  // 6cm in pixels at 203 DPI ≈ 472px (portrait)
   dpi: number;
   margin: number;
 }

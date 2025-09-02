@@ -15,14 +15,14 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       try {
         JsBarcode(canvasRef.current, label.barcode, {
           format: 'CODE128',
-          width: 1.0,
-          height: 25,
+          width: 1.2,
+          height: 30,
           displayValue: true,
-          fontSize: 6,
+          fontSize: 8,
           font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 2,
+          margin: 4,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -32,10 +32,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // 6cm × 5cm at 96 DPI ≈ 227px × 189px (landscape)
+  // 5cm × 6cm at 96 DPI ≈ 189px × 227px (portrait)
   const labelStyle = {
-    width: '227px',
-    height: '189px',
+    width: '189px',
+    height: '227px',
     border: '1px solid #ddd',
     padding: '8px',
     fontSize: '10px',
@@ -43,8 +43,8 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
-    justifyContent: 'flex-start',
-    textAlign: 'left' as const,
+    justifyContent: 'space-between',
+    textAlign: 'center' as const,
     lineHeight: '1.2'
   };
 
@@ -65,88 +65,72 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
           fontWeight: 'bold', 
           textTransform: 'uppercase',
           color: '#666',
-          marginBottom: '4px',
-          textAlign: 'center'
+          marginBottom: '4px'
         }}>
           {options.companyName}
         </div>
       )}
 
-      {/* Main Content - Horizontal Layout */}
-      <div style={{
-        display: 'flex',
-        height: '100%',
-        gap: '12px'
+      {/* Product Name with Color and Battery */}
+      <div style={{ 
+        fontSize: options.format === 'compact' ? '11px' : '12px',
+        fontWeight: 'bold',
+        lineHeight: '1.1',
+        marginBottom: '4px'
       }}>
-        {/* Product Info */}
-        <div style={{
-          flex: '1',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center'
-        }}>
-          {/* Product Name with Color and Battery */}
-          <div style={{ 
-            fontSize: options.format === 'compact' ? '10px' : '11px',
-            fontWeight: 'bold',
-            lineHeight: '1.1',
-            marginBottom: '4px'
-          }}>
-            {formatProductName()}
-          </div>
-
-          {/* Serial Number */}
-          {label.serialNumber && (
-            <div style={{ 
-              fontSize: '8px', 
-              fontWeight: '600', 
-              color: '#2563eb',
-              marginBottom: '3px'
-            }}>
-              S/N: {label.serialNumber}
-            </div>
-          )}
-
-          {/* Category */}
-          {options.includeCategory && label.category && (
-            <div style={{ 
-              fontSize: '7px', 
-              color: '#666',
-              marginBottom: '3px'
-            }}>
-              {label.category}
-            </div>
-          )}
-
-          {/* Price */}
-          {options.includePrice && (
-            <div style={{ 
-              fontSize: '12px', 
-              fontWeight: 'bold', 
-              color: '#dc2626',
-              margin: '4px 0'
-            }}>
-              €{label.price.toFixed(2)}
-            </div>
-          )}
-        </div>
-
-        {/* Barcode */}
-        {options.includeBarcode && label.barcode && (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            width: '80px',
-            height: '100%'
-          }}>
-            <canvas 
-              ref={canvasRef}
-              style={{ maxWidth: '100%', height: 'auto' }}
-            />
-          </div>
-        )}
+        {formatProductName()}
       </div>
+
+      {/* Serial Number */}
+      {label.serialNumber && (
+        <div style={{ 
+          fontSize: '9px', 
+          fontWeight: '600', 
+          color: '#2563eb',
+          marginBottom: '4px'
+        }}>
+          S/N: {label.serialNumber}
+        </div>
+      )}
+
+      {/* Category */}
+      {options.includeCategory && label.category && (
+        <div style={{ 
+          fontSize: '8px', 
+          color: '#666',
+          marginBottom: '4px'
+        }}>
+          {label.category}
+        </div>
+      )}
+
+      {/* Price */}
+      {options.includePrice && (
+        <div style={{ 
+          fontSize: '14px', 
+          fontWeight: 'bold', 
+          color: '#dc2626',
+          margin: '6px 0'
+        }}>
+          €{label.price.toFixed(2)}
+        </div>
+      )}
+
+      {/* Barcode */}
+      {options.includeBarcode && label.barcode && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          flex: '1',
+          minHeight: '50px'
+        }}>
+          <canvas 
+            ref={canvasRef}
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+        </div>
+      )}
     </div>
   );
 }
