@@ -24,33 +24,35 @@ export function useProductValidation() {
     }
 
     // Price validations with proper number checks
-    if (typeof data.price !== 'number' || data.price <= 0) {
-      newErrors.push({ field: 'price', message: 'Valid price is required' });
+    if (typeof data.price !== 'number' || isNaN(data.price) || data.price < 0) {
+      newErrors.push({ field: 'price', message: 'Valid price is required (must be 0 or greater)' });
     }
 
-    if (typeof data.min_price !== 'number' || data.min_price <= 0) {
-      newErrors.push({ field: 'min_price', message: 'Valid minimum price is required' });
+    if (typeof data.min_price !== 'number' || isNaN(data.min_price) || data.min_price < 0) {
+      newErrors.push({ field: 'min_price', message: 'Valid minimum price is required (must be 0 or greater)' });
     }
 
-    if (typeof data.max_price !== 'number' || data.max_price <= 0) {
-      newErrors.push({ field: 'max_price', message: 'Valid maximum price is required' });
+    if (typeof data.max_price !== 'number' || isNaN(data.max_price) || data.max_price < 0) {
+      newErrors.push({ field: 'max_price', message: 'Valid maximum price is required (must be 0 or greater)' });
     }
 
     // Threshold validation - allow 0 as valid threshold
-    if (typeof data.threshold !== 'number' || data.threshold < 0) {
-      newErrors.push({ field: 'threshold', message: 'Valid threshold is required' });
+    if (typeof data.threshold !== 'number' || isNaN(data.threshold) || data.threshold < 0) {
+      newErrors.push({ field: 'threshold', message: 'Valid threshold is required (must be 0 or greater)' });
     }
 
-    // Min/Max price relationship validation - only validate if both values are present
+    // Min/Max price relationship validation - only validate if both values are present and greater than 0
     if (data.min_price && data.max_price && 
         typeof data.min_price === 'number' && typeof data.max_price === 'number' &&
+        data.min_price > 0 && data.max_price > 0 &&
         data.min_price >= data.max_price) {
       newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
     }
 
-    // Price range validation - only validate if all three values are present and valid
+    // Price range validation - only validate if all three values are present, valid, and greater than 0
     if (data.price && data.min_price && data.max_price && 
-        typeof data.price === 'number' && typeof data.min_price === 'number' && typeof data.max_price === 'number') {
+        typeof data.price === 'number' && typeof data.min_price === 'number' && typeof data.max_price === 'number' &&
+        data.price > 0 && data.min_price > 0 && data.max_price > 0) {
       console.log('🔍 Price validation:', { price: data.price, min: data.min_price, max: data.max_price });
       if (data.price < data.min_price || data.price > data.max_price) {
         newErrors.push({ field: 'price', message: 'Price must be between minimum and maximum prices' });

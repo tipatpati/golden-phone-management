@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { ProductFormData } from "../types";
 import { useProductValidation } from "./useProductValidation";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 
 interface UseProductFormOptions {
   initialData?: Partial<ProductFormData>;
@@ -45,6 +45,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   }, [initialData]);
 
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
+    console.log(`🔄 updateField: ${field} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
     clearErrors(); // Clear errors when user starts typing
   }, [clearErrors]);
@@ -67,7 +68,11 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     
     if (errors.length > 0) {
       console.log('❌ Form validation errors:', errors);
-      toast.error("Please fix the form errors before submitting");
+      toast({
+        title: "Validation Error",
+        description: "Please fix the form errors before submitting",
+        variant: "destructive"
+      });
       return;
     }
 
