@@ -1,5 +1,5 @@
 import React from "react";
-import { ProductFormProps } from "./types";
+import { ProductFormProps, ProductFormData } from "./types";
 import { ProductFormFields } from "./ProductFormFields";
 import { SerialNumberManager } from "./SerialNumberManager";
 import { BarcodeManager } from "./BarcodeManager";
@@ -53,8 +53,59 @@ export function ProductForm({
   // Check if category requires serial numbers
   const requiresSerial = formData.category_id !== 2;
 
+  // Auto-fill function for testing
+  const autoFillTestData = () => {
+    const testData = {
+      brand: 'Apple',
+      model: 'iPhone 15 Pro',
+      year: 2024,
+      category_id: 1, // Phones
+      price: 1200,
+      min_price: 1000,
+      max_price: 1400,
+      stock: 3,
+      threshold: 5,
+      description: 'Latest iPhone with advanced features',
+      supplier: 'Tech Supplier Inc',
+      has_serial: true
+    };
+
+    // Update all fields
+    Object.entries(testData).forEach(([key, value]) => {
+      updateField(key as keyof ProductFormData, value);
+    });
+
+    // Add sample serial numbers
+    const sampleSerials = [
+      '123456789012345 - Space Black - 85%',
+      '123456789012346 - Natural Titanium - 92%',
+      '123456789012347 - White Titanium - 78%'
+    ].join('\n');
+    
+    updateSerialNumbers(sampleSerials);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Development Auto-fill Button */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">🧪 Development Tools</h4>
+              <p className="text-xs text-yellow-700">Quick fill for testing purposes</p>
+            </div>
+            <button
+              type="button"
+              onClick={autoFillTestData}
+              className="px-3 py-1 text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 rounded transition-colors"
+            >
+              Auto-fill Test Data
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Product Form Guidance */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
         <h3 className="text-sm font-semibold text-blue-900 mb-3">📋 Adding Products Guide</h3>
