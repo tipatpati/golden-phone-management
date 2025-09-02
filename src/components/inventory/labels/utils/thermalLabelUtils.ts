@@ -1,9 +1,9 @@
 import { ThermalLabelData, ThermalLabelOptions, ThermalPrintSettings } from "../types";
 
-// Thermal printer settings for 5cm × 6cm labels at 203 DPI (portrait)
+// Thermal printer settings for 6cm × 5cm labels at 203 DPI (landscape with vertical stacking)
 export const THERMAL_SETTINGS: ThermalPrintSettings = {
-  width: 400,   // 5cm at 203 DPI (portrait)
-  height: 472,  // 6cm at 203 DPI (portrait)
+  width: 472,   // 6cm at 203 DPI (landscape)
+  height: 400,  // 5cm at 203 DPI (landscape)
   dpi: 203,
   margin: 16
 };
@@ -73,7 +73,7 @@ export function generateThermalLabels(
   return `
     <html>
       <head>
-        <title>Thermal Labels - 5cm × 6cm (Portrait)</title>
+        <title>Thermal Labels - 6cm × 5cm (Landscape - Vertical Stack)</title>
         <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
         <style>
           @media print {
@@ -110,7 +110,7 @@ export function generateThermalLabels(
             width: ${width}px;
             height: ${height}px;
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             background: white;
             box-sizing: border-box;
@@ -123,40 +123,40 @@ export function generateThermalLabels(
           }
           
           .company-header {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
           }
           
           .product-name {
-            font-size: ${options.format === 'compact' ? '16px' : '18px'};
+            font-size: ${options.format === 'compact' ? '15px' : '17px'};
             font-weight: bold;
             line-height: 1.2;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #000;
           }
           
           .serial-number {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: #2563eb;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
           }
           
           .category {
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
           }
           
           .price {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #dc2626;
-            margin: 12px 0;
+            margin: 8px 0;
           }
           
           .barcode-container {
@@ -164,8 +164,8 @@ export function generateThermalLabels(
             justify-content: center;
             align-items: center;
             flex: 1;
-            min-height: 60px;
-            margin-top: 8px;
+            min-height: 50px;
+            margin-top: 6px;
           }
           
           canvas {
@@ -194,14 +194,14 @@ export function generateThermalLabels(
                 try {
                   JsBarcode(canvas, barcodeValue, {
                     format: 'CODE128',
-                    width: 1.8,
-                    height: 60,
+                    width: 1.6,
+                    height: 50,
                     displayValue: true,
-                    fontSize: 12,
+                    fontSize: 11,
                     font: 'Arial',
                     textAlign: 'center',
                     textPosition: 'bottom',
-                    margin: 8,
+                    margin: 6,
                     background: '#ffffff',
                     lineColor: '#000000'
                   });

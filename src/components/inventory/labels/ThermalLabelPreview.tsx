@@ -15,14 +15,14 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       try {
         JsBarcode(canvasRef.current, label.barcode, {
           format: 'CODE128',
-          width: 1.2,
-          height: 30,
+          width: 1.0,
+          height: 25,
           displayValue: true,
-          fontSize: 8,
+          fontSize: 7,
           font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 4,
+          margin: 3,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -32,13 +32,13 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // 5cm × 6cm at 96 DPI ≈ 189px × 227px (portrait)
+  // 6cm × 5cm at 96 DPI ≈ 227px × 189px (landscape with vertical stacking)
   const labelStyle = {
-    width: '189px',
-    height: '227px',
+    width: '227px',
+    height: '189px',
     border: '1px solid #ddd',
-    padding: '8px',
-    fontSize: '10px',
+    padding: '6px',
+    fontSize: '9px',
     fontFamily: 'Arial, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
@@ -73,10 +73,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
 
       {/* Product Name with Color and Battery */}
       <div style={{ 
-        fontSize: options.format === 'compact' ? '11px' : '12px',
+        fontSize: options.format === 'compact' ? '10px' : '11px',
         fontWeight: 'bold',
         lineHeight: '1.1',
-        marginBottom: '4px'
+        marginBottom: '3px'
       }}>
         {formatProductName()}
       </div>
@@ -84,10 +84,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Serial Number */}
       {label.serialNumber && (
         <div style={{ 
-          fontSize: '9px', 
+          fontSize: '8px', 
           fontWeight: '600', 
           color: '#2563eb',
-          marginBottom: '4px'
+          marginBottom: '3px'
         }}>
           S/N: {label.serialNumber}
         </div>
@@ -96,9 +96,9 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Category */}
       {options.includeCategory && label.category && (
         <div style={{ 
-          fontSize: '8px', 
+          fontSize: '7px', 
           color: '#666',
-          marginBottom: '4px'
+          marginBottom: '3px'
         }}>
           {label.category}
         </div>
@@ -107,10 +107,10 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Price */}
       {options.includePrice && (
         <div style={{ 
-          fontSize: '14px', 
+          fontSize: '12px', 
           fontWeight: 'bold', 
           color: '#dc2626',
-          margin: '6px 0'
+          margin: '4px 0'
         }}>
           €{label.price.toFixed(2)}
         </div>
@@ -123,7 +123,7 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
           justifyContent: 'center', 
           alignItems: 'center',
           flex: '1',
-          minHeight: '50px'
+          minHeight: '40px'
         }}>
           <canvas 
             ref={canvasRef}
