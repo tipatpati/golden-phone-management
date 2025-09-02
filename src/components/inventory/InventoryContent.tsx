@@ -81,7 +81,7 @@ export function InventoryContent({
     console.error('Products fetch error:', error);
     return (
       <EmptyState
-        icon={Package}
+        icon={<Package />}
         title="Error Loading Products"
         description="Failed to load products. Please try again."
       />
@@ -99,11 +99,13 @@ export function InventoryContent({
           onAddProduct={onAddProduct}
         />
         <EmptyState
-          icon={Package}
+          icon={<Package />}
           title="No Products Found"
           description="Start by adding your first product to the inventory."
-          actionLabel="Add Product"
-          onAction={onAddProduct}
+          action={{
+            label: "Add Product",
+            onClick: onAddProduct
+          }}
         />
         
         {showAddProduct && (

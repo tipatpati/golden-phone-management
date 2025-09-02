@@ -65,6 +65,9 @@ export function InventoryTable({
 }: InventoryTableProps) {
   // Import the actual products data
   const { data: products = [], isLoading } = useProducts(searchTerm);
+  
+  // Ensure products is always an array
+  const productList = Array.isArray(products) ? products : [];
 
   const getCategoryBadgeColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
@@ -145,7 +148,7 @@ export function InventoryTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product) => {
+          {productList.map((product) => {
             const stockStatus = getStockStatus(product.stock, product.threshold);
             const isSelected = selectedItems.includes(product.id);
             
