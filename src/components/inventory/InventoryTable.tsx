@@ -180,15 +180,19 @@ export function InventoryTable({
                   <div className="space-y-1">
                     <div className="font-medium">
                       {(() => {
+                        // Clean the model name by removing color info in parentheses
+                        const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+                        
                         // Check if product has serial numbers with storage info
                         let storage;
                         if (product.serial_numbers && product.serial_numbers.length > 0) {
                           const parsed = parseSerialString(product.serial_numbers[0]);
                           storage = parsed.storage;
                         }
+                        
                         return formatProductName({ 
                           brand: product.brand, 
-                          model: product.model, 
+                          model: cleanModel, 
                           storage 
                         });
                       })()}
