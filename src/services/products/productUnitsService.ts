@@ -9,6 +9,7 @@ export interface ProductUnit {
   barcode?: string;
   color?: string;
   battery_level?: number;
+  storage?: string; // e.g., 64GB, 128GB
   status: 'available' | 'sold' | 'reserved' | 'damaged';
   created_at: string;
   updated_at: string;
@@ -19,6 +20,7 @@ export interface CreateProductUnitData {
   serial_number: string;
   color?: string;
   battery_level?: number;
+  storage?: string;
   status?: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 

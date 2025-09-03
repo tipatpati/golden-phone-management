@@ -19,6 +19,7 @@ export interface SerialEntry {
   serial: string;
   color?: string;
   batteryLevel?: number;
+  storage?: string;
   barcode: string;
   index: number;
 }

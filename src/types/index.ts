@@ -69,6 +69,7 @@ export interface SerialEntry {
   serial: string;
   batteryLevel?: number;
   color?: string;
+  storage?: string;
 }
 
 // Client Management
