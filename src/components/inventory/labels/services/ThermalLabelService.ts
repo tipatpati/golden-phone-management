@@ -434,7 +434,14 @@ export class ThermalLabelService {
       window.addEventListener('load', function() {
         console.log('Document loaded, starting initialization...');
         initializeBarcodes();
-        setTimeout(initiatePrint, 1500);
+        setTimeout(initiatePrint, 2000);
+      });
+      
+      // Add beforeprint event to ensure landscape orientation
+      window.addEventListener('beforeprint', function() {
+        console.log('Setting up print orientation...');
+        document.body.style.transform = 'rotate(0deg)';
+        document.body.style.transformOrigin = 'center';
       });
     `;
   }
