@@ -3,34 +3,38 @@ import { PRINT_SETTINGS } from "./config";
 
 // Generate robust print styles and enforce landscape orientation
 export function generateLabelStyles(options: ThermalLabelOptions): string {
-  const { width, height, margin, dpi } = PRINT_SETTINGS;
-  // Convert px margin to mm for @page
-  const marginMm = Math.round(((margin / dpi) * 25.4) * 100) / 100; // two decimals
+  const { width, height } = PRINT_SETTINGS;
 
   return `
     @media print {
       @page {
-        /* Exact 6cm x 5cm with no margins for perfect sticker alignment */
-        size: 60mm 50mm;
+        size: 6cm 5cm;
         margin: 0;
       }
 
-      html, body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body {
         margin: 0;
         padding: 0;
+        font-family: Arial, sans-serif;
       }
 
       .thermal-label {
-        page-break-after: always;
+        width: 6cm !important;
+        height: 5cm !important;
         margin: 0 !important;
-        padding: 4px !important;
+        padding: 2mm !important;
         border: none !important;
-        border-radius: 0 !important;
-        width: 60mm !important;
-        height: 50mm !important;
+        background: white !important;
         box-sizing: border-box !important;
+        page-break-after: always;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
 
       .thermal-label:last-child {
@@ -38,29 +42,18 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
     }
 
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: white;
-    }
-
     .thermal-label {
       width: ${width}px;
       height: ${height}px;
-      border: 1px solid #e5e5e5;
-      border-radius: 2px;
-      padding: 6px;
+      border: 1px solid #ddd;
+      padding: 4px;
       background: white;
       box-sizing: border-box;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      margin-bottom: 10px;
-      page-break-inside: avoid;
-      position: relative;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      margin: 10px;
+      font-family: Arial, sans-serif;
     }
 
     .label-header {
