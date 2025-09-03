@@ -1,4 +1,5 @@
 import React from "react";
+import { formatProductName } from "@/utils/productNaming";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,9 @@ import { Edit, Trash2, Package, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface InventoryCardProps {
-  title: string;
+  brand: string;
+  model: string;
+  storage?: number;
   description?: string;
   stock: number;
   threshold: number;
@@ -23,7 +26,9 @@ interface InventoryCardProps {
  * Provides consistent styling and behavior across inventory views
  */
 export function InventoryCard({
-  title,
+  brand,
+  model,
+  storage,
   description,
   stock,
   threshold,
@@ -36,6 +41,7 @@ export function InventoryCard({
 }: InventoryCardProps) {
   const isLowStock = stock <= threshold;
   const isOutOfStock = stock === 0;
+  const productName = formatProductName({ brand, model, storage });
 
   return (
     <Card className={cn("relative overflow-hidden", className)}>
@@ -60,7 +66,7 @@ export function InventoryCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
-            <CardTitle className="text-lg font-semibold line-clamp-1">{title}</CardTitle>
+            <CardTitle className="text-lg font-semibold line-clamp-1">{productName}</CardTitle>
             {description && (
               <CardDescription className="line-clamp-2">{description}</CardDescription>
             )}

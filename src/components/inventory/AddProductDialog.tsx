@@ -6,7 +6,7 @@ import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/useProducts";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
-import { generateSerialBasedBarcode } from "@/utils/barcodeGenerator";
+import { generateSerialBasedBarcode, generateProductBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
 import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
@@ -77,7 +77,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
       ),
       barcode: serialEntries.length > 0 
         ? serialEntries[0].barcode 
-        : generateSerialBasedBarcode(`${data.brand} ${data.model}`, undefined, 0),
+        : generateProductBarcode(data.brand, data.model, undefined, 0, false),
       description: data.description,
       supplier: data.supplier
     };

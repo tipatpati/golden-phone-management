@@ -1,5 +1,5 @@
 // Enhanced barcode generation with GS1 compliance and IMEI support
-
+import { formatProductName, parseSerialString } from "./productNaming";
 import { validateIMEI } from './imeiValidation';
 import { generateOptimalBarcode, BarcodeGenerationOptions, BarcodeResult } from './gs1BarcodeGenerator';
 
@@ -49,6 +49,24 @@ export function generateValidEAN13Barcode(prefix: string = "123456789012"): stri
   
   const checkDigit = calculateEAN13CheckDigit(paddedPrefix);
   return paddedPrefix + checkDigit;
+}
+
+/**
+ * Generates a string-based barcode using product naming convention
+ */
+function generateFromString(input: string): string {
+  // Clean the input and create a numeric representation
+  const cleanInput = input.replace(/[^A-Za-z0-9]/g, '');
+  const numericInput = cleanInput.replace(/[^0-9]/g, '');
+  
+  // If we have enough digits, create EAN13
+  if (numericInput.length >= 8) {
+    const prefix = numericInput.slice(0, 12).padEnd(12, '0');
+    return generateValidEAN13Barcode(prefix);
+  }
+  
+  // Otherwise, use the clean input as is (CODE128 compatible)
+  return cleanInput;
 }
 
 /**
@@ -112,6 +130,38 @@ export function generateSerialBasedBarcode(serial: string, productId?: string, b
   
   const result = generateIMEIBarcode(serial, options);
   return result.barcode;
+}
+
+/**
+ * Enhanced product barcode generation following Brand Model Storage convention
+ */
+export function generateProductBarcode(
+  brand: string,
+  model: string,
+  serialNumbers?: string[],
+  unitIndex: number = 0,
+  hasSerial: boolean = true
+): string {
+  console.log('[Barcode] generateProductBarcode called', { 
+    brand, 
+    model, 
+    serialCount: serialNumbers?.length, 
+    unitIndex, 
+    hasSerial 
+  });
+
+  // Generate barcode based on brand-model-storage format
+  const productName = formatProductName({ brand, model });
+  
+  if (hasSerial && serialNumbers?.length > 0) {
+    // Parse the first serial to get storage info for consistent naming
+    const parsed = parseSerialString(serialNumbers[0]);
+    const nameWithStorage = formatProductName({ brand, model, storage: parsed.storage });
+    return generateFromString(nameWithStorage);
+  }
+  
+  // For products without serials, use brand-model format
+  return generateFromString(productName);
 }
 
 /**

@@ -82,9 +82,9 @@ useEffect(() => {
   // Update serialNumbers string when entries change (but let parent handle stock)
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
-const serialString = validEntries
-  .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
-  .join('\n');
+    const serialString = validEntries
+      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
+      .join('\n');
 
     // Only update if the string has actually changed to prevent loops
     if (serialString !== serialNumbers) {

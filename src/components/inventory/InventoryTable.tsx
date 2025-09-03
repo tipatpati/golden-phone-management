@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatProductName, formatProductUnitDisplay, parseSerialString } from "@/utils/productNaming";
 import { 
   Table, 
   TableBody, 
@@ -178,7 +179,7 @@ export function InventoryTable({
                 <TableCell>
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {product.brand} {product.model}
+                      {formatProductName({ brand: product.brand, model: product.model })}
                     </div>
                     {product.year && (
                       <div className="text-sm text-muted-foreground">
@@ -292,25 +293,28 @@ export function InventoryTable({
         onOpenChange={setPrintDialogOpen}
         labels={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0 ? 
           selectedProduct.serial_numbers.map((serialNumber, index) => {
-            // Parse serial number for color and battery info
-            const parts = serialNumber.split(' ');
-            const serial = parts[0];
-            const color = parts.find(part => !part.includes('%') && part !== serial);
-            const batteryPart = parts.find(part => part.includes('%'));
-            const batteryLevel = batteryPart ? parseInt(batteryPart.replace('%', '')) : undefined;
+            // Parse serial number for color, storage, and battery info
+            const parsed = parseSerialString(serialNumber);
             
             return {
-              productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
-              serialNumber: serial,
-              barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}-${serial}`,
+              productName: formatProductName({ 
+                brand: selectedProduct.brand, 
+                model: selectedProduct.model, 
+                storage: parsed.storage 
+              }),
+              serialNumber: parsed.serial,
+              barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}-${parsed.serial}`,
               price: selectedProduct.price,
               category: selectedProduct.category?.name,
-              color,
-              batteryLevel
+              color: parsed.color,
+              batteryLevel: parsed.batteryLevel
             };
-          }) : 
+          }) :
           [{
-            productName: `${selectedProduct.brand} ${selectedProduct.model}${selectedProduct.year ? ` (${selectedProduct.year})` : ''}`,
+            productName: formatProductName({ 
+              brand: selectedProduct.brand, 
+              model: selectedProduct.model 
+            }),
             serialNumber: undefined,
             barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
             price: selectedProduct.price,

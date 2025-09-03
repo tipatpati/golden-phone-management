@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo } from "react";
+import { formatProductName } from "@/utils/productNaming";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ function SerialNumberInput({
               last4.includes(searchTerm)) {
             results.push({
               productId: product.id,
-              productName: `${product.brand} ${product.model}`,
+              productName: formatProductName({ brand: product.brand, model: product.model }),
               serial: serial
             });
           }

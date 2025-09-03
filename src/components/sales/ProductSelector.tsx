@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
+import { formatProductName, formatProductUnitDisplay, parseSerialString } from "@/utils/productNaming";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -32,7 +33,9 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
   const searchInputRef = useRef<HTMLInputElement>(null);
   
   // Get existing product names for autocomplete (filtered by category)
-  const existingProductNames = filteredAllProducts.map(product => `${product.brand} ${product.model}`);
+  const existingProductNames = filteredAllProducts.map(product => 
+    formatProductName({ brand: product.brand, model: product.model })
+  );
 
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
@@ -112,7 +115,9 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
               className="p-4 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors active:bg-muted"
               onClick={() => handleProductSelect(product)}
             >
-              <div className="font-medium text-base">{product.brand} {product.model}</div>
+              <div className="font-medium text-base">
+                {formatProductName({ brand: product.brand, model: product.model })}
+              </div>
               <div className="text-sm text-muted-foreground flex flex-wrap gap-2 mt-2">
                 <span>
                   {product.serial_numbers?.[0] ? 
@@ -131,21 +136,23 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
               {product.serial_numbers && product.serial_numbers.length > 0 && (
                 <div className="text-sm text-muted-foreground mt-2 space-y-1">
                   {product.serial_numbers.slice(0, 2).map((serial, index) => {
-                    const parts = serial.split(' ');
-                    const serialNumber = parts.slice(0, -1).join(' ') || parts[0];
-                    const battery = parts.length > 1 ? parseInt(parts[parts.length - 1]) : null;
+                    const parsed = parseSerialString(serial);
+                    const unitDisplay = formatProductUnitDisplay({
+                      brand: product.brand,
+                      model: product.model,
+                      storage: parsed.storage,
+                      color: parsed.color,
+                      batteryLevel: parsed.batteryLevel
+                    });
                     
                     return (
                       <div key={index} className="flex items-center gap-2">
-                        <span>Serial: {serialNumber}</span>
-                        {battery !== null && !isNaN(battery) && battery >= 0 && battery <= 100 && (
-                          <span className="text-green-600 font-medium">🔋{battery}%</span>
-                        )}
+                        <span>Unit: {unitDisplay}</span>
                       </div>
                     );
                   })}
                   {product.serial_numbers.length > 2 && (
-                    <div className="text-sm">+{product.serial_numbers.length - 2} more</div>
+                    <div className="text-sm">+{product.serial_numbers.length - 2} more units</div>
                   )}
                 </div>
               )}

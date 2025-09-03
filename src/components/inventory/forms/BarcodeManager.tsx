@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { formatProductName } from "@/utils/productNaming";
 import { BarcodeManagerProps } from "./types";
 import { EnhancedBarcodeGenerator } from "../EnhancedBarcodeGenerator";
 import { BarcodeFormatSelector, BarcodeFormat } from "../BarcodeFormatSelector";
@@ -78,38 +79,47 @@ export function BarcodeManager({
         <h4 className="font-medium">Unit Barcodes ({unitBarcodes.length} units)</h4>
         <div className="flex flex-col gap-4">
           {unitBarcodes.map((unit) => (
-            <div key={unit.index} className="p-3 bg-background rounded border">
-              <div className="text-sm font-medium mb-2">
-                Serial: {unit.serial}
-                {unit.batteryLevel !== undefined && (
-                  <span className="ml-2 text-muted-foreground">
-                    Battery: {unit.batteryLevel}%
+            <div key={unit.index} className="border rounded-lg p-4 space-y-3 bg-background">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Unit #{unit.index + 1}</span>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className={`px-2 py-1 rounded ${
+                    unit.isGS1Compliant ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {unit.barcodeFormat}
                   </span>
-                )}
-                {unit.color && (
-                  <span className="ml-2 text-muted-foreground">
-                    Color: {unit.color}
-                  </span>
-                )}
+                  {unit.isGS1Compliant && (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                      GS1
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex justify-center mb-2">
-                <EnhancedBarcodeGenerator 
-                  value={unit.serial}
-                  displayValue={true}
-                  format={barcodeFormat}
-                  showValidation={true}
-                  barcodeOptions={{
-                    format: barcodeFormat as any,
-                    productId,
-                    batteryLevel: unit.batteryLevel
-                  }}
-                />
+              
+              <div className="text-xs text-muted-foreground space-y-1">
+                <div><strong>Serial:</strong> {unit.serial}</div>
+                {unit.color && <div><strong>Color:</strong> {unit.color}</div>}
+                {unit.batteryLevel && <div><strong>Battery:</strong> {unit.batteryLevel}%</div>}
               </div>
-              <p className="text-xs text-center text-muted-foreground font-mono">
-                {unit.barcode}
-              </p>
+              
+              <EnhancedBarcodeGenerator 
+                value={unit.barcode}
+                displayValue={true}
+                format={barcodeFormat}
+                showValidation={false}
+              />
             </div>
           ))}
+        </div>
+        
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p><strong>Format Guide:</strong></p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li><strong>EAN13:</strong> 13 digits, retail standard</li>
+            <li><strong>CODE128:</strong> Alphanumeric, high density</li>
+            <li><strong>GS1-128:</strong> GS1 compliant with application identifiers</li>
+            <li><strong>AUTO:</strong> Best format selected automatically</li>
+          </ul>
         </div>
       </div>
     </div>
