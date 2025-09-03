@@ -13,7 +13,6 @@ export interface ProductFormData {
   barcode?: string;
   has_serial: boolean;
   serial_numbers?: string[];
-  storage?: number; // Storage in GB
 }
 
 export interface SerialEntry {

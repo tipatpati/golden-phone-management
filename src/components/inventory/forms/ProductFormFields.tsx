@@ -152,22 +152,6 @@ export function ProductFormFields({
         error={getFieldError('threshold')}
       />
 
-      {/* Storage Field */}
-      <FormField
-        label="Storage"
-        type="select"
-        value={formData.storage?.toString() || 'none'}
-        onChange={(value) => onFieldChange('storage', value === 'none' ? undefined : parseInt(value))}
-        options={[
-          { value: 'none', label: 'Select storage' },
-          ...STORAGE_OPTIONS.map(opt => ({ 
-            value: opt.value.toString(), 
-            label: opt.label 
-          }))
-        ]}
-        className="md:col-span-1"
-        error={getFieldError('storage')}
-      />
 
       {/* Description Field */}
       <FormField

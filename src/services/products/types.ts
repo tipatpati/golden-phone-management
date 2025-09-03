@@ -20,7 +20,6 @@ export interface Product extends BaseEntity {
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
-  storage?: number;
 }
 
 export type CreateProductData = Omit<Product, keyof BaseEntity | 'category' | 'category_name'>;

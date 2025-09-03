@@ -79,8 +79,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         ? serialEntries[0].barcode 
         : generateSerialBasedBarcode(`${data.brand} ${data.model}`, undefined, 0),
       description: data.description,
-      supplier: data.supplier,
-      storage: data.storage
+      supplier: data.supplier
     };
     
     logger.debug('Submitting product', { 

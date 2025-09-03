@@ -67,8 +67,7 @@ export function ProductForm({
       threshold: 5,
       description: 'Latest iPhone with advanced features',
       supplier: 'Tech Supplier Inc',
-      has_serial: true,
-      storage: 256
+      has_serial: true
     };
 
     // Update all fields
@@ -78,9 +77,9 @@ export function ProductForm({
 
     // Add sample serial numbers
     const sampleSerials = [
-      '123456789012345 - Space Black - 85%',
-      '123456789012346 - Natural Titanium - 92%',
-      '123456789012347 - White Titanium - 78%'
+      '123456789012345 Space Black 256GB 85%',
+      '123456789012346 Natural Titanium 256GB 92%',
+      '123456789012347 White Titanium 128GB 78%'
     ].join('\n');
     
     updateSerialNumbers(sampleSerials);

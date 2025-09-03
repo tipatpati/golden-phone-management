@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -44,7 +43,7 @@ useEffect(() => {
       const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
 
       tokens.forEach((raw) => {
-        const token = raw.replace(/%/g, '');
+        const token = raw.replace(/[%GB]/g, '');
         const n = parseInt(token);
         if (!isNaN(n)) {
           if (n >= 0 && n <= 100 && batteryLevel === 0) {
@@ -84,7 +83,7 @@ useEffect(() => {
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
 const serialString = validEntries
-  .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.storage !== undefined ? ` ${entry.storage}` : ''}`)
+  .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
   .join('\n');
 
     // Only update if the string has actually changed to prevent loops
@@ -121,7 +120,7 @@ const serialString = validEntries
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">
-          Numeri IMEI/Seriali con Colore e Batteria *
+          Numeri IMEI/Seriali con Colore, Storage e Batteria *
         </Label>
         <div className="text-sm text-muted-foreground">
           Scorta: {validEntriesCount}
@@ -190,6 +189,27 @@ const serialString = validEntries
                 </div>
                 
                 <div>
+                  <Label htmlFor={`storage-mobile-${entry.id}`} className="text-xs">
+                    Storage (GB)
+                  </Label>
+                  <Select 
+                    value={entry.storage?.toString() || ''} 
+                    onValueChange={(value) => updateEntry(entry.id, 'storage', value ? parseInt(value) : undefined)}
+                  >
+                    <SelectTrigger className="text-sm h-9">
+                      <SelectValue placeholder="Seleziona storage" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {STORAGE_OPTIONS.map(storage => (
+                        <SelectItem key={storage} value={storage.toString()} className="hover:bg-muted">
+                          {storage}GB
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
                   <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs">
                     Livello Batteria (%)
                   </Label>
@@ -208,12 +228,12 @@ const serialString = validEntries
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-center">
+            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center">
               <div className="col-span-1 text-sm font-medium text-muted-foreground">
                 #{index + 1}
               </div>
               
-              <div className="col-span-5">
+              <div className="col-span-4">
                 <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
                   Numero IMEI/Seriale
                 </Label>
@@ -230,7 +250,7 @@ const serialString = validEntries
                 />
               </div>
               
-              <div className="col-span-3">
+              <div className="col-span-2">
                 <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs">
                   Colore
                 </Label>
@@ -239,12 +259,33 @@ const serialString = validEntries
                   onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                 >
                   <SelectTrigger className="text-sm h-9">
-                    <SelectValue placeholder="Seleziona colore" />
+                    <SelectValue placeholder="Colore" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
                     {COLOR_OPTIONS.map(color => (
                       <SelectItem key={color} value={color} className="hover:bg-muted">
                         {color}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="col-span-2">
+                <Label htmlFor={`storage-desktop-${entry.id}`} className="text-xs">
+                  Storage (GB)
+                </Label>
+                <Select 
+                  value={entry.storage?.toString() || ''} 
+                  onValueChange={(value) => updateEntry(entry.id, 'storage', value ? parseInt(value) : undefined)}
+                >
+                  <SelectTrigger className="text-sm h-9">
+                    <SelectValue placeholder="Storage" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {STORAGE_OPTIONS.map(storage => (
+                      <SelectItem key={storage} value={storage.toString()} className="hover:bg-muted">
+                        {storage}GB
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -301,6 +342,7 @@ const serialString = validEntries
         <div className="text-xs text-amber-700 space-y-1">
            <p><strong>IMEI Format:</strong> 15 digits following ITU-T standard (e.g., 123456789012345)</p>
           <p><strong>Serial Format:</strong> Alphanumeric (e.g., ABC123DEF456)</p>
+          <p><strong>Storage:</strong> Select storage capacity for each unit</p>
           <p><strong>EAN13 Barcodes:</strong> Generated when serial has 8+ digits</p>
           <p><strong>Stock Management:</strong> One entry = one unit in stock</p>
         </div>
