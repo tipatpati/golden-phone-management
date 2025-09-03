@@ -13,6 +13,7 @@ interface Product {
   serial_numbers?: string[];
   category?: { name: string };
   year?: number;
+  barcode?: string; // Add the barcode field
 }
 
 export function useThermalLabels(products: Product[]): ThermalLabelData[] {
@@ -28,7 +29,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
         // Generate one label per serial number
         product.serial_numbers.forEach(serialNumber => {
           const parsed = parseSerialWithBattery(serialNumber);
-          const barcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+          // Use the product's actual barcode instead of generating a new one
+          const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
           // Apply "Brand Model Storage" naming convention
           const labelProductName = formatProductUnitName({
@@ -57,7 +59,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
         });
         
         for (let i = 0; i < quantity; i++) {
-          const barcode = generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
+          // Use the product's actual barcode instead of generating a new one
+          const barcode = product.barcode || generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
           
           labels.push({
             productName,
