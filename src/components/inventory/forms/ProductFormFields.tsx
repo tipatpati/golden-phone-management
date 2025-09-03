@@ -2,7 +2,7 @@ import React from "react";
 import { FormField } from "@/components/common/FormField";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { Label } from "@/components/ui/label";
-import { CATEGORY_OPTIONS, ProductFormData } from "./types";
+import { CATEGORY_OPTIONS, ProductFormData, STORAGE_OPTIONS } from "./types";
 
 interface ProductFormFieldsProps {
   formData: Partial<ProductFormData>;
@@ -150,6 +150,23 @@ export function ProductFormFields({
         required
         className="md:col-span-1"
         error={getFieldError('threshold')}
+      />
+
+      {/* Storage Field */}
+      <FormField
+        label="Storage"
+        type="select"
+        value={formData.storage?.toString() || ''}
+        onChange={(value) => onFieldChange('storage', value ? parseInt(value) : undefined)}
+        options={[
+          { value: '', label: 'Select storage' },
+          ...STORAGE_OPTIONS.map(opt => ({ 
+            value: opt.value.toString(), 
+            label: opt.label 
+          }))
+        ]}
+        className="md:col-span-1"
+        error={getFieldError('storage')}
       />
 
       {/* Description Field */}

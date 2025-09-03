@@ -13,6 +13,7 @@ export interface ProductFormData {
   barcode?: string;
   has_serial: boolean;
   serial_numbers?: string[];
+  storage?: number; // Storage in GB
 }
 
 export interface SerialEntry {
@@ -57,4 +58,14 @@ export const CATEGORY_OPTIONS = [
   { id: 2, name: "Accessories" },
   { id: 3, name: "Spare Parts" },
   { id: 4, name: "Protection" },
+] as const;
+
+export const STORAGE_OPTIONS = [
+  { value: 16, label: "16 GB" },
+  { value: 32, label: "32 GB" },
+  { value: 64, label: "64 GB" },
+  { value: 128, label: "128 GB" },
+  { value: 256, label: "256 GB" },
+  { value: 512, label: "512 GB" },
+  { value: 1024, label: "1 TB" },
 ] as const;
