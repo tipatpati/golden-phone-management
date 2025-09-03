@@ -122,52 +122,10 @@ export function ThermalLabelPreview({
         </div>
 
         {/* Product Details Row */}
-        <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: '8px',
-        gap: '2px',
-        flexWrap: 'wrap',
-        maxHeight: '20px',
-        overflow: 'hidden'
-      }}>
-          {/* Serial Number */}
-          {label.serialNumber}
-
-          {/* Battery Level */}
-          {label.batteryLevel && label.batteryLevel > 0 && <div style={{
-          fontSize: '7px',
-          fontWeight: '600',
-          color: label.batteryLevel > 80 ? '#16a34a' : label.batteryLevel > 50 ? '#ca8a04' : '#dc2626',
-          backgroundColor: label.batteryLevel > 80 ? '#f0f9ff' : label.batteryLevel > 50 ? '#fefce8' : '#fef2f2',
-          padding: '1px 3px',
-          borderRadius: '2px',
-          border: `1px solid ${label.batteryLevel > 80 ? '#e0f2fe' : label.batteryLevel > 50 ? '#fef3c7' : '#fecaca'}`,
-          whiteSpace: 'nowrap'
-        }}>
-              🔋 {label.batteryLevel}%
-            </div>}
-        </div>
+        
 
         {/* Color indicator if available */}
-        {label.color && <div style={{
-        fontSize: '7px',
-        fontWeight: '600',
-        color: '#555',
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        padding: '1px 4px',
-        borderRadius: '2px',
-        margin: '1px auto',
-        textTransform: 'capitalize',
-        maxWidth: '80px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap'
-      }}>
-            Color: {label.color}
-          </div>}
+        {label.color}
       </div>
 
       {/* Price Section */}
