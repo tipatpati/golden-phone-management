@@ -15,19 +15,21 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        box-sizing: border-box !important;
       }
 
       body {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
+        font-size: 10px;
       }
 
       .thermal-label {
         width: 6cm !important;
         height: 5cm !important;
         margin: 0 !important;
-        padding: 2mm !important;
+        padding: 1mm !important;
         border: none !important;
         background: white !important;
         box-sizing: border-box !important;
@@ -36,17 +38,38 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         flex-direction: column !important;
         justify-content: space-between !important;
         font-family: Arial, sans-serif !important;
+        overflow: hidden !important;
+      }
+
+      .product-name {
+        font-size: 10px !important;
+        line-height: 1 !important;
+        margin-bottom: 2px !important;
+      }
+
+      .product-specs {
+        font-size: 7px !important;
+        margin-bottom: 2px !important;
       }
 
       .barcode-container {
-        margin: 1mm 0 !important;
-        padding: 1mm !important;
+        margin: 1px 0 !important;
+        padding: 0 !important;
+      }
+
+      .barcode-canvas {
+        height: 25px !important;
+        margin-bottom: 1px !important;
+      }
+
+      .barcode-number {
+        font-size: 6px !important;
       }
 
       .price-section {
-        margin-top: 1mm !important;
-        padding-top: 1mm !important;
-        font-size: 18px !important;
+        font-size: 12px !important;
+        margin-top: 1px !important;
+        padding-top: 0 !important;
       }
 
       .thermal-label:last-child {
@@ -77,26 +100,26 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .company-header {
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 700;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      line-height: 1.1;
+      letter-spacing: 0.5px;
+      line-height: 1;
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 4px;
+      padding-bottom: 2px;
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '12px' : '14px'};
+      font-size: ${options.format === 'compact' ? '10px' : '11px'};
       font-weight: 800;
-      line-height: 1.1;
+      line-height: 1;
       color: #000;
       text-align: center;
-      margin-bottom: 6px;
-      max-height: 40px;
+      margin-bottom: 3px;
+      max-height: 22px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -104,12 +127,12 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-specs {
-      font-size: 11px;
+      font-size: 8px;
       font-weight: 500;
       color: #333;
       text-align: center;
-      margin-bottom: 12px;
-      line-height: 1.2;
+      margin-bottom: 4px;
+      line-height: 1;
     }
 
     .barcode-container {
@@ -119,18 +142,18 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       align-items: center;
       margin: 2px 0;
       background-color: #ffffff;
-      padding: 2px;
+      padding: 1px;
     }
 
     .barcode-canvas {
       display: block;
-      margin: 0 auto 2px auto;
+      margin: 0 auto 1px auto;
       max-width: 100%;
-      height: auto;
+      height: 30px;
     }
 
     .barcode-number {
-      font-size: 7px;
+      font-size: 6px;
       font-family: monospace;
       color: #333;
       text-align: center;
@@ -138,13 +161,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .price-section {
-      font-size: 20px;
+      font-size: 14px;
       font-weight: 900;
       color: #000;
       text-align: center;
-      margin-top: 2px;
-      padding-top: 2px;
-      letter-spacing: 0.5px;
+      margin-top: 1px;
+      padding-top: 1px;
+      letter-spacing: 0.3px;
     }
 
     /* Remove unused styles - keeping only relevant ones */

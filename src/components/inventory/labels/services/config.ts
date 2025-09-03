@@ -2,10 +2,10 @@ import { ThermalPrintSettings } from "../types";
 
 // Centralized configuration for thermal label printing
 export const PRINT_SETTINGS: ThermalPrintSettings = {
-  width: 226,   // 6cm at 96 DPI (standard browser DPI)
-  height: 189,  // 5cm at 96 DPI (standard browser DPI)
-  dpi: 96,      // Standard browser DPI for consistent printing
-  margin: 0,    // No margins for precise sticker alignment
+  width: 180,   // Smaller width for better fit
+  height: 150,  // Smaller height for better fit
+  dpi: 96,      // Standard browser DPI
+  margin: 0,    // No margins
 };
 
 // Barcode generation settings optimized for thermal printing
