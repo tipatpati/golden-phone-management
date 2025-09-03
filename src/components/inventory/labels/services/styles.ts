@@ -10,8 +10,8 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
   return `
     @media print {
       @page {
-        /* Force landscape by making width > height and explicitly declaring landscape */
-        size: 60mm 50mm landscape;
+        /* Use standard thermal label size without forcing orientation */
+        size: 60mm 50mm;
         margin: ${marginMm}mm;
       }
 
