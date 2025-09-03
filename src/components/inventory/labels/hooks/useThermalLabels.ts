@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ThermalLabelData } from "../types";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 
 interface Product {
   id: string;
@@ -19,7 +20,9 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
     const labels: ThermalLabelData[] = [];
 
     products.forEach(product => {
-      const productName = `${product.brand} ${product.model}${product.year ? ` (${product.year})` : ''}`;
+      // Clean the brand and model by removing all color info in parentheses
+      const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+      const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
       
       if (product.serial_numbers && product.serial_numbers.length > 0) {
         // Generate one label per serial number
@@ -27,10 +30,13 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           const parsed = parseSerialWithBattery(serialNumber);
           const barcode = generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
-          // Format: Brand Model Color
-          const labelProductName = parsed.color 
-            ? `${product.brand} ${product.model} ${parsed.color}`
-            : productName;
+          // Apply "Brand Model Storage" naming convention
+          const labelProductName = formatProductUnitName({
+            brand: cleanBrand,
+            model: cleanModel,
+            storage: parsed.storage,
+            color: parsed.color
+          });
           
           labels.push({
             productName: labelProductName,
@@ -45,6 +51,11 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
       } else {
         // For products without serial numbers, generate one label per stock unit (max 10)
         const quantity = Math.max(1, Math.min(product.stock || 1, 10));
+        const productName = formatProductName({ 
+          brand: cleanBrand, 
+          model: cleanModel 
+        });
+        
         for (let i = 0; i < quantity; i++) {
           const barcode = generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
           
