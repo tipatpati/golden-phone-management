@@ -58,65 +58,6 @@ export class ThermalLabelService {
   }
 
   /**
-   * Generates JavaScript for barcode initialization
-   */
-  private static generateBarcodeScript(): string {
-    const config = BARCODE_CONFIG;
-    
-    return `
-      function initializeBarcodes() {
-        if (typeof JsBarcode === 'undefined') {
-          console.warn('JsBarcode library not loaded, retrying...');
-          setTimeout(initializeBarcodes, 500);
-          return;
-        }
-        
-        const canvases = document.querySelectorAll('.barcode-canvas');
-        console.log('Initializing barcodes for', canvases.length, 'elements');
-        
-        canvases.forEach(function(canvas, index) {
-          const barcodeValue = canvas.getAttribute('data-barcode');
-          if (!barcodeValue) {
-            console.warn('No barcode value found for canvas', index);
-            return;
-          }
-          
-          try {
-            JsBarcode(canvas, barcodeValue, ${JSON.stringify(config)});
-            console.log('Barcode generated successfully for:', barcodeValue);
-          } catch (error) {
-            console.error('Barcode generation failed for:', barcodeValue, error);
-            canvas.style.display = 'none';
-          }
-        });
-      }
-      
-      function initiatePrint() {
-        console.log('Initiating print process...');
-        try {
-          window.print();
-        } catch (error) {
-          console.error('Print initiation failed:', error);
-          alert('Print failed. Please try using your browser\\'s print function (Ctrl+P)');
-        }
-      }
-      
-      window.addEventListener('load', function() {
-        console.log('Document loaded, starting initialization...');
-        initializeBarcodes();
-        setTimeout(initiatePrint, 2000);
-      });
-      
-      // Add beforeprint event to ensure landscape orientation
-      window.addEventListener('beforeprint', function() {
-        console.log('Setting up print orientation...');
-        document.body.style.transform = 'rotate(0deg)';
-        document.body.style.transformOrigin = 'center';
-      });
-    `;
-  }
-
-  /**
    * Main method to generate complete thermal label document
    */
   public static generateThermalLabels(
