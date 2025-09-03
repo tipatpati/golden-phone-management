@@ -716,13 +716,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "repairs_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients_basic"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "repairs_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
@@ -849,13 +842,6 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sales_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients_basic"
             referencedColumns: ["id"]
           },
           {
@@ -1069,57 +1055,7 @@ export type Database = {
       }
     }
     Views: {
-      clients_basic: {
-        Row: {
-          address: string | null
-          company_name: string | null
-          contact_person: string | null
-          created_at: string | null
-          email: string | null
-          first_name: string | null
-          id: string | null
-          last_name: string | null
-          notes: string | null
-          phone: string | null
-          status: string | null
-          tax_id: string | null
-          type: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          address?: never
-          company_name?: string | null
-          contact_person?: string | null
-          created_at?: string | null
-          email?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          notes?: never
-          phone?: string | null
-          status?: string | null
-          tax_id?: never
-          type?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          address?: never
-          company_name?: string | null
-          contact_person?: string | null
-          created_at?: string | null
-          email?: string | null
-          first_name?: string | null
-          id?: string | null
-          last_name?: string | null
-          notes?: never
-          phone?: string | null
-          status?: string | null
-          tax_id?: never
-          type?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_add_user_role: {
