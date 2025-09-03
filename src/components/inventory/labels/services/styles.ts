@@ -90,7 +90,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '16px' : '18px'};
+      font-size: ${options.format === 'compact' ? '12px' : '14px'};
       font-weight: 800;
       line-height: 1.1;
       color: #000;
