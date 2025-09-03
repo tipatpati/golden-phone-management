@@ -102,7 +102,52 @@ export class ThermalLabelService {
   }
 
   /**
-   * Opens print dialog with generated labels
+   * Converts barcode canvas to base64 image for reliable printing
+   */
+  private static convertBarcodeToImage(canvas: HTMLCanvasElement): string {
+    try {
+      return canvas.toDataURL('image/png', 1.0);
+    } catch (error) {
+      console.error('Failed to convert barcode to image:', error);
+      return '';
+    }
+  }
+
+  /**
+   * Waits for all barcodes to render as images before printing
+   */
+  private static waitForBarcodeImages(printWindow: Window): Promise<void> {
+    return new Promise((resolve) => {
+      const checkBarcodes = () => {
+        const canvases = printWindow.document.querySelectorAll('.barcode-canvas') as NodeListOf<HTMLCanvasElement>;
+        const allRendered = Array.from(canvases).every(canvas => {
+          return canvas.width > 0 && canvas.height > 0;
+        });
+
+        if (allRendered || canvases.length === 0) {
+          // Convert all canvas barcodes to images for better print reliability
+          canvases.forEach(canvas => {
+            const imageData = this.convertBarcodeToImage(canvas);
+            if (imageData) {
+              const img = printWindow.document.createElement('img');
+              img.src = imageData;
+              img.style.cssText = canvas.style.cssText;
+              img.className = canvas.className;
+              canvas.parentNode?.replaceChild(img, canvas);
+            }
+          });
+          resolve();
+        } else {
+          setTimeout(checkBarcodes, 100);
+        }
+      };
+
+      setTimeout(checkBarcodes, 500);
+    });
+  }
+
+  /**
+   * Opens print dialog with generated labels following best practices
    */
   public static async printLabels(
     labels: ThermalLabelData[],
@@ -112,15 +157,42 @@ export class ThermalLabelService {
       const htmlContent = this.generateThermalLabels(labels, options);
       const totalLabels = labels.length * options.copies;
       
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      // Create dedicated print window with optimal dimensions
+      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=no,resizable=no');
       
       if (!printWindow) {
         throw new Error('Print popup was blocked. Please allow popups and try again.');
       }
 
+      // Write content and prepare for printing
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       printWindow.focus();
+
+      // Wait for content to load and barcodes to render
+      await new Promise(resolve => {
+        if (printWindow.document.readyState === 'complete') {
+          resolve(void 0);
+        } else {
+          printWindow.addEventListener('load', () => resolve(void 0));
+        }
+      });
+
+      // Additional delay to ensure barcode library loads and renders
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Wait for barcodes to be converted to images
+      await this.waitForBarcodeImages(printWindow);
+
+      // Final delay before initiating print
+      setTimeout(() => {
+        try {
+          printWindow.print();
+        } catch (printError) {
+          console.error('Print initiation failed:', printError);
+          alert('Print failed. Please try using your browser\'s print function (Ctrl+P)');
+        }
+      }, 500);
 
       return {
         success: true,
