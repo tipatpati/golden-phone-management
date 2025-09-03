@@ -151,66 +151,68 @@ const serialString = validEntries
               
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor={`serial-mobile-${entry.id}`} className="text-xs">
+                  <Label htmlFor={`serial-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
                     Numero IMEI/Seriale
                   </Label>
-                   <Input
+                  <Input
                     id={`serial-mobile-${entry.id}`}
                     value={entry.serial}
                     onChange={(e) => {
-                     const value = e.target.value.replace(/\D/g, '').slice(0, 15);
-                     updateEntry(entry.id, 'serial', value);
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                      updateEntry(entry.id, 'serial', value);
                     }}
-                   placeholder="IMEI (15 digits) e.g. 123456789012345"
-                   className="text-sm h-9 font-mono"
-                   maxLength={15}
+                    placeholder="123456789012345"
+                    className="text-sm h-10 font-mono"
+                    maxLength={15}
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor={`color-mobile-${entry.id}`} className="text-xs">
-                    Colore
-                  </Label>
-                  <Select 
-                    value={entry.color} 
-                    onValueChange={(value) => updateEntry(entry.id, 'color', value)}
-                  >
-                    <SelectTrigger className="text-sm h-9">
-                      <SelectValue placeholder="Seleziona colore" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {COLOR_OPTIONS.map(color => (
-                        <SelectItem key={color} value={color} className="hover:bg-muted">
-                          {color}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor={`color-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                      Colore
+                    </Label>
+                    <Select 
+                      value={entry.color} 
+                      onValueChange={(value) => updateEntry(entry.id, 'color', value)}
+                    >
+                      <SelectTrigger className="text-sm h-10">
+                        <SelectValue placeholder="Colore" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {COLOR_OPTIONS.map(color => (
+                          <SelectItem key={color} value={color} className="hover:bg-muted">
+                            {color}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`storage-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                      Storage
+                    </Label>
+                    <Select 
+                      value={entry.storage?.toString() || ''} 
+                      onValueChange={(value) => updateEntry(entry.id, 'storage', value ? parseInt(value) : undefined)}
+                    >
+                      <SelectTrigger className="text-sm h-10">
+                        <SelectValue placeholder="GB" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {STORAGE_OPTIONS.map(storage => (
+                          <SelectItem key={storage} value={storage.toString()} className="hover:bg-muted">
+                            {storage}GB
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor={`storage-mobile-${entry.id}`} className="text-xs">
-                    Storage (GB)
-                  </Label>
-                  <Select 
-                    value={entry.storage?.toString() || ''} 
-                    onValueChange={(value) => updateEntry(entry.id, 'storage', value ? parseInt(value) : undefined)}
-                  >
-                    <SelectTrigger className="text-sm h-9">
-                      <SelectValue placeholder="Seleziona storage" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {STORAGE_OPTIONS.map(storage => (
-                        <SelectItem key={storage} value={storage.toString()} className="hover:bg-muted">
-                          {storage}GB
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs">
+                  <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
                     Livello Batteria (%)
                   </Label>
                   <Input
@@ -221,44 +223,46 @@ const serialString = validEntries
                     value={entry.batteryLevel.toString()}
                     onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
                     placeholder="85"
-                    className="text-sm h-9"
+                    className="text-sm h-10"
                   />
                 </div>
               </div>
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center">
-              <div className="col-span-1 text-sm font-medium text-muted-foreground">
-                #{index + 1}
+            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-end">
+              <div className="col-span-1 flex items-end pb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  #{index + 1}
+                </span>
               </div>
               
               <div className="col-span-4">
-                <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs">
+                <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Numero IMEI/Seriale
                 </Label>
-                 <Input
+                <Input
                   id={`serial-desktop-${entry.id}`}
                   value={entry.serial}
-                   onChange={(e) => {
-                     const value = e.target.value.replace(/\D/g, '').slice(0, 15);
-                     updateEntry(entry.id, 'serial', value);
-                   }}
-                 placeholder="IMEI (15 digits) e.g. 123456789012345"
-                 className="text-sm h-9 font-mono"
-                 maxLength={15}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                    updateEntry(entry.id, 'serial', value);
+                  }}
+                  placeholder="123456789012345"
+                  className="text-sm h-10 font-mono"
+                  maxLength={15}
                 />
               </div>
               
               <div className="col-span-2">
-                <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs">
+                <Label htmlFor={`color-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Colore
                 </Label>
                 <Select 
                   value={entry.color} 
                   onValueChange={(value) => updateEntry(entry.id, 'color', value)}
                 >
-                  <SelectTrigger className="text-sm h-9">
+                  <SelectTrigger className="text-sm h-10">
                     <SelectValue placeholder="Colore" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
@@ -272,15 +276,15 @@ const serialString = validEntries
               </div>
               
               <div className="col-span-2">
-                <Label htmlFor={`storage-desktop-${entry.id}`} className="text-xs">
-                  Storage (GB)
+                <Label htmlFor={`storage-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
+                  Storage
                 </Label>
                 <Select 
                   value={entry.storage?.toString() || ''} 
                   onValueChange={(value) => updateEntry(entry.id, 'storage', value ? parseInt(value) : undefined)}
                 >
-                  <SelectTrigger className="text-sm h-9">
-                    <SelectValue placeholder="Storage" />
+                  <SelectTrigger className="text-sm h-10">
+                    <SelectValue placeholder="GB" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
                     {STORAGE_OPTIONS.map(storage => (
@@ -293,7 +297,7 @@ const serialString = validEntries
               </div>
               
               <div className="col-span-2">
-                <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs">
+                <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Batteria (%)
                 </Label>
                 <Input
@@ -304,20 +308,20 @@ const serialString = validEntries
                   value={entry.batteryLevel.toString()}
                   onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
                   placeholder="85"
-                  className="text-sm h-9"
+                  className="text-sm h-10"
                 />
               </div>
               
-              <div className="col-span-1">
+              <div className="col-span-1 flex items-end pb-2">
                 {entries.length > 1 && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => removeEntry(entry.id)}
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
