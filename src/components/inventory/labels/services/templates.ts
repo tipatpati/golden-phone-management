@@ -109,33 +109,60 @@ export function generateSingleLabel(
     <div class="thermal-label">
       <!-- Company Header -->
       ${options.includeCompany && options.companyName?.trim() ? `
-        <div class="company-header">
-          ${escapeHtml(options.companyName)}
+        <div class="label-header">
+          <div class="company-header">
+            ${escapeHtml(options.companyName)}
+          </div>
+          ${options.includeCategory && label.category?.trim() ? `
+            <div class="category-label">
+              ${escapeHtml(label.category)}
+            </div>
+          ` : ''}
         </div>
       ` : ''}
 
-      <!-- Product Name -->
-      <div class="product-name">
-        ${escapeHtml(label.productName)}
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Product Name -->
+        <div class="product-name">
+          ${escapeHtml(label.productName)}
+        </div>
+
+        <!-- Product Details -->
+        ${label.serialNumber?.trim() || (label.batteryLevel && label.batteryLevel > 0) ? `
+          <div class="product-details">
+            ${label.serialNumber?.trim() ? `
+              <div class="serial-number">
+                SN: ${escapeHtml(label.serialNumber)}
+              </div>
+            ` : ''}
+            ${label.batteryLevel && label.batteryLevel > 0 ? `
+              <div class="battery-level ${label.batteryLevel > 80 ? 'battery-high' : label.batteryLevel > 50 ? 'battery-medium' : 'battery-low'}">
+                🔋 ${label.batteryLevel}%
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+
+        <!-- Color indicator -->
+        ${label.color?.trim() ? `
+          <div class="color-indicator">
+            Color: ${escapeHtml(label.color)}
+          </div>
+        ` : ''}
       </div>
 
-      <!-- Product Specifications -->
-      <div class="product-specs">
-        ${extractSpecs()}
-      </div>
+      <!-- Price Section -->
+      ${options.includePrice && typeof label.price === 'number' ? `
+        <div class="price-section">
+          €${label.price.toFixed(2)}
+        </div>
+      ` : ''}
 
       <!-- Barcode Section -->
       ${options.includeBarcode && label.barcode?.trim() ? `
         <div class="barcode-container">
           <canvas class="barcode-canvas" data-barcode="${escapeHtml(label.barcode)}"></canvas>
-          <div class="barcode-number">${escapeHtml(label.barcode)}</div>
-        </div>
-      ` : ''}
-
-      <!-- Price Section -->
-      ${options.includePrice && typeof label.price === 'number' ? `
-        <div class="price-section">
-          ${label.price.toFixed(2)}€
         </div>
       ` : ''}
     </div>

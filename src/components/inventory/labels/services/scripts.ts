@@ -45,14 +45,17 @@ export function generateBarcodeScript(config: any): string {
           canvas.height = 60;
           
           JsBarcode(canvas, barcodeValue, ${JSON.stringify({ 
-            ...{ 
-              background: '#ffffff', 
-              lineColor: '#000000',
-              width: 2,
-              height: 50,
-              displayValue: false // We show the number separately
-            }, 
-            ...config 
+            format: 'CODE128',
+            width: 1.8,
+            height: 55,
+            displayValue: false,
+            fontSize: 10,
+            font: 'Arial, sans-serif',
+            textAlign: 'center',
+            textPosition: 'bottom',
+            margin: 4,
+            background: '#ffffff',
+            lineColor: '#000000'
           })});
           
           console.log('Barcode generated successfully for:', barcodeValue);
