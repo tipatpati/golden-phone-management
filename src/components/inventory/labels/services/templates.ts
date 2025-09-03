@@ -107,28 +107,28 @@ export function generateSingleLabel(
 
   return `
     <div class="thermal-label">
-      <!-- Company Header -->
-      ${options.includeCompany && options.companyName?.trim() ? `
-        <div class="label-header">
+      <!-- Header Section -->
+      <div class="label-header">
+        ${options.includeCompany && options.companyName?.trim() ? `
           <div class="company-header">
             ${escapeHtml(options.companyName)}
           </div>
-          ${options.includeCategory && label.category?.trim() ? `
-            <div class="category-label">
-              ${escapeHtml(label.category)}
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
+        ` : ''}
+        ${options.includeCategory && label.category?.trim() ? `
+          <div class="category-label">
+            ${escapeHtml(label.category)}
+          </div>
+        ` : ''}
+      </div>
 
-      <!-- Main Content -->
+      <!-- Main Content Section -->
       <div class="main-content">
-        <!-- Product Name -->
+        <!-- Product Name - Primary focus -->
         <div class="product-name">
           ${escapeHtml(label.productName)}
         </div>
 
-        <!-- Product Details -->
+        <!-- Product Details Row -->
         ${label.serialNumber?.trim() || (label.batteryLevel && label.batteryLevel > 0) ? `
           <div class="product-details">
             ${label.serialNumber?.trim() ? `
@@ -144,7 +144,7 @@ export function generateSingleLabel(
           </div>
         ` : ''}
 
-        <!-- Color indicator -->
+        <!-- Color indicator if available -->
         ${label.color?.trim() ? `
           <div class="color-indicator">
             Color: ${escapeHtml(label.color)}
@@ -165,6 +165,9 @@ export function generateSingleLabel(
           <canvas class="barcode-canvas" data-barcode="${escapeHtml(label.barcode)}"></canvas>
         </div>
       ` : ''}
+
+      <!-- Quality Indicator Corner -->
+      <div class="quality-indicator"></div>
     </div>
   `;
 }
