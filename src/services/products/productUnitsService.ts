@@ -9,7 +9,7 @@ export interface ProductUnit {
   barcode?: string;
   color?: string;
   battery_level?: number;
-  storage?: string; // e.g., 64GB, 128GB
+  storage?: number; // Storage in GB (64, 128, 256, etc.)
   status: 'available' | 'sold' | 'reserved' | 'damaged';
   created_at: string;
   updated_at: string;
