@@ -61,7 +61,7 @@ export class ThermalLabelService {
    * Generates JavaScript for barcode initialization
    */
   private static generateBarcodeScript(): string {
-    const config = this.BARCODE_CONFIG;
+    const config = BARCODE_CONFIG;
     
     return `
       function initializeBarcodes() {
