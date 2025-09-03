@@ -67,7 +67,8 @@ export function ProductForm({
       threshold: 5,
       description: 'Latest iPhone with advanced features',
       supplier: 'Tech Supplier Inc',
-      has_serial: true
+      has_serial: true,
+      storage: 256
     };
 
     // Update all fields

@@ -24,6 +24,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     barcode: '',
     has_serial: true,
     serial_numbers: [],
+    storage: undefined,
     ...initialData
   });
 
@@ -98,6 +99,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       barcode: formData.barcode,
       has_serial: formData.has_serial!,
       serial_numbers: formData.has_serial ? serialArray : undefined,
+      storage: formData.storage,
     };
 
     setIsSubmitting(true);
@@ -124,6 +126,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       barcode: '',
       has_serial: true,
       serial_numbers: [],
+      storage: undefined,
     });
     setSerialNumbers('');
     clearErrors();
