@@ -59,18 +59,19 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .barcode-canvas {
-        height: 20px !important;
-        margin-bottom: 0 !important;
+        height: 18px !important;
+        margin-bottom: -2px !important;
       }
 
       .barcode-number {
         font-size: 5px !important;
         margin: 0 !important;
+        line-height: 0.8 !important;
       }
 
       .price-section {
         font-size: 10px !important;
-        margin-top: 0 !important;
+        margin-top: -2px !important;
         padding-top: 0 !important;
       }
 
