@@ -1,5 +1,6 @@
 import { ThermalLabelData, ThermalLabelOptions } from "../types";
 import { escapeHtml } from "./utils";
+import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 
 export function generateSingleLabel(
   label: ThermalLabelData,
@@ -72,34 +73,71 @@ export function generateSingleLabel(
     `;
   }
 
+  // Extract product specifications for the pipe-separated format
+  const extractSpecs = () => {
+    const specs: string[] = [];
+    
+    // Add color if available
+    if (label.color?.trim()) {
+      specs.push(escapeHtml(label.color));
+    }
+    
+    // Extract storage from product name or serial number
+    const storageMatch = label.productName.match(/(\d+GB)/);
+    if (storageMatch) {
+      specs.push(storageMatch[1]);
+    } else if (label.serialNumber) {
+      const parsed = parseSerialWithBattery(label.serialNumber);
+      if (parsed.storage) {
+        specs.push(`${parsed.storage}GB`);
+      }
+    }
+    
+    // Extract RAM if available (look for pattern like "12GB RAM" or just "12GB" after storage)
+    const ramMatch = label.productName.match(/(\d+GB).*?(\d+GB)/);
+    if (ramMatch && ramMatch[2] !== ramMatch[1]) {
+      specs.push(ramMatch[2]);
+    }
+    
+    // Add warranty period
+    specs.push('1 anno');
+    
+    return specs.join(' | ');
+  };
+
   return `
     <div class="thermal-label">
-      <!-- Header Section -->
-      <div class="label-header">
-        ${headerElements.join('')}
+      <!-- Company Header -->
+      ${options.includeCompany && options.companyName?.trim() ? `
+        <div class="company-header">
+          ${escapeHtml(options.companyName)}
+        </div>
+      ` : ''}
+
+      <!-- Product Name -->
+      <div class="product-name">
+        ${escapeHtml(label.productName)}
       </div>
 
-      <!-- Main Content Section -->
-      <div class="main-content">
-        <div class="product-name">
-          ${escapeHtml(label.productName)}
-        </div>
-        
-        <div class="product-details">
-          ${detailsElements.join('')}
-        </div>
-        
-        ${colorIndicator}
+      <!-- Product Specifications -->
+      <div class="product-specs">
+        ${extractSpecs()}
       </div>
-
-      <!-- Price Section -->
-      ${priceSection}
 
       <!-- Barcode Section -->
-      ${barcodeSection}
+      ${options.includeBarcode && label.barcode?.trim() ? `
+        <div class="barcode-container">
+          <canvas class="barcode-canvas" data-barcode="${escapeHtml(label.barcode)}"></canvas>
+          <div class="barcode-number">${escapeHtml(label.barcode)}</div>
+        </div>
+      ` : ''}
 
-      <!-- Quality Indicator -->
-      <div class="quality-indicator"></div>
+      <!-- Price Section -->
+      ${options.includePrice && typeof label.price === 'number' ? `
+        <div class="price-section">
+          ${label.price.toFixed(2)}€
+        </div>
+      ` : ''}
     </div>
   `;
 }

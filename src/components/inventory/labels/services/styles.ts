@@ -67,14 +67,78 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .company-header {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
-      color: #2563eb;
+      color: #000;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       line-height: 1.1;
+      text-align: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 4px;
     }
 
+    .product-name {
+      font-size: ${options.format === 'compact' ? '16px' : '18px'};
+      font-weight: 800;
+      line-height: 1.1;
+      color: #000;
+      text-align: center;
+      margin-bottom: 6px;
+      max-height: 40px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .product-specs {
+      font-size: 11px;
+      font-weight: 500;
+      color: #333;
+      text-align: center;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .barcode-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 8px 0;
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 2px;
+      padding: 4px;
+    }
+
+    .barcode-canvas {
+      display: block;
+      margin: 0 auto 4px auto;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .barcode-number {
+      font-size: 8px;
+      font-family: monospace;
+      color: #333;
+      text-align: center;
+    }
+
+    .price-section {
+      font-size: 24px;
+      font-weight: 900;
+      color: #000;
+      text-align: center;
+      margin-top: auto;
+      padding-top: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Remove unused styles - keeping only relevant ones */
     .category-label {
       font-size: 8px;
       color: #6b7280;
@@ -89,21 +153,6 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       flex-direction: column;
       justify-content: center;
       gap: 4px;
-    }
-
-    .product-name {
-      font-size: ${options.format === 'compact' ? '14px' : '16px'};
-      font-weight: 800;
-      line-height: 1.1;
-      color: #000;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      max-height: 40px;
-      overflow: hidden;
-      text-align: center;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
     }
 
     .product-details {
@@ -164,48 +213,6 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       border-radius: 3px;
       margin: 2px auto;
       text-transform: capitalize;
-    }
-
-    .price-section {
-      font-size: 20px;
-      font-weight: 900;
-      color: #2563eb;
-      text-align: center;
-      padding: 6px 0;
-      border-top: 2px solid #2563eb;
-      border-bottom: 1px solid #e5e5e5;
-      margin-bottom: 6px;
-      background-color: #f8fafc;
-      letter-spacing: 0.5px;
-    }
-
-    .barcode-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 45px;
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 2px;
-      padding: 2px;
-    }
-
-    .barcode-canvas {
-      display: block;
-      margin: 0 auto;
-      max-width: 100%;
-      height: auto;
-    }
-
-    .quality-indicator {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 8px;
-      height: 8px;
-      background-color: #2563eb;
-      border-radius: 50%;
-      opacity: 0.7;
     }
   `;
 }
