@@ -53,6 +53,7 @@ export function EditProductDialog({
         barcode: data.barcode || undefined,
         has_serial: data.has_serial,
         serial_numbers: data.has_serial ? data.serial_numbers : undefined,
+        storage: data.storage,
       };
 
       await updateProduct.mutateAsync({ 
@@ -97,6 +98,7 @@ export function EditProductDialog({
     barcode: product.barcode || "",
     has_serial: product.has_serial || false,
     serial_numbers: product.serial_numbers || [],
+    storage: product.storage,
   };
 
   return (
