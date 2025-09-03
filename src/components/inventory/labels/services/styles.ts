@@ -8,7 +8,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
   return `
     @media print {
       @page {
-        margin: 0;
+        margin: 10px;
       }
 
       * {
