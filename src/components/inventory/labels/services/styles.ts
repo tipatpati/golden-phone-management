@@ -10,22 +10,27 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
   return `
     @media print {
       @page {
-        /* Use standard thermal label size without forcing orientation */
+        /* Exact 6cm x 5cm with no margins for perfect sticker alignment */
         size: 60mm 50mm;
-        margin: ${marginMm}mm;
+        margin: 0;
       }
 
       html, body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+        margin: 0;
+        padding: 0;
       }
 
       .thermal-label {
         page-break-after: always;
         margin: 0 !important;
-        padding: 8px !important;
-        border: 2px solid #e5e5e5 !important;
-        border-radius: 4px !important;
+        padding: 4px !important;
+        border: none !important;
+        border-radius: 0 !important;
+        width: 60mm !important;
+        height: 50mm !important;
+        box-sizing: border-box !important;
       }
 
       .thermal-label:last-child {
@@ -43,19 +48,19 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     .thermal-label {
       width: ${width}px;
       height: ${height}px;
-      border: 2px solid #e5e5e5;
-      border-radius: 4px;
-      padding: 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 2px;
+      padding: 6px;
       background: white;
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       page-break-inside: avoid;
       position: relative;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .label-header {
