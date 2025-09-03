@@ -42,82 +42,133 @@ function SerialNumberInput({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Find matching serials by last 4 digits
+  // Get the current product details
+  const currentProduct = useMemo(() => 
+    allProducts.find(p => p.id === productId), 
+    [allProducts, productId]
+  );
+
+  // Find matching serials only from the current product
   const matchingSerials = useMemo(() => {
-    if (searchTerm.length < 2) return [];
+    if (searchTerm.length < 2 || !currentProduct?.serial_numbers) return [];
     
     const results: Array<{ productId: string; productName: string; serial: string }> = [];
     
-    allProducts.forEach(product => {
-      if (product.serial_numbers && Array.isArray(product.serial_numbers)) {
-        product.serial_numbers.forEach((serial: string) => {
-          // Match by last 4 digits or full serial
-          const last4 = serial.slice(-4);
-          if (serial.toLowerCase().includes(searchTerm.toLowerCase()) || 
-              last4.includes(searchTerm)) {
-            results.push({
-              productId: product.id,
-              productName: formatProductName({ brand: product.brand, model: product.model }),
-              serial: serial
-            });
-          }
-        });
-      }
-    });
+    if (Array.isArray(currentProduct.serial_numbers)) {
+      currentProduct.serial_numbers.forEach((serial: string) => {
+        // Match by last 4 digits or full serial
+        const last4 = serial.slice(-4);
+        if (serial.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            last4.includes(searchTerm)) {
+          results.push({
+            productId: currentProduct.id,
+            productName: formatProductName({ brand: currentProduct.brand, model: currentProduct.model }),
+            serial: serial
+          });
+        }
+      });
+    }
     
     return results.slice(0, 10); // Limit to 10 results
-  }, [searchTerm, allProducts]);
+  }, [searchTerm, currentProduct]);
+
+  // Validate that the entered serial belongs to the current product
+  const validateSerial = (serial: string): boolean => {
+    if (!serial || !currentProduct?.serial_numbers) return true; // Empty is valid
+    
+    const serialNumbers = Array.isArray(currentProduct.serial_numbers) 
+      ? currentProduct.serial_numbers 
+      : [];
+    
+    return serialNumbers.includes(serial);
+  };
 
   const handleSelect = (serial: string) => {
-    onSerialNumberUpdate(productId, serial);
+    if (validateSerial(serial)) {
+      onSerialNumberUpdate(productId, serial);
+      setValidationError(null);
+    } else {
+      setValidationError("Questo numero seriale non appartiene al prodotto selezionato");
+    }
     setSearchTerm("");
     setIsOpen(false);
   };
 
+  const handleManualInput = (serial: string) => {
+    if (validateSerial(serial)) {
+      onSerialNumberUpdate(productId, serial);
+      setValidationError(null);
+    } else if (serial) {
+      setValidationError("Questo numero seriale non appartiene al prodotto selezionato");
+    } else {
+      setValidationError(null);
+    }
+  };
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <div className="relative">
-        <Input
-          placeholder="Cerca IMEI/Serial (ultime 4 cifre)..."
-          value={value || searchTerm}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            if (!value) {
-              setSearchTerm(newValue);
-              setIsOpen(newValue.length >= 2);
-            } else {
-              onSerialNumberUpdate(productId, newValue);
-            }
-          }}
-          onFocus={() => {
-            if (!value && searchTerm.length >= 2) {
-              setIsOpen(true);
-            }
-          }}
-          className="h-10 md:h-12 font-mono text-sm md:text-base bg-background pr-10"
-        />
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        
-        {isOpen && matchingSerials.length > 0 && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-lg">
-            <div className="p-2 max-h-48 overflow-y-auto">
-              {matchingSerials.map((item, index) => (
-                <div
-                  key={`${item.productId}-${item.serial}-${index}`}
-                  className="flex flex-col p-2 hover:bg-accent rounded cursor-pointer"
-                  onClick={() => handleSelect(item.serial)}
-                >
-                  <div className="font-mono text-sm font-medium">{item.serial}</div>
-                  <div className="text-xs text-muted-foreground">{item.productName}</div>
-                  <div className="text-xs text-blue-600">Ultime 4: {item.serial.slice(-4)}</div>
-                </div>
-              ))}
+    <div className="space-y-2">
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <div className="relative">
+          <Input
+            placeholder="Cerca IMEI/Serial del prodotto..."
+            value={value || searchTerm}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (!value) {
+                setSearchTerm(newValue);
+                setIsOpen(newValue.length >= 2);
+              } else {
+                handleManualInput(newValue);
+              }
+            }}
+            onFocus={() => {
+              if (!value && searchTerm.length >= 2) {
+                setIsOpen(true);
+              }
+            }}
+            className={`h-10 md:h-12 font-mono text-sm md:text-base bg-background pr-10 ${
+              validationError ? 'border-destructive focus:border-destructive' : ''
+            }`}
+          />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          
+          {isOpen && matchingSerials.length > 0 && (
+            <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-lg">
+              <div className="p-2 max-h-48 overflow-y-auto">
+                {matchingSerials.map((item, index) => (
+                  <div
+                    key={`${item.productId}-${item.serial}-${index}`}
+                    className="flex flex-col p-2 hover:bg-accent rounded cursor-pointer"
+                    onClick={() => handleSelect(item.serial)}
+                  >
+                    <div className="font-mono text-sm font-medium">{item.serial}</div>
+                    <div className="text-xs text-muted-foreground">{item.productName}</div>
+                    <div className="text-xs text-blue-600">Ultime 4: {item.serial.slice(-4)}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </Popover>
+          )}
+          
+          {isOpen && searchTerm.length >= 2 && matchingSerials.length === 0 && (
+            <div className="absolute z-50 top-full mt-1 w-full bg-popover border border-border rounded-md shadow-lg p-3">
+              <div className="text-sm text-muted-foreground text-center">
+                Nessun numero seriale trovato per questo prodotto
+              </div>
+            </div>
+          )}
+        </div>
+      </Popover>
+      
+      {validationError && (
+        <div className="flex items-start gap-2 p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+          <span className="text-sm text-destructive">{validationError}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
