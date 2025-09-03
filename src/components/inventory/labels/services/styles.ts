@@ -8,7 +8,6 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
   return `
     @media print {
       @page {
-        size: 6cm 5cm;
         margin: 0;
       }
 
