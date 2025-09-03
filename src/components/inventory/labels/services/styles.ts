@@ -35,6 +35,18 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
+        font-family: Arial, sans-serif !important;
+      }
+
+      .barcode-container {
+        margin: 1mm 0 !important;
+        padding: 1mm !important;
+      }
+
+      .price-section {
+        margin-top: 1mm !important;
+        padding-top: 1mm !important;
+        font-size: 18px !important;
       }
 
       .thermal-label:last-child {
@@ -105,34 +117,33 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      margin: 8px 0;
+      margin: 2px 0;
       background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 2px;
-      padding: 4px;
+      padding: 2px;
     }
 
     .barcode-canvas {
       display: block;
-      margin: 0 auto 4px auto;
+      margin: 0 auto 2px auto;
       max-width: 100%;
       height: auto;
     }
 
     .barcode-number {
-      font-size: 8px;
+      font-size: 7px;
       font-family: monospace;
       color: #333;
       text-align: center;
+      margin: 0;
     }
 
     .price-section {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 900;
       color: #000;
       text-align: center;
-      margin-top: auto;
-      padding-top: 8px;
+      margin-top: 2px;
+      padding-top: 2px;
       letter-spacing: 0.5px;
     }
 
