@@ -156,10 +156,10 @@ export function ProductFormFields({
       <FormField
         label="Storage"
         type="select"
-        value={formData.storage?.toString() || ''}
-        onChange={(value) => onFieldChange('storage', value ? parseInt(value) : undefined)}
+        value={formData.storage?.toString() || 'none'}
+        onChange={(value) => onFieldChange('storage', value === 'none' ? undefined : parseInt(value))}
         options={[
-          { value: '', label: 'Select storage' },
+          { value: 'none', label: 'Select storage' },
           ...STORAGE_OPTIONS.map(opt => ({ 
             value: opt.value.toString(), 
             label: opt.label 
