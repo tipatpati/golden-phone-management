@@ -11,6 +11,7 @@ interface SerialEntry {
   serial: string;
   color: string;
   batteryLevel: number;
+  storage?: number; // GB
 }
 
 interface SerialNumbersInputProps {
@@ -24,42 +25,68 @@ const COLOR_OPTIONS = [
   "Purple", "Pink", "Gray", "Rose Gold", "Space Gray", "Other"
 ];
 
+const STORAGE_OPTIONS = [16, 32, 64, 128, 256, 512, 1024];
+
 export function SerialNumbersInput({ serialNumbers, setSerialNumbers, setStock }: SerialNumbersInputProps) {
   const [entries, setEntries] = useState<SerialEntry[]>([]);
 
-  // Initialize entries from serialNumbers string
-  useEffect(() => {
-    if (serialNumbers && entries.length === 0) {
-      const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
-      const initialEntries = lines.map((line, index) => {
-        const parts = line.trim().split(/\s+/);
-        return {
-          id: `entry-${index}`,
-          serial: parts[0] || '',
-          color: parts[1] || '',
-          batteryLevel: parts[2] ? parseInt(parts[2].replace('%', '')) : 0
-        };
+// Initialize entries from serialNumbers string
+useEffect(() => {
+  if (serialNumbers && entries.length === 0) {
+    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+    const initialEntries = lines.map((line, index) => {
+      const parts = line.trim().split(/\s+/);
+      const tokens = parts.slice(1);
+      let colorTokens: string[] = [];
+      let batteryLevel = 0;
+      let storage: number | undefined = undefined;
+
+      const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
+
+      tokens.forEach((raw) => {
+        const token = raw.replace(/%/g, '');
+        const n = parseInt(token);
+        if (!isNaN(n)) {
+          if (n >= 0 && n <= 100 && batteryLevel === 0) {
+            batteryLevel = n;
+          } else if (STORAGE_SET.has(n) && storage === undefined) {
+            storage = n;
+          } else {
+            colorTokens.push(raw);
+          }
+        } else {
+          colorTokens.push(raw);
+        }
       });
-      
-      if (initialEntries.length > 0) {
-        setEntries(initialEntries);
-      } else {
-        // Start with one empty entry
-        setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 }]);
-      }
-    } else if (!serialNumbers && entries.length === 0) {
+
+      return {
+        id: `entry-${index}`,
+        serial: parts[0] || '',
+        color: colorTokens.join(' '),
+        batteryLevel,
+        storage
+      };
+    });
+    
+    if (initialEntries.length > 0) {
+      setEntries(initialEntries);
+    } else {
       // Start with one empty entry
-      setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 }]);
+      setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 } as SerialEntry]);
     }
-  }, [serialNumbers, entries.length]);
+  } else if (!serialNumbers && entries.length === 0) {
+    // Start with one empty entry
+    setEntries([{ id: 'entry-0', serial: '', color: '', batteryLevel: 0 } as SerialEntry]);
+  }
+}, [serialNumbers, entries.length]);
 
   // Update serialNumbers string when entries change (but let parent handle stock)
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
-    const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}`)
-      .join('\n');
-    
+const serialString = validEntries
+  .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}` : ''}${entry.storage !== undefined ? ` ${entry.storage}` : ''}`)
+  .join('\n');
+
     // Only update if the string has actually changed to prevent loops
     if (serialString !== serialNumbers) {
       setSerialNumbers(serialString);

@@ -451,7 +451,7 @@ export type Database = {
           product_id: string
           serial_number: string
           status: string
-          storage: string | null
+          storage: number | null
           updated_at: string
         }
         Insert: {
@@ -463,7 +463,7 @@ export type Database = {
           product_id: string
           serial_number: string
           status?: string
-          storage?: string | null
+          storage?: number | null
           updated_at?: string
         }
         Update: {
@@ -475,7 +475,7 @@ export type Database = {
           product_id?: string
           serial_number?: string
           status?: string
-          storage?: string | null
+          storage?: number | null
           updated_at?: string
         }
         Relationships: [

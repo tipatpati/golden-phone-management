@@ -20,7 +20,7 @@ export interface CreateProductUnitData {
   serial_number: string;
   color?: string;
   battery_level?: number;
-  storage?: string;
+  storage?: number;
   status?: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 

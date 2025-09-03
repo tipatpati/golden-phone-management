@@ -2,6 +2,7 @@ export interface SerialWithBattery {
   serial: string;
   batteryLevel?: number;
   color?: string;
+  storage?: number; // in GB, e.g., 64, 128, 256
 }
 
 /**
@@ -10,73 +11,56 @@ export interface SerialWithBattery {
  */
 export function parseSerialWithBattery(serialString: string): SerialWithBattery {
   const parts = serialString.trim().split(/\s+/);
-  
-  if (parts.length >= 3) {
-    const secondPart = parts[1];
-    const thirdPart = parts[2];
-    
-    const secondPartNum = parseInt(secondPart);
-    const thirdPartNum = parseInt(thirdPart);
-    
-    // Check if second part is battery level (SERIAL BATTERY COLOR)
-    if (!isNaN(secondPartNum) && secondPartNum >= 0 && secondPartNum <= 100) {
-      return {
-        serial: parts[0],
-        batteryLevel: secondPartNum,
-        color: thirdPart
-      };
-    }
-    
-    // Check if third part is battery level (SERIAL COLOR BATTERY)
-    if (!isNaN(thirdPartNum) && thirdPartNum >= 0 && thirdPartNum <= 100) {
-      return {
-        serial: parts[0],
-        batteryLevel: thirdPartNum,
-        color: secondPart
-      };
-    }
-    
-    // If neither is a valid battery level, treat as serial with color only
-    return {
-      serial: parts[0],
-      color: parts.slice(1).join(' ')
-    };
+  const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
+
+  if (parts.length === 0) {
+    return { serial: '' };
   }
-  
-  if (parts.length === 2) {
-    const secondPart = parts[1];
-    const batteryLevel = parseInt(secondPart);
-    
-    // If second part is a number, treat as battery level
-    if (!isNaN(batteryLevel) && batteryLevel >= 0 && batteryLevel <= 100) {
-      return {
-        serial: parts[0],
-        batteryLevel: batteryLevel
-      };
+
+  const result: SerialWithBattery = { serial: parts[0] };
+  const tokens = parts.slice(1);
+  const colorTokens: string[] = [];
+
+  for (const raw of tokens) {
+    const token = raw.replace(/%/g, '');
+    const n = parseInt(token);
+
+    if (!isNaN(n)) {
+      if (n >= 0 && n <= 100 && result.batteryLevel === undefined) {
+        result.batteryLevel = n;
+        continue;
+      }
+      if (STORAGE_SET.has(n) && result.storage === undefined) {
+        result.storage = n;
+        continue;
+      }
+      // numeric token that is not battery or standard storage -> treat as color part to be lenient
+      colorTokens.push(raw);
+    } else {
+      colorTokens.push(raw);
     }
-    
-    // Otherwise treat as color
-    return {
-      serial: parts[0],
-      color: secondPart
-    };
   }
-  
-  return {
-    serial: serialString.trim()
-  };
+
+  if (colorTokens.length > 0) {
+    result.color = colorTokens.join(' ');
+  }
+
+  return result;
 }
 
 /**
  * Formats a serial number with battery level and color
  */
-export function formatSerialWithBattery(serial: string, batteryLevel?: number, color?: string): string {
+export function formatSerialWithBattery(serial: string, batteryLevel?: number, color?: string, storage?: number): string {
   let result = serial;
+  if (color) {
+    result += ` ${color}`;
+  }
   if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
     result += ` ${batteryLevel}`;
   }
-  if (color) {
-    result += ` ${color}`;
+  if (storage !== undefined) {
+    result += ` ${storage}`;
   }
   return result;
 }
