@@ -54,6 +54,24 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
     
     console.log('Stock validation passed');
     
+    // Validate serial numbers belong to their respective products
+    const saleItemsForValidation = saleData.sale_items.map(item => ({
+      product_id: item.product_id,
+      serial_number: item.serial_number
+    }));
+    
+    console.log('Validating serial numbers for items:', saleItemsForValidation);
+    const { error: serialError } = await this.supabase.rpc('validate_sale_serial_numbers', {
+      sale_items_data: saleItemsForValidation
+    });
+    
+    if (serialError) {
+      console.error('Serial number validation error:', serialError);
+      throw new Error(serialError.message || 'One or more serial numbers do not belong to the selected products');
+    }
+    
+    console.log('Serial number validation passed');
+    
     // Calculate totals
     const subtotal = saleData.sale_items.reduce((sum, item) => 
       sum + (item.unit_price * item.quantity), 0
@@ -135,6 +153,20 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       
       if (stockError) {
         throw new Error(stockError.message || 'Insufficient stock for one or more products');
+      }
+      
+      // Validate serial numbers belong to their respective products
+      const saleItemsForValidation = saleData.sale_items.map(item => ({
+        product_id: item.product_id,
+        serial_number: item.serial_number
+      }));
+      
+      const { error: serialError } = await this.supabase.rpc('validate_sale_serial_numbers', {
+        sale_items_data: saleItemsForValidation
+      });
+      
+      if (serialError) {
+        throw new Error(serialError.message || 'One or more serial numbers do not belong to the selected products');
       }
       
       // Delete existing sale items (restores stock via trigger)

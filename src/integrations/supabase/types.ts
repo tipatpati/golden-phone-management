@@ -1171,6 +1171,10 @@ export type Database = {
         Args: { product_items: Json }
         Returns: boolean
       }
+      validate_sale_serial_numbers: {
+        Args: { sale_items_data: Json }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
