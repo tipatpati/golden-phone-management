@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { formatProductName, formatProductUnitDisplay, parseSerialString } from "@/utils/productNaming";
+import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { 
   Table, 
   TableBody, 
@@ -313,14 +313,19 @@ export function InventoryTable({
             // Parse serial number for color, storage, and battery info
             const parsed = parseSerialString(serialNumber);
             
+            // Clean the brand and model by removing all color info in parentheses
+            const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+            const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+            
             return {
-              productName: formatProductName({ 
-                brand: selectedProduct.brand, 
-                model: selectedProduct.model, 
-                storage: parsed.storage 
+              productName: formatProductUnitName({ 
+                brand: cleanBrand, 
+                model: cleanModel, 
+                storage: parsed.storage,
+                color: parsed.color
               }),
               serialNumber: parsed.serial,
-              barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}-${parsed.serial}`,
+              barcode: selectedProduct.barcode || `${cleanBrand}-${cleanModel}-${parsed.serial}`,
               price: selectedProduct.price,
               category: selectedProduct.category?.name,
               color: parsed.color,
@@ -328,12 +333,20 @@ export function InventoryTable({
             };
           }) :
           [{
-            productName: formatProductName({ 
-              brand: selectedProduct.brand, 
-              model: selectedProduct.model 
-            }),
+            productName: (() => {
+              const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+              const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+              return formatProductName({ 
+                brand: cleanBrand, 
+                model: cleanModel 
+              });
+            })(),
             serialNumber: undefined,
-            barcode: selectedProduct.barcode || `${selectedProduct.brand}-${selectedProduct.model}`,
+            barcode: (() => {
+              const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+              const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+              return selectedProduct.barcode || `${cleanBrand}-${cleanModel}`;
+            })(),
             price: selectedProduct.price,
             category: selectedProduct.category?.name
           }]
