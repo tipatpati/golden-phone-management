@@ -52,17 +52,12 @@ export function BarcodeManager({
     });
   }, [serialNumbers, productId, hasSerial, barcodeFormat]);
 
-  // Notify parent of first barcode generated (only once when first calculated)
-  const [hasNotified, setHasNotified] = React.useState(false);
+  // Notify parent whenever barcode changes (including format changes)
   React.useEffect(() => {
-    if (unitBarcodes.length > 0 && onBarcodeGenerated && !hasNotified) {
+    if (unitBarcodes.length > 0 && onBarcodeGenerated) {
       onBarcodeGenerated(unitBarcodes[0].barcode);
-      setHasNotified(true);
     }
-    if (unitBarcodes.length === 0) {
-      setHasNotified(false);
-    }
-  }, [unitBarcodes.length, onBarcodeGenerated, hasNotified]);
+  }, [unitBarcodes, onBarcodeGenerated]);
 
   if (!hasSerial || unitBarcodes.length === 0) {
     return null;
