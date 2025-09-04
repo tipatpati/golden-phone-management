@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Sale } from '@/services/sales';
+import { SaleReceiptDialog } from './SaleReceiptDialog';
 
 interface SaleDetailsDialogProps {
   sale: Sale;
@@ -21,6 +22,7 @@ interface SaleDetailsDialogProps {
 }
 
 export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
+  const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed": return "default";
@@ -66,13 +68,26 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5" />
-            Dettagli Garentille - {sale.sale_number}
-          </DialogTitle>
-          <DialogDescription>
-            Informazioni complete per la vendita #{sale.sale_number}
-          </DialogDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                Dettagli Garentille - {sale.sale_number}
+              </DialogTitle>
+              <DialogDescription>
+                Informazioni complete per la vendita #{sale.sale_number}
+              </DialogDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReceiptDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Stampa Ricevuta
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -261,6 +276,13 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </CardContent>
         </Card>
       </DialogContent>
+      
+      {/* Receipt Print Dialog */}
+      <SaleReceiptDialog 
+        sale={sale} 
+        open={showReceiptDialog} 
+        onOpenChange={setShowReceiptDialog} 
+      />
     </Dialog>
   );
 }
