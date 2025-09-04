@@ -140,11 +140,12 @@ export function ProductUnitSelector({
             parsedUnits.map((unit) => (
               <div
                 key={unit.index}
-                className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors ${
+                className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                   selectedUnits.has(unit.index) 
                     ? "bg-primary/5 border-primary/20" 
                     : "hover:bg-muted/50"
                 }`}
+                onClick={() => handleUnitToggle(unit.index)}
               >
                 <Checkbox
                   id={`unit-${unit.index}`}
