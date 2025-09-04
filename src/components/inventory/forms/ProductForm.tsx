@@ -30,6 +30,14 @@ export function ProductForm({
     }
   }, [handleSubmit, onRegisterSubmit]);
 
+  // Expose handleSubmit to parent components for FormDialog
+  React.useEffect(() => {
+    (window as any).__currentFormSubmit = handleSubmit;
+    return () => {
+      (window as any).__currentFormSubmit = null;
+    };
+  }, [handleSubmit]);
+
   const { data: products } = useProducts();
 
   // Get unique brands and models for autocomplete
