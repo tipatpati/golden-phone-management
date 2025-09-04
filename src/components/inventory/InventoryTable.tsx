@@ -308,49 +308,17 @@ export function InventoryTable({
       <ThermalLabelGenerator
         open={printDialogOpen}
         onOpenChange={setPrintDialogOpen}
-        labels={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0 ? 
-          selectedProduct.serial_numbers.map((serialNumber, index) => {
-            // Parse serial number for color, storage, and battery info
-            const parsed = parseSerialString(serialNumber);
-            
-            // Clean the brand and model by removing all color info in parentheses
-            const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-            const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
-            
-            return {
-              productName: formatProductUnitName({ 
-                brand: cleanBrand, 
-                model: cleanModel, 
-                storage: parsed.storage,
-                color: parsed.color
-              }),
-              serialNumber: parsed.serial,
-              barcode: selectedProduct.barcode || `${cleanBrand}-${cleanModel}-${parsed.serial}`,
-              price: selectedProduct.price,
-              category: selectedProduct.category?.name,
-              color: parsed.color,
-              batteryLevel: parsed.batteryLevel
-            };
-          }) :
-          [{
-            productName: (() => {
-              const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-              const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
-              return formatProductName({ 
-                brand: cleanBrand, 
-                model: cleanModel 
-              });
-            })(),
-            serialNumber: undefined,
-            barcode: (() => {
-              const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-              const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
-              return selectedProduct.barcode || `${cleanBrand}-${cleanModel}`;
-            })(),
-            price: selectedProduct.price,
-            category: selectedProduct.category?.name
-          }]
-        }
+        labels={[]} // Start with empty labels when using unit selection
+        allowUnitSelection={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0}
+        productSerialNumbers={selectedProduct.serial_numbers || []}
+        productName={(() => {
+          const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+          const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+          return formatProductName({ brand: cleanBrand, model: cleanModel });
+        })()}
+        productPrice={selectedProduct.price}
+        productBarcode={selectedProduct.barcode}
+        productCategory={selectedProduct.category?.name}
         companyName="GOLDEN PHONE SRL"
       />
     )}

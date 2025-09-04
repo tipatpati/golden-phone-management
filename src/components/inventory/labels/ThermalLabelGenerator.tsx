@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Printer, Eye, History, AlertCircle } from "lucide-react";
 import { ThermalLabelPreview } from "./ThermalLabelPreview";
+import { ProductUnitSelector } from "./ProductUnitSelector";
 import { useThermalLabelPrint } from "./hooks/useThermalLabelPrint";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 
@@ -16,13 +17,25 @@ interface ThermalLabelGeneratorProps {
   onOpenChange: (open: boolean) => void;
   labels: ThermalLabelData[];
   companyName?: string;
+  productSerialNumbers?: string[];
+  productName?: string;
+  productPrice?: number;
+  productBarcode?: string;
+  productCategory?: string;
+  allowUnitSelection?: boolean;
 }
 
 export function ThermalLabelGenerator({
   open,
   onOpenChange,
   labels,
-  companyName = "GOLDEN PHONE SRL"
+  companyName = "GOLDEN PHONE SRL",
+  productSerialNumbers = [],
+  productName = "",
+  productPrice = 0,
+  productBarcode = "",
+  productCategory = "",
+  allowUnitSelection = false
 }: ThermalLabelGeneratorProps) {
   const [options, setOptions] = useState<ThermalLabelOptions>({
     copies: 1,
@@ -33,15 +46,26 @@ export function ThermalLabelGenerator({
     format: "standard"
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>(labels);
+
+  // Update selected labels when props change
+  React.useEffect(() => {
+    if (!allowUnitSelection) {
+      setSelectedLabels(labels);
+    }
+  }, [labels, allowUnitSelection]);
 
   const { printState, printLabels } = useThermalLabelPrint();
 
+  // Use selected labels for calculations
+  const currentLabels = allowUnitSelection ? selectedLabels : labels;
+  
   // Memoized calculations for performance
   const labelStats = useMemo(() => {
-    const totalLabels = labels.length * options.copies;
-    const uniqueProducts = new Set(labels.map(l => l.productName)).size;
-    const hasSerialNumbers = labels.some(l => l.serialNumber);
-    const hasBatteryLevels = labels.some(l => l.batteryLevel);
+    const totalLabels = currentLabels.length * options.copies;
+    const uniqueProducts = new Set(currentLabels.map(l => l.productName)).size;
+    const hasSerialNumbers = currentLabels.some(l => l.serialNumber);
+    const hasBatteryLevels = currentLabels.some(l => l.batteryLevel);
     
     return {
       totalLabels,
@@ -49,10 +73,10 @@ export function ThermalLabelGenerator({
       hasSerialNumbers,
       hasBatteryLevels
     };
-  }, [labels, options.copies]);
+  }, [currentLabels, options.copies]);
 
   const handlePrint = async () => {
-    const success = await printLabels(labels, { ...options, companyName });
+    const success = await printLabels(currentLabels, { ...options, companyName });
     if (success) {
       // Close dialog after successful print
       setTimeout(() => onOpenChange(false), 1000);
@@ -66,7 +90,7 @@ export function ThermalLabelGenerator({
     setOptions(prev => ({ ...prev, [key]: value }));
   };
 
-  if (labels.length === 0) {
+  if (labels.length === 0 && !allowUnitSelection) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
@@ -115,9 +139,22 @@ export function ThermalLabelGenerator({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Configuration Panel */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-6">
+          {/* Unit Selection Panel (if enabled) */}
+          {allowUnitSelection && productSerialNumbers.length > 0 && (
+            <ProductUnitSelector
+              serialNumbers={productSerialNumbers}
+              onSelectionChange={setSelectedLabels}
+              productName={productName}
+              productPrice={productPrice}
+              productBarcode={productBarcode}
+              productCategory={productCategory}
+            />
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Configuration Panel */}
+            <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="copies">Copies per unit</Label>
@@ -199,13 +236,14 @@ export function ThermalLabelGenerator({
                 variant="outline"
                 onClick={() => setShowPreview(!showPreview)}
                 className="flex-1"
+                disabled={currentLabels.length === 0}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 {showPreview ? 'Hide' : 'Show'} Preview
               </Button>
               <Button
                 onClick={handlePrint}
-                disabled={printState.isPrinting}
+                disabled={printState.isPrinting || currentLabels.length === 0}
                 className="flex-1"
               >
                 {printState.isPrinting ? (
@@ -242,34 +280,35 @@ export function ThermalLabelGenerator({
             )}
           </div>
 
-          {/* Preview Panel */}
-          {showPreview && (
-            <div className="space-y-4">
-              <Label>Label Preview</Label>
-              <div className="border rounded-lg p-4 bg-muted/30 max-h-96 overflow-y-auto">
-                <div className="space-y-3">
-                  {labels.slice(0, 3).map((label, index) => (
-                    <div key={index}>
-                      <ThermalLabelPreview
-                        label={label}
-                        options={{ ...options, companyName }}
-                      />
-                      {index === 0 && labels.length > 1 && (
-                        <p className="text-xs text-muted-foreground mt-1 text-center">
-                          Unit {index + 1} of {labels.length}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  {labels.length > 3 && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      ... and {labels.length - 3} more units
-                    </p>
-                  )}
+            {/* Preview Panel */}
+            {showPreview && currentLabels.length > 0 && (
+              <div className="space-y-4">
+                <Label>Label Preview</Label>
+                <div className="border rounded-lg p-4 bg-muted/30 max-h-96 overflow-y-auto">
+                  <div className="space-y-3">
+                    {currentLabels.slice(0, 3).map((label, index) => (
+                      <div key={index}>
+                        <ThermalLabelPreview
+                          label={label}
+                          options={{ ...options, companyName }}
+                        />
+                        {index === 0 && currentLabels.length > 1 && (
+                          <p className="text-xs text-muted-foreground mt-1 text-center">
+                            Unit {index + 1} of {currentLabels.length}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                    {currentLabels.length > 3 && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        ... and {currentLabels.length - 3} more units
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="flex gap-3 pt-4 border-t">
