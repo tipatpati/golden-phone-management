@@ -23,15 +23,14 @@ export function ThermalLabelPreview({
         
         JsBarcode(canvasRef.current, label.barcode, {
           format: format,
-          width: 1.8,
-          height: 55,
+          width: 2.2,
+          height: 65,
           displayValue: true,
-          fontSize: 10,
-          font: 'Arial, sans-serif',
+          fontSize: 12,
+          font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          textMargin: 4,
-          margin: 4,
+          margin: 2,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -111,13 +110,13 @@ export function ThermalLabelPreview({
     }}>
         {/* Product Name - Primary focus */}
         <div style={{
-        fontSize: options.format === 'compact' ? '16px' : '18px',
+        fontSize: options.format === 'compact' ? '14px' : '16px',
         fontWeight: '800',
         lineHeight: '1.0',
         color: '#000',
         textTransform: 'uppercase',
         letterSpacing: '0.2px',
-        maxHeight: '36px',
+        maxHeight: '32px',
         overflow: 'hidden',
         display: '-webkit-box',
         WebkitLineClamp: 2,
@@ -127,34 +126,17 @@ export function ThermalLabelPreview({
       }}>
           {label.productName}
         </div>
-
-        {/* Color indicator if available */}
-        {label.color && <div style={{
-        fontSize: '10px',
-        fontWeight: '600',
-        color: '#555',
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        padding: '2px 6px',
-        borderRadius: '3px',
-        margin: '1px auto',
-        textTransform: 'capitalize'
-      }}>
-          {label.color}
-        </div>}
       </div>
 
       {/* Price Section */}
       {options.includePrice && <div style={{
-      fontSize: '20px',
+      fontSize: '32px',
       fontWeight: '900',
-      color: 'hsl(var(--primary))',
+      color: '#000',
       textAlign: 'center',
-      padding: '2px 0',
-      borderTop: '2px solid hsl(var(--primary))',
-      borderBottom: '1px solid #e5e5e5',
+      padding: '4px 0',
+      borderTop: '2px solid #000',
       marginBottom: '2px',
-      backgroundColor: '#f8fafc',
       letterSpacing: '0.3px',
       lineHeight: '1.0'
     }}>
@@ -166,18 +148,15 @@ export function ThermalLabelPreview({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '45px',
-      maxHeight: '45px',
+      minHeight: '60px',
+      maxHeight: '60px',
       backgroundColor: '#ffffff',
-      border: '1px solid #e5e5e5',
-      borderRadius: '2px',
       padding: '1px',
       overflow: 'hidden'
     }}>
           <canvas ref={canvasRef} style={{
         maxWidth: '100%',
-        maxHeight: '100%',
-        height: 'auto'
+        height: '60px'
       }} />
         </div>}
 
