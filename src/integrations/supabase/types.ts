@@ -449,6 +449,7 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          ram: number | null
           serial_number: string
           status: string
           storage: number | null
@@ -461,6 +462,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          ram?: number | null
           serial_number: string
           status?: string
           storage?: number | null
@@ -473,6 +475,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          ram?: number | null
           serial_number?: string
           status?: string
           storage?: number | null

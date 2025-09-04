@@ -10,6 +10,7 @@ export interface ProductUnit {
   color?: string;
   battery_level?: number;
   storage?: number; // Storage in GB (64, 128, 256, etc.)
+  ram?: number; // RAM in GB (4, 6, 8, 12, 16, etc.)
   status: 'available' | 'sold' | 'reserved' | 'damaged';
   created_at: string;
   updated_at: string;
@@ -21,6 +22,7 @@ export interface CreateProductUnitData {
   color?: string;
   battery_level?: number;
   storage?: number;
+  ram?: number;
   status?: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 
@@ -42,6 +44,8 @@ export class ProductUnitsService {
         barcode: barcodeResult.barcode,
         color: parsed.color,
         battery_level: parsed.batteryLevel,
+        storage: parsed.storage,
+        ram: parsed.ram,
         status: 'available' as const
       };
     });
