@@ -128,13 +128,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-align: center;
-      margin-bottom: 2px;
-      max-height: 24px;
+      margin-bottom: 1px;
+      max-height: 22px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -152,12 +152,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-specs {
-      font-size: 7px;
-      font-weight: 500;
+      font-size: 9px;
+      font-weight: 600;
       color: #333;
       text-align: center;
-      margin-bottom: 1px;
-      line-height: 0.9;
+      margin-top: 1px;
+      margin-bottom: 2px;
+      line-height: 1.0;
     }
 
     .barcode-container {

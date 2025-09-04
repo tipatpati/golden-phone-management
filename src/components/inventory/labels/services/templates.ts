@@ -100,10 +100,15 @@ export function generateSingleLabel(
 
       <!-- Main Content Section -->
       <div class="main-content">
-        <!-- Product Name - Primary focus -->
+        <!-- Product Name with Storage/RAM - Primary focus -->
         <div class="product-name">
           ${escapeHtml(label.productName)}
         </div>
+        ${(label.storage || label.ram) ? `
+          <div class="product-specs">
+            ${label.storage ? `${label.storage}GB` : ''}${label.storage && label.ram ? ' • ' : ''}${label.ram ? `${label.ram}GB RAM` : ''}
+          </div>
+        ` : ''}
         
         <!-- Serial Number Section -->
         ${label.serialNumber ? `

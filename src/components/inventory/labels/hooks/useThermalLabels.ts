@@ -47,7 +47,9 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             price: product.price,
             category: product.category?.name,
             color: parsed.color,
-            batteryLevel: parsed.batteryLevel
+            batteryLevel: parsed.batteryLevel,
+            storage: parsed.storage,
+            ram: parsed.ram
           });
         });
       } else {

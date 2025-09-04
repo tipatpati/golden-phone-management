@@ -97,23 +97,36 @@ export function ThermalLabelPreview({
       minHeight: '0',
       overflow: 'hidden'
     }}>
-        {/* Product Name - Primary focus */}
+        {/* Product Name with Storage/RAM - Primary focus */}
         <div style={{
-        fontSize: '12px',
+        fontSize: '11px',
         fontWeight: '800',
         lineHeight: '1.0',
         color: '#000',
         textTransform: 'uppercase',
         letterSpacing: '0.2px',
-        maxHeight: '24px',
+        maxHeight: '32px',
         overflow: 'hidden',
         display: '-webkit-box',
-        WebkitLineClamp: 2,
+        WebkitLineClamp: 3,
         WebkitBoxOrient: 'vertical',
         wordBreak: 'break-word',
-        hyphens: 'auto'
+        hyphens: 'auto',
+        textAlign: 'center'
       }}>
           {label.productName}
+          {(label.storage || label.ram) && (
+            <div style={{
+              fontSize: '9px',
+              fontWeight: '600',
+              marginTop: '1px',
+              color: '#333'
+            }}>
+              {label.storage && `${label.storage}GB`}
+              {label.storage && label.ram && ' • '}
+              {label.ram && `${label.ram}GB RAM`}
+            </div>
+          )}
         </div>
         
         {/* Serial Number Section */}

@@ -3,6 +3,7 @@ export interface SerialWithBattery {
   batteryLevel?: number;
   color?: string;
   storage?: number; // in GB, e.g., 64, 128, 256
+  ram?: number; // in GB, e.g., 4, 6, 8, 12, 16
 }
 
 /**
@@ -12,6 +13,7 @@ export interface SerialWithBattery {
 export function parseSerialWithBattery(serialString: string): SerialWithBattery {
   const parts = serialString.trim().split(/\s+/);
   const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
+  const RAM_SET = new Set([1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32]);
 
   if (parts.length === 0) {
     return { serial: '' };
@@ -22,7 +24,7 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
   const colorTokens: string[] = [];
 
   for (const raw of tokens) {
-    const token = raw.replace(/%/g, '');
+    const token = raw.replace(/[%GB]/g, '');
     const n = parseInt(token);
 
     if (!isNaN(n)) {
@@ -34,7 +36,11 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
         result.storage = n;
         continue;
       }
-      // numeric token that is not battery or standard storage -> treat as color part to be lenient
+      if (RAM_SET.has(n) && result.ram === undefined) {
+        result.ram = n;
+        continue;
+      }
+      // numeric token that is not battery, storage, or RAM -> treat as color part to be lenient
       colorTokens.push(raw);
     } else {
       colorTokens.push(raw);
@@ -51,16 +57,19 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
 /**
  * Formats a serial number with battery level and color
  */
-export function formatSerialWithBattery(serial: string, batteryLevel?: number, color?: string, storage?: number): string {
+export function formatSerialWithBattery(serial: string, batteryLevel?: number, color?: string, storage?: number, ram?: number): string {
   let result = serial;
   if (color) {
     result += ` ${color}`;
   }
-  if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
-    result += ` ${batteryLevel}`;
-  }
   if (storage !== undefined) {
-    result += ` ${storage}`;
+    result += ` ${storage}GB`;
+  }
+  if (ram !== undefined) {
+    result += ` ${ram}GB`;
+  }
+  if (batteryLevel !== undefined && batteryLevel >= 0 && batteryLevel <= 100) {
+    result += ` ${batteryLevel}%`;
   }
   return result;
 }

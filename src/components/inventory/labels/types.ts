@@ -6,6 +6,8 @@ export interface ThermalLabelData {
   category?: string;
   color?: string;
   batteryLevel?: number;
+  storage?: number;
+  ram?: number;
 }
 
 export interface ThermalLabelOptions {

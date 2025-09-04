@@ -11,6 +11,7 @@ interface SerialEntry {
   color: string;
   batteryLevel: number;
   storage?: number; // GB
+  ram?: number; // GB
 }
 
 interface SerialNumbersInputProps {
@@ -39,8 +40,10 @@ useEffect(() => {
       let colorTokens: string[] = [];
       let batteryLevel = 0;
       let storage: number | undefined = undefined;
+      let ram: number | undefined = undefined;
 
       const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
+      const RAM_SET = new Set([1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32]);
 
       tokens.forEach((raw) => {
         const token = raw.replace(/[%GB]/g, '');
@@ -50,6 +53,8 @@ useEffect(() => {
             batteryLevel = n;
           } else if (STORAGE_SET.has(n) && storage === undefined) {
             storage = n;
+          } else if (RAM_SET.has(n) && ram === undefined) {
+            ram = n;
           } else {
             colorTokens.push(raw);
           }
@@ -63,7 +68,8 @@ useEffect(() => {
         serial: parts[0] || '',
         color: colorTokens.join(' '),
         batteryLevel,
-        storage
+        storage,
+        ram
       };
     });
     
@@ -83,7 +89,7 @@ useEffect(() => {
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
+      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.ram !== undefined ? ` ${entry.ram}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
       .join('\n');
 
     // Only update if the string has actually changed to prevent loops
@@ -120,7 +126,7 @@ useEffect(() => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">
-          Numeri IMEI/Seriali con Colore, Storage e Batteria *
+          Numeri IMEI/Seriali con Colore, Storage, RAM e Batteria *
         </Label>
         <div className="text-sm text-muted-foreground">
           Scorta: {validEntriesCount}
@@ -211,33 +217,51 @@ useEffect(() => {
                   </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
-                    Livello Batteria (%)
-                  </Label>
-                  <Input
-                    id={`battery-mobile-${entry.id}`}
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={entry.batteryLevel.toString()}
-                    onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
-                    placeholder="85"
-                    className="text-sm h-10"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor={`ram-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                      RAM (GB)
+                    </Label>
+                    <Input
+                      id={`ram-mobile-${entry.id}`}
+                      type="number"
+                      min="1"
+                      max="32"
+                      value={entry.ram?.toString() || ''}
+                      onChange={(e) => updateEntry(entry.id, 'ram', e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="8"
+                      className="text-sm h-10"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`battery-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                      Batteria (%)
+                    </Label>
+                    <Input
+                      id={`battery-mobile-${entry.id}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={entry.batteryLevel.toString()}
+                      onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
+                      placeholder="85"
+                      className="text-sm h-10"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-3 lg:items-end">
+            <div className="hidden lg:grid lg:grid-cols-14 lg:gap-3 lg:items-end">
               <div className="col-span-1 flex items-end pb-2">
                 <span className="text-sm font-medium text-muted-foreground">
                   #{index + 1}
                 </span>
               </div>
               
-              <div className="col-span-4">
+              <div className="col-span-3">
                 <Label htmlFor={`serial-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Numero IMEI/Seriale
                 </Label>
@@ -297,6 +321,22 @@ useEffect(() => {
               </div>
               
               <div className="col-span-2">
+                <Label htmlFor={`ram-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
+                  RAM (GB)
+                </Label>
+                <Input
+                  id={`ram-desktop-${entry.id}`}
+                  type="number"
+                  min="1"
+                  max="32"
+                  value={entry.ram?.toString() || ''}
+                  onChange={(e) => updateEntry(entry.id, 'ram', e.target.value ? parseInt(e.target.value) : undefined)}
+                  placeholder="8"
+                  className="text-sm h-10"
+                />
+              </div>
+              
+              <div className="col-span-2">
                 <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Batteria (%)
                 </Label>
@@ -346,7 +386,7 @@ useEffect(() => {
         <div className="text-xs text-amber-700 space-y-1">
            <p><strong>IMEI Format:</strong> 15 digits following ITU-T standard (e.g., 123456789012345)</p>
           <p><strong>Serial Format:</strong> Alphanumeric (e.g., ABC123DEF456)</p>
-          <p><strong>Storage:</strong> Select storage capacity for each unit</p>
+          <p><strong>Storage &amp; RAM:</strong> Enter storage and RAM capacity for each unit</p>
           <p><strong>EAN13 Barcodes:</strong> Generated when serial has 8+ digits</p>
           <p><strong>Stock Management:</strong> One entry = one unit in stock</p>
         </div>
