@@ -136,7 +136,7 @@ export function ThermalLabelPreview({
         marginTop: '4px',
         letterSpacing: '0.1px'
       }}>
-          IMEI/SERIAL: {label.serialNumber}
+          SN: {label.serialNumber}
         </div>}
       </div>
 
