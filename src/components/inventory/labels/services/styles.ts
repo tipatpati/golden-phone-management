@@ -141,6 +141,15 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       text-transform: uppercase;
     }
 
+    .serial-section {
+      font-size: 12px;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      margin-top: 4px;
+      letter-spacing: 0.1px;
+    }
+
     .product-specs {
       font-size: 7px;
       font-weight: 500;

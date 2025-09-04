@@ -109,6 +109,13 @@ export function generateSingleLabel(
         <div class="product-name">
           ${escapeHtml(label.productName)}
         </div>
+        
+        <!-- Serial Number Section -->
+        ${label.serialNumber ? `
+          <div class="serial-section">
+            IMEI/SERIAL: ${escapeHtml(label.serialNumber)}
+          </div>
+        ` : ''}
       </div>
 
       <!-- Price Section -->

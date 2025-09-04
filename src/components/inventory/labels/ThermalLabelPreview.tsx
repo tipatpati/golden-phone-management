@@ -126,6 +126,18 @@ export function ThermalLabelPreview({
       }}>
           {label.productName}
         </div>
+        
+        {/* Serial Number Section */}
+        {label.serialNumber && <div style={{
+        fontSize: '12px',
+        fontWeight: '600',
+        color: '#000',
+        textAlign: 'center',
+        marginTop: '4px',
+        letterSpacing: '0.1px'
+      }}>
+          IMEI/SERIAL: {label.serialNumber}
+        </div>}
       </div>
 
       {/* Price Section */}
