@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/products/ProductReactQueryService";
 import { ThermalLabelGenerator } from "./labels";
+import { ProductDetailsDialog } from "./ProductDetailsDialog";
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -68,6 +69,8 @@ export function InventoryTable({
 }: InventoryTableProps) {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   
   // Import the actual products data
   const { data: products = [], isLoading } = useProducts(searchTerm);
@@ -78,6 +81,11 @@ export function InventoryTable({
   const handlePrintLabels = (product: Product) => {
     setSelectedProduct(product);
     setPrintDialogOpen(true);
+  };
+
+  const handleRowClick = (product: Product) => {
+    setSelectedProductForDetails(product);
+    setDetailsDialogOpen(true);
   };
 
   const getCategoryBadgeColor = (categoryName: string) => {
@@ -167,12 +175,19 @@ export function InventoryTable({
             return (
               <TableRow 
                 key={product.id}
-                className={isSelected ? "bg-muted/50" : ""}
+                className={cn(
+                  "cursor-pointer hover:bg-muted/50 transition-colors",
+                  isSelected ? "bg-muted/50" : ""
+                )}
+                onClick={() => handleRowClick(product)}
               >
                 <TableCell>
                   <Checkbox
                     checked={isSelected}
-                    onCheckedChange={() => onSelectItem(product.id)}
+                    onCheckedChange={(checked) => {
+                      onSelectItem(product.id);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                     aria-label={`Select ${product.brand} ${product.model}`}
                   />
                 </TableCell>
@@ -274,7 +289,10 @@ export function InventoryTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handlePrintLabels(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrintLabels(product);
+                      }}
                       className="h-8 w-8 p-0"
                     >
                       <Printer className="h-4 w-4" />
@@ -282,7 +300,10 @@ export function InventoryTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onEdit(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(product);
+                      }}
                       className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
@@ -290,7 +311,10 @@ export function InventoryTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onDelete(product.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(product.id);
+                      }}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -322,6 +346,20 @@ export function InventoryTable({
         companyName="GOLDEN PHONE SRL"
       />
     )}
+
+    <ProductDetailsDialog
+      product={selectedProductForDetails}
+      open={detailsDialogOpen}
+      onOpenChange={setDetailsDialogOpen}
+      onEdit={(product) => {
+        setDetailsDialogOpen(false);
+        onEdit(product);
+      }}
+      onPrint={(product) => {
+        setDetailsDialogOpen(false);
+        handlePrintLabels(product);
+      }}
+    />
     </>
   );
 }
