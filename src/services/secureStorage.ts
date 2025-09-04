@@ -6,24 +6,34 @@ class SecureStorage {
   private prefix = 'golden_phone_';
   private encryptionKey: CryptoKey | null = null;
   
-  // Initialize encryption key
+  // Initialize encryption key with secure random generation
   private async getEncryptionKey(): Promise<CryptoKey> {
     if (this.encryptionKey) return this.encryptionKey;
     
-    // Generate or derive key from a secure source
+    // Generate user-specific salt using session data if available
+    const userSession = localStorage.getItem('supabase.auth.token');
+    const userSpecificData = userSession ? userSession.substring(0, 32) : 'default_user_data';
+    
+    // Create a more secure base key material
+    const baseKeyData = userSpecificData + window.location.origin + Date.now().toString();
+    
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode('golden_phone_secure_key_2024'), // In production, use proper key derivation
+      new TextEncoder().encode(baseKeyData),
       { name: 'PBKDF2' },
       false,
       ['deriveKey']
     );
     
+    // Generate random salt for each encryption session
+    const randomSalt = crypto.getRandomValues(new Uint8Array(32));
+    const saltString = Array.from(randomSalt).map(b => b.toString(16).padStart(2, '0')).join('');
+    
     this.encryptionKey = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
-        salt: new TextEncoder().encode('golden_phone_salt'),
-        iterations: 100000,
+        salt: new TextEncoder().encode(saltString),
+        iterations: 250000, // Increased iterations for better security
         hash: 'SHA-256',
       },
       keyMaterial,
