@@ -160,15 +160,15 @@ export function ThermalLabelPreview({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '60px',
-      maxHeight: '60px',
+      minHeight: '70px',
+      maxHeight: '70px',
       backgroundColor: '#ffffff',
-      padding: '1px',
+      padding: '2px',
       overflow: 'hidden'
     }}>
           <canvas ref={canvasRef} style={{
         maxWidth: '100%',
-        height: '60px'
+        height: '65px'
       }} />
         </div>}
 
