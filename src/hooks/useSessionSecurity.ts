@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { logSessionActivity, logSuspiciousActivity } from '@/utils/securityAudit';
+// import { logSessionActivity, logSuspiciousActivity } from '@/utils/securityAudit';
 import { useToast } from '@/hooks/use-toast';
 
 interface SessionSecurityConfig {
@@ -63,7 +63,7 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
 
   const handleSessionTimeout = async (reason: 'idle' | 'expired') => {
     setIsSessionValid(false);
-    await logSessionActivity('timeout');
+    // await logSessionActivity('timeout');
     
     toast({
       title: "Session Expired",
@@ -89,10 +89,11 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
         .order('created_at', { ascending: false });
 
       if (recentLogins && recentLogins.length > 3) {
-        await logSuspiciousActivity('multiple_recent_sessions', {
-          userId,
-          sessionCount: recentLogins.length
-        });
+        // await logSuspiciousActivity('multiple_recent_sessions', {
+        //   userId,
+        //   sessionCount: recentLogins.length
+        // });
+        console.warn('Multiple recent sessions detected for user:', userId);
       }
     } catch (error) {
       console.error('Error checking concurrent sessions:', error);
@@ -133,9 +134,10 @@ export function useSessionSecurity(config: SessionSecurityConfig = {}) {
         setTimeout(() => {
           if (document.hidden) {
             // Still hidden after delay, consider this suspicious
-            logSuspiciousActivity('long_hidden_session', {
-              hiddenDuration: Date.now() - lastActivityRef.current
-            });
+            // logSuspiciousActivity('long_hidden_session', {
+            //   hiddenDuration: Date.now() - lastActivityRef.current
+            // });
+            console.warn('Long hidden session detected');
           }
         }, 5 * 60 * 1000); // 5 minutes
       } else {
