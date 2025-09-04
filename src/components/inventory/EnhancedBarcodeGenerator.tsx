@@ -55,19 +55,19 @@ export function EnhancedBarcodeGenerator({
         renderFormat = 'EAN13' as any;
       }
 
-      // Generate the barcode image with numbers displayed for inventory interface
+      // Generate the barcode image with consistent settings across all components
       JsBarcode(canvasRef.current, result.barcode, {
         format: renderFormat as any,
-        width: width,
-        height: height,
+        width: 1.8,
+        height: 55,
         displayValue: displayValue, // Use the prop value (default true)
-        fontSize: 14,
+        fontSize: 10,
         fontOptions: 'bold',
         font: 'Arial, sans-serif',
         textAlign: 'center',
         textPosition: 'bottom',
-        textMargin: 6,
-        margin: 10,
+        textMargin: 4,
+        margin: 4,
         background: '#ffffff',
         lineColor: '#000000'
       });

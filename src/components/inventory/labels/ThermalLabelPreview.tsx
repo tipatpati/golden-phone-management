@@ -30,6 +30,7 @@ export function ThermalLabelPreview({
           font: 'Arial, sans-serif',
           textAlign: 'center',
           textPosition: 'bottom',
+          textMargin: 4,
           margin: 4,
           background: '#ffffff',
           lineColor: '#000000'
