@@ -25,7 +25,7 @@ export function ThermalLabelPreview({
           format: format,
           width: 1.8,
           height: 55,
-          displayValue: false,
+          displayValue: true,
           fontSize: 10,
           font: 'Arial, sans-serif',
           textAlign: 'center',
