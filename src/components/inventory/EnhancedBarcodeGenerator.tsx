@@ -49,25 +49,25 @@ export function EnhancedBarcodeGenerator({
       const result = generateIMEIBarcode(value, options);
       setBarcodeResult(result);
 
-      // Determine the actual format to use for rendering
+      // Use consistent format detection for rendering
       let renderFormat = result.format;
       if (renderFormat === 'GTIN-13') {
         renderFormat = 'EAN13' as any;
       }
 
-      // Generate the barcode image
+      // Generate the barcode image with consistent settings
       JsBarcode(canvasRef.current, result.barcode, {
         format: renderFormat as any,
-        width,
-        height,
-        displayValue,
-        fontSize: 14,
+        width: 1.8,
+        height: 55,
+        displayValue: false,
+        fontSize: 10,
         fontOptions: 'bold',
-        font: 'Arial',
+        font: 'Arial, sans-serif',
         textAlign: 'center',
         textPosition: 'bottom',
-        textMargin: 6,
-        margin: 10,
+        textMargin: 4,
+        margin: 4,
         background: '#ffffff',
         lineColor: '#000000'
       });

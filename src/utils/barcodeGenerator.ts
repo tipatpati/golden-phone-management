@@ -73,31 +73,53 @@ function generateFromString(input: string): string {
  * Enhanced IMEI-based barcode generation with GS1 compliance
  */
 export function generateIMEIBarcode(imei: string, options: BarcodeOptions = { format: 'AUTO' }): BarcodeResult {
+  // Clean input
+  const cleanInput = imei.replace(/[^A-Za-z0-9]/g, '');
+  
   // Validate IMEI first
   const imeiValidation = validateIMEI(imei);
   
-  if (!imeiValidation.isValid) {
-    // If IMEI is invalid, fall back to legacy generation
-    return {
-      barcode: generateLegacySerialBarcode(imei, options.productId, options.batteryLevel),
-      format: 'CODE128',
-      isGS1Compliant: false,
-      metadata: {}
+  if (imeiValidation.isValid) {
+    // Use GS1-compliant generation for valid IMEI
+    const gs1Options: BarcodeGenerationOptions = {
+      ...options,
+      deviceType: 'mobile',
+      applicationIdentifiers: {
+        '01': '', // Will be filled by GS1 generator
+        '21': imeiValidation.formattedIMEI!, // Serial number
+        ...(options.batteryLevel && { '90': options.batteryLevel.toString() }) // Custom AI for battery
+      }
     };
-  }
-  
-  // Use GS1-compliant generation for valid IMEI
-  const gs1Options: BarcodeGenerationOptions = {
-    ...options,
-    deviceType: 'mobile',
-    applicationIdentifiers: {
-      '01': '', // Will be filled by GS1 generator
-      '21': imeiValidation.formattedIMEI!, // Serial number
-      ...(options.batteryLevel && { '90': options.batteryLevel.toString() }) // Custom AI for battery
+    
+    return generateOptimalBarcode(imeiValidation.formattedIMEI!, gs1Options);
+  } else {
+    // For non-IMEI inputs, generate appropriate barcode format
+    const numericOnly = cleanInput.replace(/[^0-9]/g, '');
+    
+    // If input has enough digits for EAN13, generate EAN13
+    if (numericOnly.length >= 8 && options.format !== 'CODE128') {
+      const prefix = numericOnly.slice(0, 12).padEnd(12, '0');
+      const ean13 = generateValidEAN13Barcode(prefix);
+      
+      return {
+        barcode: ean13,
+        format: 'GTIN-13',
+        isGS1Compliant: true,
+        metadata: { companyPrefix: prefix.slice(0, 9) }
+      };
+    } else {
+      // Use CODE128 for alphanumeric or short inputs
+      const batteryCode = options.batteryLevel !== undefined ? options.batteryLevel.toString() : '';
+      const barcode = cleanInput + batteryCode;
+      
+      return {
+        barcode: barcode,
+        format: 'CODE128',
+        isGS1Compliant: false,
+        metadata: {}
+      };
     }
-  };
-  
-  return generateOptimalBarcode(imeiValidation.formattedIMEI!, gs1Options);
+  }
 }
 
 /**

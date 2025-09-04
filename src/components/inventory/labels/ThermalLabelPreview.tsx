@@ -15,16 +15,22 @@ export function ThermalLabelPreview({
   useEffect(() => {
     if (canvasRef.current && options.includeBarcode && label.barcode) {
       try {
+        // Use consistent barcode format - detect based on content
+        let format = 'CODE128';
+        if (/^\d{13}$/.test(label.barcode)) {
+          format = 'EAN13';
+        }
+        
         JsBarcode(canvasRef.current, label.barcode, {
-          format: 'CODE128',
-          width: 2.2,
-          height: 65,
-          displayValue: true,
-          fontSize: 12,
+          format: format,
+          width: 1.8,
+          height: 55,
+          displayValue: false,
+          fontSize: 10,
           font: 'Arial, sans-serif',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 2,
+          margin: 4,
           background: '#ffffff',
           lineColor: '#000000'
         });

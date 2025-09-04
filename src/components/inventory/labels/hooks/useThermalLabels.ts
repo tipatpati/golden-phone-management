@@ -29,7 +29,7 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
         // Generate one label per serial number
         product.serial_numbers.forEach(serialNumber => {
           const parsed = parseSerialWithBattery(serialNumber);
-          // Use the product's actual barcode instead of generating a new one
+          // Use product's barcode if available, otherwise generate based on IMEI/serial
           const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
           // Apply "Brand Model Storage" naming convention
@@ -59,7 +59,7 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
         });
         
         for (let i = 0; i < quantity; i++) {
-          // Use the product's actual barcode instead of generating a new one
+          // Use product's barcode if available, otherwise generate unique barcode per unit
           const barcode = product.barcode || generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
           
           labels.push({

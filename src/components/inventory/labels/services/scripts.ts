@@ -44,8 +44,14 @@ export function generateBarcodeScript(config: any): string {
           canvas.width = 250;
           canvas.height = 60;
           
-          JsBarcode(canvas, barcodeValue, ${JSON.stringify({ 
-            format: 'CODE128',
+          // Use consistent barcode format detection
+          let format = 'CODE128';
+          if (/^\\d{13}$/.test(barcodeValue)) {
+            format = 'EAN13';
+          }
+          
+          JsBarcode(canvas, barcodeValue, {
+            format: format,
             width: 1.8,
             height: 55,
             displayValue: false,
@@ -56,7 +62,7 @@ export function generateBarcodeScript(config: any): string {
             margin: 4,
             background: '#ffffff',
             lineColor: '#000000'
-          })});
+          });
           
           console.log('Barcode generated successfully for:', barcodeValue);
           successCount++;
