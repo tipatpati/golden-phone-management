@@ -1,5 +1,6 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { InventoryTable } from "./InventoryTable";
 import { InventoryTableToolbar } from "./InventoryTableToolbar";
 import { AddProductDialog } from "./AddProductDialog";
@@ -27,7 +28,10 @@ export function InventoryContent({
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
   
-  const { data: products, isLoading, error } = useProducts(searchTerm);
+  // Debounce search term to reduce API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  
+  const { data: products, isLoading, error } = useProducts(debouncedSearchTerm);
   const deleteProduct = useDeleteProduct();
   
   const {
@@ -44,10 +48,10 @@ export function InventoryContent({
     isLoading: isBulkLoading,
   } = useBulkActions(Array.isArray(products) ? products : []);
 
-  const handleSearchChange = (newSearchTerm: string) => {
+  const handleSearchChange = useCallback((newSearchTerm: string) => {
     console.log('🔍 Search term updated in InventoryContent:', newSearchTerm);
     setSearchTerm(newSearchTerm);
-  };
+  }, []);
 
   const handleViewModeChange = (newViewMode: "list" | "grid") => {
     setViewMode(newViewMode);

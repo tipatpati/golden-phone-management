@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Grid, List, FilterX, Plus } from "lucide-react";
@@ -50,15 +50,15 @@ export function InventoryTableToolbar({
     }
   }, [setupHardwareScanner]);
   
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
     console.log('🔍 Search input changed:', newSearchTerm);
     onSearchChange(newSearchTerm);
-  };
+  }, [onSearchChange]);
 
-  const handleBarcodeScanned = (barcode: string) => {
+  const handleBarcodeScanned = useCallback((barcode: string) => {
     onSearchChange(barcode);
-  };
+  }, [onSearchChange]);
   
   // Remove the form submit handler since we don't need it for real-time search
   // const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,9 +66,9 @@ export function InventoryTableToolbar({
   //   // The search is handled in real-time via onSearchChange
   // };
   
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     onSearchChange("");
-  };
+  }, [onSearchChange]);
 
   return (
     <div className="flex flex-col gap-4 w-full">
