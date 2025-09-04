@@ -1,62 +1,50 @@
 
 import React from "react";
-
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
+import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-// import { SecurityProvider } from "@/components/security/SecurityProvider"; // Disabled
+import { SecurityProvider } from "@/components/security/SecurityProvider";
+import { EnhancedSecurityProvider } from "@/components/security/EnhancedSecurityProvider";
+import { SecurityHeaders } from "@/components/security/SecurityHeaders";
+import { EnhancedSecurityMonitor } from "@/components/security/EnhancedSecurityMonitor";
 
 interface AppProvidersProps {
   children: React.ReactNode;
   includeAuth?: boolean;
 }
 
-// Enhanced QueryClient with better caching and performance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
-      retry: (failureCount, error: any) => {
-        // Don't retry on 4xx errors
-        if (error?.status >= 400 && error?.status < 500) {
-          return false;
-        }
-        return failureCount < 3;
-      },
-      refetchOnWindowFocus: false, // Reduce unnecessary refetches
-      refetchOnMount: false, // Use cached data when available
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 3,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+    }
+  }
 });
 
-export function AppProviders({ children, includeAuth = false }: AppProvidersProps) {
-  console.log('🏗️ AppProviders rendering, includeAuth:', includeAuth);
-  
-  try {
-    const content = includeAuth ? (
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    ) : (
-      children
-    );
+export function AppProviders({ children, includeAuth = true }: AppProvidersProps) {
+  const content = includeAuth ? (
+    <AuthProvider>
+      <EnhancedSecurityMonitor />
+      {children}
+    </AuthProvider>
+  ) : (
+    children
+  );
 
-    return (
+  return (
+    <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          {/* SecurityProvider completely disabled for all environments */}
-          {content}
-          <Sonner />
-        </TooltipProvider>
+        <SecurityHeaders />
+        <SecurityProvider>
+          <EnhancedSecurityProvider>
+            {content}
+            <Toaster />
+          </EnhancedSecurityProvider>
+        </SecurityProvider>
       </QueryClientProvider>
-    );
-  } catch (error) {
-    console.error('💥 AppProviders error:', error);
-    return <div>EMERGENCY: AppProviders failed</div>;
-  }
+    </BrowserRouter>
+  );
 }

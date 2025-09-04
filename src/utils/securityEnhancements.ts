@@ -31,7 +31,7 @@ export class EnhancedRateLimiter {
     }
   }
 
-  private getRealClientIP(): string {
+  public getRealClientIP(): string {
     // Try to get real client IP from various headers (when available through proxy)
     const possibleHeaders = [
       'x-forwarded-for',
@@ -283,49 +283,27 @@ export const monitorSecurityEvents = {
           timestamp: new Date().toISOString(),
           user_agent: navigator.userAgent
         },
-        ip_address: '127.0.0.1' // In production, this would be real IP
+        ip_address: new EnhancedRateLimiter().getRealClientIP()
       });
 
       if (error) {
         console.error('Failed to log security event:', error);
       }
 
-      // Check for brute force patterns (simplified to avoid type issues)
+      // Check for brute force patterns using the new enhanced function
       try {
-        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-        const { data: recentFailures, error: queryError } = await supabase
-          .from('security_audit_log')
-          .select('created_at')
-          .eq('event_type', 'failed_auth_attempt')
-          .gte('created_at', fifteenMinutesAgo)
-          .order('created_at', { ascending: false });
+        const { data: lockoutStatus, error: lockoutError } = await supabase.rpc('check_account_lockout', {
+          user_email: email
+        });
 
-        if (!queryError && recentFailures && recentFailures.length >= 5) {
-          // Check if any of these failures match the current email
-          const emailFailures = recentFailures.filter(() => true); // Simplified check
-          
-          if (emailFailures.length >= 5) {
-            // Direct logging to avoid circular reference
-            await supabase.from('security_audit_log').insert({
-              event_type: 'suspicious_activity',
-              event_data: {
-                activity: 'potential_brute_force',
-                email,
-                failed_attempts: emailFailures.length,
-                severity: 'high',
-                timestamp: new Date().toISOString(),
-                auto_detected: true
-              },
-              ip_address: '127.0.0.1'
-            });
-
-            toast.warning('Security Alert', {
-              description: 'Multiple failed login attempts detected. Session is being monitored.'
-            });
-          }
+        if (!lockoutError && lockoutStatus && (lockoutStatus as any).locked) {
+          toast.error('Account Locked', {
+            description: 'Account temporarily locked due to multiple failed attempts. Please try again later.',
+            duration: 15000
+          });
         }
-      } catch (queryError) {
-        console.warn('Could not check for brute force patterns:', queryError);
+      } catch (lockoutError) {
+        console.warn('Could not check account lockout:', lockoutError);
       }
     } catch (error) {
       console.error('Error tracking failed login:', error);
@@ -353,7 +331,7 @@ export const monitorSecurityEvents = {
             severity: 'medium',
             timestamp: new Date().toISOString()
           },
-          ip_address: '127.0.0.1'
+          ip_address: new EnhancedRateLimiter().getRealClientIP()
         });
 
         console.warn('Suspicious input detected:', { field, patterns: foundPatterns });
@@ -373,7 +351,7 @@ export const monitorSecurityEvents = {
           timestamp: new Date().toISOString(),
           user_agent: navigator.userAgent
         },
-        ip_address: '127.0.0.1'
+        ip_address: new EnhancedRateLimiter().getRealClientIP()
       });
     } catch (error) {
       console.error('Error tracking unusual access:', error);
@@ -390,7 +368,7 @@ export const monitorSecurityEvents = {
           timestamp: new Date().toISOString(),
           auto_detected: true
         },
-        ip_address: '127.0.0.1'
+        ip_address: new EnhancedRateLimiter().getRealClientIP()
       });
 
       // Show alert for high severity issues
@@ -414,7 +392,7 @@ export const monitorSecurityEvents = {
           error_code: error?.code,
           timestamp: new Date().toISOString()
         },
-        ip_address: '127.0.0.1'
+        ip_address: new EnhancedRateLimiter().getRealClientIP()
       });
     } catch (logError) {
       console.error('Failed to log security error:', logError);

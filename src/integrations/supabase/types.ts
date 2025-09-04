@@ -1079,9 +1079,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      auto_block_suspicious_ip: {
+        Args: { client_ip: unknown }
+        Returns: boolean
+      }
       calculate_employee_bonuses: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      can_view_salary: {
+        Args: { target_employee_id: string }
+        Returns: boolean
+      }
+      check_account_lockout: {
+        Args: { user_email: string }
+        Returns: Json
       }
       check_failed_auth_attempts: {
         Args: { user_email: string }
@@ -1111,6 +1123,14 @@ export type Database = {
       detect_suspicious_session_activity: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      enhanced_input_validation: {
+        Args: {
+          input_text: string
+          max_length?: number
+          validation_type: string
+        }
+        Returns: Json
       }
       generate_repair_number: {
         Args: Record<PropertyKey, never>
