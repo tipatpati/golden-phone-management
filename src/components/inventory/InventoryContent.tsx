@@ -45,6 +45,7 @@ export function InventoryContent({
   } = useBulkActions(Array.isArray(products) ? products : []);
 
   const handleSearchChange = (newSearchTerm: string) => {
+    console.log('🔍 Search term updated in InventoryContent:', newSearchTerm);
     setSearchTerm(newSearchTerm);
   };
 

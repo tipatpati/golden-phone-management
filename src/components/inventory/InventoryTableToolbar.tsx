@@ -52,6 +52,7 @@ export function InventoryTableToolbar({
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
+    console.log('🔍 Search input changed:', newSearchTerm);
     onSearchChange(newSearchTerm);
   };
 
