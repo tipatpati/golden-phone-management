@@ -172,16 +172,5 @@ export function ThermalLabelPreview({
       }} />
         </div>}
 
-      {/* Quality Indicator Corner */}
-      <div style={{
-      position: 'absolute',
-      top: '4px',
-      right: '4px',
-      width: '8px',
-      height: '8px',
-      backgroundColor: 'hsl(var(--primary))',
-      borderRadius: '50%',
-      opacity: 0.7
-    }} />
     </div>;
 }

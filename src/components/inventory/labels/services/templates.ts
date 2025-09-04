@@ -132,8 +132,6 @@ export function generateSingleLabel(
         </div>
       ` : ''}
 
-      <!-- Quality Indicator Corner -->
-      <div class="quality-indicator"></div>
     </div>
   `;
 }

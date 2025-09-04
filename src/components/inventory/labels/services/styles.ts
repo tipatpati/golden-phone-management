@@ -272,15 +272,5 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       text-transform: capitalize;
     }
 
-    .quality-indicator {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 8px;
-      height: 8px;
-      background-color: #000;
-      border-radius: 50%;
-      opacity: 0.7;
-    }
   `;
 }
