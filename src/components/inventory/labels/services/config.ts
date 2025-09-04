@@ -11,14 +11,14 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 // Barcode generation settings optimized for thermal printing
 export const BARCODE_CONFIG = {
   format: 'CODE128' as const,
-  width: 1.6,
-  height: 50,
+  width: 2.2,
+  height: 65,
   displayValue: true,
-  fontSize: 11,
+  fontSize: 12,
   font: 'Arial',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  margin: 6,
+  margin: 2,
   background: '#ffffff',
   lineColor: '#000000',
 } as const;

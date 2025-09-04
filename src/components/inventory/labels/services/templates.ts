@@ -23,25 +23,7 @@ export function generateSingleLabel(
     `);
   }
 
-  // Product details section
-  const detailsElements: string[] = [];
-  if (label.serialNumber?.trim()) {
-    detailsElements.push(`
-      <div class="serial-number">
-        SN: ${escapeHtml(label.serialNumber)}
-      </div>
-    `);
-  }
-
-  if (label.batteryLevel && label.batteryLevel > 0) {
-    const batteryClass = label.batteryLevel > 80 ? 'battery-high' :
-                        label.batteryLevel > 50 ? 'battery-medium' : 'battery-low';
-    detailsElements.push(`
-      <div class="battery-level ${batteryClass}">
-        🔋 ${label.batteryLevel}%
-      </div>
-    `);
-  }
+  // Product details section - removed serial number elements
 
   // Color indicator
   let colorIndicator = '';
@@ -128,19 +110,10 @@ export function generateSingleLabel(
           ${escapeHtml(label.productName)}
         </div>
 
-        <!-- Product Details Row -->
-        ${label.serialNumber?.trim() || (label.batteryLevel && label.batteryLevel > 0) ? `
-          <div class="product-details">
-            ${label.serialNumber?.trim() ? `
-              <div class="serial-number">
-                SN: ${escapeHtml(label.serialNumber)}
-              </div>
-            ` : ''}
-            ${label.batteryLevel && label.batteryLevel > 0 ? `
-              <div class="battery-level ${label.batteryLevel > 80 ? 'battery-high' : label.batteryLevel > 50 ? 'battery-medium' : 'battery-low'}">
-                🔋 ${label.batteryLevel}%
-              </div>
-            ` : ''}
+        <!-- Battery Level if available -->
+        ${label.batteryLevel && label.batteryLevel > 0 ? `
+          <div class="battery-level ${label.batteryLevel > 80 ? 'battery-high' : label.batteryLevel > 50 ? 'battery-medium' : 'battery-low'}">
+            🔋 ${label.batteryLevel}%
           </div>
         ` : ''}
 

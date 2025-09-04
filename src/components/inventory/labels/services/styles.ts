@@ -28,7 +28,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         width: 6cm !important;
         height: 5cm !important;
         margin: 0 !important;
-        padding: 0.5mm !important;
+        padding: 2mm !important;
         border: none !important;
         background: white !important;
         box-sizing: border-box !important;
@@ -38,40 +38,52 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         justify-content: space-between !important;
         font-family: Arial, sans-serif !important;
         overflow: hidden !important;
+        gap: 1mm !important;
       }
 
       .product-name {
-        font-size: 9px !important;
-        line-height: 0.9 !important;
-        margin-bottom: 1px !important;
-      }
-
-      .product-specs {
-        font-size: 6px !important;
-        margin-bottom: 1px !important;
-        line-height: 0.9 !important;
+        font-size: 14px !important;
+        line-height: 1.0 !important;
+        margin-bottom: 1mm !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
       }
 
       .barcode-container {
         margin: 0 !important;
         padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
 
       .barcode-canvas {
-        height: 18px !important;
-        margin-bottom: -2px !important;
-      }
-
-      .barcode-number {
-        font-size: 5px !important;
+        height: 30px !important;
         margin: 0 !important;
-        line-height: 0.8 !important;
       }
 
       .price-section {
-        font-size: 10px !important;
-        margin-top: -2px !important;
-        padding-top: 0 !important;
+        font-size: 16px !important;
+        margin: 0 !important;
+        padding: 2mm 0 !important;
+        font-weight: 900 !important;
+        border-top: 2px solid #000 !important;
+      }
+
+      .label-header {
+        min-height: 12px !important;
+        margin-bottom: 2mm !important;
+        padding-bottom: 1mm !important;
+      }
+
+      .main-content {
+        flex: 1 !important;
+        gap: 1mm !important;
+      }
+
+      .color-indicator, .battery-level {
+        font-size: 8px !important;
+        margin: 1mm 0 !important;
       }
 
       .thermal-label:last-child {
@@ -94,10 +106,10 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .label-header {
-      min-height: 25px;
+      min-height: 20px;
       border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 4px;
-      margin-bottom: 6px;
+      padding-bottom: 2px;
+      margin-bottom: 3px;
       text-align: center;
     }
 
@@ -115,17 +127,18 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '9px' : '10px'};
+      font-size: ${options.format === 'compact' ? '14px' : '16px'};
       font-weight: 800;
-      line-height: 0.9;
+      line-height: 1.0;
       color: #000;
       text-align: center;
-      margin-bottom: 1px;
-      max-height: 18px;
+      margin-bottom: 2px;
+      max-height: 32px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+      text-transform: uppercase;
     }
 
     .product-specs {
@@ -151,7 +164,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       display: block;
       margin: 0 auto 0 auto;
       max-width: 100%;
-      height: 25px;
+      height: 35px;
     }
 
     .barcode-number {
@@ -163,13 +176,14 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .price-section {
-      font-size: 12px;
+      font-size: 18px;
       font-weight: 900;
       color: #000;
       text-align: center;
       margin-top: 0;
-      padding-top: 0;
+      padding: 3px 0;
       letter-spacing: 0.2px;
+      border-top: 2px solid #000;
     }
 
     /* Remove unused styles - keeping only relevant ones */
@@ -186,7 +200,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
     }
 
     .product-details {
