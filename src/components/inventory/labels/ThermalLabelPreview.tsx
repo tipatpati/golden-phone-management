@@ -23,15 +23,15 @@ export function ThermalLabelPreview({
         
         JsBarcode(canvasRef.current, label.barcode, {
           format: format,
-          width: 1.8,
-          height: 50,
+          width: 1.5,
+          height: 35,
           displayValue: true,
-          fontSize: 10,
-          font: 'Arial, sans-serif',
+          fontSize: 8,
+          font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          textMargin: 6,
-          margin: 4,
+          textMargin: 4,
+          margin: 2,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -41,15 +41,15 @@ export function ThermalLabelPreview({
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // Professional thermal label styling - 6cm × 5cm landscape
+  // Professional thermal label styling - 6cm × 5cm landscape (227px × 189px)
   const labelStyle = {
-    width: '227px',
-    height: '189px',
+    width: '227px',   // 6cm
+    height: '189px',  // 5cm
     border: '2px solid hsl(var(--border))',
     borderRadius: '4px',
-    padding: '4px',
+    padding: '3px',
     margin: '8px',
-    fontSize: '9px',
+    fontSize: '8px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
@@ -99,13 +99,13 @@ export function ThermalLabelPreview({
     }}>
         {/* Product Name - Primary focus */}
         <div style={{
-        fontSize: options.format === 'compact' ? '14px' : '16px',
+        fontSize: '12px',
         fontWeight: '800',
         lineHeight: '1.0',
         color: '#000',
         textTransform: 'uppercase',
         letterSpacing: '0.2px',
-        maxHeight: '32px',
+        maxHeight: '24px',
         overflow: 'hidden',
         display: '-webkit-box',
         WebkitLineClamp: 2,
@@ -118,11 +118,11 @@ export function ThermalLabelPreview({
         
         {/* Serial Number Section */}
         {label.serialNumber && <div style={{
-        fontSize: '12px',
+        fontSize: '10px',
         fontWeight: '600',
         color: '#000',
         textAlign: 'center',
-        marginTop: '4px',
+        marginTop: '2px',
         letterSpacing: '0.1px'
       }}>
           SN: {label.serialNumber}
@@ -131,11 +131,11 @@ export function ThermalLabelPreview({
 
       {/* Price Section */}
       {options.includePrice && <div style={{
-      fontSize: '32px',
+      fontSize: '24px',
       fontWeight: '900',
       color: '#000',
       textAlign: 'center',
-      padding: '4px 0',
+      padding: '2px 0',
       borderTop: '2px solid #000',
       marginBottom: '2px',
       letterSpacing: '0.3px',
@@ -149,15 +149,15 @@ export function ThermalLabelPreview({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '80px',
-      maxHeight: '80px',
+      minHeight: '55px',
+      maxHeight: '55px',
       backgroundColor: '#ffffff',
-      padding: '4px',
+      padding: '2px',
       overflow: 'hidden'
     }}>
           <canvas ref={canvasRef} style={{
         maxWidth: '100%',
-        height: '70px'
+        height: '50px'
       }} />
         </div>}
 

@@ -40,9 +40,9 @@ export function generateBarcodeScript(config: any): string {
         }
         
         try {
-          // Set canvas dimensions explicitly to prevent cropping
-          canvas.width = 280;
-          canvas.height = 80;
+          // Set canvas dimensions for 6cm x 5cm label
+          canvas.width = 220;
+          canvas.height = 55;
           
           // Use consistent barcode format detection
           let format = 'CODE128';
@@ -52,15 +52,15 @@ export function generateBarcodeScript(config: any): string {
           
           JsBarcode(canvas, barcodeValue, {
             format: format,
-            width: 1.8,
-            height: 50,
+            width: 1.5,
+            height: 35,
             displayValue: true,
-            fontSize: 10,
-            font: 'Arial, sans-serif',
+            fontSize: 8,
+            font: 'Arial',
             textAlign: 'center',
             textPosition: 'bottom',
-            textMargin: 6,
-            margin: 4,
+            textMargin: 4,
+            margin: 2,
             background: '#ffffff',
             lineColor: '#000000'
           });

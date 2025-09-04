@@ -2,8 +2,8 @@ import { ThermalPrintSettings } from "../types";
 
 // Centralized configuration for thermal label printing
 export const PRINT_SETTINGS: ThermalPrintSettings = {
-  width: 180,   // Smaller width for better fit
-  height: 150,  // Smaller height for better fit
+  width: 227,   // 6cm at 96 DPI (6cm * 37.8 pixels/cm)
+  height: 189,  // 5cm at 96 DPI (5cm * 37.8 pixels/cm)
   dpi: 96,      // Standard browser DPI
   margin: 0,    // No margins
 };
@@ -11,10 +11,10 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 // Barcode generation settings optimized for thermal printing
 export const BARCODE_CONFIG = {
   format: 'CODE128' as const,
-  width: 2.2,
-  height: 65,
+  width: 1.5,
+  height: 35,
   displayValue: true,
-  fontSize: 12,
+  fontSize: 8,
   font: 'Arial',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,

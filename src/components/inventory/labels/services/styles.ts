@@ -28,7 +28,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         width: 6cm !important;
         height: 5cm !important;
         margin: 0 !important;
-        padding: 2mm !important;
+        padding: 3px !important;
         border: none !important;
         background: white !important;
         box-sizing: border-box !important;
@@ -38,35 +38,35 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         justify-content: space-between !important;
         font-family: Arial, sans-serif !important;
         overflow: hidden !important;
-        gap: 1mm !important;
+        gap: 1px !important;
       }
 
       .product-name {
-        font-size: 14px !important;
+        font-size: 12px !important;
         line-height: 1.0 !important;
-        margin-bottom: 1mm !important;
+        margin-bottom: 1px !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
       }
 
       .barcode-container {
         margin: 0 !important;
-        padding: 4px !important;
+        padding: 2px !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        min-height: 80px !important;
+        min-height: 55px !important;
       }
 
       .barcode-canvas {
-        height: 70px !important;
+        height: 50px !important;
         margin: 0 !important;
       }
 
       .price-section {
-        font-size: 28px !important;
+        font-size: 24px !important;
         margin: 0 !important;
-        padding: 2mm 0 !important;
+        padding: 2px 0 !important;
         font-weight: 900 !important;
         border-top: 2px solid #000 !important;
       }
@@ -93,10 +93,10 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .thermal-label {
-      width: ${width}px;
-      height: ${height}px;
+      width: 227px;  /* 6cm */
+      height: 189px; /* 5cm */
       border: 1px solid #ddd;
-      padding: 4px;
+      padding: 3px;
       background: white;
       box-sizing: border-box;
       display: flex;
@@ -128,13 +128,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '14px' : '16px'};
+      font-size: 12px;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-align: center;
       margin-bottom: 2px;
-      max-height: 32px;
+      max-height: 24px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -143,11 +143,11 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .serial-section {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 600;
       color: #000;
       text-align: center;
-      margin-top: 4px;
+      margin-top: 2px;
       letter-spacing: 0.1px;
     }
 
@@ -167,15 +167,15 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       align-items: center;
       margin: 0;
       background-color: #ffffff;
-      padding: 4px;
-      min-height: 80px;
+      padding: 2px;
+      min-height: 55px;
     }
 
     .barcode-canvas {
       display: block;
       margin: 0 auto 0 auto;
       max-width: 100%;
-      height: 70px;
+      height: 50px;
     }
 
     .barcode-number {
@@ -187,12 +187,12 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .price-section {
-      font-size: 32px;
+      font-size: 24px;
       font-weight: 900;
       color: #000;
       text-align: center;
       margin-top: 0;
-      padding: 4px 0;
+      padding: 2px 0;
       letter-spacing: 0.3px;
       border-top: 2px solid #000;
     }
