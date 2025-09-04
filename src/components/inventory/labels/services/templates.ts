@@ -110,17 +110,10 @@ export function generateSingleLabel(
           ${escapeHtml(label.productName)}
         </div>
 
-        <!-- Battery Level if available -->
-        ${label.batteryLevel && label.batteryLevel > 0 ? `
-          <div class="battery-level ${label.batteryLevel > 80 ? 'battery-high' : label.batteryLevel > 50 ? 'battery-medium' : 'battery-low'}">
-            🔋 ${label.batteryLevel}%
-          </div>
-        ` : ''}
-
-        <!-- Color indicator if available -->
-        ${label.color?.trim() ? `
-          <div class="color-indicator">
-            Color: ${escapeHtml(label.color)}
+        <!-- Serial Number if available -->
+        ${label.serialNumber?.trim() ? `
+          <div class="serial-number">
+            S/N: ${escapeHtml(label.serialNumber)}
           </div>
         ` : ''}
       </div>

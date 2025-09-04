@@ -42,9 +42,9 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 14px !important;
-        line-height: 1.0 !important;
-        margin-bottom: 1mm !important;
+        font-size: 18px !important;
+        line-height: 1.1 !important;
+        margin-bottom: 2mm !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
       }
@@ -58,12 +58,20 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .barcode-canvas {
-        height: 30px !important;
+        height: 45px !important;
         margin: 0 !important;
       }
 
+      .serial-number {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        margin: 1mm 0 !important;
+        font-family: monospace !important;
+      }
+
       .price-section {
-        font-size: 16px !important;
+        font-size: 22px !important;
         margin: 0 !important;
         padding: 2mm 0 !important;
         font-weight: 900 !important;
@@ -127,13 +135,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '14px' : '16px'};
+      font-size: ${options.format === 'compact' ? '18px' : '20px'};
       font-weight: 800;
-      line-height: 1.0;
+      line-height: 1.1;
       color: #000;
       text-align: center;
-      margin-bottom: 2px;
-      max-height: 32px;
+      margin-bottom: 4px;
+      max-height: 42px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -164,7 +172,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       display: block;
       margin: 0 auto 0 auto;
       max-width: 100%;
-      height: 35px;
+      height: 50px;
     }
 
     .barcode-number {
@@ -176,13 +184,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .price-section {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 900;
       color: #000;
       text-align: center;
       margin-top: 0;
-      padding: 3px 0;
-      letter-spacing: 0.2px;
+      padding: 4px 0;
+      letter-spacing: 0.3px;
       border-top: 2px solid #000;
     }
 
@@ -213,14 +221,12 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .serial-number {
-      font-size: 9px;
-      font-weight: 600;
-      color: #333;
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
       font-family: monospace;
-      background-color: #f8f9fa;
-      padding: 2px 4px;
-      border-radius: 2px;
-      border: 1px solid #e9ecef;
+      text-align: center;
+      margin: 4px 0;
       white-space: nowrap;
     }
 
