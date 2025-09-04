@@ -15,22 +15,26 @@ export function AuthFlow({ onAuthComplete, onAuthError }: AuthFlowProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    log.debug('Checking existing auth...', null, 'AuthFlow');
-    const token = secureStorage.getItem('authToken', true);
-    const role = secureStorage.getItem('userRole', false) as UserRole;
+    const checkAuth = async () => {
+      log.debug('Checking existing auth...', null, 'AuthFlow');
+      const token = await secureStorage.getItem('authToken', true);
+      const role = await secureStorage.getItem('userRole', false) as UserRole;
+      
+      if (token && token !== 'invalid-token' && role) {
+        log.info('Found valid auth', { role }, 'AuthFlow');
+        setSelectedRole(role);
+        setIsAuthenticated(true);
+        onAuthComplete(role);
+      } else {
+        log.debug('No valid auth found', null, 'AuthFlow');
+        // Clear any invalid tokens
+        secureStorage.removeItem('authToken');
+        secureStorage.removeItem('userRole');
+        secureStorage.removeItem('userId');
+      }
+    };
     
-    if (token && token !== 'invalid-token' && role) {
-      log.info('Found valid auth', { role }, 'AuthFlow');
-      setSelectedRole(role);
-      setIsAuthenticated(true);
-      onAuthComplete(role);
-    } else {
-      log.debug('No valid auth found', null, 'AuthFlow');
-      // Clear any invalid tokens
-      secureStorage.removeItem('authToken');
-      secureStorage.removeItem('userRole');
-      secureStorage.removeItem('userId');
-    }
+    checkAuth();
   }, [onAuthComplete]);
 
   const handleRoleSelect = (role: UserRole) => {
