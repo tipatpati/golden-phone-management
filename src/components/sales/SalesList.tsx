@@ -97,21 +97,36 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
   const actions = [
     {
       icon: <Eye className="h-4 w-4" />,
-      label: "View",
+      label: "Dettagli",
       onClick: () => {}, // Required but not used when renderCustom is provided
-      renderCustom: (sale: Sale) => <SaleDetailsDialog sale={sale} />
+      renderCustom: (sale: Sale) => (
+        <SaleDetailsDialog 
+          sale={sale}
+          trigger={
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          }
+        />
+      )
     },
     ...(onEdit && onDelete ? [
       {
         icon: <Edit2 className="h-4 w-4" />,
-        label: "Edit",
-        onClick: onEdit
+        label: "Modifica",
+        onClick: onEdit,
+        className: "hover:bg-amber-50 hover:text-amber-600"
       },
       {
         icon: <Trash2 className="h-4 w-4" />,
-        label: "Delete",
+        label: "Elimina",
         onClick: handleDeleteSale,
-        variant: "destructive" as const
+        variant: "destructive" as const,
+        className: "hover:bg-red-50 hover:text-red-600"
       }
     ] : [])
   ];
@@ -147,7 +162,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary border border-border/50 bg-background/80 backdrop-blur-sm shadow-sm"
+                    className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors border border-border/30 bg-background/50 backdrop-blur-sm shadow-sm"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
@@ -183,15 +198,16 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
               ...(onEdit && onDelete ? [
                 {
                   icon: <Edit2 className="h-3 w-3 mr-1" />,
-                  label: "Edit",
-                  onClick: () => onEdit(sale)
+                  label: "Modifica",
+                  onClick: () => onEdit(sale),
+                  className: "hover:bg-amber-50 hover:text-amber-600 border-amber-200/50"
                 },
                 {
                   icon: <Trash2 className="h-3 w-3 mr-1" />,
-                  label: "Delete",
+                  label: "Elimina",
                   onClick: () => handleDeleteSale(sale),
                   variant: "outline" as const,
-                  className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                  className: "text-red-600 hover:text-red-700 border-red-200/50 hover:bg-red-50"
                 }
               ] : [])
             ]}
