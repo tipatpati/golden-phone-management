@@ -113,7 +113,7 @@ export function generateSingleLabel(
         <!-- Serial Number Section -->
         ${label.serialNumber ? `
           <div class="serial-section">
-            IMEI/SERIAL: ${escapeHtml(label.serialNumber)}
+            SN: ${escapeHtml(label.serialNumber)}
           </div>
         ` : ''}
       </div>
