@@ -60,10 +60,11 @@ export function InventoryTableToolbar({
     onSearchChange(barcode);
   };
   
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // The search is handled in real-time via onSearchChange
-  };
+  // Remove the form submit handler since we don't need it for real-time search
+  // const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   // The search is handled in real-time via onSearchChange
+  // };
   
   const clearSearch = () => {
     onSearchChange("");
@@ -71,10 +72,7 @@ export function InventoryTableToolbar({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <form 
-        onSubmit={handleSearchSubmit}
-        className="flex w-full items-center gap-3"
-      >
+      <div className="flex w-full items-center gap-3">
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -84,6 +82,12 @@ export function InventoryTableToolbar({
             className="w-full pl-10 pr-20 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
             value={searchTerm}
             onChange={handleSearch}
+            onKeyDown={(e) => {
+              // Allow Enter key to trigger search but prevent form submission
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             {searchTerm && (
@@ -103,11 +107,11 @@ export function InventoryTableToolbar({
             />
           </div>
         </div>
-        <Button type="submit" variant="outline" className="h-12 px-4 flex-shrink-0">
+        <Button type="button" variant="outline" className="h-12 px-4 flex-shrink-0" onClick={() => console.log('Manual search triggered')}>
           <Search className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Cerca</span>
         </Button>
-      </form>
+      </div>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
         {canModifyProducts && onAddProduct && (
