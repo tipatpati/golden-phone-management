@@ -4,10 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { SecurityProvider } from "@/components/security/SecurityProvider";
-import { EnhancedSecurityProvider } from "@/components/security/EnhancedSecurityProvider";
 import { SecurityHeaders } from "@/components/security/SecurityHeaders";
-import { EnhancedSecurityMonitor } from "@/components/security/EnhancedSecurityMonitor";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -25,26 +22,28 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children, includeAuth = true }: AppProvidersProps) {
-  const content = includeAuth ? (
-    <AuthProvider>
-      <EnhancedSecurityMonitor />
-      {children}
-    </AuthProvider>
-  ) : (
-    children
-  );
+  console.log('🏗️ AppProviders rendering, includeAuth:', includeAuth);
+  
+  try {
+    const content = includeAuth ? (
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    ) : (
+      children
+    );
 
-  return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <SecurityHeaders />
-        <SecurityProvider>
-          <EnhancedSecurityProvider>
-            {content}
-            <Toaster />
-          </EnhancedSecurityProvider>
-        </SecurityProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  );
+    return (
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <SecurityHeaders />
+          {content}
+          <Toaster />
+        </QueryClientProvider>
+      </BrowserRouter>
+    );
+  } catch (error) {
+    console.error('💥 AppProviders error:', error);
+    return <div>EMERGENCY: AppProviders failed</div>;
+  }
 }
