@@ -187,7 +187,7 @@ export function ThermalLabelGenerator({
 
             <div className="space-y-3">
               <Label>Include information</Label>
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="include-company"
