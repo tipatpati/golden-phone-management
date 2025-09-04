@@ -52,12 +52,16 @@ export function BarcodeManager({
     });
   }, [serialNumbers, productId, hasSerial, barcodeFormat]);
 
-  // Notify parent whenever barcode changes (including format changes)
+  // Notify parent whenever barcode changes (but avoid infinite loops)
+  const firstBarcode = unitBarcodes.length > 0 ? unitBarcodes[0].barcode : null;
+  const prevBarcodeRef = React.useRef<string | null>(null);
+  
   React.useEffect(() => {
-    if (unitBarcodes.length > 0 && onBarcodeGenerated) {
-      onBarcodeGenerated(unitBarcodes[0].barcode);
+    if (firstBarcode && firstBarcode !== prevBarcodeRef.current && onBarcodeGenerated) {
+      prevBarcodeRef.current = firstBarcode;
+      onBarcodeGenerated(firstBarcode);
     }
-  }, [unitBarcodes, onBarcodeGenerated]);
+  }, [firstBarcode, onBarcodeGenerated]);
 
   if (!hasSerial || unitBarcodes.length === 0) {
     return null;

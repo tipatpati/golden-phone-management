@@ -197,7 +197,7 @@ export function ProductForm({
         serialNumbers={serialNumbers}
         hasSerial={formData.has_serial || false}
         productId={initialData?.barcode}
-        onBarcodeGenerated={(barcode) => updateField('barcode', barcode)}
+        onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
       />
 
       {/* Form-level error display - Show all validation errors */}
