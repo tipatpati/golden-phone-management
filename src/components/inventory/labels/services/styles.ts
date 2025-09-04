@@ -42,9 +42,9 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 18px !important;
-        line-height: 1.1 !important;
-        margin-bottom: 2mm !important;
+        font-size: 14px !important;
+        line-height: 1.0 !important;
+        margin-bottom: 1mm !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
       }
@@ -58,20 +58,12 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .barcode-canvas {
-        height: 45px !important;
+        height: 50px !important;
         margin: 0 !important;
       }
 
-      .serial-number {
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        text-align: center !important;
-        margin: 1mm 0 !important;
-        font-family: monospace !important;
-      }
-
       .price-section {
-        font-size: 22px !important;
+        font-size: 28px !important;
         margin: 0 !important;
         padding: 2mm 0 !important;
         font-weight: 900 !important;
@@ -135,13 +127,13 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: ${options.format === 'compact' ? '18px' : '20px'};
+      font-size: ${options.format === 'compact' ? '14px' : '16px'};
       font-weight: 800;
-      line-height: 1.1;
+      line-height: 1.0;
       color: #000;
       text-align: center;
-      margin-bottom: 4px;
-      max-height: 42px;
+      margin-bottom: 2px;
+      max-height: 32px;
       overflow: hidden;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -172,7 +164,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       display: block;
       margin: 0 auto 0 auto;
       max-width: 100%;
-      height: 50px;
+      height: 60px;
     }
 
     .barcode-number {
@@ -184,7 +176,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .price-section {
-      font-size: 24px;
+      font-size: 32px;
       font-weight: 900;
       color: #000;
       text-align: center;

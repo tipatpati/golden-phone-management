@@ -109,13 +109,6 @@ export function generateSingleLabel(
         <div class="product-name">
           ${escapeHtml(label.productName)}
         </div>
-
-        <!-- Serial Number if available -->
-        ${label.serialNumber?.trim() ? `
-          <div class="serial-number">
-            S/N: ${escapeHtml(label.serialNumber)}
-          </div>
-        ` : ''}
       </div>
 
       <!-- Price Section -->
