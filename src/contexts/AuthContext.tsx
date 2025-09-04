@@ -5,7 +5,7 @@ import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
 import { usePeriodicReminder } from '@/hooks/usePeriodicReminder';
-import { logSessionActivity } from '@/utils/securityAudit';
+// import { logSessionActivity } from '@/utils/securityAudit';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -54,9 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                      window !== window.top;
     
     if (authState.user && !isPreview) {
-      logSessionActivity('login').catch(err => 
-        console.warn('Session activity logging failed:', err)
-      );
+      // logSessionActivity('login').catch(err => 
+      //   console.warn('Session activity logging failed:', err)
+      // );
     }
   }, [authState.user]);
 

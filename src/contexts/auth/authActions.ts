@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { UserRole } from "@/types/roles";
 import { validation } from "@/utils/validation";
-import { logFailedAuthAttempt } from "@/utils/securityAudit";
-import { handleSecurityError } from "@/utils/securityEnhancements";
+// import { logFailedAuthAttempt } from "@/utils/securityAudit";
+// import { handleSecurityError } from "@/utils/securityEnhancements";
 import { User } from "@supabase/supabase-js";
 import { log } from "@/utils/logger";
 
@@ -94,7 +94,7 @@ export function createAuthActions(params: AuthActionsParams) {
       
       // Log failed auth attempt for security monitoring
       const emailToLog = emailValidation.sanitizedValue || email;
-      await logFailedAuthAttempt(emailToLog, error.message || 'Authentication failed');
+      // await logFailedAuthAttempt(emailToLog, error.message || 'Authentication failed');
       
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials'

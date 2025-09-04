@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { SecurityHeaders } from "@/components/security/SecurityHeaders";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -36,7 +35,6 @@ export function AppProviders({ children, includeAuth = true }: AppProvidersProps
     return (
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          <SecurityHeaders />
           {content}
           <Toaster />
         </QueryClientProvider>
