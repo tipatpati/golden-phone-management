@@ -51,15 +51,15 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
 
       .barcode-container {
         margin: 0 !important;
-        padding: 2px !important;
+        padding: 4px !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        min-height: 70px !important;
+        min-height: 80px !important;
       }
 
       .barcode-canvas {
-        height: 65px !important;
+        height: 70px !important;
         margin: 0 !important;
       }
 
@@ -167,15 +167,15 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       align-items: center;
       margin: 0;
       background-color: #ffffff;
-      padding: 2px;
-      min-height: 70px;
+      padding: 4px;
+      min-height: 80px;
     }
 
     .barcode-canvas {
       display: block;
       margin: 0 auto 0 auto;
       max-width: 100%;
-      height: 65px;
+      height: 70px;
     }
 
     .barcode-number {
@@ -197,14 +197,6 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       border-top: 2px solid #000;
     }
 
-    /* Remove unused styles - keeping only relevant ones */
-    .category-label {
-      font-size: 8px;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      margin-top: 2px;
-    }
 
     .main-content {
       flex: 1;

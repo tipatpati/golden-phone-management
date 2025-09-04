@@ -96,11 +96,6 @@ export function generateSingleLabel(
             ${escapeHtml(options.companyName)}
           </div>
         ` : ''}
-        ${options.includeCategory && label.category?.trim() ? `
-          <div class="category-label">
-            ${escapeHtml(label.category)}
-          </div>
-        ` : ''}
       </div>
 
       <!-- Main Content Section -->

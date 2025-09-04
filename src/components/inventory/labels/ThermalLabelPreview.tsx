@@ -23,14 +23,15 @@ export function ThermalLabelPreview({
         
         JsBarcode(canvasRef.current, label.barcode, {
           format: format,
-          width: 2.2,
-          height: 65,
+          width: 1.8,
+          height: 50,
           displayValue: true,
-          fontSize: 12,
-          font: 'Arial',
+          fontSize: 10,
+          font: 'Arial, sans-serif',
           textAlign: 'center',
           textPosition: 'bottom',
-          margin: 2,
+          textMargin: 6,
+          margin: 4,
           background: '#ffffff',
           lineColor: '#000000'
         });
@@ -83,18 +84,6 @@ export function ThermalLabelPreview({
         textOverflow: 'ellipsis'
       }}>
             {options.companyName}
-          </div>}
-        {options.includeCategory && label.category && <div style={{
-        fontSize: '7px',
-        color: 'hsl(var(--muted-foreground))',
-        textTransform: 'uppercase',
-        letterSpacing: '0.2px',
-        marginTop: '1px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
-      }}>
-            {label.category}
           </div>}
       </div>
 
@@ -160,15 +149,15 @@ export function ThermalLabelPreview({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '70px',
-      maxHeight: '70px',
+      minHeight: '80px',
+      maxHeight: '80px',
       backgroundColor: '#ffffff',
-      padding: '2px',
+      padding: '4px',
       overflow: 'hidden'
     }}>
           <canvas ref={canvasRef} style={{
         maxWidth: '100%',
-        height: '65px'
+        height: '70px'
       }} />
         </div>}
 
