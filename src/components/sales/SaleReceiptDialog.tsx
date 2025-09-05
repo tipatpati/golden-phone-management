@@ -159,23 +159,37 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       const printStyles = document.createElement('style');
       printStyles.textContent = `
         @media print {
-          body * { visibility: hidden; }
-          #print-container, #print-container * { visibility: visible; }
+          * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body * { 
+            visibility: hidden !important; 
+          }
+          #print-container, #print-container * { 
+            visibility: visible !important; 
+          }
           #print-container {
-            position: absolute;
-            left: 0;
-            top: 0;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 80mm !important;
             max-width: 80mm !important;
             height: auto !important;
             overflow: visible !important;
             page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
           }
           @page { 
-            size: 80mm auto; 
-            margin: 0; 
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            size: 80mm auto !important; 
+            margin: 0 !important; 
+            padding: 0 !important;
           }
         }
       `;
@@ -227,32 +241,39 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm auto;
-              margin: 0;
-              padding: 0;
+              size: 80mm auto !important;
+              margin: 0 !important;
+              padding: 0 !important;
             }
             * {
               box-sizing: border-box;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             body {
               font-family: 'Courier New', monospace;
               font-size: 8px;
               line-height: 1.2;
-              margin: 0;
-              padding: 0;
-              width: 80mm;
-              max-width: 80mm;
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 80mm !important;
+              max-width: 80mm !important;
               color: #000;
               background: white;
               overflow-x: hidden;
-              page-break-inside: avoid;
+              page-break-inside: avoid !important;
+              page-break-after: avoid !important;
+              page-break-before: avoid !important;
             }
             .receipt-container {
-              width: 80mm;
-              max-width: 80mm;
+              width: 80mm !important;
+              max-width: 80mm !important;
               padding: 2mm;
-              margin: 0;
-              overflow: hidden;
+              margin: 0 !important;
+              overflow: visible !important;
+              page-break-inside: avoid !important;
+              page-break-after: avoid !important;
+              page-break-before: avoid !important;
             }
             .company-header {
               text-align: center;
