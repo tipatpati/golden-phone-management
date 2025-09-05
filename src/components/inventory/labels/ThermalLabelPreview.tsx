@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import JsBarcode from "jsbarcode";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
+import { formatLabelElements, getBarcodeConfig } from "./services/labelDataFormatter";
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
@@ -12,6 +13,8 @@ export function ThermalLabelPreview({
   options
 }: ThermalLabelPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const formattedLabel = formatLabelElements(label, options);
+  const barcodeConfig = getBarcodeConfig();
   useEffect(() => {
     if (canvasRef.current && options.includeBarcode && label.barcode) {
       try {
@@ -27,13 +30,13 @@ export function ThermalLabelPreview({
           height: 35,
           displayValue: true,
           fontSize: 8,
-          font: 'Arial',
-          textAlign: 'center',
-          textPosition: 'bottom',
+          font: barcodeConfig.font,
+          textAlign: barcodeConfig.textAlign,
+          textPosition: barcodeConfig.textPosition,
           textMargin: 4,
-          margin: 2,
-          background: '#ffffff',
-          lineColor: '#000000'
+          margin: barcodeConfig.margin,
+          background: barcodeConfig.background,
+          lineColor: barcodeConfig.lineColor
         });
       } catch (error) {
         console.error('Barcode generation failed:', error);
@@ -72,7 +75,7 @@ export function ThermalLabelPreview({
       marginBottom: '2px',
       overflow: 'hidden'
     }}>
-        {options.includeCompany && options.companyName && <div style={{
+        {formattedLabel.companyName && <div style={{
         fontSize: '8px',
         fontWeight: '700',
         textTransform: 'uppercase',
@@ -83,7 +86,7 @@ export function ThermalLabelPreview({
         overflow: 'hidden',
         textOverflow: 'ellipsis'
       }}>
-            {options.companyName}
+            {formattedLabel.companyName}
           </div>}
       </div>
 
@@ -114,23 +117,23 @@ export function ThermalLabelPreview({
         hyphens: 'auto',
         textAlign: 'center'
       }}>
-          {label.productName}
-          {(label.storage || label.ram) && (
+          {formattedLabel.productName}
+          {(formattedLabel.storage || formattedLabel.ram) && (
             <div style={{
               fontSize: '9px',
               fontWeight: '600',
               marginTop: '1px',
               color: '#333'
             }}>
-              {label.storage && `${label.storage}GB`}
-              {label.storage && label.ram && ' • '}
-              {label.ram && `${label.ram}GB RAM`}
+              {formattedLabel.storage}
+              {formattedLabel.storage && formattedLabel.ram && ' • '}
+              {formattedLabel.ram}
             </div>
           )}
         </div>
         
         {/* Serial Number Section */}
-        {label.serialNumber && <div style={{
+        {formattedLabel.serialNumber && <div style={{
         fontSize: '10px',
         fontWeight: '600',
         color: '#000',
@@ -138,12 +141,12 @@ export function ThermalLabelPreview({
         marginTop: '2px',
         letterSpacing: '0.1px'
       }}>
-          SN: {label.serialNumber}
+          {formattedLabel.serialNumber}
         </div>}
       </div>
 
       {/* Price Section */}
-      {options.includePrice && <div style={{
+      {formattedLabel.price && <div style={{
       fontSize: '24px',
       fontWeight: '900',
       color: '#000',
@@ -154,11 +157,11 @@ export function ThermalLabelPreview({
       letterSpacing: '0.3px',
       lineHeight: '1.0'
     }}>
-          €{label.price.toFixed(2)}
+          {formattedLabel.price}
         </div>}
 
       {/* Barcode Section */}
-      {options.includeBarcode && label.barcode && <div style={{
+      {formattedLabel.barcode && <div style={{
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',

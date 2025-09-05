@@ -11,6 +11,8 @@ export interface FormattedLabelElements {
   companyName: string | null;
   category: string | null;
   barcode: string | null;
+  storage: string | null;
+  ram: string | null;
 }
 
 /**
@@ -26,7 +28,9 @@ export function formatLabelElements(
     price: options.includePrice && typeof label.price === 'number' ? `€${label.price.toFixed(2)}` : null,
     companyName: options.includeCompany && options.companyName?.trim() ? options.companyName : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,
-    barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null
+    barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,
+    storage: label.storage ? `${label.storage}GB` : null,
+    ram: label.ram ? `${label.ram}GB RAM` : null
   };
 }
 
