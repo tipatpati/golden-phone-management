@@ -397,8 +397,8 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             marginBottom: '8px'
           }}>
               {qrCode && <img src={qrCode} alt="QR Code" style={{
-              width: '40px',
-              height: '40px',
+              width: '60px',
+              height: '60px',
               margin: '0 auto',
               border: '1px solid #000'
             }} />}
@@ -584,8 +584,8 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             alignItems: 'center'
           }}>
               {qrCode && <img src={qrCode} alt="QR Code" style={{
-              width: '40px',
-              height: '40px',
+              width: '60px',
+              height: '60px',
               display: 'block',
               margin: '0 auto',
               border: '1px solid #000'
