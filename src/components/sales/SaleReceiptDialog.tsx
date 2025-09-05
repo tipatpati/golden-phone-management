@@ -99,17 +99,17 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             }
             body {
               font-family: 'Courier New', monospace !important;
-              font-size: 6px !important;
-              line-height: 1.1 !important;
+              font-size: 10.8px !important;
+              line-height: 1.2 !important;
               margin: 0 !important;
               padding: 2mm !important;
               width: 80mm !important;
               max-width: 80mm !important;
-              height: 120mm !important;
-              max-height: 120mm !important;
+              height: auto !important;
+              min-height: 120mm !important;
               color: #000 !important;
               background: white !important;
-              overflow: hidden !important;
+              overflow: visible !important;
               page-break-inside: avoid !important;
               page-break-after: avoid !important;
               page-break-before: avoid !important;
@@ -117,11 +117,11 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             .receipt-container {
               width: 76mm !important;
               max-width: 76mm !important;
-              height: 116mm !important;
-              max-height: 116mm !important;
+              height: auto !important;
+              min-height: 116mm !important;
               margin: 0 auto !important;
               padding: 0 !important;
-              overflow: hidden !important;
+              overflow: visible !important;
               page-break-inside: avoid !important;
             }
             .company-header {
@@ -131,13 +131,13 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               border-bottom: 1px solid #000 !important;
             }
             .company-name {
-              font-size: 8px !important;
+              font-size: 14.4px !important;
               font-weight: bold !important;
               margin-bottom: 0.5mm !important;
             }
             .company-details {
-              font-size: 5px !important;
-              line-height: 1.0 !important;
+              font-size: 9px !important;
+              line-height: 1.1 !important;
             }
             .receipt-info {
               margin: 1.5mm 0 !important;
@@ -148,12 +148,12 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               display: flex !important;
               justify-content: space-between !important;
               margin-bottom: 0.5mm !important;
-              font-size: 5px !important;
+              font-size: 9px !important;
             }
             .items-header {
               margin: 1.5mm 0 1mm 0 !important;
               font-weight: bold !important;
-              font-size: 6px !important;
+              font-size: 10.8px !important;
               text-align: center !important;
               border-bottom: 1px solid #000 !important;
               padding-bottom: 0.5mm !important;
@@ -168,7 +168,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               display: flex !important;
               justify-content: space-between !important;
               margin-bottom: 0.5mm !important;
-              font-size: 5px !important;
+              font-size: 9px !important;
               align-items: flex-start !important;
               page-break-inside: avoid !important;
             }
@@ -199,11 +199,11 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               display: flex !important;
               justify-content: space-between !important;
               margin-bottom: 0.5mm !important;
-              font-size: 5px !important;
+              font-size: 9px !important;
             }
             .final-total {
               font-weight: bold !important;
-              font-size: 7px !important;
+              font-size: 12.6px !important;
               border-top: 2px solid #000 !important;
               padding-top: 1mm !important;
               margin-top: 1mm !important;
@@ -211,7 +211,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             .payment-section {
               margin: 1.5mm 0 !important;
               padding: 1mm 0 !important;
-              font-size: 5px !important;
+              font-size: 9px !important;
               text-align: center !important;
               border-top: 1px dashed #000 !important;
               border-bottom: 1px dashed #000 !important;
@@ -221,20 +221,20 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               margin: 2mm 0 1.5mm 0 !important;
             }
             .qr-code {
-              width: 20px !important;
-              height: 20px !important;
+              width: 36px !important;
+              height: 36px !important;
               margin: 0.5mm auto !important;
             }
             .footer {
               text-align: center !important;
               margin-top: 2mm !important;
-              font-size: 4px !important;
-              line-height: 1.0 !important;
+              font-size: 7.2px !important;
+              line-height: 1.1 !important;
             }
             .thank-you {
               font-weight: bold !important;
               margin-bottom: 0.5mm !important;
-              font-size: 5px !important;
+              font-size: 9px !important;
             }
           </style>
         </head>
@@ -335,7 +335,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               <div style={{fontWeight: 'bold', fontSize: '9px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{fontSize: '6px', lineHeight: '1.2'}}>
+              <div style={{fontSize: '10.8px', lineHeight: '1.3'}}>
                 Corso Buenos Aires, 90,<br/>
                 20124 Milano - MI<br/>
                 P. IVA: 12345678901<br/>
@@ -350,10 +350,10 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Product Info - First item details */}
-            <div style={{marginBottom: '4mm', fontSize: '7px'}}>
+            <div style={{marginBottom: '4mm', fontSize: '12.6px'}}>
               {sale.sale_items?.slice(0, 1).map((item, index) => (
                 <div key={index} style={{marginBottom: '2mm'}}>
-                  <div style={{fontWeight: 'bold', marginBottom: '1mm', fontSize: '8px'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '1mm', fontSize: '14.4px'}}>
                     {item.product?.brand || "Smartphone"}
                   </div>
                   <div style={{marginBottom: '0.5mm'}}>
@@ -362,7 +362,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
                   <div style={{marginBottom: '0.5mm'}}>
                     SN: {item.serial_number || "359357621574578"}
                   </div>
-                  <div style={{fontSize: '6px'}}>
+                  <div style={{fontSize: '10.8px'}}>
                     Garanzia: 1 anno
                   </div>
                 </div>
@@ -370,7 +370,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Payment Details - Exact format */}
-            <div style={{marginBottom: '4mm', fontSize: '6px'}}>
+            <div style={{marginBottom: '4mm', fontSize: '10.8px'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
                 <span>Pagato con Carta:</span>
                 <span>{sale.payment_method === 'card' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
@@ -384,7 +384,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
                 <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
               </div>
               <div style={{borderTop: '1px solid #000', paddingTop: '1mm', marginTop: '2mm'}}>
-                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '7px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12.6px'}}>
                   <span>Totale:</span>
                   <span>{sale.total_amount.toFixed(2)} €</span>
                 </div>
@@ -403,12 +403,12 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Date and Time */}
-            <div style={{textAlign: 'center', marginBottom: '4mm', fontSize: '6px'}}>
+            <div style={{textAlign: 'center', marginBottom: '4mm', fontSize: '10.8px'}}>
               <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{fontSize: '5px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify'}}>
+            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify'}}>
               TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
               IL PRODOTTO NON SIA DANNEGGIATO.<br/>
               IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
@@ -416,7 +416,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Final Footer */}
-            <div style={{textAlign: 'center', fontSize: '5px', marginTop: '3mm'}}>
+            <div style={{textAlign: 'center', fontSize: '9px', marginTop: '3mm'}}>
               Questo documento non è<br/>
               un documento fiscale.
             </div>
