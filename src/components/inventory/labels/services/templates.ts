@@ -1,11 +1,13 @@
 import { ThermalLabelData, ThermalLabelOptions } from "../types";
 import { escapeHtml } from "./utils";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+import { formatLabelElements } from "./labelDataFormatter";
 
 export function generateSingleLabel(
   label: ThermalLabelData,
   options: ThermalLabelOptions & { companyName?: string }
 ): string {
+  const formattedLabel = formatLabelElements(label, options);
   // Header section with company and category
   const headerElements: string[] = [];
   if (options.includeCompany && options.companyName?.trim()) {
@@ -102,18 +104,18 @@ export function generateSingleLabel(
       <div class="main-content">
         <!-- Product Name with Storage/RAM - Primary focus -->
         <div class="product-name">
-          ${escapeHtml(label.productName)}
+          ${escapeHtml(formattedLabel.productName)}
         </div>
-        ${(label.storage || label.ram) ? `
+        ${(formattedLabel.storage || formattedLabel.ram) ? `
           <div class="product-specs">
-            ${label.storage ? `${label.storage}GB` : ''}${label.storage && label.ram ? ' • ' : ''}${label.ram ? `${label.ram}GB RAM` : ''}
+            ${formattedLabel.storage || ''}${formattedLabel.storage && formattedLabel.ram ? ' • ' : ''}${formattedLabel.ram || ''}
           </div>
         ` : ''}
         
         <!-- Serial Number Section -->
-        ${label.serialNumber ? `
+        ${formattedLabel.serialNumber ? `
           <div class="serial-section">
-            SN: ${escapeHtml(label.serialNumber)}
+            ${escapeHtml(formattedLabel.serialNumber)}
           </div>
         ` : ''}
       </div>
