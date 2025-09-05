@@ -98,6 +98,16 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             storage,
             ram
           });
+          
+          // Debug log for each label being created
+          console.log('Created label:', {
+            productName: labelProductName,
+            serialNumber: parsed.serial,
+            storage,
+            ram,
+            hasStorage: !!storage,
+            hasRam: !!ram
+          });
         });
       } else {
         // For products without serial numbers, generate one label per stock unit (max 10)
