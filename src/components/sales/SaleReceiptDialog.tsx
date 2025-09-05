@@ -32,14 +32,11 @@ export function SaleReceiptDialog({
     if (!sale) return;
     const generateQRCode = async () => {
       try {
-        // Create simpler QR content for faster generation
-        const qrContent = `GOLDEN TRADE Q&A SRL
-${sale.sale_number}
-${format(new Date(sale.sale_date), "yyyy-MM-dd")}
-€${sale.total_amount.toFixed(2)}`;
-
+        // Create QR content with URL to PDF receipt
+        const receiptUrl = `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/generate-receipt-pdf?sale_id=${sale.id}`;
+        
         // Generate QR code with minimal settings for speed
-        const qrDataUrl = await QRCode.toDataURL(qrContent, {
+        const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
           width: 60,
           margin: 0,
           errorCorrectionLevel: 'L',
@@ -59,7 +56,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
 
     // Generate QR immediately without delay
     generateQRCode();
-  }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
+  }, [sale?.id]);
   const handlePrint = async () => {
     const receiptId = `receipt-content-${sale.id}`;
     const receiptContent = document.getElementById(receiptId);
