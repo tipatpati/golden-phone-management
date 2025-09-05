@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+// Import migration utility (will auto-run in development)
+import './utils/migrateProductUnits'
+
 console.log('🎬 Starting React application...');
 
 try {

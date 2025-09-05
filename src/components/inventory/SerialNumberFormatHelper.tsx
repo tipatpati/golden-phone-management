@@ -14,10 +14,10 @@ export function SerialNumberFormatHelper() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            To display RAM and Storage on labels, include them in your serial numbers using this format:
+        <Alert className="border-primary bg-primary/5">
+          <Info className="h-4 w-4 text-primary" />
+          <AlertDescription className="font-medium">
+            <strong>Important:</strong> To display RAM and Storage on thermal labels, include them in your serial numbers using this format:
           </AlertDescription>
         </Alert>
         
