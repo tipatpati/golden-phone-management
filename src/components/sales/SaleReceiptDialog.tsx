@@ -357,7 +357,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms */}
-            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '8px', textAlign: 'justify', paddingLeft: '16px', paddingRight: '16px'}}>
+            <div style={{fontSize: '9px', lineHeight: '1.6', marginBottom: '8px', textAlign: 'justify', paddingLeft: '16px', paddingRight: '16px'}}>
               TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
               IL PRODOTTO NON SIA DANNEGGIATO.<br/>
               IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
@@ -451,7 +451,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify', paddingLeft: '8mm', paddingRight: '8mm'}}>
+            <div style={{fontSize: '9px', lineHeight: '1.6', marginBottom: '4mm', textAlign: 'justify', paddingLeft: '8mm', paddingRight: '8mm'}}>
               TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
               IL PRODOTTO NON SIA DANNEGGIATO.<br/>
               IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
