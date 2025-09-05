@@ -139,4 +139,89 @@ export class ProductUnitsService {
 
     return (data || []) as ProductUnit[];
   }
+
+  /**
+   * Update existing product units by re-parsing their serial numbers to extract storage/RAM
+   * This fixes units created before enhanced parsing was implemented
+   */
+  static async updateExistingUnitsWithParsedData(): Promise<{ updated: number; errors: number }> {
+    let updated = 0;
+    let errors = 0;
+
+    try {
+      // Get all units with null storage or RAM
+      const { data: units, error: fetchError } = await supabase
+        .from('product_units')
+        .select('id, serial_number, storage, ram')
+        .or('storage.is.null,ram.is.null');
+
+      if (fetchError) {
+        console.error('Error fetching units to update:', fetchError);
+        return { updated, errors: 1 };
+      }
+
+      if (!units || units.length === 0) {
+        console.log('No units need updating');
+        return { updated, errors };
+      }
+
+      console.log(`Found ${units.length} units to update`);
+
+      // Process units in batches to avoid overwhelming the database
+      const batchSize = 10;
+      for (let i = 0; i < units.length; i += batchSize) {
+        const batch = units.slice(i, i + batchSize);
+        
+        const updates = batch
+          .map(unit => {
+            // Re-parse the serial number to extract storage/RAM
+            const parsed = parseSerialWithBattery(unit.serial_number);
+            
+            // Only update if we found new storage or RAM data
+            if (parsed.storage || parsed.ram) {
+              return {
+                id: unit.id,
+                storage: parsed.storage,
+                ram: parsed.ram,
+                updated_at: new Date().toISOString()
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        if (updates.length > 0) {
+          for (const update of updates) {
+            try {
+              const { error: updateError } = await supabase
+                .from('product_units')
+                .update({
+                  storage: update.storage,
+                  ram: update.ram,
+                  updated_at: update.updated_at
+                })
+                .eq('id', update.id);
+
+              if (updateError) {
+                console.error(`Error updating unit ${update.id}:`, updateError);
+                errors++;
+              } else {
+                updated++;
+                console.log(`Updated unit ${update.id} with storage: ${update.storage}GB, RAM: ${update.ram}GB`);
+              }
+            } catch (err) {
+              console.error(`Error updating unit ${update.id}:`, err);
+              errors++;
+            }
+          }
+        }
+      }
+
+      console.log(`Migration complete: ${updated} units updated, ${errors} errors`);
+      return { updated, errors };
+    } catch (error) {
+      console.error('Error during migration:', error);
+      return { updated, errors: errors + 1 };
+    }
+  }
 }

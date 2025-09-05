@@ -83,6 +83,7 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             category: product.category?.name,
             color: unit?.color || parsed.color,
             batteryLevel: unit?.battery_level || parsed.batteryLevel,
+            // Fallback hierarchy: unit data -> parsed data -> product data
             storage: unit?.storage || parsed.storage || product.storage,
             ram: unit?.ram || parsed.ram || product.ram
           });
