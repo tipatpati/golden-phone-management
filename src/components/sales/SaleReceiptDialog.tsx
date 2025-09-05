@@ -128,39 +128,46 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       // Create a temporary container for printing
       const printContainer = document.createElement('div');
       printContainer.innerHTML = receiptContent.innerHTML;
-        printContainer.style.cssText = `
+      printContainer.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
         width: 80mm;
         max-width: 80mm;
         font-family: 'Courier New', monospace;
-        font-size: 6px;
-        line-height: 1.1;
+        font-size: 8px;
+        line-height: 1.2;
         color: #000;
         background: white;
         padding: 2mm;
         z-index: 10000;
-        overflow: hidden;
+        overflow: visible;
+        page-break-inside: avoid;
       `;
       
       // Add print styles
       const printStyles = document.createElement('style');
       printStyles.textContent = `
-          @media print {
-            body * { visibility: hidden; }
-            #print-container, #print-container * { visibility: visible; }
-            #print-container {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 80mm !important;
-              max-width: 80mm !important;
-              height: auto !important;
-              overflow: visible !important;
-            }
-            @page { size: 80mm auto; margin: 0; }
+        @media print {
+          body * { visibility: hidden; }
+          #print-container, #print-container * { visibility: visible; }
+          #print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm !important;
+            max-width: 80mm !important;
+            height: auto !important;
+            overflow: visible !important;
+            page-break-inside: avoid !important;
           }
+          @page { 
+            size: 80mm auto; 
+            margin: 0; 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        }
       `;
       
       printContainer.id = 'print-container';
@@ -170,12 +177,20 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       // Trigger print
       window.print();
       
-      // Cleanup after print
+      // Cleanup after print with shorter timeout
       setTimeout(() => {
-        document.head.removeChild(printStyles);
-        document.body.removeChild(printContainer);
-        console.log('🧹 Print cleanup completed');
-      }, 1000);
+        try {
+          if (document.head.contains(printStyles)) {
+            document.head.removeChild(printStyles);
+          }
+          if (document.body.contains(printContainer)) {
+            document.body.removeChild(printContainer);
+          }
+          console.log('🧹 Print cleanup completed');
+        } catch (cleanupError) {
+          console.warn('⚠️ Print cleanup had minor issues:', cleanupError);
+        }
+      }, 500);
       
       const duration = performance.now() - startTime;
       console.log(`⚡ Iframe print completed in ${duration.toFixed(2)}ms`);
@@ -211,8 +226,8 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 6px;
-              line-height: 1.1;
+              font-size: 8px;
+              line-height: 1.2;
               margin: 0;
               padding: 0;
               width: 80mm;
@@ -220,6 +235,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
               color: #000;
               background: white;
               overflow-x: hidden;
+              page-break-inside: avoid;
             }
             .receipt-container {
               width: 80mm;
