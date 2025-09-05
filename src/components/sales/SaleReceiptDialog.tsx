@@ -446,10 +446,10 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             {/* Company Header */}
             <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '9px', marginBottom: '2px', letterSpacing: '0.3px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '11px', marginBottom: '2px', letterSpacing: '0.3px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{fontSize: '6px', lineHeight: '1.3'}}>
+              <div style={{fontSize: '8px', lineHeight: '1.3'}}>
                 Corso Buenos Aires, 90,<br/>
                 20124 Milano - MI<br/>
                 P. IVA: 12345678901<br/>
@@ -459,14 +459,14 @@ Totale: €${sale.total_amount.toFixed(2)}`;
 
             {/* Document Type */}
             <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px'}}>
-              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>DOCUMENTO DI</div>
-              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
+              <div style={{fontWeight: 'bold', fontSize: '10px', marginBottom: '2px'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '10px'}}>GARANZIA</div>
             </div>
 
             {/* Product Info */}
             <div style={{marginBottom: '8px'}}>
               {sale.sale_items?.map((item, index) => (
-                <div key={index} style={{marginBottom: '6px', fontSize: '7px'}}>
+                <div key={index} style={{marginBottom: '6px', fontSize: '9px'}}>
                   <div style={{fontWeight: 'bold', marginBottom: '2px'}}>
                     {item.product ? `${item.product.brand}` : "Smartphone"}
                   </div>
@@ -476,7 +476,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
                   <div style={{marginBottom: '1px'}}>
                     SN: {item.serial_number || "359357621574578"}
                   </div>
-                  <div style={{fontSize: '6px'}}>
+                  <div style={{fontSize: '8px'}}>
                     Garanzia: 1 anno
                   </div>
                 </div>
@@ -484,7 +484,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
 
             {/* Payment Summary */}
-            <div style={{marginBottom: '8px', fontSize: '6px'}}>
+            <div style={{marginBottom: '8px', fontSize: '8px'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
                 <span>Pagato con Carta:</span>
                 <span>0.00 €</span>
@@ -517,19 +517,19 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
 
             {/* Date and Time */}
-            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '6px'}}>
+            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '8px'}}>
               <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
             </div>
 
             {/* Legal Terms */}
-            <div style={{fontSize: '5px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
+            <div style={{fontSize: '7px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
               TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.<br/>
               IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
               IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
             </div>
 
             {/* Final Footer */}
-            <div style={{textAlign: 'center', fontSize: '5px', marginTop: '8px'}}>
+            <div style={{textAlign: 'center', fontSize: '7px', marginTop: '8px'}}>
               Questo documento non è<br/>
               un documento fiscale.
             </div>
