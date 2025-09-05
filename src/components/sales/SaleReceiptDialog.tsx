@@ -60,6 +60,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
   // QR code generation state
   const [qrCode, setQrCode] = React.useState<string>('');
+  const [isQrCodeGenerating, setIsQrCodeGenerating] = React.useState<boolean>(true);
 
   // Generate QR code
   React.useEffect(() => {
@@ -67,6 +68,7 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     
     const generateQRCode = async () => {
       console.log('🔄 Generating QR code for sale:', sale.sale_number);
+      setIsQrCodeGenerating(true);
       const start = performance.now();
       
       try {
@@ -90,13 +92,21 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       } catch (error) {
         console.error('❌ QR code generation failed:', error);
         setQrCode('');
+      } finally {
+        setIsQrCodeGenerating(false);
       }
     };
 
     generateQRCode();
   }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    // Wait for QR code if it's still generating
+    if (isQrCodeGenerating) {
+      console.log('⏳ Waiting for QR code generation to complete...');
+      return;
+    }
+
     printCount.current += 1;
     console.group(`🖨️ Print Operation #${printCount.current} for sale ${sale.sale_number}`);
     
@@ -555,8 +565,12 @@ Totale: €${sale.total_amount.toFixed(2)}`;
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handlePrint} className="flex-1">
-            Stampa Ricevuta
+          <Button 
+            onClick={handlePrint} 
+            className="flex-1" 
+            disabled={isQrCodeGenerating}
+          >
+            {isQrCodeGenerating ? 'Generando QR Code...' : 'Stampa Ricevuta'}
           </Button>
         </div>
       </DialogContent>
