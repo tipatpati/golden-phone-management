@@ -5,22 +5,22 @@ import { Receipt } from "lucide-react";
 import { type Sale } from "@/services";
 import { format } from "date-fns";
 import QRCode from "qrcode";
+
 interface SaleReceiptDialogProps {
   sale: Sale;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
-export function SaleReceiptDialog({
-  sale,
-  open,
-  onOpenChange
-}: SaleReceiptDialogProps) {
+
+export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
   // Optimized client name calculation
   const clientName = useMemo(() => {
     if (!sale?.client) {
       return "Cliente Occasionale";
     }
-    return sale.client.type === "business" ? sale.client.company_name : `${sale.client.first_name} ${sale.client.last_name}`;
+    return sale.client.type === "business" 
+      ? sale.client.company_name 
+      : `${sale.client.first_name} ${sale.client.last_name}`;
   }, [sale?.client]);
 
   // QR code generation state
@@ -30,6 +30,7 @@ export function SaleReceiptDialog({
   // Generate QR code immediately and efficiently
   React.useEffect(() => {
     if (!sale) return;
+    
     const generateQRCode = async () => {
       try {
         // Create simpler QR content for faster generation
@@ -37,18 +38,18 @@ export function SaleReceiptDialog({
 ${sale.sale_number}
 ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
 €${sale.total_amount.toFixed(2)}`;
-
+        
         // Generate QR code with minimal settings for speed
         const qrDataUrl = await QRCode.toDataURL(qrContent, {
           width: 60,
           margin: 0,
-          errorCorrectionLevel: 'L',
-          // Low error correction for speed
+          errorCorrectionLevel: 'L', // Low error correction for speed
           color: {
             dark: '#000000',
             light: '#FFFFFF'
           }
         });
+        
         setQrCode(qrDataUrl);
       } catch (error) {
         console.error('QR code generation failed:', error);
@@ -60,9 +61,11 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
     // Generate QR immediately without delay
     generateQRCode();
   }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
+
   const handlePrint = async () => {
     const receiptId = `receipt-content-${sale.id}`;
     const receiptContent = document.getElementById(receiptId);
+    
     if (!receiptContent) {
       console.error('Receipt content not found');
       return;
@@ -70,10 +73,12 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
 
     // Create optimized print content
     const printWindow = window.open('', '_blank');
+    
     if (!printWindow) {
       console.error('Could not open print window - popup blocked?');
       return;
     }
+    
     try {
       const htmlContent = `
       <html>
@@ -239,11 +244,13 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
         </body>
       </html>
       `;
+      
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       printWindow.focus();
       printWindow.print();
       printWindow.close();
+      
     } catch (error) {
       console.error('Print operation failed:', error);
       try {
@@ -253,13 +260,17 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
       }
     }
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {/* Only show trigger if not controlled externally */}
-      {!open && <DialogTrigger asChild>
+      {!open && (
+        <DialogTrigger asChild>
           <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
             <Receipt className="h-4 w-4" />
           </Button>
-        </DialogTrigger>}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Ricevuta di Garentille</DialogTitle>
@@ -267,124 +278,62 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
         
         <div className="space-y-4 text-sm">
           {/* Print-style preview */}
-          <div className="bg-white border-2 border-gray-300 p-4 max-h-96 overflow-y-auto" style={{
-          fontFamily: 'Courier New, monospace',
-          fontSize: '11px',
-          lineHeight: '1.2'
-        }}>
+          <div className="bg-white border-2 border-gray-300 p-4 max-h-96 overflow-y-auto" style={{fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.2'}}>
             {/* Company Header */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '8px',
-            paddingBottom: '4px',
-            borderBottom: '1px solid #000'
-          }}>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '12px',
-              marginBottom: '2px',
-              letterSpacing: '0.5px'
-            }}>
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '2px', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{
-              fontSize: '11px',
-              lineHeight: '1.3'
-            }}>
-                Corso Buenos Aires, 90,<br />
-                20124 Milano - MI<br />
-                P. IVA: 12345678901<br />
+              <div style={{fontSize: '11px', lineHeight: '1.3'}}>
+                Corso Buenos Aires, 90,<br/>
+                20124 Milano - MI<br/>
+                P. IVA: 12345678901<br/>
                 Tel: +39 351 565 6095
               </div>
             </div>
 
             {/* Document Type */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '8px',
-            paddingBottom: '4px'
-          }}>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '8px',
-              marginBottom: '2px'
-            }}>DOCUMENTO DI GARANZIA</div>
-              
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
             </div>
 
             {/* Product Info */}
-            <div style={{
-            marginBottom: '8px',
-            fontSize: '11px'
-          }}>
-              {sale.sale_items?.slice(0, 1).map((item, index) => <div key={index} style={{
-              marginBottom: '4px'
-            }}>
-                  <div style={{
-                fontWeight: 'bold',
-                marginBottom: '2px',
-                fontSize: '13px'
-              }}>
+            <div style={{marginBottom: '8px', fontSize: '11px'}}>
+              {sale.sale_items?.slice(0, 1).map((item, index) => (
+                <div key={index} style={{marginBottom: '4px'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '2px', fontSize: '13px'}}>
                     {item.product?.brand || "Smartphone"}
                   </div>
-                  <div style={{
-                marginBottom: '1px'
-              }}>
+                  <div style={{marginBottom: '1px'}}>
                     {item.product?.model || "iPhone 13 Pro Max"}
                   </div>
-                  <div style={{
-                marginBottom: '1px'
-              }}>
+                  <div style={{marginBottom: '1px'}}>
                     SN: {item.serial_number || "359357621574578"}
                   </div>
-                  <div style={{
-                fontSize: '10px'
-              }}>
+                  <div style={{fontSize: '10px'}}>
                     Garanzia: 1 anno
                   </div>
-                </div>)}
+                </div>
+              ))}
             </div>
 
             {/* Payment Details */}
-            <div style={{
-            marginBottom: '8px',
-            fontSize: '10px'
-          }}>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '2px'
-            }}>
+            <div style={{marginBottom: '8px', fontSize: '10px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
                 <span>Pagato con Carta:</span>
                 <span>{sale.payment_method === 'card' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
               </div>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '2px'
-            }}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
                 <span>Pagato in Contanti:</span>
                 <span>{sale.payment_method === 'cash' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
               </div>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '2px'
-            }}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
                 <span>Sconto:</span>
                 <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
               </div>
-              <div style={{
-              borderTop: '1px solid #000',
-              paddingTop: '2px',
-              marginTop: '4px'
-            }}>
-                <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontWeight: 'bold',
-                fontSize: '12px'
-              }}>
+              <div style={{borderTop: '1px solid #000', paddingTop: '2px', marginTop: '4px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12px'}}>
                   <span>Totale:</span>
                   <span>{sale.total_amount.toFixed(2)} €</span>
                 </div>
@@ -392,172 +341,103 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* QR Code */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '8px'
-          }}>
-              {qrCode && <img src={qrCode} alt="QR Code" style={{
-              width: '40px',
-              height: '40px',
-              margin: '0 auto',
-              border: '1px solid #000'
-            }} />}
+            <div style={{textAlign: 'center', marginBottom: '8px'}}>
+              {qrCode && (
+                <img 
+                  src={qrCode} 
+                  alt="QR Code" 
+                  style={{width: '40px', height: '40px', margin: '0 auto', border: '1px solid #000'}}
+                />
+              )}
             </div>
 
             {/* Date and Time */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '8px',
-            fontSize: '10px'
-          }}>
+            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '10px'}}>
               <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
             </div>
 
             {/* Legal Terms */}
-            <div style={{
-            fontSize: '9px',
-            lineHeight: '3.2',
-            marginBottom: '8px',
-            textAlign: 'justify',
-            paddingLeft: '16px',
-            paddingRight: '16px'
-          }}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
-              IL PRODOTTO NON SIA DANNEGGIATO.<br />
-              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br />
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            <div style={{fontSize: '9px', lineHeight: '2.24', marginBottom: '8px', textAlign: 'center', paddingLeft: '16px', paddingRight: '16px', fontWeight: 'bold'}}>
+              TUTTE LE VENDITE SONO<br/>
+              DEFINITIVE E NON RIMBORSABILI,<br/>
+              A MENO CHE IL<br/>
+              PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL PRODOTTO NON SIA<br/>
+              DANNEGGIATO. IL NEGOZIO NON<br/>
+              SI ASSUME RESPONSABILITÀ PER<br/>
+              EVENTUALI DANNI DERIVANTI DA<br/>
+              USO IMPROPRIO DEI PRODOTTI<br/>
+              ACQUISTATI. IL NEGOZIO HA<br/>
+              IL DIRITTO DI RIFIUTARE<br/>
+              QUALSIASI DANNEGGIAMENTO ARTICOLI<br/>
+              DANNEGGIATO E UTILIZZATI IN<br/>
+              MODO NON APPROPRIATO.
             </div>
 
             {/* Final Footer */}
-            <div style={{
-            textAlign: 'center',
-            fontSize: '9px'
-          }}>
-              Questo documento non è<br />
+            <div style={{textAlign: 'center', fontSize: '9px'}}>
+              Questo documento non è<br/>
               un documento fiscale.
             </div>
           </div>
 
           {/* Hidden receipt content for printing - Exact model from reference */}
-          <div id={`receipt-content-${sale.id}`} style={{
-          display: 'none'
-        }}>
+          <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             {/* Company Header - Exact format */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '4mm',
-            paddingBottom: '2mm',
-            borderBottom: '1px solid #000'
-          }}>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '12px',
-              marginBottom: '1mm',
-              letterSpacing: '0.5px'
-            }}>
+            <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{
-              fontSize: '10.8px',
-              lineHeight: '1.3'
-            }}>
-                Corso Buenos Aires, 90,<br />
-                20124 Milano - MI<br />
-                P. IVA: 12345678901<br />
+              <div style={{fontSize: '10.8px', lineHeight: '1.3'}}>
+                Corso Buenos Aires, 90,<br/>
+                20124 Milano - MI<br/>
+                P. IVA: 12345678901<br/>
                 Tel: +39 351 565 6095
               </div>
             </div>
 
             {/* Document Type */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '4mm',
-            paddingBottom: '2mm'
-          }}>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '8px',
-              marginBottom: '1mm'
-            }}>DOCUMENTO DI</div>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '8px'
-            }}>GARANZIA</div>
+            <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '1mm'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
             </div>
 
             {/* Product Info - First item details */}
-            <div style={{
-            marginBottom: '4mm',
-            fontSize: '12.6px'
-          }}>
-              {sale.sale_items?.slice(0, 1).map((item, index) => <div key={index} style={{
-              marginBottom: '2mm'
-            }}>
-                  <div style={{
-                fontWeight: 'bold',
-                marginBottom: '1mm',
-                fontSize: '14.4px'
-              }}>
+            <div style={{marginBottom: '4mm', fontSize: '12.6px'}}>
+              {sale.sale_items?.slice(0, 1).map((item, index) => (
+                <div key={index} style={{marginBottom: '2mm'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '1mm', fontSize: '14.4px'}}>
                     {item.product?.brand || "Smartphone"}
                   </div>
-                  <div style={{
-                marginBottom: '0.5mm'
-              }}>
+                  <div style={{marginBottom: '0.5mm'}}>
                     {item.product?.model || "iPhone 13 Pro Max"}
                   </div>
-                  <div style={{
-                marginBottom: '0.5mm'
-              }}>
+                  <div style={{marginBottom: '0.5mm'}}>
                     SN: {item.serial_number || "359357621574578"}
                   </div>
-                  <div style={{
-                fontSize: '10.8px'
-              }}>
+                  <div style={{fontSize: '10.8px'}}>
                     Garanzia: 1 anno
                   </div>
-                </div>)}
+                </div>
+              ))}
             </div>
 
             {/* Payment Details - Exact format */}
-            <div style={{
-            marginBottom: '4mm',
-            fontSize: '10.8px'
-          }}>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '1mm'
-            }}>
+            <div style={{marginBottom: '4mm', fontSize: '10.8px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
                 <span>Pagato con Carta:</span>
                 <span>{sale.payment_method === 'card' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
               </div>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '1mm'
-            }}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
                 <span>Pagato in Contanti:</span>
                 <span>{sale.payment_method === 'cash' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
               </div>
-              <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '1mm'
-            }}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
                 <span>Sconto:</span>
                 <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
               </div>
-              <div style={{
-              borderTop: '1px solid #000',
-              paddingTop: '1mm',
-              marginTop: '2mm'
-            }}>
-                <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontWeight: 'bold',
-                fontSize: '12.6px'
-              }}>
+              <div style={{borderTop: '1px solid #000', paddingTop: '1mm', marginTop: '2mm'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12.6px'}}>
                   <span>Totale:</span>
                   <span>{sale.total_amount.toFixed(2)} €</span>
                 </div>
@@ -565,63 +445,56 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* QR Code - Centered */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '4mm',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-              {qrCode && <img src={qrCode} alt="QR Code" style={{
-              width: '40px',
-              height: '40px',
-              display: 'block',
-              margin: '0 auto',
-              border: '1px solid #000'
-            }} />}
+            <div style={{textAlign: 'center', marginBottom: '4mm', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              {qrCode && (
+                <img 
+                  src={qrCode} 
+                  alt="QR Code" 
+                  style={{width: '40px', height: '40px', display: 'block', margin: '0 auto', border: '1px solid #000'}}
+                />
+              )}
             </div>
 
             {/* Date and Time */}
-            <div style={{
-            textAlign: 'center',
-            marginBottom: '4mm',
-            fontSize: '10.8px'
-          }}>
+            <div style={{textAlign: 'center', marginBottom: '4mm', fontSize: '10.8px'}}>
               <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{
-            fontSize: '9px',
-            lineHeight: '3.2',
-            marginBottom: '4mm',
-            textAlign: 'justify',
-            paddingLeft: '8mm',
-            paddingRight: '8mm'
-          }}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
-              IL PRODOTTO NON SIA DANNEGGIATO.<br />
-              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br />
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            <div style={{fontSize: '9px', lineHeight: '2.24', marginBottom: '4mm', textAlign: 'center', paddingLeft: '8mm', paddingRight: '8mm', fontWeight: 'bold'}}>
+              TUTTE LE VENDITE SONO<br/>
+              DEFINITIVE E NON RIMBORSABILI,<br/>
+              A MENO CHE IL<br/>
+              PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL PRODOTTO NON SIA<br/>
+              DANNEGGIATO. IL NEGOZIO NON<br/>
+              SI ASSUME RESPONSABILITÀ PER<br/>
+              EVENTUALI DANNI DERIVANTI DA<br/>
+              USO IMPROPRIO DEI PRODOTTI<br/>
+              ACQUISTATI. IL NEGOZIO HA<br/>
+              IL DIRITTO DI RIFIUTARE<br/>
+              QUALSIASI DANNEGGIAMENTO ARTICOLI<br/>
+              DANNEGGIATO E UTILIZZATI IN<br/>
+              MODO NON APPROPRIATO.
             </div>
 
             {/* Final Footer */}
-            <div style={{
-            textAlign: 'center',
-            fontSize: '9px',
-            marginTop: '3mm'
-          }}>
-              Questo documento non è<br />
+            <div style={{textAlign: 'center', fontSize: '9px', marginTop: '3mm'}}>
+              Questo documento non è<br/>
               un documento fiscale.
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <Button onClick={handlePrint} className="w-full">
+            <Button 
+              onClick={handlePrint}
+              className="w-full"
+            >
               Stampa Ricevuta
             </Button>
           </div>
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 }
