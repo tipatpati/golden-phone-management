@@ -281,7 +281,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <div className="bg-white border-2 border-gray-300 p-4 max-h-96 overflow-y-auto" style={{fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.2'}}>
             {/* Company Header */}
             <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '2px', letterSpacing: '0.5px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '16.8px', marginBottom: '2px', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
               <div style={{fontSize: '11px', lineHeight: '1.3'}}>
@@ -385,7 +385,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             {/* Company Header - Exact format */}
             <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '16.8px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
               <div style={{fontSize: '10.8px', lineHeight: '1.3'}}>
