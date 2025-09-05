@@ -392,7 +392,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* QR Code - Centered */}
-            <div style={{textAlign: 'center', marginBottom: '4mm'}}>
+            <div style={{textAlign: 'center', marginBottom: '4mm', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               {qrCode && (
                 <img 
                   src={qrCode} 
