@@ -64,14 +64,26 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           // Find corresponding unit for this serial number
           const unit = units.find(u => u.serial_number === parsed.serial);
           
+          // Debug logging
+          console.log('Serial parsing for:', serialNumber, {
+            parsed,
+            unit,
+            productStorage: product.storage,
+            productRam: product.ram
+          });
+          
           // Use product's barcode if available, otherwise generate based on IMEI/serial
           const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+          
+          // Get storage and RAM with fallback hierarchy
+          const storage = unit?.storage || parsed.storage || product.storage;
+          const ram = unit?.ram || parsed.ram || product.ram;
           
           // Apply "Brand Model Storage" naming convention
           const labelProductName = formatProductUnitName({
             brand: cleanBrand,
             model: cleanModel,
-            storage: unit?.storage || parsed.storage,
+            storage,
             color: unit?.color || parsed.color
           });
           
@@ -83,9 +95,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             category: product.category?.name,
             color: unit?.color || parsed.color,
             batteryLevel: unit?.battery_level || parsed.batteryLevel,
-            // Fallback hierarchy: unit data -> parsed data -> product data
-            storage: unit?.storage || parsed.storage || product.storage,
-            ram: unit?.ram || parsed.ram || product.ram
+            storage,
+            ram
           });
         });
       } else {
