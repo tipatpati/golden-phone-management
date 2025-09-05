@@ -306,7 +306,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           }}>
               <div style={{
               fontWeight: 'bold',
-              fontSize: '8px',
+              fontSize: '10.4px',
               marginBottom: '2px'
             }}>DOCUMENTO DI GARANZIA</div>
               
@@ -487,12 +487,12 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           }}>
               <div style={{
               fontWeight: 'bold',
-              fontSize: '8px',
+              fontSize: '10.4px',
               marginBottom: '1mm'
             }}>DOCUMENTO DI</div>
               <div style={{
               fontWeight: 'bold',
-              fontSize: '8px'
+              fontSize: '10.4px'
             }}>GARANZIA</div>
             </div>
 
