@@ -506,12 +506,12 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
 
             {/* QR Code centered */}
-            <div style={{textAlign: 'center', marginBottom: '8px'}}>
+            <div style={{textAlign: 'center', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               {qrCode && (
                 <img 
                   src={qrCode} 
                   alt="QR Code" 
-                  style={{width: '50px', height: '50px', border: '1px solid #000'}}
+                  style={{width: '50px', height: '50px', border: '1px solid #000', display: 'block', margin: '0 auto'}}
                 />
               )}
             </div>
