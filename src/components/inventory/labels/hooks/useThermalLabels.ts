@@ -40,7 +40,7 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             color: parsed.color
           });
           
-          labels.push({
+          const labelData = {
             productName: labelProductName,
             serialNumber: parsed.serial,
             barcode,
@@ -50,7 +50,9 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             batteryLevel: parsed.batteryLevel,
             storage: parsed.storage,
             ram: parsed.ram
-          });
+          };
+          console.log('Label data for serial:', serialNumber, labelData);
+          labels.push(labelData);
         });
       } else {
         // For products without serial numbers, generate one label per stock unit (max 10)
