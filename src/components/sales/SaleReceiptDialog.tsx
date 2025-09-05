@@ -331,7 +331,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             {/* Company Header - Exact format */}
             <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '9px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
                 GOLDEN TRADE Q&A SRL
               </div>
               <div style={{fontSize: '10.8px', lineHeight: '1.3'}}>
@@ -407,7 +407,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify'}}>
+            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify', paddingLeft: '8mm', paddingRight: '8mm'}}>
               TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
               IL PRODOTTO NON SIA DANNEGGIATO.<br/>
               IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
