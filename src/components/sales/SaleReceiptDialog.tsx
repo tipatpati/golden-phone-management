@@ -277,53 +277,97 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
         </DialogHeader>
         
         <div className="space-y-4 text-sm">
-          {/* Preview of receipt */}
-          <div className="text-center border-b pb-4">
-            <h3 className="font-bold text-lg">GOLDEN PHONE</h3>
-            <p className="text-xs text-muted-foreground">di AMIRALI MOHAMADALI</p>
-            <p className="text-xs">Ricevuta #{sale.sale_number}</p>
-          </div>
+          {/* Print-style preview */}
+          <div className="bg-white border-2 border-gray-300 p-4 max-h-96 overflow-y-auto" style={{fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.2'}}>
+            {/* Company Header */}
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '12px', marginBottom: '2px', letterSpacing: '0.5px'}}>
+                GOLDEN TRADE Q&A SRL
+              </div>
+              <div style={{fontSize: '11px', lineHeight: '1.3'}}>
+                Corso Buenos Aires, 90,<br/>
+                20124 Milano - MI<br/>
+                P. IVA: 12345678901<br/>
+                Tel: +39 351 565 6095
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="font-medium">Data:</span>
-              <span>{format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}</span>
+            {/* Document Type */}
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
             </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Cliente:</span>
-              <span>{clientName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Operatore:</span>
-              <span>{sale.salesperson?.username || "Sconosciuto"}</span>
-            </div>
-          </div>
 
-          <div className="border-t pt-4">
-            <h4 className="font-medium mb-2 text-center">ARTICOLI</h4>
-            <div className="space-y-1">
-              {sale.sale_items?.map((item, index) => (
-                <div key={index} className="flex justify-between text-xs">
-                  <span className="flex-1">{item.product ? `${item.product.brand} ${item.product.model}` : "Prodotto"}</span>
-                  <span className="w-12 text-center">{item.quantity}</span>
-                  <span className="w-16 text-right">€{item.total_price.toFixed(2)}</span>
+            {/* Product Info */}
+            <div style={{marginBottom: '8px', fontSize: '11px'}}>
+              {sale.sale_items?.slice(0, 1).map((item, index) => (
+                <div key={index} style={{marginBottom: '4px'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '2px', fontSize: '13px'}}>
+                    {item.product?.brand || "Smartphone"}
+                  </div>
+                  <div style={{marginBottom: '1px'}}>
+                    {item.product?.model || "iPhone 13 Pro Max"}
+                  </div>
+                  <div style={{marginBottom: '1px'}}>
+                    SN: {item.serial_number || "359357621574578"}
+                  </div>
+                  <div style={{fontSize: '10px'}}>
+                    Garanzia: 1 anno
+                  </div>
                 </div>
-              )) || <p className="text-muted-foreground text-xs">Nessun articolo</p>}
+              ))}
             </div>
-          </div>
 
-          <div className="border-t pt-4 space-y-1">
-            <div className="flex justify-between">
-              <span>Subtotale:</span>
-              <span>€{sale.subtotal.toFixed(2)}</span>
+            {/* Payment Details */}
+            <div style={{marginBottom: '8px', fontSize: '10px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                <span>Pagato con Carta:</span>
+                <span>{sale.payment_method === 'card' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                <span>Pagato in Contanti:</span>
+                <span>{sale.payment_method === 'cash' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                <span>Sconto:</span>
+                <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
+              </div>
+              <div style={{borderTop: '1px solid #000', paddingTop: '2px', marginTop: '4px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12px'}}>
+                  <span>Totale:</span>
+                  <span>{sale.total_amount.toFixed(2)} €</span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>IVA:</span>
-              <span>€{sale.tax_amount.toFixed(2)}</span>
+
+            {/* QR Code */}
+            <div style={{textAlign: 'center', marginBottom: '8px'}}>
+              {qrCode && (
+                <img 
+                  src={qrCode} 
+                  alt="QR Code" 
+                  style={{width: '40px', height: '40px', margin: '0 auto', border: '1px solid #000'}}
+                />
+              )}
             </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>TOTALE:</span>
-              <span>€{sale.total_amount.toFixed(2)}</span>
+
+            {/* Date and Time */}
+            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '10px'}}>
+              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
+            </div>
+
+            {/* Legal Terms */}
+            <div style={{fontSize: '9px', lineHeight: '1.3', marginBottom: '8px', textAlign: 'justify', paddingLeft: '16px', paddingRight: '16px'}}>
+              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
+              IL PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
+              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            </div>
+
+            {/* Final Footer */}
+            <div style={{textAlign: 'center', fontSize: '9px'}}>
+              Questo documento non è<br/>
+              un documento fiscale.
             </div>
           </div>
 
