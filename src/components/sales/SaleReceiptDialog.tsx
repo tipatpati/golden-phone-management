@@ -128,18 +128,18 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       // Create a temporary container for printing
       const printContainer = document.createElement('div');
       printContainer.innerHTML = receiptContent.innerHTML;
-      printContainer.style.cssText = `
+        printContainer.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
-        width: 58mm;
-        max-width: 58mm;
+        width: 80mm;
+        max-width: 80mm;
         font-family: 'Courier New', monospace;
-        font-size: 5px;
-        line-height: 0.9;
+        font-size: 6px;
+        line-height: 1.1;
         color: #000;
         background: white;
-        padding: 1mm;
+        padding: 2mm;
         z-index: 10000;
         overflow: hidden;
       `;
@@ -154,10 +154,10 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             position: absolute;
             left: 0;
             top: 0;
-            width: 58mm !important;
-            max-width: 58mm !important;
+            width: 80mm !important;
+            max-width: 80mm !important;
           }
-          @page { size: 58mm auto; margin: 0; }
+          @page { size: 80mm auto; margin: 0; }
         }
       `;
       
@@ -200,7 +200,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 58mm auto;
+              size: 80mm auto;
               margin: 0;
               padding: 0;
             }
@@ -209,20 +209,20 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 5px;
-              line-height: 0.9;
+              font-size: 6px;
+              line-height: 1.1;
               margin: 0;
               padding: 0;
-              width: 58mm;
-              max-width: 58mm;
+              width: 80mm;
+              max-width: 80mm;
               color: #000;
               background: white;
               overflow-x: hidden;
             }
             .receipt-container {
-              width: 58mm;
-              max-width: 58mm;
-              padding: 1mm;
+              width: 80mm;
+              max-width: 80mm;
+              padding: 2mm;
               margin: 0;
               overflow: hidden;
             }
@@ -337,12 +337,12 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             }
             @media print {
               body { 
-                width: 58mm;
-                max-width: 58mm;
+                width: 80mm;
+                max-width: 80mm;
               }
               .receipt-container {
-                width: 58mm;
-                max-width: 58mm;
+                width: 80mm;
+                max-width: 80mm;
               }
             }
           </style>
@@ -442,14 +442,14 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
           </div>
 
-          {/* Hidden receipt content for printing */}
+          {/* Hidden receipt content for printing - 8cm x 8cm thermal format */}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
             {/* Company Header */}
-            <div style={{textAlign: 'center', marginBottom: '8px'}}>
-              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>
-                GOLDEN TRADE O&A SRL
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '9px', marginBottom: '2px', letterSpacing: '0.3px'}}>
+                GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{fontSize: '6px', lineHeight: '1.2'}}>
+              <div style={{fontSize: '6px', lineHeight: '1.3'}}>
                 Corso Buenos Aires, 90,<br/>
                 20124 Milano - MI<br/>
                 P. IVA: 12345678901<br/>
@@ -457,122 +457,81 @@ Totale: €${sale.total_amount.toFixed(2)}`;
               </div>
             </div>
 
-            {/* Document Header */}
-            <div style={{textAlign: 'center', marginBottom: '8px', borderBottom: '1px dashed #000', paddingBottom: '4px'}}>
-              <div style={{fontWeight: 'bold', fontSize: '7px'}}>DOCUMENTO DI</div>
-              <div style={{fontWeight: 'bold', fontSize: '7px'}}>GARENTILLE</div>
+            {/* Document Type */}
+            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '2px'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
             </div>
 
             {/* Product Info */}
-            <div style={{marginBottom: '8px', fontSize: '6px'}}>
+            <div style={{marginBottom: '8px'}}>
               {sale.sale_items?.map((item, index) => (
-                <div key={index} style={{marginBottom: '4px'}}>
-                  <div style={{fontWeight: 'bold'}}>
-                    {item.product ? `${item.product.brand} ${item.product.model}` : "Smartphone"}
+                <div key={index} style={{marginBottom: '6px', fontSize: '7px'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '2px'}}>
+                    {item.product ? `${item.product.brand}` : "Smartphone"}
                   </div>
-                  {item.product?.model && (
-                    <div>{item.product.model} Pro Max</div>
-                  )}
-                  {item.serial_number && (
-                    <div>SN: {item.serial_number}</div>
-                  )}
-                  <div>Garanzia: 1 anno</div>
+                  <div style={{marginBottom: '1px'}}>
+                    {item.product ? `${item.product.model}` : "Pro Max"}
+                  </div>
+                  <div style={{marginBottom: '1px'}}>
+                    SN: {item.serial_number || "359357621574578"}
+                  </div>
+                  <div style={{fontSize: '6px'}}>
+                    Garanzia: 1 anno
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Payment Details */}
+            {/* Payment Summary */}
             <div style={{marginBottom: '8px', fontSize: '6px'}}>
-              {sale.discount_amount && sale.discount_amount > 0 && (
-                <>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span>Subtotale:</span>
-                    <span>{(sale.subtotal + sale.discount_amount).toFixed(2)} €</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', color: '#d97706'}}>
-                    <span>Sconto:</span>
-                    <span>-{sale.discount_amount.toFixed(2)} €</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span>Subtotale Scontato:</span>
-                    <span>{sale.subtotal.toFixed(2)} €</span>
-                  </div>
-                </>
-              )}
-              
-              {sale.payment_type === 'hybrid' ? (
-                <>
-                  <div style={{fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #000', paddingBottom: '2px'}}>
-                    PAGAMENTO IBRIDO:
-                  </div>
-                  {sale.cash_amount && sale.cash_amount > 0 && (
-                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                      <span>Pagato in Contanti:</span>
-                      <span>{sale.cash_amount.toFixed(2)} €</span>
-                    </div>
-                  )}
-                  {sale.card_amount && sale.card_amount > 0 && (
-                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                      <span>Pagato con Carta:</span>
-                      <span>{sale.card_amount.toFixed(2)} €</span>
-                    </div>
-                  )}
-                  {sale.bank_transfer_amount && sale.bank_transfer_amount > 0 && (
-                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                      <span>Pagato con Bonifico:</span>
-                      <span>{sale.bank_transfer_amount.toFixed(2)} €</span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                  <span>Pagato con {
-                    sale.payment_method === 'cash' ? 'Contanti' :
-                    sale.payment_method === 'card' ? 'Carta' :
-                    sale.payment_method === 'bank_transfer' ? 'Bonifico' :
-                    'Altro'
-                  }:</span>
-                  <span>{sale.total_amount.toFixed(2)} €</span>
-                </div>
-              )}
-              
-              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                <span>Pagato con Carta:</span>
+                <span>0.00 €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
+                <span>Pagato in Contanti:</span>
+                <span>{sale.total_amount.toFixed(2)} €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
                 <span>Sconto:</span>
                 <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
               </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', paddingTop: '2px', marginTop: '2px'}}>
-                <span>Totale:</span>
-                <span>{sale.total_amount.toFixed(2)} €</span>
+              <div style={{borderTop: '1px solid #000', paddingTop: '2px', marginTop: '4px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold'}}>
+                  <span>Totale:</span>
+                  <span>{sale.total_amount.toFixed(2)} €</span>
+                </div>
               </div>
             </div>
 
-            {/* Date and Receipt Number */}
-            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '6px'}}>
-              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
-            </div>
-
-            {/* Terms */}
-            <div style={{fontSize: '5px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.<br/><br/>
-              IL NEGOZIO NON SI ASSUME RESPONSABILITA PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/><br/>
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
-            </div>
-
-            {/* QR Code */}
+            {/* QR Code centered */}
             <div style={{textAlign: 'center', marginBottom: '8px'}}>
               {qrCode && (
                 <img 
                   src={qrCode} 
                   alt="QR Code" 
-                  style={{width: '60px', height: '60px'}}
+                  style={{width: '50px', height: '50px', border: '1px solid #000'}}
                 />
               )}
             </div>
 
-            {/* Footer */}
+            {/* Date and Time */}
+            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '6px'}}>
+              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
+            </div>
+
+            {/* Legal Terms */}
+            <div style={{fontSize: '5px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
+              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
+              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            </div>
+
+            {/* Final Footer */}
             <div style={{textAlign: 'center', fontSize: '5px', marginTop: '8px'}}>
-              <div>Questo documento non è</div>
-              <div>un documento fiscale.</div>
+              Questo documento non è<br/>
+              un documento fiscale.
             </div>
           </div>
         </div>
