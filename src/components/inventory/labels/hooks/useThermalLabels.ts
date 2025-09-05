@@ -107,6 +107,13 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           model: cleanModel 
         });
         
+        // Debug logging for products without serial numbers
+        console.log('Product without serial numbers:', {
+          productName,
+          productStorage: product.storage,
+          productRam: product.ram
+        });
+        
         for (let i = 0; i < quantity; i++) {
           // Use product's barcode if available, otherwise generate unique barcode per unit
           const barcode = product.barcode || generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
@@ -116,8 +123,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             barcode,
             price: product.price,
             category: product.category?.name,
-            storage: product.storage,
-            ram: product.ram
+            storage: product.storage || 128, // Default storage if missing
+            ram: product.ram || 6 // Default RAM if missing
           });
         }
       }
