@@ -13,7 +13,9 @@ interface Product {
   serial_numbers?: string[];
   category?: { name: string };
   year?: number;
-  barcode?: string; // Add the barcode field
+  barcode?: string;
+  storage?: number; // Add storage field
+  ram?: number; // Add RAM field
 }
 
 export function useThermalLabels(products: Product[]): ThermalLabelData[] {
@@ -48,8 +50,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             category: product.category?.name,
             color: parsed.color,
             batteryLevel: parsed.batteryLevel,
-            storage: parsed.storage,
-            ram: parsed.ram
+            storage: parsed.storage || product.storage, // Use product storage as fallback
+            ram: parsed.ram || product.ram // Use product RAM as fallback
           });
         });
       } else {
@@ -68,7 +70,9 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             productName,
             barcode,
             price: product.price,
-            category: product.category?.name
+            category: product.category?.name,
+            storage: product.storage,
+            ram: product.ram
           });
         }
       }
