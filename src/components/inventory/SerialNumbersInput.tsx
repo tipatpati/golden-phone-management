@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import { SerialNumberFormatHelper } from './SerialNumberFormatHelper';
 
 interface SerialEntry {
   id: string;
@@ -385,17 +386,8 @@ useEffect(() => {
         Aggiungi Altra Unità
       </Button>
       
-      {/* Enhanced guidance */}
-      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-xs font-medium text-amber-800 mb-2">💡 Serial Number Guidelines:</p>
-        <div className="text-xs text-amber-700 space-y-1">
-           <p><strong>IMEI Format:</strong> 15 digits following ITU-T standard (e.g., 123456789012345)</p>
-          <p><strong>Serial Format:</strong> Alphanumeric (e.g., ABC123DEF456)</p>
-          <p><strong>Storage &amp; RAM:</strong> Enter storage and RAM capacity for each unit</p>
-          <p><strong>EAN13 Barcodes:</strong> Generated when serial has 8+ digits</p>
-          <p><strong>Stock Management:</strong> One entry = one unit in stock</p>
-        </div>
-      </div>
+      {/* Enhanced guidance with format helper */}
+      <SerialNumberFormatHelper />
     </div>
   );
 }

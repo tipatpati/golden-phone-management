@@ -22,7 +22,10 @@ export function formatLabelElements(
   label: ThermalLabelData,
   options: ThermalLabelOptions & { companyName?: string }
 ): FormattedLabelElements {
-  return {
+  // Debug log to see what data we're working with
+  console.log('formatLabelElements input:', { label, options });
+  
+  const formatted = {
     productName: label.productName || '',
     serialNumber: label.serialNumber ? `SN: ${label.serialNumber}` : null,
     price: options.includePrice && typeof label.price === 'number' ? `€${label.price.toFixed(2)}` : null,
@@ -32,6 +35,11 @@ export function formatLabelElements(
     storage: label.storage ? `${label.storage}GB` : null,
     ram: label.ram ? `${label.ram}GB RAM` : null
   };
+  
+  // Debug log to see what data we're outputting
+  console.log('formatLabelElements output:', formatted);
+  
+  return formatted;
 }
 
 /**
