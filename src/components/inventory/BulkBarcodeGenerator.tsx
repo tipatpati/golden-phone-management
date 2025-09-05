@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useProducts, useUpdateProduct } from '@/services/useProducts';
+import { useProducts, useUpdateProduct } from '@/services/products/ProductReactQueryService';
 import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
 import { parseSerialWithBattery } from '@/utils/serialNumberUtils';
 import { toast } from '@/components/ui/sonner';
 import { Barcode, RefreshCw, Check, X } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { ensureArray } from '@/hooks/useTypeSafeQuery';
 
 export function BulkBarcodeGenerator() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +19,7 @@ export function BulkBarcodeGenerator() {
   const { data: allProducts = [] } = useProducts('');
   const updateProduct = useUpdateProduct();
   
-  const productsWithoutBarcodes = allProducts.filter(product => !product.barcode);
+  const productsWithoutBarcodes = ensureArray(allProducts).filter((product: any) => !product.barcode);
 
   const generateBarcodesForAll = async () => {
     if (productsWithoutBarcodes.length === 0) {
@@ -35,7 +36,7 @@ export function BulkBarcodeGenerator() {
     let errorCount = 0;
 
     for (let i = 0; i < productsWithoutBarcodes.length; i++) {
-      const product = productsWithoutBarcodes[i];
+      const product = productsWithoutBarcodes[i] as any;
       
       try {
         if (!product.serial_numbers?.[0]) {
@@ -50,7 +51,7 @@ export function BulkBarcodeGenerator() {
         
         await updateProduct.mutateAsync({
           id: product.id,
-          product: {
+          data: {
             barcode: newBarcode
           }
         });
@@ -125,7 +126,7 @@ export function BulkBarcodeGenerator() {
                 </p>
                 
                 <div className="max-h-40 overflow-y-auto space-y-1 bg-muted/30 rounded p-3">
-                  {productsWithoutBarcodes.slice(0, 10).map(product => (
+                  {productsWithoutBarcodes.slice(0, 10).map((product: any) => (
                     <div key={product.id} className="flex items-center justify-between text-xs">
                       <span className="truncate">{product.brand} {product.model}</span>
                       <Badge variant="outline" className="text-xs">

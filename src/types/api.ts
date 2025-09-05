@@ -1,11 +1,68 @@
 /**
- * Enhanced TypeScript types for API services
+ * Comprehensive API type definitions with strict TypeScript
  */
 
 export interface StrictBaseEntity {
   readonly id: string;
   readonly created_at: string;
   readonly updated_at: string;
+}
+
+// Client types
+export interface Client extends StrictBaseEntity {
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  client_type: 'individual' | 'business';
+  status: 'active' | 'inactive';
+}
+
+export interface CreateClientData {
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  client_type: 'individual' | 'business';
+  status?: 'active' | 'inactive';
+}
+
+// Product types
+export interface Product extends StrictBaseEntity {
+  brand: string;
+  model: string;
+  category_id: string;
+  price: number;
+  min_price: number;
+  max_price: number;
+  threshold: number;
+  category?: Category;
+  product_units?: ProductUnit[];
+}
+
+export interface CreateProductData {
+  brand: string;
+  model: string;
+  category_id: string;
+  price: number;
+  min_price: number;
+  max_price: number;
+  threshold: number;
+}
+
+export interface Category extends StrictBaseEntity {
+  name: string;
+  description?: string;
+}
+
+export interface ProductUnit extends StrictBaseEntity {
+  product_id: string;
+  serial_number: string;
+  imei?: string;
+  ram?: string;
+  storage?: string;
+  color?: string;
+  status: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 
 export type CreateEntity<T> = Omit<T, keyof StrictBaseEntity>;

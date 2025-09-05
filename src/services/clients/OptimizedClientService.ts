@@ -1,20 +1,21 @@
 import React from "react";
 import { useOptimizedService } from "../core/OptimizedService";
 import { Client, CreateClientData } from "./types";
+import { useClients } from "./ClientReactQueryService";
 
 /**
  * Optimized client service with enhanced caching and error handling
  * For now, using existing service hooks until we can fully integrate
  */
 
-// Re-export existing optimized hooks from the current service
+// Re-export existing optimized hooks from the React Query service
 export { 
   useClients, 
   useClient,
   useCreateClient, 
   useUpdateClient, 
   useDeleteClient 
-} from "../useClients";
+} from "./ClientReactQueryService";
 
 // Additional client-specific optimizations
 export const useOptimizedClientQueries = () => {
@@ -32,7 +33,7 @@ export const useOptimizedClientQueries = () => {
 
 // Client statistics hook
 export const useClientStatistics = () => {
-  const { data: clients } = require("../useClients").useClients();
+  const { data: clients } = useClients();
   
   return React.useMemo(() => {
     if (!clients || !Array.isArray(clients)) {

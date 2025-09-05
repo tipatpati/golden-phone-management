@@ -4,7 +4,7 @@ import { formatProductName, formatProductUnitDisplay, parseSerialString } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useProducts } from "@/services/useProducts";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 import { supabaseProductApi } from "@/services/supabaseProducts";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
@@ -22,13 +22,15 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
   
   // Filter products by category if one is selected
   const filteredProducts = React.useMemo(() => {
-    if (!selectedCategory) return products;
-    return products.filter(product => product.category_id === selectedCategory);
+    const productArray = Array.isArray(products) ? products : [];
+    if (!selectedCategory) return productArray;
+    return productArray.filter(product => product.category_id === selectedCategory);
   }, [products, selectedCategory]);
   
   const filteredAllProducts = React.useMemo(() => {
-    if (!selectedCategory) return allProducts;
-    return allProducts.filter(product => product.category_id === selectedCategory);
+    const allProductArray = Array.isArray(allProducts) ? allProducts : [];
+    if (!selectedCategory) return allProductArray;
+    return allProductArray.filter(product => product.category_id === selectedCategory);
   }, [allProducts, selectedCategory]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   

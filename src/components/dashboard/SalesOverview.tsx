@@ -6,8 +6,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
 import { useSales } from "@/services";
 import { useRepairs } from "@/services";
-import { useProducts } from "@/services/useProducts";
-import { useClients } from "@/services/useClients";
+import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useClients } from "@/services/clients/ClientReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";

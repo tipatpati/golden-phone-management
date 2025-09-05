@@ -2,7 +2,7 @@ import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package, Headphones, Wrench } from "lucide-react";
-import { useCategories } from "@/services/useProducts";
+import { useCategories } from "@/services/products/ProductReactQueryService";
 
 interface Category {
   id: number;
@@ -69,13 +69,13 @@ export function CategorySelector({ selectedCategory, onCategoryChange }: Categor
   const categories: Category[] = React.useMemo(() => {
     if (!dbCategories) return [];
     
-    return dbCategories.map((dbCategory) => ({
+    return Array.isArray(dbCategories) ? dbCategories.map((dbCategory) => ({
       id: dbCategory.id,
       name: dbCategory.name,
       displayName: categoryDisplayNames[dbCategory.name] || dbCategory.name,
       icon: categoryIcons[dbCategory.name] || Package,
       color: categoryColors[dbCategory.name] || "bg-muted hover:bg-muted/90"
-    }));
+    })) : [];
   }, [dbCategories]);
 
   if (isLoading) {

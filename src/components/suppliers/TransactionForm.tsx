@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useSuppliers } from "@/services";
 import { useSupplierTransactions } from "@/services/useSupplierTransactions";
-import { useProducts } from "@/services/useProducts";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 import { Plus, Trash2 } from "lucide-react";
 
 const transactionSchema = z.object({
@@ -211,11 +211,11 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg">
-                    {products?.map((product) => (
+                    {Array.isArray(products) ? products.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.brand} {product.model} - {product.serial_numbers?.[0] || product.id.slice(0, 8)}
                       </SelectItem>
-                    ))}
+                    )) : []}
                   </SelectContent>
                 </Select>
               </div>

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useProducts } from "@/services/useProducts";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
 
 export function InventoryStatus() {
@@ -23,9 +23,9 @@ export function InventoryStatus() {
   }, []);
 
   // Filter products that are at or below their threshold
-  const lowStockItems = allProducts.filter(product => 
-    product.stock <= product.threshold
-  );
+  const lowStockItems = Array.isArray(allProducts) 
+    ? allProducts.filter(product => product.stock <= product.threshold)
+    : [];
 
   const getStockLevel = (current: number, threshold: number) => {
     const percentage = threshold > 0 ? (current / threshold) * 100 : 100;

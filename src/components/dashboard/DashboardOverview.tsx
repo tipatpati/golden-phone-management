@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowUpRight, ArrowDownRight, DollarSign, ShoppingBag, Users, Calendar } from "lucide-react";
 import { useSales } from "@/services";
 import { useRepairs } from "@/services";
-import { useClients } from "@/services/useClients";
+import { useClients } from "@/services/clients/ClientReactQueryService";
 
 export function DashboardOverview() {
   const navigate = useNavigate();

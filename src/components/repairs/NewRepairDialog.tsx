@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useCreateRepair, useTechnicians } from "@/services";
-import { useClients } from "@/services/useClients";
+import { useClients } from "@/services/clients/ClientReactQueryService";
 import { ClientSearchBar } from "./ClientSearchBar";
 
 export const NewRepairDialog = () => {
@@ -63,7 +63,9 @@ export const NewRepairDialog = () => {
     return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client';
   };
 
-  const selectedClient = clients.find(c => c.id === formData.client_id);
+  const selectedClient = Array.isArray(clients) 
+    ? clients.find(c => c.id === formData.client_id)
+    : undefined;
 
   const handleClientSelect = (client: any) => {
     setFormData({ ...formData, client_id: client.id });

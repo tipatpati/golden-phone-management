@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { logger } from "@/utils/logger";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children, includeAuth = true }: AppProvidersProps) {
-  console.log('🏗️ AppProviders rendering, includeAuth:', includeAuth);
+  logger.debug('AppProviders rendering', { includeAuth }, 'AppProviders');
   
   try {
     const content = includeAuth ? (
@@ -41,7 +42,7 @@ export function AppProviders({ children, includeAuth = true }: AppProvidersProps
       </BrowserRouter>
     );
   } catch (error) {
-    console.error('💥 AppProviders error:', error);
+    logger.error('AppProviders failed', error, 'AppProviders');
     return <div>EMERGENCY: AppProviders failed</div>;
   }
 }

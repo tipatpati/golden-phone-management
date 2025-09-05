@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import { useClients } from "@/services/useClients";
+import { useClients } from "@/services/clients/ClientReactQueryService";
 
 type ClientSearchBarProps = {
   selectedClient: any;
@@ -52,7 +52,7 @@ export function ClientSearchBar({ selectedClient, onClientSelect, onClientClear 
               type="search"
             />
           </div>
-          {clientSearch && clients.length > 0 && (
+          {clientSearch && Array.isArray(clients) && clients.length > 0 && (
             <div className="border rounded-md max-h-32 overflow-y-auto bg-white z-50">
               {clients.slice(0, 5).map((client) => (
                 <div

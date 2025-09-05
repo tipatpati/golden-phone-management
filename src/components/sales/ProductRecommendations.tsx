@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ShoppingBag } from "lucide-react";
-import { useProductRecommendations } from "@/services/useProducts";
+import { useProductRecommendations } from "@/services/products/ProductReactQueryService";
 type RecommendedProduct = {
   id: string;
   name: string;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
-import { useCreateProduct } from "@/services/useProducts";
+import { useCreateProduct } from "@/services/products/ProductReactQueryService";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { generateSerialBasedBarcode, generateProductBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, AlertTriangle, Search } from "lucide-react";
-import { useProducts } from "@/services/useProducts";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
@@ -184,7 +184,8 @@ export function SaleItemsList({
   
   // Helper function to get product stock
   const getProductStock = (productId: string) => {
-    const product = allProducts.find(p => p.id === productId);
+    const productsArray = Array.isArray(allProducts) ? allProducts : [];
+    const product = productsArray.find(p => p.id === productId);
     return product?.stock || 0;
   };
 
@@ -325,7 +326,7 @@ export function SaleItemsList({
                   productId={item.product_id}
                   value={item.serial_number || ""}
                   onSerialNumberUpdate={onSerialNumberUpdate}
-                  allProducts={allProducts}
+                  allProducts={Array.isArray(allProducts) ? allProducts : []}
                 />
               </div>
             </div>
