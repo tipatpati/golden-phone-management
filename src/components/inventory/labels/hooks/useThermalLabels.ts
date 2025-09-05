@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ThermalLabelData } from "../types";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
+import { ProductUnitsService, ProductUnit } from "@/services/products/productUnitsService";
 
 interface Product {
   id: string;
@@ -19,6 +20,32 @@ interface Product {
 }
 
 export function useThermalLabels(products: Product[]): ThermalLabelData[] {
+  const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
+
+  useEffect(() => {
+    const fetchProductUnits = async () => {
+      const unitsMap: Record<string, ProductUnit[]> = {};
+      
+      for (const product of products) {
+        if (product.serial_numbers && product.serial_numbers.length > 0) {
+          try {
+            const units = await ProductUnitsService.getUnitsForProduct(product.id);
+            unitsMap[product.id] = units;
+          } catch (error) {
+            console.error(`Failed to fetch units for product ${product.id}:`, error);
+            unitsMap[product.id] = [];
+          }
+        }
+      }
+      
+      setProductUnits(unitsMap);
+    };
+
+    if (products.length > 0) {
+      fetchProductUnits();
+    }
+  }, [products]);
+
   return useMemo(() => {
     const labels: ThermalLabelData[] = [];
 
@@ -28,9 +55,15 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
       const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
       
       if (product.serial_numbers && product.serial_numbers.length > 0) {
-        // Generate one label per serial number
+        const units = productUnits[product.id] || [];
+        
+        // Generate labels from product units data
         product.serial_numbers.forEach(serialNumber => {
           const parsed = parseSerialWithBattery(serialNumber);
+          
+          // Find corresponding unit for this serial number
+          const unit = units.find(u => u.serial_number === parsed.serial);
+          
           // Use product's barcode if available, otherwise generate based on IMEI/serial
           const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
@@ -38,8 +71,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           const labelProductName = formatProductUnitName({
             brand: cleanBrand,
             model: cleanModel,
-            storage: parsed.storage,
-            color: parsed.color
+            storage: unit?.storage || parsed.storage,
+            color: unit?.color || parsed.color
           });
           
           labels.push({
@@ -48,10 +81,10 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             barcode,
             price: product.price,
             category: product.category?.name,
-            color: parsed.color,
-            batteryLevel: parsed.batteryLevel,
-            storage: parsed.storage || product.storage, // Use product storage as fallback
-            ram: parsed.ram || product.ram // Use product RAM as fallback
+            color: unit?.color || parsed.color,
+            batteryLevel: unit?.battery_level || parsed.batteryLevel,
+            storage: unit?.storage || parsed.storage || product.storage,
+            ram: unit?.ram || parsed.ram || product.ram
           });
         });
       } else {
@@ -79,5 +112,5 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
     });
 
     return labels;
-  }, [products]);
+  }, [products, productUnits]);
 }
