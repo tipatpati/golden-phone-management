@@ -357,11 +357,21 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms */}
-            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '8px', textAlign: 'justify', paddingLeft: '16px', paddingRight: '16px'}}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
-              IL PRODOTTO NON SIA DANNEGGIATO.<br/>
-              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '8px', textAlign: 'justify', paddingLeft: '16px', paddingRight: '16px', fontWeight: 'bold'}}>
+              TUTTE LE VENDITE SONO<br/>
+              DEFINITIVE E NON RIMBORSABILI,<br/>
+              A MENO CHE IL<br/>
+              PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL PRODOTTO NON SIA<br/>
+              DANNEGGIATO. IL NEGOZIO NON<br/>
+              SI ASSUME RESPONSABILITÀ PER<br/>
+              EVENTUALI DANNI DERIVANTI DA<br/>
+              USO IMPROPRIO DEI PRODOTTI<br/>
+              ACQUISTATI. IL NEGOZIO HA<br/>
+              IL DIRITTO DI RIFIUTARE<br/>
+              QUALSIASI DANNEGGIAMENTO ARTICOLI<br/>
+              DANNEGGIATO E UTILIZZATI IN<br/>
+              MODO NON APPROPRIATO.
             </div>
 
             {/* Final Footer */}
@@ -451,11 +461,21 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '4mm', textAlign: 'justify', paddingLeft: '8mm', paddingRight: '8mm'}}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
-              IL PRODOTTO NON SIA DANNEGGIATO.<br/>
-              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '4mm', textAlign: 'justify', paddingLeft: '8mm', paddingRight: '8mm', fontWeight: 'bold'}}>
+              TUTTE LE VENDITE SONO<br/>
+              DEFINITIVE E NON RIMBORSABILI,<br/>
+              A MENO CHE IL<br/>
+              PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL PRODOTTO NON SIA<br/>
+              DANNEGGIATO. IL NEGOZIO NON<br/>
+              SI ASSUME RESPONSABILITÀ PER<br/>
+              EVENTUALI DANNI DERIVANTI DA<br/>
+              USO IMPROPRIO DEI PRODOTTI<br/>
+              ACQUISTATI. IL NEGOZIO HA<br/>
+              IL DIRITTO DI RIFIUTARE<br/>
+              QUALSIASI DANNEGGIAMENTO ARTICOLI<br/>
+              DANNEGGIATO E UTILIZZATI IN<br/>
+              MODO NON APPROPRIATO.
             </div>
 
             {/* Final Footer */}
