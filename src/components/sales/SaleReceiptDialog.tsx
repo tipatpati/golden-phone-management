@@ -159,7 +159,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
               height: auto !important;
               overflow: visible !important;
             }
-            @page { size: 80mm 120mm; margin: 0; }
+            @page { size: 80mm auto; margin: 0; }
           }
       `;
       
@@ -202,7 +202,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm 120mm;
+              size: 80mm auto;
               margin: 0;
               padding: 0;
             }
