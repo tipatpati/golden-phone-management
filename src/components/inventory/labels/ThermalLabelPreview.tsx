@@ -15,6 +15,7 @@ export function ThermalLabelPreview({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const formattedLabel = formatLabelElements(label, options);
   const barcodeConfig = getBarcodeConfig();
+
   useEffect(() => {
     if (canvasRef.current && options.includeBarcode && label.barcode) {
       try {

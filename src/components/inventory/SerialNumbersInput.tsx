@@ -46,15 +46,20 @@ useEffect(() => {
       const RAM_SET = new Set([1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32]);
 
       tokens.forEach((raw) => {
-        const token = raw.replace(/[%GB]/g, '');
-        const n = parseInt(token);
-        if (!isNaN(n)) {
+        const token = raw.replace(/[%]/g, ''); // Remove % but keep GB for proper parsing
+        const ramToken = raw.replace(/GB-RAM$/, ''); // Extract RAM values with GB-RAM suffix
+        const storageToken = raw.replace(/[%GB]/g, ''); // Regular storage parsing
+        
+        const n = parseInt(token.replace(/GB.*/, ''));
+        const ramValue = parseInt(ramToken);
+        
+        if (!isNaN(ramValue) && raw.includes('GB-RAM') && RAM_SET.has(ramValue) && ram === undefined) {
+          ram = ramValue;
+        } else if (!isNaN(n)) {
           if (n >= 0 && n <= 100 && batteryLevel === 0) {
             batteryLevel = n;
-          } else if (STORAGE_SET.has(n) && storage === undefined) {
+          } else if (STORAGE_SET.has(n) && raw.includes('GB') && !raw.includes('GB-RAM') && storage === undefined) {
             storage = n;
-          } else if (RAM_SET.has(n) && ram === undefined) {
-            ram = n;
           } else {
             colorTokens.push(raw);
           }
@@ -89,7 +94,7 @@ useEffect(() => {
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.ram !== undefined ? ` ${entry.ram}GB` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
+      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.ram !== undefined ? ` ${entry.ram}GB-RAM` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
       .join('\n');
 
     // Only update if the string has actually changed to prevent loops
