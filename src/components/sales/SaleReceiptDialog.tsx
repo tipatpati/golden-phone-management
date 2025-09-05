@@ -453,23 +453,23 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <div id={`receipt-content-${sale.id}`} style={{
           display: 'none'
         }}>
-            {/* Company Header - Exact format */}
+            {/* Company Header */}
             <div style={{
             textAlign: 'center',
-            marginBottom: '4mm',
-            paddingBottom: '2mm',
+            marginBottom: '8px',
+            paddingBottom: '4px',
             borderBottom: '1px solid #000'
           }}>
               <div style={{
               fontWeight: 'bold',
               fontSize: '16.8px',
-              marginBottom: '1mm',
+              marginBottom: '2px',
               letterSpacing: '0.5px'
             }}>
                 GOLDEN TRADE Q&A SRL
               </div>
               <div style={{
-              fontSize: '10.8px',
+              fontSize: '11px',
               lineHeight: '1.3'
             }}>
                 Corso Buenos Aires, 90,<br />
@@ -482,24 +482,21 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             {/* Document Type */}
             <div style={{
             textAlign: 'center',
-            marginBottom: '4mm',
-            paddingBottom: '2mm'
+            marginBottom: '8px',
+            paddingBottom: '4px'
           }}>
               <div style={{
               fontWeight: 'bold',
               fontSize: '10.4px',
-              marginBottom: '1mm'
-            }}>DOCUMENTO DI</div>
-              <div style={{
-              fontWeight: 'bold',
-              fontSize: '10.4px'
-            }}>GARANZIA</div>
+              marginBottom: '2px'
+            }}>DOCUMENTO DI GARANZIA</div>
+              
             </div>
 
-            {/* Product Info - First item details */}
+            {/* Product Info */}
             <div style={{
-            marginBottom: '4mm',
-            fontSize: '12.6px'
+            marginBottom: '8px',
+            fontSize: '11px'
           }}>
               {sale.sale_items?.slice(0, 1).map((item, index) => <div key={index} style={{
               marginBottom: '2mm'
