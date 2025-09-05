@@ -147,18 +147,20 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       // Add print styles
       const printStyles = document.createElement('style');
       printStyles.textContent = `
-        @media print {
-          body * { visibility: hidden; }
-          #print-container, #print-container * { visibility: visible; }
-          #print-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 80mm !important;
-            max-width: 80mm !important;
+          @media print {
+            body * { visibility: hidden; }
+            #print-container, #print-container * { visibility: visible; }
+            #print-container {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 80mm !important;
+              max-width: 80mm !important;
+              height: auto !important;
+              overflow: visible !important;
+            }
+            @page { size: 80mm 120mm; margin: 0; }
           }
-          @page { size: 80mm auto; margin: 0; }
-        }
       `;
       
       printContainer.id = 'print-container';
@@ -200,7 +202,7 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm auto;
+              size: 80mm 120mm;
               margin: 0;
               padding: 0;
             }
