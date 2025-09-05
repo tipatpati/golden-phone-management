@@ -12,50 +12,15 @@ interface SaleReceiptDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-// ITALIAN RECEIPT FORMAT COMPONENT
-
 export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialogProps) {
-  const renderCount = useRef(0);
-  const printCount = useRef(0);
-  
-  // 🔍 DEBUG: Track component lifecycle
-  useEffect(() => {
-    renderCount.current += 1;
-    console.group(`🔍 SaleReceiptDialog Render #${renderCount.current}`);
-    console.log('📊 Props:', { 
-      saleId: sale?.id, 
-      saleNumber: sale?.sale_number,
-      open, 
-      hasOnOpenChange: !!onOpenChange 
-    });
-    console.log('📈 Memory usage:', {
-      heapUsed: (performance as any).memory?.usedJSHeapSize || 'N/A',
-      heapTotal: (performance as any).memory?.totalJSHeapSize || 'N/A'
-    });
-    console.groupEnd();
-
-    return () => {
-      console.log(`🧹 SaleReceiptDialog cleanup for sale #${sale?.sale_number}`);
-    };
-  }, [sale?.id, sale?.sale_number, open, onOpenChange]);
-
-  // 🚀 OPTIMIZED: Memoize client name calculation
+  // Optimized client name calculation
   const clientName = useMemo(() => {
-    console.log('🔄 Calculating client name for:', sale?.client);
-    const start = performance.now();
-    
-    let result;
     if (!sale?.client) {
-      result = "Cliente Occasionale";
-    } else {
-      result = sale.client.type === "business" 
-        ? sale.client.company_name 
-        : `${sale.client.first_name} ${sale.client.last_name}`;
+      return "Cliente Occasionale";
     }
-    
-    const duration = performance.now() - start;
-    console.log(`⚡ Client name calculated in ${duration.toFixed(2)}ms:`, result);
-    return result;
+    return sale.client.type === "business" 
+      ? sale.client.company_name 
+      : `${sale.client.first_name} ${sale.client.last_name}`;
   }, [sale?.client]);
 
   // QR code generation state
@@ -67,12 +32,10 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
     if (!sale) return;
     
     const generateQRCode = async () => {
-      console.log('🔄 Generating QR code for sale:', sale.sale_number);
       setIsQrCodeGenerating(true);
-      const start = performance.now();
       
       try {
-      const qrContent = `GOLDEN PHONE
+        const qrContent = `GOLDEN PHONE
 Ricevuta: ${sale.sale_number}
 Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}
 Totale: €${sale.total_amount.toFixed(2)}`;
@@ -86,11 +49,9 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           }
         });
         
-        const duration = performance.now() - start;
-        console.log(`⚡ QR code generated in ${duration.toFixed(2)}ms`);
         setQrCode(qrDataUrl);
       } catch (error) {
-        console.error('❌ QR code generation failed:', error);
+        console.error('QR code generation failed:', error);
         setQrCode('');
       } finally {
         setIsQrCodeGenerating(false);
@@ -103,136 +64,25 @@ Totale: €${sale.total_amount.toFixed(2)}`;
   const handlePrint = async () => {
     // Wait for QR code if it's still generating
     if (isQrCodeGenerating) {
-      console.log('⏳ Waiting for QR code generation to complete...');
+      console.log('Waiting for QR code generation to complete...');
       return;
     }
 
-    printCount.current += 1;
-    console.group(`🖨️ Print Operation #${printCount.current} for sale ${sale.sale_number}`);
-    
-    const startTime = performance.now();
     const receiptId = `receipt-content-${sale.id}`;
-    
-    console.log('🔍 Looking for receipt element with ID:', receiptId);
     const receiptContent = document.getElementById(receiptId);
     
     if (!receiptContent) {
-      console.error('❌ Receipt content not found with ID:', receiptId);
-      console.log('📋 Available elements with receipt-content prefix:', 
-        Array.from(document.querySelectorAll('[id^="receipt-content"]')).map(el => el.id)
-      );
-      console.groupEnd();
-      return;
-    }
-    
-    console.log('✅ Receipt content found, size:', receiptContent.innerHTML.length, 'chars');
-
-    // Check if we're in an iframe (Lovable preview)
-    const isInIframe = window !== window.parent;
-    console.log('🔍 Environment check:', { isInIframe });
-    
-    if (isInIframe) {
-      // Iframe-safe printing using browser's native print
-      console.log('🔄 Using iframe-safe print method...');
-      
-      // Create a temporary container for printing
-      const printContainer = document.createElement('div');
-      printContainer.innerHTML = receiptContent.innerHTML;
-      printContainer.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 80mm;
-        max-width: 80mm;
-        font-family: 'Courier New', monospace;
-        font-size: 8px;
-        line-height: 1.2;
-        color: #000;
-        background: white;
-        padding: 2mm;
-        z-index: 10000;
-        overflow: visible;
-        page-break-inside: avoid;
-      `;
-      
-      // Add print styles
-      const printStyles = document.createElement('style');
-      printStyles.textContent = `
-        @media print {
-          * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          body {
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          body * { 
-            visibility: hidden !important; 
-          }
-          #print-container, #print-container * { 
-            visibility: visible !important; 
-          }
-          #print-container {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 80mm !important;
-            max-width: 80mm !important;
-            height: auto !important;
-            overflow: visible !important;
-            page-break-inside: avoid !important;
-            page-break-after: avoid !important;
-            page-break-before: avoid !important;
-          }
-          @page { 
-            size: 80mm auto !important; 
-            margin: 0 !important; 
-            padding: 0 !important;
-          }
-        }
-      `;
-      
-      printContainer.id = 'print-container';
-      document.head.appendChild(printStyles);
-      document.body.appendChild(printContainer);
-      
-      // Trigger print
-      window.print();
-      
-      // Cleanup after print with shorter timeout
-      setTimeout(() => {
-        try {
-          if (document.head.contains(printStyles)) {
-            document.head.removeChild(printStyles);
-          }
-          if (document.body.contains(printContainer)) {
-            document.body.removeChild(printContainer);
-          }
-          console.log('🧹 Print cleanup completed');
-        } catch (cleanupError) {
-          console.warn('⚠️ Print cleanup had minor issues:', cleanupError);
-        }
-      }, 500);
-      
-      const duration = performance.now() - startTime;
-      console.log(`⚡ Iframe print completed in ${duration.toFixed(2)}ms`);
-      console.groupEnd();
+      console.error('Receipt content not found');
       return;
     }
 
-    // Original print window method for regular browsers
-    console.log('🔄 Using print window method...');
+    // Create optimized print content
     const printWindow = window.open('', '_blank');
     
     if (!printWindow) {
-      console.error('❌ Could not open print window - popup blocked?');
-      console.groupEnd();
+      console.error('Could not open print window - popup blocked?');
       return;
     }
-    
-    console.log('✅ Print window opened successfully');
     
     try {
       const htmlContent = `
@@ -241,158 +91,155 @@ Totale: €${sale.total_amount.toFixed(2)}`;
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm auto !important;
+              size: 80mm 120mm !important;
               margin: 0 !important;
               padding: 0 !important;
             }
             * {
-              box-sizing: border-box;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            body {
-              font-family: 'Courier New', monospace;
-              font-size: 8px;
-              line-height: 1.2;
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
               margin: 0 !important;
               padding: 0 !important;
+            }
+            body {
+              font-family: 'Courier New', monospace !important;
+              font-size: 6px !important;
+              line-height: 1.1 !important;
+              margin: 0 !important;
+              padding: 2mm !important;
               width: 80mm !important;
               max-width: 80mm !important;
-              color: #000;
-              background: white;
-              overflow-x: hidden;
+              height: 120mm !important;
+              max-height: 120mm !important;
+              color: #000 !important;
+              background: white !important;
+              overflow: hidden !important;
               page-break-inside: avoid !important;
               page-break-after: avoid !important;
               page-break-before: avoid !important;
             }
             .receipt-container {
-              width: 80mm !important;
-              max-width: 80mm !important;
-              padding: 2mm;
-              margin: 0 !important;
-              overflow: visible !important;
+              width: 76mm !important;
+              max-width: 76mm !important;
+              height: 116mm !important;
+              max-height: 116mm !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+              overflow: hidden !important;
               page-break-inside: avoid !important;
-              page-break-after: avoid !important;
-              page-break-before: avoid !important;
             }
             .company-header {
-              text-align: center;
-              margin-bottom: 4px;
-              padding-bottom: 2px;
-              border-bottom: 1px solid #000;
+              text-align: center !important;
+              margin-bottom: 2mm !important;
+              padding-bottom: 1mm !important;
+              border-bottom: 1px solid #000 !important;
             }
             .company-name {
-              font-size: 7px;
-              font-weight: bold;
-              margin-bottom: 1px;
-              letter-spacing: 0.3px;
+              font-size: 8px !important;
+              font-weight: bold !important;
+              margin-bottom: 0.5mm !important;
             }
             .company-details {
-              font-size: 4px;
-              line-height: 1.0;
-              margin-bottom: 0;
+              font-size: 5px !important;
+              line-height: 1.0 !important;
             }
             .receipt-info {
-              margin: 3px 0;
-              padding: 2px 0;
-              border-bottom: 1px dashed #000;
+              margin: 1.5mm 0 !important;
+              padding: 1mm 0 !important;
+              border-bottom: 1px dashed #000 !important;
             }
             .receipt-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 1px;
-              font-size: 5px;
-              font-weight: normal;
+              display: flex !important;
+              justify-content: space-between !important;
+              margin-bottom: 0.5mm !important;
+              font-size: 5px !important;
             }
             .items-header {
-              margin: 3px 0 2px 0;
-              font-weight: bold;
-              font-size: 5px;
-              text-align: center;
-              border-bottom: 1px solid #000;
-              padding-bottom: 1px;
+              margin: 1.5mm 0 1mm 0 !important;
+              font-weight: bold !important;
+              font-size: 6px !important;
+              text-align: center !important;
+              border-bottom: 1px solid #000 !important;
+              padding-bottom: 0.5mm !important;
             }
             .items-section {
-              margin: 3px 0;
-              padding: 1px 0;
+              margin: 1.5mm 0 !important;
+              padding: 0 !important;
+              max-height: 30mm !important;
+              overflow: hidden !important;
             }
             .item-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 1px;
-              font-size: 4px;
-              align-items: flex-start;
+              display: flex !important;
+              justify-content: space-between !important;
+              margin-bottom: 0.5mm !important;
+              font-size: 5px !important;
+              align-items: flex-start !important;
+              page-break-inside: avoid !important;
             }
             .item-desc {
-              flex: 1;
-              margin-right: 2px;
-              word-wrap: break-word;
-              max-width: 35mm;
-              overflow: hidden;
+              flex: 1 !important;
+              margin-right: 2mm !important;
+              overflow: hidden !important;
+              white-space: nowrap !important;
+              text-overflow: ellipsis !important;
+              max-width: 35mm !important;
             }
             .item-qty {
-              width: 6mm;
-              text-align: center;
-              font-weight: bold;
+              width: 8mm !important;
+              text-align: center !important;
+              font-weight: bold !important;
             }
             .item-price {
-              width: 12mm;
-              text-align: right;
-              font-weight: bold;
+              width: 15mm !important;
+              text-align: right !important;
+              font-weight: bold !important;
             }
             .totals-section {
-              margin-top: 3px;
-              padding-top: 2px;
-              border-top: 1px dashed #000;
+              margin-top: 2mm !important;
+              padding-top: 1mm !important;
+              border-top: 1px dashed #000 !important;
             }
             .total-row {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 1px;
-              font-size: 5px;
+              display: flex !important;
+              justify-content: space-between !important;
+              margin-bottom: 0.5mm !important;
+              font-size: 5px !important;
             }
             .final-total {
-              font-weight: bold;
-              font-size: 6px;
-              border-top: 2px solid #000;
-              padding-top: 1px;
-              margin-top: 1px;
+              font-weight: bold !important;
+              font-size: 7px !important;
+              border-top: 2px solid #000 !important;
+              padding-top: 1mm !important;
+              margin-top: 1mm !important;
             }
             .payment-section {
-              margin: 3px 0;
-              padding: 2px 0;
-              border-top: 1px dashed #000;
-              border-bottom: 1px dashed #000;
+              margin: 1.5mm 0 !important;
+              padding: 1mm 0 !important;
+              font-size: 5px !important;
+              text-align: center !important;
+              border-top: 1px dashed #000 !important;
+              border-bottom: 1px dashed #000 !important;
             }
             .qr-section {
-              text-align: center;
-              margin: 4px 0 3px 0;
+              text-align: center !important;
+              margin: 2mm 0 1.5mm 0 !important;
             }
             .qr-code {
-              width: 25px;
-              height: 25px;
-              margin: 1px auto;
+              width: 20px !important;
+              height: 20px !important;
+              margin: 0.5mm auto !important;
             }
             .footer {
-              text-align: center;
-              margin-top: 3px;
-              font-size: 4px;
-              line-height: 1.1;
+              text-align: center !important;
+              margin-top: 2mm !important;
+              font-size: 4px !important;
+              line-height: 1.0 !important;
             }
             .thank-you {
-              font-weight: bold;
-              margin-bottom: 1px;
-              font-size: 5px;
-            }
-            @media print {
-              body { 
-                width: 80mm;
-                max-width: 80mm;
-              }
-              .receipt-container {
-                width: 80mm;
-                max-width: 80mm;
-              }
+              font-weight: bold !important;
+              margin-bottom: 0.5mm !important;
+              font-size: 5px !important;
             }
           </style>
         </head>
@@ -410,19 +257,14 @@ Totale: €${sale.total_amount.toFixed(2)}`;
       printWindow.print();
       printWindow.close();
       
-      const duration = performance.now() - startTime;
-      console.log(`⚡ Print window operation completed in ${duration.toFixed(2)}ms`);
-      
     } catch (error) {
-      console.error('❌ Print operation failed:', error);
+      console.error('Print operation failed:', error);
       try {
         printWindow.close();
       } catch (closeError) {
-        console.error('❌ Failed to close print window:', closeError);
+        console.error('Failed to close print window:', closeError);
       }
     }
-    
-    console.groupEnd();
   };
 
   return (
@@ -491,108 +333,122 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
           </div>
 
-          {/* Hidden receipt content for printing - 8cm x 8cm thermal format */}
+          {/* Hidden receipt content for printing - Optimized compact thermal format */}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
-            {/* Company Header */}
-            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '11px', marginBottom: '2px', letterSpacing: '0.3px'}}>
-                GOLDEN TRADE Q&A SRL
+            {/* Company Header - Compact */}
+            <div style={{textAlign: 'center', marginBottom: '3mm', paddingBottom: '1mm', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '0.5mm'}}>
+                GOLDEN PHONE SRL
               </div>
-              <div style={{fontSize: '8px', lineHeight: '1.3'}}>
-                Corso Buenos Aires, 90,<br/>
-                20124 Milano - MI<br/>
-                P. IVA: 12345678901<br/>
-                Tel: +39 351 565 6095
+              <div style={{fontSize: '5px', lineHeight: '1.1'}}>
+                Corso Buenos Aires, 90 - Milano<br/>
+                P.IVA: 12345678901 - Tel: 351.565.6095
               </div>
             </div>
 
-            {/* Document Type */}
-            <div style={{textAlign: 'center', marginBottom: '8px', paddingBottom: '4px'}}>
-              <div style={{fontWeight: 'bold', fontSize: '10px', marginBottom: '2px'}}>DOCUMENTO DI</div>
-              <div style={{fontWeight: 'bold', fontSize: '10px'}}>GARANZIA</div>
+            {/* Receipt Info - Compact */}
+            <div style={{marginBottom: '3mm', fontSize: '5px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm'}}>
+                <span>Ricevuta:</span>
+                <span style={{fontWeight: 'bold'}}>{sale.sale_number}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm'}}>
+                <span>Data:</span>
+                <span>{format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <span>Cliente:</span>
+                <span>{clientName.length > 15 ? clientName.substring(0, 15) + '...' : clientName}</span>
+              </div>
             </div>
 
-            {/* Product Info */}
-            <div style={{marginBottom: '8px'}}>
-              {sale.sale_items?.map((item, index) => (
-                <div key={index} style={{marginBottom: '6px', fontSize: '9px'}}>
-                  <div style={{fontWeight: 'bold', marginBottom: '2px'}}>
-                    {item.product ? `${item.product.brand}` : "Smartphone"}
-                  </div>
-                  <div style={{marginBottom: '1px'}}>
-                    {item.product ? `${item.product.model}` : "Pro Max"}
-                  </div>
-                  <div style={{marginBottom: '1px'}}>
-                    SN: {item.serial_number || "359357621574578"}
-                  </div>
-                  <div style={{fontSize: '8px'}}>
-                    Garanzia: 1 anno
-                  </div>
+            {/* Items Header */}
+            <div style={{textAlign: 'center', fontWeight: 'bold', fontSize: '6px', marginBottom: '1mm', paddingBottom: '0.5mm', borderBottom: '1px solid #000'}}>
+              ARTICOLI
+            </div>
+
+            {/* Items - Compact with max 5 items */}
+            <div style={{marginBottom: '3mm', fontSize: '5px'}}>
+              {sale.sale_items?.slice(0, 5).map((item, index) => (
+                <div key={index} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm', alignItems: 'flex-start'}}>
+                  <span style={{flex: '1', marginRight: '2mm', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '35mm'}}>
+                    {item.product ? `${item.product.brand} ${item.product.model}`.substring(0, 25) : "Prodotto"}
+                  </span>
+                  <span style={{width: '8mm', textAlign: 'center', fontWeight: 'bold'}}>
+                    {item.quantity}
+                  </span>
+                  <span style={{width: '15mm', textAlign: 'right', fontWeight: 'bold'}}>
+                    €{item.total_price.toFixed(2)}
+                  </span>
                 </div>
               ))}
-            </div>
-
-            {/* Payment Summary */}
-            <div style={{marginBottom: '8px', fontSize: '8px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
-                <span>Pagato con Carta:</span>
-                <span>0.00 €</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
-                <span>Pagato in Contanti:</span>
-                <span>{sale.total_amount.toFixed(2)} €</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '2px'}}>
-                <span>Sconto:</span>
-                <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
-              </div>
-              <div style={{borderTop: '1px solid #000', paddingTop: '2px', marginTop: '4px'}}>
-                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold'}}>
-                  <span>Totale:</span>
-                  <span>{sale.total_amount.toFixed(2)} €</span>
+              {(sale.sale_items?.length || 0) > 5 && (
+                <div style={{fontSize: '4px', textAlign: 'center', fontStyle: 'italic', marginTop: '1mm'}}>
+                  +{(sale.sale_items?.length || 0) - 5} altri articoli
                 </div>
+              )}
+            </div>
+
+            {/* Totals - Compact */}
+            <div style={{marginBottom: '3mm', paddingTop: '1mm', borderTop: '1px dashed #000'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '5px', marginBottom: '0.5mm'}}>
+                <span>Subtotale:</span>
+                <span>€{sale.subtotal.toFixed(2)}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '5px', marginBottom: '0.5mm'}}>
+                <span>IVA:</span>
+                <span>€{sale.tax_amount.toFixed(2)}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '7px', borderTop: '2px solid #000', paddingTop: '1mm', marginTop: '1mm'}}>
+                <span>TOTALE:</span>
+                <span>€{sale.total_amount.toFixed(2)}</span>
               </div>
             </div>
 
-            {/* QR Code centered */}
-            <div style={{textAlign: 'center', marginBottom: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+            {/* Payment Method - Compact */}
+            <div style={{marginBottom: '3mm', fontSize: '5px', textAlign: 'center', padding: '1mm 0', borderTop: '1px dashed #000', borderBottom: '1px dashed #000'}}>
+              <span>Pagamento: </span>
+              <span style={{fontWeight: 'bold'}}>
+                {sale.payment_method === 'cash' ? 'CONTANTI' : 
+                 sale.payment_method === 'card' ? 'CARTA' : 
+                 sale.payment_method === 'bank_transfer' ? 'BONIFICO' : 'MISTO'}
+              </span>
+            </div>
+
+            {/* QR Code - Smaller */}
+            <div style={{textAlign: 'center', marginBottom: '2mm'}}>
               {qrCode && (
                 <img 
                   src={qrCode} 
                   alt="QR Code" 
-                  style={{width: '50px', height: '50px', border: '1px solid #000', display: 'block', margin: '0 auto'}}
+                  style={{width: '20px', height: '20px', display: 'block', margin: '0 auto'}}
                 />
               )}
             </div>
 
-            {/* Date and Time */}
-            <div style={{textAlign: 'center', marginBottom: '8px', fontSize: '8px'}}>
-              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
-            </div>
-
-            {/* Legal Terms */}
-            <div style={{fontSize: '7px', lineHeight: '1.2', marginBottom: '8px', textAlign: 'justify'}}>
-              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.<br/>
-              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
-              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
-            </div>
-
-            {/* Final Footer */}
-            <div style={{textAlign: 'center', fontSize: '7px', marginTop: '8px'}}>
-              Questo documento non è<br/>
-              un documento fiscale.
+            {/* Footer - Compact */}
+            <div style={{textAlign: 'center', fontSize: '4px', lineHeight: '1.1'}}>
+              <div style={{fontWeight: 'bold', marginBottom: '0.5mm', fontSize: '5px'}}>
+                GRAZIE PER LA VOSTRA VISITA!
+              </div>
+              <div style={{marginBottom: '0.5mm'}}>
+                Garanzia: 12 mesi • Assistenza tecnica
+              </div>
+              <div>
+                {format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex gap-2">
-          <Button 
-            onClick={handlePrint} 
-            className="flex-1" 
-            disabled={isQrCodeGenerating}
-          >
-            {isQrCodeGenerating ? 'Generando QR Code...' : 'Stampa Ricevuta'}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button 
+              onClick={handlePrint}
+              disabled={isQrCodeGenerating}
+              className="w-full"
+            >
+              {isQrCodeGenerating ? "Generando QR..." : "Stampa Ricevuta"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
