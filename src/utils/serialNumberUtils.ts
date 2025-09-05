@@ -24,32 +24,35 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
   const colorTokens: string[] = [];
 
   for (const raw of tokens) {
-    const token = raw.replace(/[%]/g, ''); // Remove % but keep GB for proper parsing
-    const ramToken = raw.replace(/GB-RAM$/, ''); // Extract RAM values with GB-RAM suffix
-    const storageToken = raw.replace(/[%GB]/g, ''); // Regular storage parsing
-    
-    const n = parseInt(token.replace(/GB.*/, ''));
-    const ramValue = parseInt(ramToken);
-
-    if (!isNaN(ramValue) && raw.includes('GB-RAM') && RAM_SET.has(ramValue) && result.ram === undefined) {
-      result.ram = ramValue;
-      continue;
-    }
-    
-    if (!isNaN(n)) {
-      if (n >= 0 && n <= 100 && result.batteryLevel === undefined) {
-        result.batteryLevel = n;
+    // Handle RAM first (highest specificity)
+    if (raw.includes('GB-RAM')) {
+      const ramValue = parseInt(raw.replace('GB-RAM', ''));
+      if (!isNaN(ramValue) && RAM_SET.has(ramValue) && result.ram === undefined) {
+        result.ram = ramValue;
         continue;
       }
-      if (STORAGE_SET.has(n) && raw.includes('GB') && !raw.includes('GB-RAM') && result.storage === undefined) {
-        result.storage = n;
+    }
+    
+    // Handle regular storage (GB without -RAM suffix)
+    if (raw.includes('GB') && !raw.includes('GB-RAM')) {
+      const storageValue = parseInt(raw.replace('GB', ''));
+      if (!isNaN(storageValue) && STORAGE_SET.has(storageValue) && result.storage === undefined) {
+        result.storage = storageValue;
         continue;
       }
-      // numeric token that is not battery, storage, or RAM -> treat as color part to be lenient
-      colorTokens.push(raw);
-    } else {
-      colorTokens.push(raw);
     }
+    
+    // Handle battery percentage
+    if (raw.includes('%')) {
+      const batteryValue = parseInt(raw.replace('%', ''));
+      if (!isNaN(batteryValue) && batteryValue >= 0 && batteryValue <= 100 && result.batteryLevel === undefined) {
+        result.batteryLevel = batteryValue;
+        continue;
+      }
+    }
+    
+    // If none of the above, treat as color
+    colorTokens.push(raw);
   }
 
   if (colorTokens.length > 0) {
