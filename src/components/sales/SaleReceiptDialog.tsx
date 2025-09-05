@@ -357,7 +357,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms */}
-            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '8px', textAlign: 'center', paddingLeft: '16px', paddingRight: '16px', fontWeight: 'bold'}}>
+            <div style={{fontSize: '9px', lineHeight: '2.24', marginBottom: '8px', textAlign: 'center', paddingLeft: '16px', paddingRight: '16px', fontWeight: 'bold'}}>
               TUTTE LE VENDITE SONO<br/>
               DEFINITIVE E NON RIMBORSABILI,<br/>
               A MENO CHE IL<br/>
@@ -461,7 +461,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
             </div>
 
             {/* Legal Terms - Exact text */}
-            <div style={{fontSize: '9px', lineHeight: '3.2', marginBottom: '4mm', textAlign: 'center', paddingLeft: '8mm', paddingRight: '8mm', fontWeight: 'bold'}}>
+            <div style={{fontSize: '9px', lineHeight: '2.24', marginBottom: '4mm', textAlign: 'center', paddingLeft: '8mm', paddingRight: '8mm', fontWeight: 'bold'}}>
               TUTTE LE VENDITE SONO<br/>
               DEFINITIVE E NON RIMBORSABILI,<br/>
               A MENO CHE IL<br/>
