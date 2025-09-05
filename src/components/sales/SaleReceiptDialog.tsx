@@ -86,7 +86,7 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm 120mm !important;
+              size: 80mm auto !important;
               margin: 0 !important;
               padding: 0 !important;
             }
