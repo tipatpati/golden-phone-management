@@ -86,7 +86,6 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
           <title>Ricevuta #${sale.sale_number}</title>
           <style>
             @page {
-              size: 80mm auto !important;
               margin: 0 !important;
               padding: 0 !important;
             }
@@ -103,10 +102,10 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               line-height: 1.2 !important;
               margin: 0 !important;
               padding: 2mm !important;
-              width: 80mm !important;
-              max-width: 80mm !important;
+              width: auto !important;
+              max-width: none !important;
               height: auto !important;
-              min-height: 120mm !important;
+              min-height: auto !important;
               color: #000 !important;
               background: white !important;
               overflow: visible !important;
@@ -115,10 +114,10 @@ ${format(new Date(sale.sale_date), "yyyy-MM-dd")}
               page-break-before: avoid !important;
             }
             .receipt-container {
-              width: 76mm !important;
-              max-width: 76mm !important;
+              width: auto !important;
+              max-width: none !important;
               height: auto !important;
-              min-height: 116mm !important;
+              min-height: auto !important;
               margin: 0 auto !important;
               padding: 0 !important;
               overflow: visible !important;
