@@ -25,24 +25,25 @@ export function SaleReceiptDialog({ sale, open, onOpenChange }: SaleReceiptDialo
 
   // QR code generation state
   const [qrCode, setQrCode] = React.useState<string>('');
-  const [isQrCodeGenerating, setIsQrCodeGenerating] = React.useState<boolean>(true);
+  const [isQrCodeGenerating, setIsQrCodeGenerating] = React.useState<boolean>(false);
 
-  // Generate QR code
+  // Generate QR code immediately and efficiently
   React.useEffect(() => {
     if (!sale) return;
     
     const generateQRCode = async () => {
-      setIsQrCodeGenerating(true);
-      
       try {
-        const qrContent = `GOLDEN PHONE
-Ricevuta: ${sale.sale_number}
-Data: ${format(new Date(sale.sale_date), "dd/MM/yyyy")}
-Totale: €${sale.total_amount.toFixed(2)}`;
+        // Create simpler QR content for faster generation
+        const qrContent = `GOLDEN TRADE Q&A SRL
+${sale.sale_number}
+${format(new Date(sale.sale_date), "yyyy-MM-dd")}
+€${sale.total_amount.toFixed(2)}`;
         
+        // Generate QR code with minimal settings for speed
         const qrDataUrl = await QRCode.toDataURL(qrContent, {
-          width: 80,
-          margin: 1,
+          width: 60,
+          margin: 0,
+          errorCorrectionLevel: 'L', // Low error correction for speed
           color: {
             dark: '#000000',
             light: '#FFFFFF'
@@ -52,22 +53,16 @@ Totale: €${sale.total_amount.toFixed(2)}`;
         setQrCode(qrDataUrl);
       } catch (error) {
         console.error('QR code generation failed:', error);
-        setQrCode('');
-      } finally {
-        setIsQrCodeGenerating(false);
+        // Create fallback QR code
+        setQrCode('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSIzMCIgeT0iMzAiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+UVI8L3RleHQ+Cjwvc3ZnPgo=');
       }
     };
 
+    // Generate QR immediately without delay
     generateQRCode();
   }, [sale?.sale_number, sale?.sale_date, sale?.total_amount]);
 
   const handlePrint = async () => {
-    // Wait for QR code if it's still generating
-    if (isQrCodeGenerating) {
-      console.log('Waiting for QR code generation to complete...');
-      return;
-    }
-
     const receiptId = `receipt-content-${sale.id}`;
     const receiptContent = document.getElementById(receiptId);
     
@@ -333,120 +328,106 @@ Totale: €${sale.total_amount.toFixed(2)}`;
             </div>
           </div>
 
-          {/* Hidden receipt content for printing - Optimized compact thermal format */}
+          {/* Hidden receipt content for printing - Exact model from reference */}
           <div id={`receipt-content-${sale.id}`} style={{display: 'none'}}>
-            {/* Company Header - Compact */}
-            <div style={{textAlign: 'center', marginBottom: '3mm', paddingBottom: '1mm', borderBottom: '1px solid #000'}}>
-              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '0.5mm'}}>
-                GOLDEN PHONE SRL
+            {/* Company Header - Exact format */}
+            <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm', borderBottom: '1px solid #000'}}>
+              <div style={{fontWeight: 'bold', fontSize: '9px', marginBottom: '1mm', letterSpacing: '0.5px'}}>
+                GOLDEN TRADE Q&A SRL
               </div>
-              <div style={{fontSize: '5px', lineHeight: '1.1'}}>
-                Corso Buenos Aires, 90 - Milano<br/>
-                P.IVA: 12345678901 - Tel: 351.565.6095
-              </div>
-            </div>
-
-            {/* Receipt Info - Compact */}
-            <div style={{marginBottom: '3mm', fontSize: '5px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm'}}>
-                <span>Ricevuta:</span>
-                <span style={{fontWeight: 'bold'}}>{sale.sale_number}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm'}}>
-                <span>Data:</span>
-                <span>{format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                <span>Cliente:</span>
-                <span>{clientName.length > 15 ? clientName.substring(0, 15) + '...' : clientName}</span>
+              <div style={{fontSize: '6px', lineHeight: '1.2'}}>
+                Corso Buenos Aires, 90,<br/>
+                20124 Milano - MI<br/>
+                P. IVA: 12345678901<br/>
+                Tel: +39 351 565 6095
               </div>
             </div>
 
-            {/* Items Header */}
-            <div style={{textAlign: 'center', fontWeight: 'bold', fontSize: '6px', marginBottom: '1mm', paddingBottom: '0.5mm', borderBottom: '1px solid #000'}}>
-              ARTICOLI
+            {/* Document Type */}
+            <div style={{textAlign: 'center', marginBottom: '4mm', paddingBottom: '2mm'}}>
+              <div style={{fontWeight: 'bold', fontSize: '8px', marginBottom: '1mm'}}>DOCUMENTO DI</div>
+              <div style={{fontWeight: 'bold', fontSize: '8px'}}>GARANZIA</div>
             </div>
 
-            {/* Items - Compact with max 5 items */}
-            <div style={{marginBottom: '3mm', fontSize: '5px'}}>
-              {sale.sale_items?.slice(0, 5).map((item, index) => (
-                <div key={index} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.5mm', alignItems: 'flex-start'}}>
-                  <span style={{flex: '1', marginRight: '2mm', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '35mm'}}>
-                    {item.product ? `${item.product.brand} ${item.product.model}`.substring(0, 25) : "Prodotto"}
-                  </span>
-                  <span style={{width: '8mm', textAlign: 'center', fontWeight: 'bold'}}>
-                    {item.quantity}
-                  </span>
-                  <span style={{width: '15mm', textAlign: 'right', fontWeight: 'bold'}}>
-                    €{item.total_price.toFixed(2)}
-                  </span>
+            {/* Product Info - First item details */}
+            <div style={{marginBottom: '4mm', fontSize: '7px'}}>
+              {sale.sale_items?.slice(0, 1).map((item, index) => (
+                <div key={index} style={{marginBottom: '2mm'}}>
+                  <div style={{fontWeight: 'bold', marginBottom: '1mm', fontSize: '8px'}}>
+                    {item.product?.brand || "Smartphone"}
+                  </div>
+                  <div style={{marginBottom: '0.5mm'}}>
+                    {item.product?.model || "iPhone 13 Pro Max"}
+                  </div>
+                  <div style={{marginBottom: '0.5mm'}}>
+                    SN: {item.serial_number || "359357621574578"}
+                  </div>
+                  <div style={{fontSize: '6px'}}>
+                    Garanzia: 1 anno
+                  </div>
                 </div>
               ))}
-              {(sale.sale_items?.length || 0) > 5 && (
-                <div style={{fontSize: '4px', textAlign: 'center', fontStyle: 'italic', marginTop: '1mm'}}>
-                  +{(sale.sale_items?.length || 0) - 5} altri articoli
+            </div>
+
+            {/* Payment Details - Exact format */}
+            <div style={{marginBottom: '4mm', fontSize: '6px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
+                <span>Pagato con Carta:</span>
+                <span>{sale.payment_method === 'card' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
+                <span>Pagato in Contanti:</span>
+                <span>{sale.payment_method === 'cash' ? sale.total_amount.toFixed(2) : '0.00'} €</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1mm'}}>
+                <span>Sconto:</span>
+                <span>{(sale.discount_amount || 0).toFixed(2)} €</span>
+              </div>
+              <div style={{borderTop: '1px solid #000', paddingTop: '1mm', marginTop: '2mm'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '7px'}}>
+                  <span>Totale:</span>
+                  <span>{sale.total_amount.toFixed(2)} €</span>
                 </div>
-              )}
-            </div>
-
-            {/* Totals - Compact */}
-            <div style={{marginBottom: '3mm', paddingTop: '1mm', borderTop: '1px dashed #000'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '5px', marginBottom: '0.5mm'}}>
-                <span>Subtotale:</span>
-                <span>€{sale.subtotal.toFixed(2)}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '5px', marginBottom: '0.5mm'}}>
-                <span>IVA:</span>
-                <span>€{sale.tax_amount.toFixed(2)}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '7px', borderTop: '2px solid #000', paddingTop: '1mm', marginTop: '1mm'}}>
-                <span>TOTALE:</span>
-                <span>€{sale.total_amount.toFixed(2)}</span>
               </div>
             </div>
 
-            {/* Payment Method - Compact */}
-            <div style={{marginBottom: '3mm', fontSize: '5px', textAlign: 'center', padding: '1mm 0', borderTop: '1px dashed #000', borderBottom: '1px dashed #000'}}>
-              <span>Pagamento: </span>
-              <span style={{fontWeight: 'bold'}}>
-                {sale.payment_method === 'cash' ? 'CONTANTI' : 
-                 sale.payment_method === 'card' ? 'CARTA' : 
-                 sale.payment_method === 'bank_transfer' ? 'BONIFICO' : 'MISTO'}
-              </span>
-            </div>
-
-            {/* QR Code - Smaller */}
-            <div style={{textAlign: 'center', marginBottom: '2mm'}}>
+            {/* QR Code - Centered */}
+            <div style={{textAlign: 'center', marginBottom: '4mm'}}>
               {qrCode && (
                 <img 
                   src={qrCode} 
                   alt="QR Code" 
-                  style={{width: '20px', height: '20px', display: 'block', margin: '0 auto'}}
+                  style={{width: '40px', height: '40px', display: 'block', margin: '0 auto', border: '1px solid #000'}}
                 />
               )}
             </div>
 
-            {/* Footer - Compact */}
-            <div style={{textAlign: 'center', fontSize: '4px', lineHeight: '1.1'}}>
-              <div style={{fontWeight: 'bold', marginBottom: '0.5mm', fontSize: '5px'}}>
-                GRAZIE PER LA VOSTRA VISITA!
-              </div>
-              <div style={{marginBottom: '0.5mm'}}>
-                Garanzia: 12 mesi • Assistenza tecnica
-              </div>
-              <div>
-                {format(new Date(sale.sale_date), "dd/MM/yyyy HH:mm")}
-              </div>
+            {/* Date and Time */}
+            <div style={{textAlign: 'center', marginBottom: '4mm', fontSize: '6px'}}>
+              <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
+            </div>
+
+            {/* Legal Terms - Exact text */}
+            <div style={{fontSize: '5px', lineHeight: '1.3', marginBottom: '4mm', textAlign: 'justify'}}>
+              TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DANNEGGIATO.
+              IL PRODOTTO NON SIA DANNEGGIATO.<br/>
+              IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DA USO IMPROPRIO DEI PRODOTTI ACQUISTATI.<br/>
+              IL NEGOZIO HA IL DIRITTO DI RIFIUTARE QUALSIASI DANNEGGIAMENTO ARTICOLI DANNEGGIATO E UTILIZZATI IN MODO NON APPROPRIATO.
+            </div>
+
+            {/* Final Footer */}
+            <div style={{textAlign: 'center', fontSize: '5px', marginTop: '3mm'}}>
+              Questo documento non è<br/>
+              un documento fiscale.
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <Button 
               onClick={handlePrint}
-              disabled={isQrCodeGenerating}
               className="w-full"
             >
-              {isQrCodeGenerating ? "Generando QR..." : "Stampa Ricevuta"}
+              Stampa Ricevuta
             </Button>
           </div>
         </div>
