@@ -98,19 +98,37 @@ export function generateIMEIBarcode(imei: string, options: BarcodeOptions = { fo
     
     // If input has enough digits for EAN13, generate EAN13
     if (numericOnly.length >= 8 && options.format !== 'CODE128') {
-      const prefix = numericOnly.slice(0, 12).padEnd(12, '0');
-      const ean13 = generateValidEAN13Barcode(prefix);
+      let base = numericOnly.slice(0, 12).padEnd(12, '0');
+      if (options.productId) {
+        // Inject a short numeric hash of productId to ensure uniqueness across products
+        let h = 0;
+        for (let i = 0; i < options.productId.length; i++) {
+          h = (h * 31 + options.productId.charCodeAt(i)) >>> 0;
+        }
+        const h3 = (h % 1000).toString().padStart(3, '0');
+        base = base.slice(0, 9) + h3; // keep first 9 digits from input, last 3 from hash
+      }
+      const ean13 = generateValidEAN13Barcode(base);
       
       return {
         barcode: ean13,
         format: 'GTIN-13',
         isGS1Compliant: true,
-        metadata: { companyPrefix: prefix.slice(0, 9) }
+        metadata: { companyPrefix: base.slice(0, 9) }
       };
     } else {
       // Use CODE128 for alphanumeric or short inputs
       const batteryCode = options.batteryLevel !== undefined ? options.batteryLevel.toString() : '';
-      const barcode = cleanInput + batteryCode;
+      let barcode = cleanInput + batteryCode;
+      if (options.productId) {
+        // Append short hash suffix for uniqueness when using CODE128
+        let h = 0;
+        for (let i = 0; i < options.productId.length; i++) {
+          h = (h * 31 + options.productId.charCodeAt(i)) >>> 0;
+        }
+        const h3 = (h % 1000).toString().padStart(3, '0');
+        barcode = `${barcode}-${h3}`;
+      }
       
       return {
         barcode: barcode,
