@@ -29,6 +29,7 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
         // Generate one label per serial number
         product.serial_numbers.forEach(serialNumber => {
           const parsed = parseSerialWithBattery(serialNumber);
+          console.log('Serial parsing:', { serialNumber, parsed });
           // Use product's barcode if available, otherwise generate based on IMEI/serial
           const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
