@@ -76,8 +76,8 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
           const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
           // Get storage and RAM with fallback hierarchy
-          const storage = unit?.storage || parsed.storage || product.storage;
-          const ram = unit?.ram || parsed.ram || product.ram;
+          const storage = unit?.storage || parsed.storage || product.storage || 128;
+          const ram = unit?.ram || parsed.ram || product.ram || 6;
           
           // Apply "Brand Model Storage" naming convention
           const labelProductName = formatProductUnitName({
