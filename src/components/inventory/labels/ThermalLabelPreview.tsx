@@ -21,34 +21,63 @@ export function ThermalLabelPreview({
       try {
         console.log('🏷️ Generating barcode for:', label.barcode);
         
-        // Use CODE128 for all barcodes to avoid EAN13 validation issues
-        const format = 'CODE128';
-        
-        // Clear the canvas first
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        
+        // Set canvas dimensions for better rendering
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = 200;
+        const displayHeight = 50;
+        
+        canvas.width = displayWidth * dpr;
+        canvas.height = displayHeight * dpr;
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        
+        // Scale context for high DPI displays
         if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.scale(dpr, dpr);
+          ctx.clearRect(0, 0, displayWidth, displayHeight);
         }
         
-        JsBarcode(canvasRef.current, label.barcode, {
-          format: format,
-          width: 1.5,
+        // Generate barcode with proper settings
+        JsBarcode(canvas, label.barcode, {
+          format: 'CODE128',
+          width: 1.8,
           height: 35,
           displayValue: true,
-          fontSize: 8,
-          font: barcodeConfig.font,
-          textAlign: barcodeConfig.textAlign,
-          textPosition: barcodeConfig.textPosition,
+          fontSize: 10,
+          fontOptions: 'bold',
+          font: 'Arial',
+          textAlign: 'center',
+          textPosition: 'bottom',
           textMargin: 4,
-          margin: barcodeConfig.margin,
-          background: barcodeConfig.background,
-          lineColor: barcodeConfig.lineColor
+          margin: 5,
+          background: '#ffffff',
+          lineColor: '#000000',
+          marginTop: 2,
+          marginBottom: 2,
+          marginLeft: 10,
+          marginRight: 10
         });
         
-        console.log('🏷️ Barcode generated successfully');
+        console.log('✅ Barcode generated successfully for:', label.barcode);
       } catch (error) {
-        console.error('❌ Barcode generation failed:', error);
+        console.error('❌ Barcode generation failed for', label.barcode, ':', error);
+        
+        // Fallback: Draw error message on canvas
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (ctx && canvas) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#ff0000';
+          ctx.font = '12px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Barcode Error', canvas.width / 2, canvas.height / 2);
+          ctx.fillStyle = '#000000';
+          ctx.font = '10px Arial';
+          ctx.fillText(label.barcode || 'No barcode', canvas.width / 2, canvas.height / 2 + 15);
+        }
       }
     } else {
       console.log('🏷️ Barcode not rendered:', {
@@ -57,7 +86,7 @@ export function ThermalLabelPreview({
         barcode: label.barcode
       });
     }
-  }, [label.barcode, options.includeBarcode, barcodeConfig]);
+  }, [label.barcode, options.includeBarcode]);
 
   // Professional thermal label styling - 6cm × 5cm landscape (227px × 189px)
   const labelStyle = {
@@ -186,10 +215,14 @@ export function ThermalLabelPreview({
       padding: '2px',
       overflow: 'hidden'
     }}>
-          <canvas ref={canvasRef} style={{
-        maxWidth: '100%',
-        height: '50px'
-      }} />
+          <canvas 
+            ref={canvasRef} 
+            style={{
+              maxWidth: '200px',
+              height: '50px',
+              display: 'block'
+            }} 
+          />
         </div>}
 
     </div>;
