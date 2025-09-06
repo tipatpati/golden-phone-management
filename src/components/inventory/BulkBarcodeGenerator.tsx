@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useUpdateProduct } from '@/services/products/ProductReactQueryService';
-import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
+import { Code128GeneratorService } from '@/services/barcodes';
 
 import { toast } from '@/components/ui/sonner';
 import { Barcode, RefreshCw, Check, X } from 'lucide-react';
@@ -48,7 +48,7 @@ export function BulkBarcodeGenerator() {
         const firstSerial = product.serial_numbers[0];
         // Use serial directly - no parsing needed
         const serial = firstSerial.trim();
-        const newBarcode = generateSKUBasedBarcode(serial, product.id, undefined);
+        const newBarcode = `GPMS-BULK-${product.id.slice(-8)}-${serial.slice(-4)}`;
         
         await updateProduct.mutateAsync({
           id: product.id,

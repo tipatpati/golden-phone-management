@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import JsBarcode from 'jsbarcode';
-import { generateIMEIBarcode, BarcodeOptions } from '@/utils/barcodeGenerator';
+import { Code128GeneratorService } from '@/services/barcodes';
 import { validateIMEI } from '@/utils/imeiValidation';
-import { validateGS1Compliance } from '@/utils/gs1BarcodeGenerator';
+// import { validateGS1Compliance } from '@/utils/gs1BarcodeGenerator';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
@@ -14,7 +14,7 @@ interface EnhancedBarcodeGeneratorProps {
   format?: 'AUTO' | 'GTIN-13' | 'CODE128';
   className?: string;
   showValidation?: boolean;
-  barcodeOptions?: BarcodeOptions;
+  barcodeOptions?: { format?: string };
 }
 
 export function EnhancedBarcodeGenerator({
@@ -40,27 +40,20 @@ export function EnhancedBarcodeGenerator({
     try {
       setError(null);
       
-      // Generate enhanced barcode with GS1 compliance
-      const options: BarcodeOptions = {
-        format: format as any,
-        ...barcodeOptions
+      // Use professional CODE128 validation
+      const validation = Code128GeneratorService.validateCode128(value);
+      const result = {
+        barcode: value,
+        format: 'CODE128'
       };
-      
-      const result = generateIMEIBarcode(value, options);
       setBarcodeResult(result);
 
-      // Use consistent format detection for rendering
-      let renderFormat = result.format;
-      if (renderFormat === 'GTIN-13') {
-        renderFormat = 'EAN13' as any;
-      }
-
-      // Generate the barcode image with consistent settings across all components
+      // Use CODE128 format for rendering
       JsBarcode(canvasRef.current, result.barcode, {
-        format: renderFormat as any,
+        format: 'CODE128',
         width: 1.8,
         height: 55,
-        displayValue: displayValue, // Use the prop value (default true)
+        displayValue: displayValue,
         fontSize: 10,
         fontOptions: 'bold',
         font: 'Arial, sans-serif',

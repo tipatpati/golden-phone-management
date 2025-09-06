@@ -11,8 +11,10 @@ vi.mock('@/services/products/ProductUnitsService', () => ({
 }));
 
 // Mock barcode generator
-vi.mock('@/utils/barcodeGenerator', () => ({
-  generateSKUBasedBarcode: vi.fn((serial: string, productId: string) => `SKU-${serial}-${productId.slice(0, 8)}`)
+vi.mock('@/services/barcodes', () => ({
+  Code128GeneratorService: {
+    getOrGenerateUnitBarcode: vi.fn((unitId: string) => `GPMSU${unitId.slice(-6)}`)
+  }
 }));
 
 // Mock product naming

@@ -6,7 +6,7 @@ import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/products/ProductReactQueryService";
 import { ProductUnitsService } from "@/services/products/ProductUnitsService";
-import { generateSerialBasedBarcode, generateProductBarcode } from "@/utils/barcodeGenerator";
+import { Code128GeneratorService } from "@/services/barcodes";
 
 import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
@@ -47,46 +47,22 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    // No need for parsing - work with structured unit entries directly
-    const serialEntries = data.unit_entries?.map(entry => {
-      const barcode = generateSerialBasedBarcode(entry.serial, undefined, entry.battery_level);
-      return {
-        serial: entry.serial,
-        color: entry.color,
-        batteryLevel: entry.battery_level,
-        barcode: barcode
-      };
-    }) || [];
-
-    const colors = [...new Set(serialEntries.map(entry => entry.color).filter(Boolean))];
-    const enhancedBrand = colors.length > 0 ? `${data.brand} (${colors.join(', ')})` : data.brand;
-    
-    const newProduct = {
-      brand: enhancedBrand,
-      model: data.model,
-      year: data.year,
-      category_id: data.category_id,
-      price: data.price,
-      min_price: data.min_price,
-      max_price: data.max_price,
-      stock: data.stock,
-      threshold: data.threshold,
-      has_serial: data.has_serial,
-      serial_numbers: data.has_serial ? data.unit_entries?.map(entry => entry.serial) : undefined,
-      barcode: serialEntries.length > 0 
-        ? serialEntries[0].barcode 
-        : generateProductBarcode(data.brand, data.model, undefined, 0, false),
-      description: data.description,
-      supplier: data.supplier
+    // Create product with professional CODE128 barcode system
+    const productData = {
+      ...data,
+      barcode: data.has_serial 
+        ? `GPMS-PRODUCT-${Date.now()}` // Temporary placeholder for products with serials
+        : `GPMS-SINGLE-${Date.now()}`, // Single product barcode
+      serial_numbers: data.has_serial ? (data.unit_entries?.map(e => e.serial) || []) : undefined,
     };
     
     logger.debug('Submitting product', { 
-      categoryId: newProduct.category_id,
-      serialEntriesCount: serialEntries.length 
+      categoryId: productData.category_id,
+      unitEntriesCount: data.unit_entries?.length || 0
     }, 'AddProductDialog');
     
     return new Promise<void>((resolve, reject) => {
-      createProduct.mutate(newProduct, {
+      createProduct.mutate(productData, {
         onSuccess: async (responseData) => {
           try {
             // Create individual units with IMEI barcodes if product has serials
@@ -110,9 +86,8 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
           }
             
             handleProductCreated({ 
-              ...newProduct, 
-              id: responseData?.id, 
-              serialEntries 
+              ...productData, 
+              id: responseData?.id
             });
             setOpen(false);
             resolve();

@@ -3,7 +3,7 @@ import { formatProductName } from "@/utils/productNaming";
 import { BarcodeManagerProps } from "./types";
 import { EnhancedBarcodeGenerator } from "../EnhancedBarcodeGenerator";
 import { BarcodeFormatSelector, BarcodeFormat } from "../BarcodeFormatSelector";
-import { generateIMEIBarcode, BarcodeOptions } from "@/utils/barcodeGenerator";
+import { Code128GeneratorService } from "@/services/barcodes";
 
 
 interface SerialEntry {
@@ -33,21 +33,17 @@ export function BarcodeManager({
       // Use serial directly - no parsing needed
       const serial = line.trim();
       
-      const options: BarcodeOptions = {
-        format: barcodeFormat as any,
-        productId,
-        batteryLevel: undefined
-      };
-      
-      const barcodeResult = generateIMEIBarcode(serial, options);
+      // Use professional CODE128 barcode format
+      const barcode = `GPMS-${serial.replace(/[^\w]/g, '').toUpperCase()}`;
+      const validation = Code128GeneratorService.validateCode128(barcode);
       
       return {
         serial: line.trim(),
         color: undefined,
         batteryLevel: undefined,
-        barcode: barcodeResult.barcode,
-        barcodeFormat: barcodeResult.format,
-        isGS1Compliant: barcodeResult.isGS1Compliant,
+        barcode: barcode,
+        barcodeFormat: 'CODE128',
+        isGS1Compliant: validation.isValid,
         index: index
       };
     });

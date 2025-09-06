@@ -1,211 +1,136 @@
-// Enhanced barcode generation with GS1 compliance and IMEI support
+// DEPRECATED: Legacy barcode generation utilities
+// New CODE128 system available in src/services/barcodes/
+import { Code128GeneratorService } from '@/services/barcodes';
 import { formatProductName, parseSerialString } from "./productNaming";
 import { validateIMEI } from './imeiValidation';
-import { generateOptimalBarcode, BarcodeGenerationOptions, BarcodeResult } from './gs1BarcodeGenerator';
 
-export interface BarcodeOptions extends BarcodeGenerationOptions {
+export interface BarcodeOptions {
+  format?: string;
   batteryLevel?: number;
   color?: string;
   productId?: string;
 }
 
+export interface BarcodeResult {
+  barcode: string;
+  format: string;
+  isGS1Compliant?: boolean;
+  metadata?: any;
+}
+
 /**
- * Legacy EAN13 check digit calculation (kept for backward compatibility)
+ * DEPRECATED: Use Code128GeneratorService.validateCode128() instead
+ * Calculate the check digit for EAN13 barcode
  */
-function calculateEAN13CheckDigit(partialBarcode: string): string {
-  let sum = 0;
-  
-  for (let i = 0; i < partialBarcode.length; i++) {
-    const digit = parseInt(partialBarcode[i]);
-    const multiplier = (i % 2 === 0) ? 1 : 3;
-    sum += digit * multiplier;
+export function calculateEAN13CheckDigit(partialBarcode: string): string {
+  console.warn('⚠️ calculateEAN13CheckDigit is deprecated. Use Code128GeneratorService instead.');
+  if (partialBarcode.length !== 12) {
+    throw new Error('Partial barcode must be exactly 12 digits');
   }
+
+  let oddSum = 0;
+  let evenSum = 0;
+
+  for (let i = 0; i < 12; i++) {
+    const digit = parseInt(partialBarcode[i]);
+    if (i % 2 === 0) {
+      oddSum += digit;
+    } else {
+      evenSum += digit;
+    }
+  }
+
+  const total = oddSum + (evenSum * 3);
+  const checkDigit = (10 - (total % 10)) % 10;
   
-  const checkDigit = (10 - (sum % 10)) % 10;
   return checkDigit.toString();
 }
 
 /**
- * Validates EAN13 barcode format and check digit
+ * DEPRECATED: Use Code128GeneratorService.validateCode128() instead
+ * Validate EAN13 barcode format and check digit
  */
 export function validateEAN13Barcode(barcode: string): boolean {
+  console.warn('⚠️ validateEAN13Barcode is deprecated. Use Code128GeneratorService instead.');
   if (!/^\d{13}$/.test(barcode)) {
     return false;
   }
-  
-  const checkDigit = barcode.slice(-1);
-  const partialBarcode = barcode.slice(0, -1);
+
+  const partialBarcode = barcode.slice(0, 12);
+  const providedCheckDigit = barcode.slice(12);
   const calculatedCheckDigit = calculateEAN13CheckDigit(partialBarcode);
-  
-  return checkDigit === calculatedCheckDigit;
+
+  return providedCheckDigit === calculatedCheckDigit;
 }
 
 /**
- * Generates a valid EAN13 barcode (legacy function)
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
+ * Generate a valid EAN13 barcode from a 12-digit prefix
  */
 export function generateValidEAN13Barcode(prefix: string = "123456789012"): string {
-  const sanitizedPrefix = prefix.replace(/[^0-9]/g, '').slice(0, 12);
-  const paddedPrefix = sanitizedPrefix.padEnd(12, '0');
-  
-  const checkDigit = calculateEAN13CheckDigit(paddedPrefix);
-  return paddedPrefix + checkDigit;
-}
-
-/**
- * Generates a string-based barcode using product naming convention
- */
-function generateFromString(input: string): string {
-  // Clean the input and create a numeric representation
-  const cleanInput = input.replace(/[^A-Za-z0-9]/g, '');
-  const numericInput = cleanInput.replace(/[^0-9]/g, '');
-  
-  // If we have enough digits, create EAN13
-  if (numericInput.length >= 8) {
-    const prefix = numericInput.slice(0, 12).padEnd(12, '0');
-    return generateValidEAN13Barcode(prefix);
+  console.warn('⚠️ generateValidEAN13Barcode is deprecated. Use Code128GeneratorService instead.');
+  if (prefix.length !== 12 || !/^\d{12}$/.test(prefix)) {
+    throw new Error('Prefix must be exactly 12 digits');
   }
-  
-  // Otherwise, use the clean input as is (CODE128 compatible)
-  return cleanInput;
+
+  const checkDigit = calculateEAN13CheckDigit(prefix);
+  return prefix + checkDigit;
 }
 
 /**
- * Enhanced IMEI-based barcode generation with GS1 compliance
+ * DEPRECATED: Use Code128GeneratorService instead
+ * Generate barcode from string input
+ */
+export function generateFromString(input: string): string {
+  console.warn('⚠️ generateFromString is deprecated. Use Code128GeneratorService instead.');
+  return input.replace(/[^\w-]/g, '').toUpperCase();
+}
+
+/**
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
+ * Generate IMEI barcode
  */
 export function generateIMEIBarcode(imei: string, options: BarcodeOptions = { format: 'AUTO' }): BarcodeResult {
-  // Clean input
-  const cleanInput = imei.replace(/[^A-Za-z0-9]/g, '');
-  
-  // Validate IMEI first
-  const imeiValidation = validateIMEI(imei);
-  
-  if (imeiValidation.isValid) {
-    // Use GS1-compliant generation for valid IMEI
-    const gs1Options: BarcodeGenerationOptions = {
-      ...options,
-      deviceType: 'mobile',
-      applicationIdentifiers: {
-        '01': '', // Will be filled by GS1 generator
-        '21': imeiValidation.formattedIMEI!, // Serial number
-        ...(options.batteryLevel && { '90': options.batteryLevel.toString() }) // Custom AI for battery
-      }
-    };
-    
-    return generateOptimalBarcode(imeiValidation.formattedIMEI!, gs1Options);
-  } else {
-    // For non-IMEI inputs, generate appropriate barcode format
-    const numericOnly = cleanInput.replace(/[^0-9]/g, '');
-    
-    // If input has enough digits for EAN13, generate EAN13
-    if (numericOnly.length >= 8 && options.format !== 'CODE128') {
-      let base = numericOnly.slice(0, 12).padEnd(12, '0');
-      if (options.productId) {
-        // Inject a short numeric hash of productId to ensure uniqueness across products
-        let h = 0;
-        for (let i = 0; i < options.productId.length; i++) {
-          h = (h * 31 + options.productId.charCodeAt(i)) >>> 0;
-        }
-        const h3 = (h % 1000).toString().padStart(3, '0');
-        base = base.slice(0, 9) + h3; // keep first 9 digits from input, last 3 from hash
-      }
-      const ean13 = generateValidEAN13Barcode(base);
-      
-      return {
-        barcode: ean13,
-        format: 'GTIN-13',
-        isGS1Compliant: true,
-        metadata: { companyPrefix: base.slice(0, 9) }
-      };
-    } else {
-      // Use CODE128 for alphanumeric or short inputs
-      const batteryCode = options.batteryLevel !== undefined ? options.batteryLevel.toString() : '';
-      let barcode = cleanInput + batteryCode;
-      if (options.productId) {
-        // Append short hash suffix for uniqueness when using CODE128
-        let h = 0;
-        for (let i = 0; i < options.productId.length; i++) {
-          h = (h * 31 + options.productId.charCodeAt(i)) >>> 0;
-        }
-        const h3 = (h % 1000).toString().padStart(3, '0');
-        barcode = `${barcode}-${h3}`;
-      }
-      
-      return {
-        barcode: barcode,
-        format: 'CODE128',
-        isGS1Compliant: false,
-        metadata: {}
-      };
-    }
-  }
+  console.warn('⚠️ generateIMEIBarcode is deprecated. Use Code128GeneratorService instead.');
+  return {
+    barcode: imei.replace(/[^\w-]/g, '').toUpperCase(),
+    format: 'CODE128'
+  };
 }
 
 /**
- * Legacy serial-based barcode generation (for backward compatibility)
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
  */
-function generateLegacySerialBarcode(serial: string, productId?: string, batteryLevel?: number): string {
-  const cleanSerial = serial.replace(/[^A-Za-z0-9]/g, '');
-  const numericSerial = cleanSerial.replace(/[^0-9]/g, '');
-  
-  // If we have enough digits, try to create EAN13
-  if (numericSerial.length >= 8) {
-    const prefix = numericSerial.slice(0, 12).padEnd(12, '0');
-    return generateValidEAN13Barcode(prefix);
-  }
-  
-  // Otherwise, use alphanumeric format for CODE128
-  const batteryCode = batteryLevel !== undefined ? batteryLevel.toString() : '0';
-  return cleanSerial + batteryCode;
+export function generateLegacySerialBarcode(serial: string, productId?: string, batteryLevel?: number): string {
+  console.warn('⚠️ generateLegacySerialBarcode is deprecated. Use Code128GeneratorService instead.');
+  return serial.replace(/[^\w-]/g, '').toUpperCase();
 }
 
 /**
- * Main function for generating barcodes from serial numbers/IMEI
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
  */
 export function generateSerialBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
-  const options: BarcodeOptions = {
-    format: 'AUTO',
-    productId,
-    batteryLevel
-  };
-  
-  const result = generateIMEIBarcode(serial, options);
-  return result.barcode;
+  console.warn('⚠️ generateSerialBasedBarcode is deprecated. Use Code128GeneratorService instead.');
+  return serial.replace(/[^\w-]/g, '').toUpperCase();
 }
 
 /**
- * Enhanced product barcode generation following Brand Model Storage convention
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
  */
-export function generateProductBarcode(
-  brand: string,
-  model: string,
-  serialNumbers?: string[],
-  unitIndex: number = 0,
-  hasSerial: boolean = true
-): string {
-  console.log('[Barcode] generateProductBarcode called', { 
-    brand, 
-    model, 
-    serialCount: serialNumbers?.length, 
-    unitIndex, 
-    hasSerial 
-  });
-
-  // Generate barcode based on brand-model-storage format
-  const productName = formatProductName({ brand, model });
-  
-  if (hasSerial && serialNumbers?.length > 0) {
-    // Parse the first serial to get storage info for consistent naming
-    const parsed = parseSerialString(serialNumbers[0]);
-    const nameWithStorage = formatProductName({ brand, model, storage: parsed.storage });
-    return generateFromString(nameWithStorage);
+export function generateProductBarcode(brand: string, model: string, serialNumbers?: string[], unitIndex: number = 0, hasSerial: boolean = true): string {
+  console.warn('⚠️ generateProductBarcode is deprecated. Use Code128GeneratorService instead.');
+  if (hasSerial && serialNumbers && serialNumbers.length > unitIndex) {
+    const serial = serialNumbers[unitIndex];
+    return serial.replace(/[^\w-]/g, '').toUpperCase();
+  } else {
+    const productName = `${brand} ${model}`;
+    return productName.replace(/[^\w-]/g, '').toUpperCase();
   }
-  
-  // For products without serials, use brand-model format
-  return generateFromString(productName);
 }
 
 /**
- * Legacy function name for backward compatibility
+ * DEPRECATED: Use Code128GeneratorService.generateUnitBarcode() instead
+ * Generate SKU-based barcode with hash for uniqueness
  */
 export function generateSKUBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
   console.warn('⚠️ generateSKUBasedBarcode is deprecated. Use Code128GeneratorService instead.');
