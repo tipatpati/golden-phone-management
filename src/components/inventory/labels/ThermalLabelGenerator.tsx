@@ -21,6 +21,8 @@ interface ThermalLabelGeneratorProps {
   productSerialNumbers?: string[];
   productName?: string;
   productPrice?: number;
+  productMaxPrice?: number;
+  productMinPrice?: number;
   productBarcode?: string;
   productCategory?: string;
   productId?: string; // Add productId for real data fetching
@@ -35,6 +37,8 @@ export function ThermalLabelGenerator({
   productSerialNumbers = [],
   productName = "",
   productPrice = 0,
+  productMaxPrice,
+  productMinPrice,
   productBarcode = "",
   productCategory = "",
   productId, // Accept productId
@@ -152,6 +156,8 @@ export function ThermalLabelGenerator({
               onSelectionChange={setSelectedLabels}
               productName={productName}
               productPrice={productPrice}
+              productMaxPrice={productMaxPrice}
+              productMinPrice={productMinPrice}
               productBarcode={productBarcode}
               productCategory={productCategory}
               productId={productId} // Pass productId for real data fetching

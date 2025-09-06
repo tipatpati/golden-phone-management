@@ -152,6 +152,8 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
               serialNumber: entry.serial,
               barcode: entry.barcode || `${createdProduct.brand}-${createdProduct.model}-${entry.serial}`,
               price: createdProduct.price,
+              maxPrice: createdProduct.max_price,
+              minPrice: createdProduct.min_price,
               category: createdProduct.category?.name,
               color: entry.color,
               batteryLevel: entry.batteryLevel
@@ -161,9 +163,13 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
               serialNumber: undefined,
               barcode: createdProduct.barcode || `${createdProduct.brand}-${createdProduct.model}`,
               price: createdProduct.price,
+              maxPrice: createdProduct.max_price,
+              minPrice: createdProduct.min_price,
               category: createdProduct.category?.name
             }]
           }
+          productMaxPrice={createdProduct.max_price}
+          productMinPrice={createdProduct.min_price}
           companyName="GOLDEN PHONE SRL"
         />
       )}

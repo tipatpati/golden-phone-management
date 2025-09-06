@@ -368,6 +368,8 @@ export function InventoryTable({
           return formatProductName({ brand: cleanBrand, model: cleanModel });
         })()}
         productPrice={selectedProduct.price || 0}
+        productMaxPrice={selectedProduct.max_price}
+        productMinPrice={selectedProduct.min_price}
         productBarcode={selectedProduct.barcode}
         productCategory={selectedProduct.category?.name}
         companyName="GOLDEN PHONE SRL"

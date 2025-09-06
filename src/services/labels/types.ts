@@ -4,6 +4,7 @@ export interface ThermalLabelData {
   barcode: string;
   price: number;
   maxPrice?: number;
+  minPrice?: number;
   category?: string;
   color?: string;
   batteryLevel?: number;

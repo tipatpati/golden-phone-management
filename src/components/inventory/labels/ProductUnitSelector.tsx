@@ -15,6 +15,8 @@ interface ProductUnitSelectorProps {
   onSelectionChange: (selectedLabels: ThermalLabelData[]) => void;
   productName: string;
   productPrice: number;
+  productMaxPrice?: number;
+  productMinPrice?: number;
   productBarcode?: string;
   productCategory?: string;
   productId?: string; // Add productId to fetch real unit data
@@ -25,6 +27,8 @@ export function ProductUnitSelector({
   onSelectionChange,
   productName,
   productPrice,
+  productMaxPrice,
+  productMinPrice,
   productBarcode,
   productCategory,
   productId
@@ -66,6 +70,8 @@ export function ProductUnitSelector({
           barcode: unit.barcode || '', // Use existing barcode from DB
           productName: productName,
           price: unit.price || productPrice,
+          maxPrice: unit.max_price || productMaxPrice,
+          minPrice: unit.min_price || productMinPrice,
           color: unit.color,
           storage: unit.storage,
           ram: unit.ram,
