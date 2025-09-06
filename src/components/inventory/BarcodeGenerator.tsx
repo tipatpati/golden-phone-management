@@ -23,30 +23,9 @@ export function BarcodeGenerator({
   useEffect(() => {
     if (canvasRef.current && value) {
       try {
-        // Auto-detect format based on barcode length and content
-        let detectedFormat = format;
-        if (format === 'EAN13') {
-          // For EAN13, check if it's exactly 13 digits and has valid check digit
-          if (value.length !== 13 || !/^\d{13}$/.test(value)) {
-            detectedFormat = 'CODE128';
-          } else {
-            // Validate EAN13 check digit
-            const checkDigit = value.slice(-1);
-            const partial = value.slice(0, -1);
-            let sum = 0;
-            for (let i = 0; i < partial.length; i++) {
-              const digit = parseInt(partial[i]);
-              sum += digit * ((i % 2 === 0) ? 1 : 3);
-            }
-            const calculatedCheck = ((10 - (sum % 10)) % 10).toString();
-            if (checkDigit !== calculatedCheck) {
-              detectedFormat = 'CODE128';
-            }
-          }
-        }
-
+        // Force CODE128 format for professional barcode system
         JsBarcode(canvasRef.current, value, {
-          format: detectedFormat,
+          format: 'CODE128',
           width,
           height,
           displayValue,
@@ -56,35 +35,25 @@ export function BarcodeGenerator({
           textAlign: 'center',
           textPosition: 'bottom',
           textMargin: 6,
-          margin: 10,
+          margin: 8,
           background: '#ffffff',
           lineColor: '#000000'
         });
       } catch (error) {
-        console.error('Error generating barcode:', error);
-        // Fallback to CODE128 if EAN13 fails
-        try {
-          JsBarcode(canvasRef.current, value, {
-            format: 'CODE128',
-            width,
-            height,
-            displayValue,
-            fontSize: 14,
-            fontOptions: 'bold',
-            font: 'Arial',
-            textAlign: 'center',
-            textPosition: 'bottom',
-            textMargin: 6,
-            margin: 10,
-            background: '#ffffff',
-            lineColor: '#000000'
-          });
-        } catch (fallbackError) {
-          console.error('Fallback barcode generation also failed:', fallbackError);
+        console.error('Failed to generate CODE128 barcode:', error);
+        
+        // Display error message on canvas
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.fillStyle = '#ff0000';
+          ctx.font = '12px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Barcode Error', canvasRef.current.width / 2, canvasRef.current.height / 2);
         }
       }
     }
-  }, [value, width, height, displayValue, format]);
+  }, [value, width, height, displayValue]);
 
   if (!value) {
     return null;

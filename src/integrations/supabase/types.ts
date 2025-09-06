@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      barcode_registry: {
+        Row: {
+          barcode: string
+          barcode_type: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          format: string
+          id: string
+          metadata: Json | null
+          updated_at: string
+        }
+        Insert: {
+          barcode: string
+          barcode_type: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          format?: string
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string
+          barcode_type?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          format?: string
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           category_id: number | null
@@ -117,6 +153,30 @@ export type Database = {
           status?: string
           tax_id?: string | null
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: Json
           updated_at?: string
         }
         Relationships: []

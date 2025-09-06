@@ -4,7 +4,7 @@ import { ProductForm } from "./forms/ProductForm";
 import { useUpdateProduct } from "@/services/products/ProductReactQueryService";
 import { Product } from "@/services/products/types";
 import { ProductFormData, UnitEntryForm } from "./forms/types";
-import { ProductUnitsService } from "@/services/products/productUnitsService";
+import { ProductUnitsService } from "@/services/products/ProductUnitsService";
 import { toast } from "@/components/ui/sonner";
 import { log } from "@/utils/logger";
 

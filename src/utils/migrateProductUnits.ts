@@ -1,4 +1,4 @@
-import { ProductUnitsService } from "@/services/products/productUnitsService";
+import { ProductUnitsService } from "@/services/products/ProductUnitsService";
 
 /**
  * Utility to migrate existing product units by re-parsing their serial numbers

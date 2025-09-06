@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { ThermalLabelData } from "../types";
-import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
+import { Code128GeneratorService } from "@/services/barcodes";
 
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
-import { ProductUnitsService, ProductUnit } from "@/services/products/productUnitsService";
+import { ProductUnitsService, ProductUnit } from "@/services/products/ProductUnitsService";
 
 interface Product {
   id: string;
@@ -131,8 +131,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             battery_level: unit.battery_level
           });
           
-          // Always generate unique barcode for each unit based on serial number
-          const barcode = generateSKUBasedBarcode(unit.serial_number, product.id, unit.battery_level);
+          // Use existing barcode or fallback
+          const barcode = unit.barcode || `GPMS${unit.serial_number.slice(-6)}`;
           
           // Use unit data directly (no fallbacks to parsed data)
           const storage = unit.storage || product.storage || 128;
@@ -208,8 +208,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
         });
         
         for (let i = 0; i < quantity; i++) {
-          // Use product's barcode if available, otherwise generate unique barcode per unit
-          const barcode = product.barcode || generateSKUBasedBarcode(`${productName}-${i + 1}`, product.id);
+          // Use product's barcode or generate simple fallback
+          const barcode = product.barcode || `GPMSBULK${i + 1}`;
           
           const labelData = {
             productName,

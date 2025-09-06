@@ -23,7 +23,7 @@ import {
   Euro
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProductUnitsService, ProductUnit } from "@/services/products/productUnitsService";
+import { ProductUnitsService, ProductUnit } from "@/services/products/ProductUnitsService";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 
 interface Product {

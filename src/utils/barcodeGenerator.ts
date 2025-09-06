@@ -208,23 +208,6 @@ export function generateProductBarcode(
  * Legacy function name for backward compatibility
  */
 export function generateSKUBasedBarcode(serial: string, productId?: string, batteryLevel?: number): string {
-  console.log('🔢 Generating unique barcode for:', { serial, productId, batteryLevel });
-  
-  // Create a unique hash from serial + productId + batteryLevel
-  let uniqueString = serial;
-  if (productId) uniqueString += productId;
-  if (batteryLevel !== undefined) uniqueString += batteryLevel.toString();
-  
-  // Generate hash for uniqueness
-  let hash = 0;
-  for (let i = 0; i < uniqueString.length; i++) {
-    hash = ((hash << 5) - hash + uniqueString.charCodeAt(i)) & 0xffffffff;
-  }
-  
-  // Convert to positive number and create unique barcode
-  const positiveHash = Math.abs(hash);
-  const uniqueBarcode = `${serial.slice(-8)}${positiveHash.toString().slice(-4)}`;
-  
-  console.log('🔢 Generated unique barcode:', uniqueBarcode);
-  return uniqueBarcode;
+  console.warn('⚠️ generateSKUBasedBarcode is deprecated. Use Code128GeneratorService instead.');
+  return serial.replace(/[^\w-]/g, '').toUpperCase();
 }

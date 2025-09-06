@@ -5,7 +5,7 @@ import { BaseDialog } from "@/components/common/BaseDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/products/ProductReactQueryService";
-import { ProductUnitsService } from "@/services/products/productUnitsService";
+import { ProductUnitsService } from "@/services/products/ProductUnitsService";
 import { generateSerialBasedBarcode, generateProductBarcode } from "@/utils/barcodeGenerator";
 
 import { ThermalLabelGenerator } from "./labels";
