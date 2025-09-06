@@ -28,19 +28,50 @@ export function RecentSales() {
   // Get the 5 most recent garentille
   const recentGarentille = garentilleArray.slice(0, 5);
 
-  const getClientName = (client: any) => {
+  const getClientName = (sale: any) => {
+    const client = sale.client;
     if (!client) return "Cliente Occasionale";
-    return client.type === "business" 
-      ? client.company_name 
-      : `${client.first_name} ${client.last_name}`;
+    
+    if (client.type === "business") {
+      return client.company_name || 'Unnamed Business';
+    }
+    
+    const firstName = client.first_name?.trim() || '';
+    const lastName = client.last_name?.trim() || '';
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    } else if (firstName) {
+      return firstName;
+    } else if (lastName) {
+      return lastName;
+    }
+    
+    return 'Individual Client';
   };
 
   const getClientEmail = (client: any) => {
     return client?.email || "Nessuna email fornita";
   };
 
-  const getClientInitials = (clientName: string) => {
-    return clientName.split(' ').map(name => name.charAt(0)).join('').toUpperCase().slice(0, 2);
+  const getClientInitials = (client: any) => {
+    if (client.type === 'business') {
+      const companyName = client.company_name || 'UB';
+      return companyName.split(' ')
+        .map((word: string) => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    
+    const firstName = client.first_name?.trim() || '';
+    const lastName = client.last_name?.trim() || '';
+    
+    let initials = '';
+    if (firstName) initials += firstName.charAt(0);
+    if (lastName) initials += lastName.charAt(0);
+    
+    return initials.toUpperCase() || 'UC';
   };
 
   if (isLoading) {
@@ -83,9 +114,9 @@ export function RecentSales() {
         {recentGarentille.length > 0 ? (
           <div className="space-y-3 sm:space-y-4">
             {recentGarentille.map((sale) => {
-              const clientName = getClientName(sale.client);
+              const clientName = getClientName(sale);
               const clientEmail = getClientEmail(sale.client);
-              const initials = getClientInitials(clientName);
+              const initials = getClientInitials(sale.client);
               
               return (
                 <div key={sale.id} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all">

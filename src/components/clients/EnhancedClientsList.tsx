@@ -49,9 +49,22 @@ export function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClien
   }, [searchTerm, typeFilter, statusFilter, clients]);
 
   const getClientDisplayName = (client: Client) => {
-    return client.type === "business" 
-      ? client.company_name || 'Unnamed Business'
-      : `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unnamed Client';
+    if (client.type === "business") {
+      return client.company_name || 'Unnamed Business';
+    }
+    
+    const firstName = client.first_name?.trim() || '';
+    const lastName = client.last_name?.trim() || '';
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    } else if (firstName) {
+      return firstName;
+    } else if (lastName) {
+      return lastName;
+    }
+    
+    return 'Unnamed Client';
   };
 
   if (clients.length === 0) {

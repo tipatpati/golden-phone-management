@@ -68,10 +68,10 @@ export function EditProductDialog({
           // Get existing units for this product
           const existingUnits = await ProductUnitsService.getUnitsForProduct(product.id);
           
-          // Delete existing units that are no longer in the serial numbers list
-          const currentSerials = data.serial_numbers.map(sn => sn.split(' ')[0]); // Get just the serial part
+          // Get current serials - use them directly
+          const currentSerials = data.serial_numbers || [];
           const unitsToDelete = existingUnits.filter(unit => 
-            !currentSerials.includes(unit.serial_number.split(' ')[0])
+            !currentSerials.includes(unit.serial_number)
           );
           
           for (const unit of unitsToDelete) {
@@ -79,9 +79,9 @@ export function EditProductDialog({
           }
           
           // Create units for new serial numbers
-          const existingSerials = existingUnits.map(unit => unit.serial_number.split(' ')[0]);
-          const newSerials = data.serial_numbers.filter(sn => 
-            !existingSerials.includes(sn.split(' ')[0])
+          const existingSerials = existingUnits.map(unit => unit.serial_number);
+          const newSerials = (data.serial_numbers || []).filter(sn => 
+            !existingSerials.includes(sn)
           );
           
           if (newSerials.length > 0) {

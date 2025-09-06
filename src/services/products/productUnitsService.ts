@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { generateIMEIBarcode } from "@/utils/barcodeGenerator";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+
 
 export interface ProductUnit {
   id: string;
@@ -192,19 +192,9 @@ export class ProductUnitsService {
         
         const updates = batch
           .map(unit => {
-            // Re-parse the serial number to extract storage/RAM
-            const parsed = parseSerialWithBattery(unit.serial_number);
-            
-            // Only update if we found new storage or RAM data
-            if (parsed.storage || parsed.ram) {
-              return {
-                id: unit.id,
-                storage: parsed.storage,
-                ram: parsed.ram,
-                updated_at: new Date().toISOString()
-              };
-            }
-            return null;
+            // No longer using parsing - units have structured data
+            console.log(`Unit ${unit.id}: No parsing needed`);
+            return null; // No updates needed
           })
           .filter(Boolean);
 

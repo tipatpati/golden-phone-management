@@ -4,7 +4,7 @@ import { BarcodeManagerProps } from "./types";
 import { EnhancedBarcodeGenerator } from "../EnhancedBarcodeGenerator";
 import { BarcodeFormatSelector, BarcodeFormat } from "../BarcodeFormatSelector";
 import { generateIMEIBarcode, BarcodeOptions } from "@/utils/barcodeGenerator";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+
 
 interface SerialEntry {
   serial: string;
@@ -30,23 +30,24 @@ export function BarcodeManager({
     
     const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
     return lines.map((line, index) => {
-      const parsed = parseSerialWithBattery(line);
+      // Use serial directly - no parsing needed
+      const serial = line.trim();
       
       const options: BarcodeOptions = {
         format: barcodeFormat as any,
         productId,
-        batteryLevel: parsed.batteryLevel
+        batteryLevel: undefined
       };
       
-      const result = generateIMEIBarcode(parsed.serial, options);
+      const barcodeResult = generateIMEIBarcode(serial, options);
       
       return {
         serial: line.trim(),
-        color: parsed.color,
-        batteryLevel: parsed.batteryLevel,
-        barcode: result.barcode,
-        barcodeFormat: result.format,
-        isGS1Compliant: result.isGS1Compliant,
+        color: undefined,
+        batteryLevel: undefined,
+        barcode: barcodeResult.barcode,
+        barcodeFormat: barcodeResult.format,
+        isGS1Compliant: barcodeResult.isGS1Compliant,
         index: index
       };
     });

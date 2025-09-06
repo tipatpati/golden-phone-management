@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Search, Battery, Palette } from "lucide-react";
-import { parseSerialString } from "@/utils/productNaming";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+import { formatProductUnitName } from "@/utils/productNaming";
 import { ThermalLabelData } from "./types";
 
 interface ProductUnitSelectorProps {
@@ -33,11 +32,19 @@ export function ProductUnitSelector({
   // Parse and filter serial numbers
   const parsedUnits = useMemo(() => {
     return serialNumbers.map((serialNumber, index) => {
-      const parsed = parseSerialWithBattery(serialNumber);
+      // Use serial directly - no parsing needed
+      const serial = serialNumber.trim();
       return {
-        index,
-        original: serialNumber,
-        ...parsed
+        id: index,
+        serial,
+        color: undefined,
+        storage: undefined,
+        ram: undefined,
+        batteryLevel: undefined,
+        name: `${productName} #${index + 1}`,
+        price: productPrice || 0,
+        barcode: productBarcode,
+        category: productCategory
       };
     }).filter(unit => 
       searchTerm === "" || 
@@ -49,7 +56,7 @@ export function ProductUnitSelector({
   // Generate thermal labels from selected units
   const generateSelectedLabels = (selectedIndices: Set<number>): ThermalLabelData[] => {
     return Array.from(selectedIndices).map(index => {
-      const unit = parsedUnits.find(u => u.index === index);
+      const unit = parsedUnits.find(u => u.id === index);
       if (!unit) return null;
 
       return {
@@ -80,7 +87,7 @@ export function ProductUnitSelector({
   };
 
   const handleSelectAll = () => {
-    const allIndices = new Set(parsedUnits.map(unit => unit.index));
+    const allIndices = new Set(parsedUnits.map(unit => unit.id));
     setSelectedUnits(allIndices);
     onSelectionChange(generateSelectedLabels(allIndices));
   };
@@ -142,18 +149,18 @@ export function ProductUnitSelector({
           ) : (
             parsedUnits.map((unit) => (
               <div
-                key={unit.index}
+                key={unit.id}
                 className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  selectedUnits.has(unit.index) 
+                  selectedUnits.has(unit.id)
                     ? "bg-primary/5 border-primary/20" 
                     : "hover:bg-muted/50"
                 }`}
-                onClick={() => handleUnitToggle(unit.index)}
+                onClick={() => handleUnitToggle(unit.id)}
               >
                 <Checkbox
-                  id={`unit-${unit.index}`}
-                  checked={selectedUnits.has(unit.index)}
-                  onCheckedChange={() => handleUnitToggle(unit.index)}
+                  id={`unit-${unit.id}`}
+                  checked={selectedUnits.has(unit.id)}
+                  onCheckedChange={() => handleUnitToggle(unit.id)}
                 />
                 
                 <div className="flex-1 space-y-1">

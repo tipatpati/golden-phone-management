@@ -101,36 +101,8 @@ export function parseSerialString(serialString: string): {
   storage?: number;
   batteryLevel?: number;
 } {
-  const parts = serialString.trim().split(/\s+/);
-  const serial = parts[0] || '';
-  
-  let color: string | undefined;
-  let storage: number | undefined;
-  let batteryLevel: number | undefined;
-  
-  const tokens = parts.slice(1);
-  const colorTokens: string[] = [];
-  
-  tokens.forEach((token) => {
-    const cleanToken = token.replace(/[%GB]/gi, '');
-    const num = parseInt(cleanToken);
-    
-    if (!isNaN(num)) {
-      if (token.includes('%') && num >= 0 && num <= 100 && !batteryLevel) {
-        batteryLevel = num;
-      } else if (token.includes('GB') && [16, 32, 64, 128, 256, 512, 1024].includes(num) && !storage) {
-        storage = num;
-      } else {
-        colorTokens.push(token);
-      }
-    } else {
-      colorTokens.push(token);
-    }
-  });
-  
-  if (colorTokens.length > 0) {
-    color = colorTokens.join(' ');
-  }
-  
-  return { serial, color, storage, batteryLevel };
+  // Simple extraction - no complex parsing
+  return {
+    serial: serialString.trim(),
+  };
 }

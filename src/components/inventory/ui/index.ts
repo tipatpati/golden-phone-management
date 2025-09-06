@@ -18,4 +18,3 @@ export type { ProductFormData, SerialEntry } from "../forms/types";
 export { useProductForm } from "../forms/hooks/useProductForm";
 export { useProductValidation } from "../forms/hooks/useProductValidation";
 export { useInventoryServices } from "../forms/hooks/useInventoryServices";
-export { useSerialNumberManager } from "../forms/hooks/useSerialNumberManager";

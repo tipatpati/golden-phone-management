@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useUpdateProduct } from '@/services/products/ProductReactQueryService';
 import { generateSKUBasedBarcode } from '@/utils/barcodeGenerator';
-import { parseSerialWithBattery } from '@/utils/serialNumberUtils';
+
 import { toast } from '@/components/ui/sonner';
 import { Barcode, RefreshCw, Check, X } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -46,8 +46,9 @@ export function BulkBarcodeGenerator() {
         }
         
         const firstSerial = product.serial_numbers[0];
-        const { serial, batteryLevel } = parseSerialWithBattery(firstSerial);
-        const newBarcode = generateSKUBasedBarcode(serial, product.id, batteryLevel);
+        // Use serial directly - no parsing needed
+        const serial = firstSerial.trim();
+        const newBarcode = generateSKUBasedBarcode(serial, product.id, undefined);
         
         await updateProduct.mutateAsync({
           id: product.id,
