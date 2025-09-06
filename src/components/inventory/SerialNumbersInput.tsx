@@ -228,6 +228,38 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                 />
               </div>
 
+              <div className="col-span-1">
+                <Label className="text-xs font-medium mb-1 block">Storage (GB)</Label>
+                <Select 
+                  value={entry.storage?.toString() || ''} 
+                  onValueChange={(value) => updateEntry(index, 'storage', value ? parseInt(value) : undefined)}
+                >
+                  <SelectTrigger className="text-sm h-10">
+                    <SelectValue placeholder="GB" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {STORAGE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value.toString()} className="hover:bg-muted">
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-1">
+                <Label className="text-xs font-medium mb-1 block">RAM (GB)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={64}
+                  value={entry.ram ?? ''}
+                  onChange={(e) => updateEntry(index, 'ram', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                  placeholder="8"
+                  className="text-sm h-10"
+                />
+              </div>
+
               <div className="col-span-2">
                 <Label className="text-xs font-medium mb-1 block">Prezzo Acquisto *</Label>
                 <Input
