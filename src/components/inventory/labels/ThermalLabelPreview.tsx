@@ -19,10 +19,19 @@ export function ThermalLabelPreview({
   useEffect(() => {
     if (canvasRef.current && options.includeBarcode && label.barcode) {
       try {
+        console.log('🏷️ Generating barcode for:', label.barcode);
+        
         // Use consistent barcode format - detect based on content
         let format = 'CODE128';
         if (/^\d{13}$/.test(label.barcode)) {
           format = 'EAN13';
+        }
+        
+        // Clear the canvas first
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
         
         JsBarcode(canvasRef.current, label.barcode, {
@@ -39,11 +48,19 @@ export function ThermalLabelPreview({
           background: barcodeConfig.background,
           lineColor: barcodeConfig.lineColor
         });
+        
+        console.log('🏷️ Barcode generated successfully');
       } catch (error) {
-        console.error('Barcode generation failed:', error);
+        console.error('❌ Barcode generation failed:', error);
       }
+    } else {
+      console.log('🏷️ Barcode not rendered:', {
+        hasCanvas: !!canvasRef.current,
+        includeBarcode: options.includeBarcode,
+        barcode: label.barcode
+      });
     }
-  }, [label.barcode, options.includeBarcode]);
+  }, [label.barcode, options.includeBarcode, barcodeConfig]);
 
   // Professional thermal label styling - 6cm × 5cm landscape (227px × 189px)
   const labelStyle = {

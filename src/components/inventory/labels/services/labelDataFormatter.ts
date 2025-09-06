@@ -24,7 +24,7 @@ export function formatLabelElements(
   options: ThermalLabelOptions & { companyName?: string }
 ): FormattedLabelElements {
   // Debug log to see what data we're working with
-  console.log('formatLabelElements input:', { label, options });
+  console.log('🏷️ formatLabelElements input:', { label, options });
   
   // Price logic: Use max price if available, otherwise fall back to unit price
   const displayPrice = label.maxPrice || label.price;
@@ -42,7 +42,15 @@ export function formatLabelElements(
   };
   
   // Debug log to see what data we're outputting
-  console.log('formatLabelElements output:', formatted);
+  console.log('🏷️ formatLabelElements output:', formatted);
+  console.log('🏷️ Storage/RAM debug:', {
+    originalStorage: label.storage,
+    originalRam: label.ram,
+    formattedStorage: formatted.storage,
+    formattedRam: formatted.ram,
+    storageCondition: label.storage && label.storage > 0,
+    ramCondition: label.ram && label.ram > 0
+  });
   
   return formatted;
 }

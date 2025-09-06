@@ -132,9 +132,10 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           });
           
           // Choose barcode strategy based on useMasterBarcode option
+          // Always generate a barcode since unit.barcode might be null
           const barcode = useMasterBarcode && product.barcode 
             ? product.barcode 
-            : unit.barcode || generateSKUBasedBarcode(unit.serial_number, product.id, unit.battery_level);
+            : generateSKUBasedBarcode(unit.serial_number, product.id, unit.battery_level);
           
           // Use unit data directly (no fallbacks to parsed data)
           const storage = unit.storage ?? product.storage ?? 128;
@@ -172,7 +173,7 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             }
           });
           
-          const labelData = {
+          const labelData: ThermalLabelData = {
             productName: labelProductName,
             serialNumber: unit.serial_number,
             barcode,
