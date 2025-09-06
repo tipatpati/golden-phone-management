@@ -180,7 +180,7 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
             </div>
 
             {/* Desktop layout */}
-            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-2 lg:items-end">
+            <div className="space-y-4">
               <div className="col-span-1 flex items-center">
                 <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
               </div>
