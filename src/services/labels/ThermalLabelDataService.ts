@@ -106,39 +106,40 @@ export class ThermalLabelDataService {
     let unitsMissingBarcodes = 0;
 
     try {
-      // Fetch all units for this product
-      console.log(`📦 Fetching units for product ${product.id}...`);
+      // STEP 1: Force barcode backfill to ensure all units have unique barcodes
+      console.log('🔧 FORCING barcode backfill to fix identical barcode issue...');
+      const backfillResult = await ProductUnitsService.backfillMissingBarcodes();
+      console.log('✅ Barcode backfill completed:', backfillResult);
+
+      // STEP 2: Fetch units after backfill
+      console.log(`📦 Fetching units for product ${product.id} after backfill...`);
       const units = await ProductUnitsService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units`);
 
-      // CRITICAL FIX: Log the actual barcodes to debug identical barcode issue
-      console.log('🔍 BARCODE DEBUG - Units from database:', units.map(u => ({
-        serial: u.serial_number,
-        barcode: u.barcode,
-        id: u.id
-      })));
+      // STEP 3: Debug barcode uniqueness
+      const barcodes = units.map(u => u.barcode).filter(Boolean);
+      const uniqueBarcodes = new Set(barcodes);
+      console.log('🔍 BARCODE UNIQUENESS CHECK:', {
+        totalUnits: units.length,
+        totalBarcodes: barcodes.length,
+        uniqueBarcodes: uniqueBarcodes.size,
+        areUnique: barcodes.length === uniqueBarcodes.size,
+        barcodesList: units.map(u => ({ serial: u.serial_number, barcode: u.barcode }))
+      });
 
-      // Generate unique barcodes for units that don't have them
-      const unitsWithUniqueBarcodes = await this.ensureUniqueBarcodes(units);
-      
-      console.log('🔍 BARCODE DEBUG - After ensuring unique barcodes:', unitsWithUniqueBarcodes.map(u => ({
-        serial: u.serial_number,
-        barcode: u.barcode,
-        id: u.id
-      })));
-
-      // Process all units that now have barcodes
-      for (const unit of unitsWithUniqueBarcodes) {
+      // STEP 4: Process each unit
+      for (const unit of units) {
         if (unit.barcode) {
           const label = this.createUnitLabel(unit, product, cleanBrand, cleanModel);
           if (label) {
             labels.push(label);
             unitsWithBarcodes++;
-            console.log(`✅ Created label for unit: ${unit.serial_number} with barcode: ${unit.barcode}`);
+            console.log(`✅ Label created: ${unit.serial_number} → ${unit.barcode}`);
           }
         } else {
           unitsMissingBarcodes++;
-          errors.push(`Unit ${unit.serial_number} still missing barcode after generation attempt`);
+          errors.push(`Unit ${unit.serial_number} missing barcode even after backfill`);
+          console.error(`❌ Unit ${unit.serial_number} has no barcode`);
         }
       }
 
@@ -161,41 +162,6 @@ export class ThermalLabelDataService {
         genericLabels: 0
       }
     };
-  }
-
-  /**
-   * Ensure each unit has a unique barcode, generate if missing
-   */
-  private static async ensureUniqueBarcodes(units: ProductUnit[]): Promise<ProductUnit[]> {
-    const updatedUnits = [...units];
-    
-    // Import barcode service dynamically
-    const { Code128GeneratorService } = await import('@/services/barcodes');
-    
-    for (let i = 0; i < updatedUnits.length; i++) {
-      const unit = updatedUnits[i];
-      
-      if (!unit.barcode) {
-        try {
-          console.log(`🔧 Generating missing barcode for unit: ${unit.serial_number}`);
-          const newBarcode = await Code128GeneratorService.generateUnitBarcode(unit.id, {
-            metadata: {
-              serial: unit.serial_number,
-              product_id: unit.product_id
-            }
-          });
-          
-          updatedUnits[i] = { ...unit, barcode: newBarcode };
-          console.log(`✅ Generated NEW barcode for ${unit.serial_number}: ${newBarcode}`);
-        } catch (error) {
-          console.error(`❌ Failed to generate barcode for unit ${unit.serial_number}:`, error);
-        }
-      } else {
-        console.log(`📋 Unit ${unit.serial_number} already has barcode: ${unit.barcode}`);
-      }
-    }
-    
-    return updatedUnits;
   }
 
   /**
@@ -290,12 +256,13 @@ export class ThermalLabelDataService {
       ram
     };
 
-    console.log(`📝 FINAL LABEL DATA:`, {
+    console.log(`📝 FINAL LABEL:`, {
       serial: unit.serial_number,
       barcode: unit.barcode,
-      storage: `${unit.storage} -> ${storage}`,
-      ram: `${unit.ram} -> ${ram}`,
-      price: `${unit.price} -> ${price}`
+      productName,
+      storage,
+      ram,
+      price
     });
 
     return label;
