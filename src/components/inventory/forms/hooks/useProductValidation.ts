@@ -44,9 +44,17 @@ export function useProductValidation() {
 
       // Validate each entry
       for (const [idx, entry] of entries.entries()) {
-        // Serial basic validation (15+ digits typical for IMEI but allow any non-empty)
-        if (!entry.serial || entry.serial.trim().length < 5) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Serial is required` });
+        // IMEI validation - must be exactly 15 digits
+        const serialInput = entry.serial || '';
+        const numericSerial = serialInput.replace(/\D/g, '');
+        
+        if (!serialInput.trim()) {
+          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI/Serial is required` });
+          break;
+        }
+        
+        if (numericSerial.length !== 15) {
+          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI must be exactly 15 digits` });
           break;
         }
 
