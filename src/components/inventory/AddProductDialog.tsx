@@ -54,8 +54,9 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         ? `GPMS-PRODUCT-${Date.now()}` // Temporary placeholder for products with serials
         : `GPMS-SINGLE-${Date.now()}`, // Single product barcode
       serial_numbers: data.has_serial ? (data.unit_entries?.map(e => e.serial) || []) : undefined,
-    };
-    
+    } as any;
+    // Ensure we do NOT send unit_entries to the products table (not a DB column)
+    delete productData.unit_entries;
     logger.debug('Submitting product', { 
       categoryId: productData.category_id,
       unitEntriesCount: data.unit_entries?.length || 0
