@@ -27,7 +27,9 @@ export class ProductApiService extends BaseApiService<Product, CreateProductData
   }
 
   async create(productData: CreateProductData): Promise<Product> {
-    const data = await super.create(productData);
+    // Filter out unit_entries which is not a database column
+    const { unit_entries, ...dbProductData } = productData as any;
+    const data = await super.create(dbProductData);
     return this.transformProduct(data);
   }
 
