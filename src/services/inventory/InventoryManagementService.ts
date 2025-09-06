@@ -25,6 +25,10 @@ import type {
   Category
 } from "./types";
 import { InventoryError, handleInventoryError } from "./errors";
+import type { Tables } from "@/integrations/supabase/types";
+
+type ProductHistoryRow = Tables<'product_history'>;
+type ProductUnitHistoryRow = Tables<'product_unit_history'>;
 
 /**
  * Centralized Inventory Management Service
@@ -505,6 +509,56 @@ export class InventoryManagementService {
     }
 
     return result;
+  }
+
+  // ============================================
+  // HISTORY OPERATIONS
+  // ============================================
+
+  // History methods
+
+  /**
+   * Get product-level history entries (INSERT/UPDATE/DELETE snapshots)
+   */
+  static async getProductHistory(productId: string, limit: number = 100): Promise<ProductHistoryRow[]> {
+    try {
+      const { data, error } = await supabase
+        .from('product_history')
+        .select('*')
+        .eq('product_id', productId)
+        .order('changed_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getProductHistory', error, { productId });
+      }
+
+      return data || [];
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
+   * Get product unit-level history entries (INSERT/UPDATE/DELETE snapshots)
+   */
+  static async getProductUnitHistory(productUnitId: string, limit: number = 100): Promise<ProductUnitHistoryRow[]> {
+    try {
+      const { data, error } = await supabase
+        .from('product_unit_history')
+        .select('*')
+        .eq('product_unit_id', productUnitId)
+        .order('changed_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getProductUnitHistory', error, { productUnitId });
+      }
+
+      return data || [];
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
   }
 
   // ============================================
