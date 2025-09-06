@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { useUpdateProduct } from "@/services/products/ProductReactQueryService";
 import { Product } from "@/services/products/types";
-import { ProductFormData } from "./forms/types";
+import { ProductFormData, UnitEntryForm } from "./forms/types";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { toast } from "@/components/ui/sonner";
 import { log } from "@/utils/logger";
@@ -23,8 +23,95 @@ export function EditProductDialog({
 }: EditProductDialogProps) {
   log.debug('EditProductDialog rendering', { productId: product.id }, 'EditProductDialog');
   
+  const [initialData, setInitialData] = useState<Partial<ProductFormData> | null>(null);
   const updateProduct = useUpdateProduct();
   const initialSerialCount = product.serial_numbers?.length || 0;
+
+  // Load existing product units and prepare initial data
+  useEffect(() => {
+    const loadProductData = async () => {
+      try {
+        let unitEntries: UnitEntryForm[] = [];
+        
+        // If product has serial numbers, fetch the existing units
+        if (product.has_serial && product.serial_numbers && product.serial_numbers.length > 0) {
+          const existingUnits = await ProductUnitsService.getUnitsForProduct(product.id);
+          console.log('📦 Loaded existing units for edit:', existingUnits);
+          
+          // Convert existing units to UnitEntryForm format
+          unitEntries = existingUnits.map(unit => ({
+            serial: unit.serial_number,
+            price: unit.price,
+            min_price: unit.min_price,
+            max_price: unit.max_price,
+            battery_level: unit.battery_level,
+            color: unit.color,
+            storage: unit.storage,
+            ram: unit.ram,
+          }));
+          
+          // If no units exist but serial numbers do, create basic entries
+          if (unitEntries.length === 0 && product.serial_numbers) {
+            unitEntries = product.serial_numbers.map(serial => ({
+              serial,
+              battery_level: 0,
+            }));
+          }
+        }
+        
+        const preparedData: Partial<ProductFormData> = {
+          brand: product.brand || "",
+          model: product.model || "",
+          year: product.year,
+          category_id: product.category_id,
+          price: product.price,
+          min_price: product.min_price,
+          max_price: product.max_price,
+          stock: product.stock,
+          threshold: product.threshold,
+          description: product.description || "",
+          supplier: product.supplier || "",
+          barcode: product.barcode || "",
+          has_serial: product.has_serial || false,
+          serial_numbers: product.serial_numbers || [],
+          unit_entries: unitEntries,
+        };
+        
+        console.log('📝 Prepared initial data for edit:', {
+          productId: product.id,
+          unitEntriesCount: unitEntries.length,
+          hasSerial: product.has_serial,
+          unitEntries: unitEntries
+        });
+        
+        setInitialData(preparedData);
+      } catch (error) {
+        console.error('Failed to load product units for edit:', error);
+        // Fallback to basic data without units
+        setInitialData({
+          brand: product.brand || "",
+          model: product.model || "",
+          year: product.year,
+          category_id: product.category_id,
+          price: product.price,
+          min_price: product.min_price,
+          max_price: product.max_price,
+          stock: product.stock,
+          threshold: product.threshold,
+          description: product.description || "",
+          supplier: product.supplier || "",
+          barcode: product.barcode || "",
+          has_serial: product.has_serial || false,
+          serial_numbers: product.serial_numbers || [],
+          unit_entries: [],
+        });
+      }
+    };
+    
+    if (open) {
+      loadProductData();
+    }
+  }, [product, open]);
 
   const handleSubmit = async (data: ProductFormData) => {
     console.log('🔄 EditProductDialog handleSubmit called with data:', data);
@@ -136,22 +223,24 @@ export function EditProductDialog({
     }
   };
 
-  const initialData: Partial<ProductFormData> = {
-    brand: product.brand || "",
-    model: product.model || "",
-    year: product.year,
-    category_id: product.category_id,
-    price: product.price,
-    min_price: product.min_price,
-    max_price: product.max_price,
-    stock: product.stock,
-    threshold: product.threshold,
-    description: product.description || "",
-    supplier: product.supplier || "",
-    barcode: product.barcode || "",
-    has_serial: product.has_serial || false,
-    serial_numbers: product.serial_numbers || [],
-  };
+  // Don't render until initial data is loaded
+  if (!initialData) {
+    return (
+      <FormDialog
+        title="Loading..."
+        open={open}
+        onClose={onClose}
+        onSubmit={() => Promise.resolve()}
+        isLoading={true}
+        submitText="Loading..."
+        maxWidth="xl"
+      >
+        <div className="p-8 text-center">
+          <p>Loading product data...</p>
+        </div>
+      </FormDialog>
+    );
+  }
 
   return (
     <FormDialog
