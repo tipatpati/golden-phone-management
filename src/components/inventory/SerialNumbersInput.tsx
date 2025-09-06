@@ -66,9 +66,14 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                   <Label className="text-xs font-medium mb-1 block">IMEI/Seriale</Label>
                   <Input
                     value={entry.serial}
-                    onChange={(e) => updateEntry(index, 'serial', e.target.value.replace(/\s/g, ''))}
+                    onChange={(e) => {
+                      // Only allow digits for IMEI
+                      const numericValue = e.target.value.replace(/\D/g, '');
+                      updateEntry(index, 'serial', numericValue);
+                    }}
                     placeholder="123456789012345"
                     className="text-sm h-10 font-mono"
+                    maxLength={15}
                   />
                 </div>
 
@@ -189,9 +194,14 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                 <Label className="text-xs font-medium mb-1 block">IMEI/Seriale *</Label>
                 <Input
                   value={entry.serial}
-                  onChange={(e) => updateEntry(index, 'serial', e.target.value.replace(/\s/g, ''))}
+                  onChange={(e) => {
+                    // Only allow digits for IMEI
+                    const numericValue = e.target.value.replace(/\D/g, '');
+                    updateEntry(index, 'serial', numericValue);
+                  }}
                   placeholder="123456789012345"
                   className="text-sm h-10 font-mono"
+                  maxLength={15}
                 />
               </div>
 
