@@ -45,13 +45,13 @@ export function ProductRecommendations({
     );
   }
 
-  if (recommendations.length === 0) {
+  if (!recommendations || !Array.isArray(recommendations) || recommendations.length === 0) {
     return null;
   }
 
   // Filter out products that are already added to the sale
   const availableRecommendations = recommendations.filter(
-    rec => !addedProductIds.includes(rec.id)
+    (rec: any) => !addedProductIds.includes(rec.id)
   );
 
   if (availableRecommendations.length === 0) {

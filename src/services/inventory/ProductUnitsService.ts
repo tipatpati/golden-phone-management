@@ -274,8 +274,11 @@ export class ProductUnitsService {
   }
 
   /**
-   * Validate unit barcodes
+   * Update existing units with parsed data - legacy compatibility
    */
+  static async updateExistingUnitsWithParsedData(): Promise<{ updated: number; errors: number }> {
+    return this.backfillMissingBarcodes();
+  }
   static async validateUnitBarcodes(productId?: string): Promise<{
     valid: number;
     invalid: string[];

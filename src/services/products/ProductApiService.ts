@@ -57,6 +57,13 @@ export class ProductApiService {
     return InventoryManagementService.getCategories();
   }
 
+  async getProductRecommendations(productId: string) {
+    console.warn('⚠️ ProductApiService.getProductRecommendations is deprecated. Use InventoryManagementService instead.');
+    
+    // For now, return empty array since recommendations are not yet implemented in the new service
+    return [];
+  }
+
   async bulkDelete(ids: string[]): Promise<void> {
     console.warn('⚠️ ProductApiService.bulkDelete is deprecated. Use InventoryManagementService.bulkDeleteProducts instead.');
     const result = await InventoryManagementService.bulkDeleteProducts({ productIds: ids });
