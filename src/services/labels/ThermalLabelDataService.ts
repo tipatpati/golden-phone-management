@@ -111,28 +111,39 @@ export class ThermalLabelDataService {
       const units = await ProductUnitsService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units`);
 
-      // Validate all units
-      const validation = LabelDataValidator.validateUnits(units);
-      warnings.push(...validation.warnings);
+      // CRITICAL FIX: Log the actual barcodes to debug identical barcode issue
+      console.log('🔍 BARCODE DEBUG - Units from database:', units.map(u => ({
+        serial: u.serial_number,
+        barcode: u.barcode,
+        id: u.id
+      })));
 
-      // Process only valid units (those with barcodes)
-      for (const unit of validation.validUnits) {
-        const label = this.createUnitLabel(unit, product, cleanBrand, cleanModel);
-        if (label) {
-          labels.push(label);
-          unitsWithBarcodes++;
-          console.log(`✅ Created label for unit: ${unit.serial_number}`);
+      // Generate unique barcodes for units that don't have them
+      const unitsWithUniqueBarcodes = await this.ensureUniqueBarcodes(units);
+      
+      console.log('🔍 BARCODE DEBUG - After ensuring unique barcodes:', unitsWithUniqueBarcodes.map(u => ({
+        serial: u.serial_number,
+        barcode: u.barcode,
+        id: u.id
+      })));
+
+      // Process all units that now have barcodes
+      for (const unit of unitsWithUniqueBarcodes) {
+        if (unit.barcode) {
+          const label = this.createUnitLabel(unit, product, cleanBrand, cleanModel);
+          if (label) {
+            labels.push(label);
+            unitsWithBarcodes++;
+            console.log(`✅ Created label for unit: ${unit.serial_number} with barcode: ${unit.barcode}`);
+          }
+        } else {
+          unitsMissingBarcodes++;
+          errors.push(`Unit ${unit.serial_number} still missing barcode after generation attempt`);
         }
       }
 
-      // Track invalid units
-      for (const invalidUnit of validation.invalidUnits) {
-        unitsMissingBarcodes++;
-        errors.push(`Unit ${invalidUnit.serial_number} missing required barcode - use Barcode Backfill Tool`);
-      }
-
     } catch (error) {
-      const errorMsg = `Failed to fetch units for product ${product.id}: ${error}`;
+      const errorMsg = `Failed to process units for product ${product.id}: ${error}`;
       console.error('❌', errorMsg);
       errors.push(errorMsg);
     }
@@ -150,6 +161,41 @@ export class ThermalLabelDataService {
         genericLabels: 0
       }
     };
+  }
+
+  /**
+   * Ensure each unit has a unique barcode, generate if missing
+   */
+  private static async ensureUniqueBarcodes(units: ProductUnit[]): Promise<ProductUnit[]> {
+    const updatedUnits = [...units];
+    
+    // Import barcode service dynamically
+    const { Code128GeneratorService } = await import('@/services/barcodes');
+    
+    for (let i = 0; i < updatedUnits.length; i++) {
+      const unit = updatedUnits[i];
+      
+      if (!unit.barcode) {
+        try {
+          console.log(`🔧 Generating missing barcode for unit: ${unit.serial_number}`);
+          const newBarcode = await Code128GeneratorService.generateUnitBarcode(unit.id, {
+            metadata: {
+              serial: unit.serial_number,
+              product_id: unit.product_id
+            }
+          });
+          
+          updatedUnits[i] = { ...unit, barcode: newBarcode };
+          console.log(`✅ Generated NEW barcode for ${unit.serial_number}: ${newBarcode}`);
+        } catch (error) {
+          console.error(`❌ Failed to generate barcode for unit ${unit.serial_number}:`, error);
+        }
+      } else {
+        console.log(`📋 Unit ${unit.serial_number} already has barcode: ${unit.barcode}`);
+      }
+    }
+    
+    return updatedUnits;
   }
 
   /**
@@ -244,7 +290,7 @@ export class ThermalLabelDataService {
       ram
     };
 
-    console.log(`📝 Unit label data:`, {
+    console.log(`📝 FINAL LABEL DATA:`, {
       serial: unit.serial_number,
       barcode: unit.barcode,
       storage: `${unit.storage} -> ${storage}`,
