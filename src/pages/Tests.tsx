@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -90,13 +89,7 @@ export default function Tests() {
   }, [report, loadRunner]);
 
   return (
-    <HelmetProvider>
-      <div className="px-4 py-6 md:px-6">
-        <Helmet>
-          <title>In-app Test Runner</title>
-          <meta name="description" content="Run the in-app comprehensive test runner and view results." />
-          <link rel="canonical" href="/tests" />
-        </Helmet>
+    <div className="px-4 py-6 md:px-6">{/* Removed HelmetProvider for optimization */}
 
         <header className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight">Test Runner</h1>
@@ -202,6 +195,5 @@ export default function Tests() {
           )}
         </main>
       </div>
-    </HelmetProvider>
   );
 }
