@@ -31,8 +31,13 @@ class SalesReactQueryServiceClass extends BaseReactQueryService<Sale, CreateSale
 export const salesService = new SalesReactQueryServiceClass();
 
 // Export hooks for use in components
-export const useSales = (searchTerm: string = '') => 
-  salesService.useGetAll(searchTerm);
+export const useSales = (searchTerm?: string) => {
+  // Use search method when searchTerm is provided, otherwise use getAll
+  if (searchTerm && searchTerm.trim()) {
+    return salesService.useSearch(searchTerm.trim());
+  }
+  return salesService.useGetAll();
+};
 
 export const useSale = (id: string) => 
   salesService.useGetById(id);

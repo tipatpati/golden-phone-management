@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useSales } from "@/services/sales/SalesReactQueryService";
+import React from "react";
 import type { Sale } from "@/services/sales/types";
 import { SalesHeader } from "@/components/sales/SalesHeader";
 import { SalesStats } from "@/components/sales/SalesStats";
@@ -11,26 +10,29 @@ import { useAuth } from "@/contexts/AuthContext";
 import { roleUtils } from "@/utils/roleUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { useDebouncedSalesSearch } from "@/components/sales/hooks/useDebouncedSalesSearch";
+import { SalesDataService } from "@/services/sales/SalesDataService";
 
 const Garentille = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const { data: garentille = [], isLoading, error } = useSales();
   const { userRole } = useAuth();
+  const {
+    searchTerm,
+    setSearchTerm,
+    sales: garentille,
+    isLoading,
+    isSearching,
+    error
+  } = useDebouncedSalesSearch();
   
   // Check if user has admin-level permissions to see analytics
   const canViewAnalytics = userRole && roleUtils.hasPermissionLevel(userRole, 'admin');
   
-  // Ensure garentille is always an array
-  const garentilleArray = Array.isArray(garentille) ? garentille : [];
-
-  // Filter garentille based on search term
-  const filteredGarentille = garentilleArray.filter(sale => 
-    sale.id?.toString().includes(searchTerm.toLowerCase()) ||
-    sale.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.status?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Format sales data for display
+  const formattedGarentille = garentille.map(sale => 
+    SalesDataService.formatSaleForDisplay(sale)
   );
 
-  if (isLoading) {
+  if (isLoading && !garentille.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
@@ -64,12 +66,16 @@ const Garentille = () => {
         
         {/* Only show analytics for admin users */}
         {canViewAnalytics && (
-          <SalesStats sales={garentilleArray} />
+          <SalesStats sales={garentille} />
         )}
         
-        <SalesSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <SalesSearchBar 
+          searchTerm={searchTerm} 
+          onSearchChange={setSearchTerm} 
+          isSearching={isSearching}
+        />
         
-        <SalesList sales={filteredGarentille} />
+        <SalesList sales={formattedGarentille} />
       </div>
     </div>
   );

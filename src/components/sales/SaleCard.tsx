@@ -9,28 +9,18 @@ import { DeleteSaleDialog } from "./DeleteSaleDialog";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { SaleDetailsDialog } from "./SaleDetailsDialog";
 import type { Sale } from "@/services/sales";
+import { SalesDataService } from "@/services/sales/SalesDataService";
 
 interface SaleCardProps {
   sale: Sale;
 }
 
 export function SaleCard({ sale }: SaleCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "default";
-      case "refunded": return "destructive";
-      case "pending": return "secondary";
-      case "cancelled": return "outline";
-      default: return "outline";
-    }
-  };
-
-  const getClientName = (client: any) => {
-    if (!client) return "Cliente Occasionale";
-    return client.type === "business" 
-      ? client.company_name 
-      : `${client.first_name} ${client.last_name}`;
-  };
+  // Use formatted data from SalesDataService or format on demand
+  const clientName = (sale as any).clientName || SalesDataService.getClientName(sale);
+  const statusColor = (sale as any).statusColor || SalesDataService.getStatusColor(sale.status);
+  const statusDisplay = (sale as any).statusDisplay || SalesDataService.getStatusDisplay(sale.status);
+  const paymentMethodDisplay = (sale as any).paymentMethodDisplay || SalesDataService.getPaymentMethodDisplay(sale.payment_method);
 
   return (
     <Card className="card-glow hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white hover:bg-gray-50/50 transform hover:-translate-y-1">
@@ -46,7 +36,7 @@ export function SaleCard({ sale }: SaleCardProps) {
 
           {/* Client Info */}
           <div className="xl:col-span-2 space-y-1">
-            <div className="font-semibold text-gray-900">{getClientName(sale.client)}</div>
+            <div className="font-semibold text-gray-900">{clientName}</div>
             <div className="text-sm text-muted-foreground truncate">
               {sale.client?.email || "No email provided"}
             </div>
@@ -77,15 +67,15 @@ export function SaleCard({ sale }: SaleCardProps) {
           {/* Payment & Total */}
           <div className="xl:col-span-2 space-y-1">
             <div className="font-bold text-xl text-gray-900">€{sale.total_amount.toFixed(2)}</div>
-            <div className="text-sm text-muted-foreground capitalize font-medium">
-              {sale.payment_method.replace('_', ' ')}
+            <div className="text-sm text-muted-foreground font-medium">
+              {paymentMethodDisplay}
             </div>
           </div>
 
           {/* Status & Actions */}
           <div className="xl:col-span-1 flex flex-col sm:flex-row xl:flex-col items-start sm:items-center xl:items-end gap-3">
-            <Badge variant={getStatusColor(sale.status)} className="text-xs font-semibold px-3 py-1">
-              {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
+            <Badge variant={statusColor} className="text-xs font-semibold px-3 py-1">
+              {statusDisplay}
             </Badge>
             <div className="flex gap-2">
               <SaleDetailsDialog 

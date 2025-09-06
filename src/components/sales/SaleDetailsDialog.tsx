@@ -15,6 +15,7 @@ import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign, Prin
 import { format } from 'date-fns';
 import type { Sale } from '@/services/sales';
 import { SaleReceiptDialog } from './SaleReceiptDialog';
+import { SalesDataService } from '@/services/sales/SalesDataService';
 
 interface SaleDetailsDialogProps {
   sale: Sale;
@@ -23,38 +24,12 @@ interface SaleDetailsDialogProps {
 
 export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "default";
-      case "refunded": return "destructive";
-      case "pending": return "secondary";
-      case "cancelled": return "outline";
-      default: return "outline";
-    }
-  };
-
-  const getClientInfo = () => {
-    if (!sale.client) return { name: "Cliente Occasionale", type: "individual" };
-    
-    if (sale.client.type === "business") {
-      return {
-        name: sale.client.company_name || "Business Client",
-        type: "business",
-        contact: sale.client.contact_person,
-        email: sale.client.email,
-        phone: sale.client.phone
-      };
-    } else {
-      return {
-        name: `${sale.client.first_name || ""} ${sale.client.last_name || ""}`.trim() || "Individual Client",
-        type: "individual",
-        email: sale.client.email,
-        phone: sale.client.phone
-      };
-    }
-  };
-
-  const clientInfo = getClientInfo();
+  
+  // Use SalesDataService for consistent data formatting
+  const statusColor = SalesDataService.getStatusColor(sale.status);
+  const statusDisplay = SalesDataService.getStatusDisplay(sale.status);
+  const paymentMethodDisplay = SalesDataService.getPaymentMethodDisplay(sale.payment_method);
+  const clientInfo = SalesDataService.getClientInfo(sale);
 
   return (
     <Dialog>
@@ -108,8 +83,8 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Stato</label>
                   <div className="pt-1">
-                    <Badge variant={getStatusColor(sale.status)} className="text-xs">
-                      {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
+                    <Badge variant={statusColor} className="text-xs">
+                      {statusDisplay}
                     </Badge>
                   </div>
                 </div>
@@ -130,8 +105,8 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     <CreditCard className="h-3 w-3" />
                     Metodo di Pagamento
                   </label>
-                  <p className="font-medium capitalize">
-                    {sale.payment_method.replace('_', ' ')}
+                  <p className="font-medium">
+                    {paymentMethodDisplay}
                   </p>
                 </div>
               </div>
@@ -167,14 +142,14 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <p className="font-semibold">{clientInfo.name}</p>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
-                <div className="pt-1">
-                  <Badge variant="outline" className="text-xs">
-                    {clientInfo.type === "business" ? "Azienda" : "Privato"}
-                  </Badge>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
+                  <div className="pt-1">
+                    <Badge variant="outline" className="text-xs">
+                      {clientInfo.displayType}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
 
               {clientInfo.contact && (
                 <div>

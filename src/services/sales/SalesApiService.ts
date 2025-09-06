@@ -20,14 +20,17 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   }
 
   async search(searchTerm: string): Promise<Sale[]> {
-    if (!searchTerm) return this.getAll();
+    if (!searchTerm.trim()) return this.getAll();
     
     console.log('Searching sales with term:', searchTerm);
     
+    const searchPattern = `%${searchTerm.trim()}%`;
+    
+    // Search in sale_number, notes, and client information
     const query = this.supabase
       .from(this.tableName as any)
       .select(this.selectQuery)
-      .or(`sale_number.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`)
+      .or(`sale_number.ilike.${searchPattern},notes.ilike.${searchPattern},client.first_name.ilike.${searchPattern},client.last_name.ilike.${searchPattern},client.company_name.ilike.${searchPattern}`)
       .order('created_at', { ascending: false });
     
     return this.performQuery(query, 'searching');
