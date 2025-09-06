@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { ThermalLabelData } from "../types";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 import { ProductUnitsService, ProductUnit } from "@/services/products/productUnitsService";
 
@@ -102,16 +102,10 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
         console.log(`📱 Product has ${product.serial_numbers.length} serial numbers`);
         console.log(`📦 Found ${units.length} units in database for this product`);
         
-        // Generate labels from product units data
-        product.serial_numbers.forEach((serialNumber, index) => {
-          console.log(`\n🔍 Processing serial ${index + 1}/${product.serial_numbers!.length}: ${serialNumber}`);
-          
-          const parsed = parseSerialWithBattery(serialNumber);
-          console.log('📝 Parsed serial data:', parsed);
-          
-          // Find corresponding unit for this serial number
-          const unit = units.find(u => u.serial_number === parsed.serial);
-          console.log('🔍 Found matching unit:', unit ? {
+        // Generate labels from product units data directly (no parsing)
+        units.forEach((unit, index) => {
+          console.log(`\n🔍 Processing unit ${index + 1}/${units.length}: ${unit.serial_number}`);
+          console.log('📝 Unit data:', {
             id: unit.id,
             serial: unit.serial_number,
             storage: unit.storage,
@@ -121,23 +115,21 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             max_price: unit.max_price,
             color: unit.color,
             battery_level: unit.battery_level
-          } : 'NO UNIT FOUND');
-          
+          });
           
           // Choose barcode strategy based on useMasterBarcode option
           const barcode = useMasterBarcode && product.barcode 
             ? product.barcode 
-            : unit?.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+            : unit.barcode || generateSKUBasedBarcode(unit.serial_number, product.id, unit.battery_level);
           
-          // Get storage and RAM with priority: unit data > parsed data > product data > defaults
-          const storage = unit?.storage ?? parsed.storage ?? product.storage ?? 128;
-          const ram = unit?.ram ?? parsed.ram ?? product.ram ?? 6;
+          // Use unit data directly (no fallbacks to parsed data)
+          const storage = unit.storage ?? product.storage ?? 128;
+          const ram = unit.ram ?? product.ram ?? 6;
           
           console.log('💾 Storage/RAM resolution:', {
             final: { storage, ram },
             sources: {
-              unit: { storage: unit?.storage, ram: unit?.ram },
-              parsed: { storage: parsed.storage, ram: parsed.ram },
+              unit: { storage: unit.storage, ram: unit.ram },
               product: { storage: product.storage, ram: product.ram },
               defaults: { storage: 128, ram: 6 }
             }
@@ -148,31 +140,30 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             brand: cleanBrand,
             model: cleanModel,
             storage,
-            color: unit?.color || parsed.color
+            color: unit.color
           });
           
           // Price hierarchy: unit max_price > unit price > product max_price > product price > 0
-          const labelPrice = unit?.max_price ?? unit?.price ?? product.max_price ?? product.price ?? 0;
+          const labelPrice = unit.max_price ?? unit.price ?? product.max_price ?? product.price ?? 0;
           
           console.log('💰 Price resolution:', {
             finalPrice: labelPrice,
             sources: {
-              unitMaxPrice: unit?.max_price,
+              unitMaxPrice: unit.max_price,
               productMaxPrice: product.max_price,
-              unitPrice: unit?.price,
+              unitPrice: unit.price,
               productPrice: product.price
             }
           });
           
-          
           const labelData = {
             productName: labelProductName,
-            serialNumber: parsed.serial,
+            serialNumber: unit.serial_number,
             barcode,
             price: labelPrice,
             category: product.category?.name,
-            color: unit?.color || parsed.color,
-            batteryLevel: unit?.battery_level || parsed.batteryLevel,
+            color: unit.color,
+            batteryLevel: unit.battery_level,
             storage,
             ram
           };
@@ -182,14 +173,13 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           // Debug log for each label being created
           console.log('✅ Created label:', {
             productName: labelProductName,
-            serialNumber: parsed.serial,
+            serialNumber: unit.serial_number,
             price: labelPrice,
             storage,
             ram,
-            color: unit?.color || parsed.color,
-            batteryLevel: unit?.battery_level || parsed.batteryLevel,
-            hasUnit: !!unit,
-            unitId: unit?.id
+            color: unit.color,
+            batteryLevel: unit.battery_level,
+            unitId: unit.id
           });
         });
       } else {

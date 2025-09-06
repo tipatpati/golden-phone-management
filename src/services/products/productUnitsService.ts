@@ -35,9 +35,7 @@ export interface CreateProductUnitData {
 export class ProductUnitsService {
   static async createUnitsForProduct(
     productId: string, 
-    serialNumbers: string[],
-    defaultPricing?: { price?: number; min_price?: number; max_price?: number },
-    unitEntries?: Array<{
+    unitEntries: Array<{
       serial: string;
       price?: number;
       min_price?: number;
@@ -46,30 +44,26 @@ export class ProductUnitsService {
       color?: string;
       storage?: number;
       ram?: number;
-    }>
+    }>,
+    defaultPricing?: { price?: number; min_price?: number; max_price?: number }
   ): Promise<ProductUnit[]> {
-    const units = serialNumbers.map((serialLine, index) => {
-      const parsed = parseSerialWithBattery(serialLine);
-      const barcodeResult = generateIMEIBarcode(parsed.serial, { 
+    const units = unitEntries.map((unitEntry) => {
+      const barcodeResult = generateIMEIBarcode(unitEntry.serial, { 
         format: 'AUTO',
         productId 
       });
       
-      // Get corresponding unit entry for individual pricing
-      const unitEntry = unitEntries?.find(entry => entry.serial === parsed.serial) || unitEntries?.[index];
-      
       return {
         product_id: productId,
-        serial_number: parsed.serial,
+        serial_number: unitEntry.serial,
         barcode: barcodeResult.barcode,
-        color: unitEntry?.color || parsed.color,
-        battery_level: unitEntry?.battery_level || parsed.batteryLevel,
-        storage: unitEntry?.storage || parsed.storage,
-        ram: unitEntry?.ram || parsed.ram,
-        // Use unit-specific pricing if available, otherwise fall back to defaults
-        price: unitEntry?.price ?? defaultPricing?.price,
-        min_price: unitEntry?.min_price ?? defaultPricing?.min_price,
-        max_price: unitEntry?.max_price ?? defaultPricing?.max_price,
+        color: unitEntry.color,
+        battery_level: unitEntry.battery_level,
+        storage: unitEntry.storage,
+        ram: unitEntry.ram,
+        price: unitEntry.price ?? defaultPricing?.price,
+        min_price: unitEntry.min_price ?? defaultPricing?.min_price,
+        max_price: unitEntry.max_price ?? defaultPricing?.max_price,
         status: 'available' as const
       };
     });

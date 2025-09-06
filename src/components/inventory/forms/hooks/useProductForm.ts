@@ -42,15 +42,11 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       if (initialData.unit_entries) {
         setUnitEntries(initialData.unit_entries);
       } else if (initialData.serial_numbers) {
-        // Convert legacy serial_numbers to unit_entries
-        const entries = initialData.serial_numbers.map(serialLine => {
-          const parts = serialLine.split(' ');
-          return {
-            serial: parts[0] || '',
-            battery_level: 0,
-            color: parts[1] || '',
-          } as UnitEntryForm;
-        });
+        // Simple conversion - only extract serial numbers
+        const entries = initialData.serial_numbers.map(serial => ({
+          serial,
+          battery_level: 0,
+        } as UnitEntryForm));
         setUnitEntries(entries.length > 0 ? entries : [{ serial: '', battery_level: 0 }]);
       }
     }
@@ -88,21 +84,11 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       return;
     }
 
-    // Convert unit entries back to legacy serial_numbers format for backward compatibility
+    // Remove concatenation - use only structured data
     const serialArray = formData.has_serial && unitEntries.length > 0
       ? unitEntries
           .filter(e => e.serial?.trim())
-          .map(e => {
-            let parts = [e.serial];
-            if (e.color) parts.push(e.color);
-            if (e.storage) parts.push(`${e.storage}GB`);
-            if (e.ram) parts.push(`${e.ram}GB-RAM`);
-            if (e.battery_level) parts.push(`${e.battery_level}%`);
-            if (e.price) parts.push(`€${e.price}`);
-            if (e.min_price) parts.push(`MIN€${e.min_price}`);
-            if (e.max_price) parts.push(`MAX€${e.max_price}`);
-            return parts.join(' ');
-          })
+          .map(e => e.serial)
       : [];
 
     const finalData: ProductFormData = {

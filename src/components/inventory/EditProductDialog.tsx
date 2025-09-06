@@ -90,16 +90,19 @@ export function EditProductDialog({
               newSerials.some(serial => serial.split(' ')[0] === entry.serial)
             );
             
+            // Get new unit entries that correspond to new serials
+            const newUnitEntries = data.unit_entries?.filter(entry => 
+              newSerials.includes(entry.serial)
+            ) || [];
+            
             await ProductUnitsService.createUnitsForProduct(
               product.id, 
-              newSerials,
-              // Pass default pricing from product form
-              {
+              newUnitEntries, // Pass structured unit entries directly
+              { // Default pricing fallback
                 price: data.price,
                 min_price: data.min_price,
                 max_price: data.max_price
-              },
-              correspondingEntries // Pass individual unit entries with pricing
+              }
             );
             console.log(`✅ Created ${newSerials.length} new product units with default pricing`);
           }

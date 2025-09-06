@@ -7,7 +7,7 @@ import { ProductFormData } from "./forms/types";
 import { useCreateProduct } from "@/services/products/ProductReactQueryService";
 import { ProductUnitsService } from "@/services/products/productUnitsService";
 import { generateSerialBasedBarcode, generateProductBarcode } from "@/utils/barcodeGenerator";
-import { parseSerialWithBattery, formatSerialWithBattery } from "@/utils/serialNumberUtils";
+
 import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
@@ -47,13 +47,13 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    const serialEntries = data.serial_numbers?.map(line => {
-      const parsed = parseSerialWithBattery(line);
-      const barcode = generateSerialBasedBarcode(parsed.serial, undefined, parsed.batteryLevel);
+    // No need for parsing - work with structured unit entries directly
+    const serialEntries = data.unit_entries?.map(entry => {
+      const barcode = generateSerialBasedBarcode(entry.serial, undefined, entry.battery_level);
       return {
-        serial: parsed.serial,
-        color: parsed.color,
-        batteryLevel: parsed.batteryLevel,
+        serial: entry.serial,
+        color: entry.color,
+        batteryLevel: entry.battery_level,
         barcode: barcode
       };
     }) || [];
@@ -72,9 +72,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
       stock: data.stock,
       threshold: data.threshold,
       has_serial: data.has_serial,
-      serial_numbers: serialEntries.map(entry => 
-        formatSerialWithBattery(entry.serial, entry.batteryLevel, entry.color)
-      ),
+      serial_numbers: data.has_serial ? data.unit_entries?.map(entry => entry.serial) : undefined,
       barcode: serialEntries.length > 0 
         ? serialEntries[0].barcode 
         : generateProductBarcode(data.brand, data.model, undefined, 0, false),
@@ -95,9 +93,12 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
             if (data.has_serial && data.unit_entries && data.unit_entries.length > 0) {
               const units = await ProductUnitsService.createUnitsForProduct(
                 responseData?.id,
-                data.unit_entries.map(entry => entry.serial), // Use only serial numbers
-                undefined, // No default pricing - use individual unit pricing
-                data.unit_entries // Pass individual unit entries with pricing
+                data.unit_entries, // Pass structured unit entries directly
+                { // Default pricing fallback
+                  price: data.price,
+                  min_price: data.min_price,
+                  max_price: data.max_price
+                }
               );
               console.log(`✅ Created ${units.length} product units with IMEI barcodes and default pricing`);
             }
