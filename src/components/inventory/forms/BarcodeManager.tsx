@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { formatProductName } from "@/utils/productNaming";
 import { BarcodeManagerProps } from "./types";
-import { EnhancedBarcodeGenerator } from "../EnhancedBarcodeGenerator";
-import { BarcodeFormatSelector, BarcodeFormat } from "../BarcodeFormatSelector";
+import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
+import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 
 
 interface SerialEntry {
@@ -12,7 +12,7 @@ interface SerialEntry {
   batteryLevel?: number;
   barcode: string;
   barcodeFormat: string;
-  isGS1Compliant: boolean;
+  isValid: boolean;
   index: number;
 }
 
@@ -22,32 +22,70 @@ export function BarcodeManager({
   productId,
   onBarcodeGenerated
 }: BarcodeManagerProps) {
-  const [barcodeFormat, setBarcodeFormat] = useState<BarcodeFormat>('AUTO');
 
-  // Generate enhanced barcodes for each serial number
-  const unitBarcodes = useMemo<SerialEntry[]>(() => {
-    if (!hasSerial || !serialNumbers.trim()) return [];
+  // Generate professional CODE128 barcodes for each serial number
+  const [unitBarcodes, setUnitBarcodes] = useState<SerialEntry[]>([]);
+  
+  useEffect(() => {
+    const generateBarcodes = async () => {
+      if (!hasSerial || !serialNumbers.trim()) {
+        setUnitBarcodes([]);
+        return;
+      }
+      
+      const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
+      const barcodes: SerialEntry[] = [];
+      
+      for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
+        const parsed = parseSerialWithBattery(line);
+        
+        // Generate temporary unit ID for barcode generation
+        const tempUnitId = `temp-${productId}-${index}-${Date.now()}`;
+        
+        try {
+          // Use professional CODE128 service for barcode generation
+          const barcode = await Code128GeneratorService.generateUnitBarcode(tempUnitId, {
+            metadata: {
+              serial: parsed.serial,
+              color: parsed.color,
+              battery_level: parsed.batteryLevel,
+              product_id: productId
+            }
+          });
+          
+          const validation = Code128GeneratorService.validateCode128(barcode);
+          
+          barcodes.push({
+            serial: parsed.serial,
+            color: parsed.color,
+            batteryLevel: parsed.batteryLevel,
+            barcode: barcode,
+            barcodeFormat: 'CODE128',
+            isValid: validation.isValid,
+            index: index
+          });
+        } catch (error) {
+          console.error(`Failed to generate barcode for ${parsed.serial}:`, error);
+          // Fallback barcode
+          const fallbackBarcode = `GPMSU${tempUnitId.slice(-6)}`;
+          barcodes.push({
+            serial: parsed.serial,
+            color: parsed.color,
+            batteryLevel: parsed.batteryLevel,
+            barcode: fallbackBarcode,
+            barcodeFormat: 'CODE128',
+            isValid: false,
+            index: index
+          });
+        }
+      }
+      
+      setUnitBarcodes(barcodes);
+    };
     
-    const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
-    return lines.map((line, index) => {
-      // Use serial directly - no parsing needed
-      const serial = line.trim();
-      
-      // Use professional CODE128 barcode format
-      const barcode = `GPMS-${serial.replace(/[^\w]/g, '').toUpperCase()}`;
-      const validation = Code128GeneratorService.validateCode128(barcode);
-      
-      return {
-        serial: line.trim(),
-        color: undefined,
-        batteryLevel: undefined,
-        barcode: barcode,
-        barcodeFormat: 'CODE128',
-        isGS1Compliant: validation.isValid,
-        index: index
-      };
-    });
-  }, [serialNumbers, productId, hasSerial, barcodeFormat]);
+    generateBarcodes();
+  }, [serialNumbers, productId, hasSerial]);
 
   // Notify parent whenever barcode changes (but avoid infinite loops)
   const firstBarcode = unitBarcodes.length > 0 ? unitBarcodes[0].barcode : null;
@@ -66,11 +104,6 @@ export function BarcodeManager({
 
   return (
     <div className="space-y-6">
-      <BarcodeFormatSelector 
-        value={barcodeFormat}
-        onChange={setBarcodeFormat}
-      />
-      
       <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
         <h4 className="font-medium">Unit Barcodes ({unitBarcodes.length} units)</h4>
         <div className="flex flex-col gap-4">
@@ -80,13 +113,13 @@ export function BarcodeManager({
                 <span className="text-sm font-medium">Unit #{unit.index + 1}</span>
                 <div className="flex items-center gap-2 text-xs">
                   <span className={`px-2 py-1 rounded ${
-                    unit.isGS1Compliant ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                    unit.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                   }`}>
                     {unit.barcodeFormat}
                   </span>
-                  {unit.isGS1Compliant && (
+                  {unit.isValid && (
                     <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
-                      GS1
+                      Valid
                     </span>
                   )}
                 </div>
@@ -98,23 +131,22 @@ export function BarcodeManager({
                 {unit.batteryLevel && <div><strong>Battery:</strong> {unit.batteryLevel}%</div>}
               </div>
               
-              <EnhancedBarcodeGenerator 
+              <BarcodeGenerator 
                 value={unit.barcode}
                 displayValue={true}
-                format={barcodeFormat}
-                showValidation={false}
+                format="CODE128"
               />
             </div>
           ))}
         </div>
         
         <div className="text-xs text-muted-foreground space-y-1">
-          <p><strong>Format Guide:</strong></p>
+          <p><strong>Professional CODE128 Barcodes:</strong></p>
           <ul className="list-disc pl-4 space-y-1">
-            <li><strong>EAN13:</strong> 13 digits, retail standard</li>
-            <li><strong>CODE128:</strong> Alphanumeric, high density</li>
-            <li><strong>GS1-128:</strong> GS1 compliant with application identifiers</li>
-            <li><strong>AUTO:</strong> Best format selected automatically</li>
+            <li>Industry-standard CODE128 format with GPMS prefix</li>
+            <li>Unique barcodes for each product unit</li>
+            <li>Trackable through the barcode registry system</li>
+            <li>Compatible with all modern barcode scanners</li>
           </ul>
         </div>
       </div>

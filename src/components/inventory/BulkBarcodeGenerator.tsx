@@ -39,16 +39,15 @@ export function BulkBarcodeGenerator() {
       const product = productsWithoutBarcodes[i] as any;
       
       try {
-        if (!product.serial_numbers?.[0]) {
-          console.warn(`Skipping ${product.brand} ${product.model}: No IMEI/Serial number available`);
-          errorCount++;
-          continue;
-        }
-        
-        const firstSerial = product.serial_numbers[0];
-        // Use serial directly - no parsing needed
-        const serial = firstSerial.trim();
-        const newBarcode = `GPMS-BULK-${product.id.slice(-8)}-${serial.slice(-4)}`;
+        // Generate professional CODE128 barcode for this product
+        const newBarcode = await Code128GeneratorService.generateProductBarcode(product.id, {
+          metadata: {
+            brand: product.brand,
+            model: product.model,
+            category: product.category?.name,
+            serial_numbers: product.serial_numbers
+          }
+        });
         
         await updateProduct.mutateAsync({
           id: product.id,
