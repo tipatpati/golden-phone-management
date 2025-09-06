@@ -24,11 +24,12 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     barcode: '',
     has_serial: true,
     serial_numbers: [],
+    unit_entries: [], // New structured entries
     ...initialData
   });
 
-  const [serialNumbers, setSerialNumbers] = useState(
-    initialData?.serial_numbers ? initialData.serial_numbers.join('\n') : ""
+  const [unitEntries, setUnitEntries] = useState<UnitEntryForm[]>(
+    initialData?.unit_entries || [{ serial: '', battery_level: 0 }]
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,8 +39,19 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
-      if (initialData.serial_numbers) {
-        setSerialNumbers(initialData.serial_numbers.join('\n'));
+      if (initialData.unit_entries) {
+        setUnitEntries(initialData.unit_entries);
+      } else if (initialData.serial_numbers) {
+        // Convert legacy serial_numbers to unit_entries
+        const entries = initialData.serial_numbers.map(serialLine => {
+          const parts = serialLine.split(' ');
+          return {
+            serial: parts[0] || '',
+            battery_level: 0,
+            color: parts[1] || '',
+          } as UnitEntryForm;
+        });
+        setUnitEntries(entries.length > 0 ? entries : [{ serial: '', battery_level: 0 }]);
       }
     }
   }, [initialData]);
@@ -47,26 +59,24 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
     console.log(`🔄 updateField: ${field} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Only clear errors when user actively changes fields, don't trigger validation
     clearErrors();
-  }, []);
+  }, [clearErrors]);
 
-  const updateSerialNumbers = useCallback((value: string) => {
-    setSerialNumbers(value);
+  const updateUnitEntries = useCallback((entries: UnitEntryForm[]) => {
+    setUnitEntries(entries);
     
     // Auto-update stock if has_serial is enabled
     if (formData.has_serial) {
-      const lines = value.split('\n').filter(line => line.trim() !== '');
-      setFormData(prev => ({ ...prev, stock: lines.length }));
+      const validEntries = entries.filter(e => e.serial?.trim());
+      setFormData(prev => ({ ...prev, stock: validEntries.length }));
     }
     
-    // Only clear errors when user is actively typing, don't trigger validation
     clearErrors();
-  }, [formData.has_serial]);
+  }, [formData.has_serial, clearErrors]);
 
   const handleSubmit = useCallback(async () => {
     console.log('🔄 useProductForm handleSubmit called with formData:', formData);
-    const errors = validateForm(formData, serialNumbers);
+    const errors = validateForm(formData, unitEntries);
     
     if (errors.length > 0) {
       console.log('❌ Form validation errors:', errors);
@@ -78,9 +88,21 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       return;
     }
 
-    // Prepare final data
-    const serialArray = formData.has_serial && serialNumbers.trim() 
-      ? serialNumbers.split('\n').map(s => s.trim()).filter(s => s !== "") 
+    // Convert unit entries back to legacy serial_numbers format for backward compatibility
+    const serialArray = formData.has_serial && unitEntries.length > 0
+      ? unitEntries
+          .filter(e => e.serial?.trim())
+          .map(e => {
+            let parts = [e.serial];
+            if (e.color) parts.push(e.color);
+            if (e.storage) parts.push(`${e.storage}GB`);
+            if (e.ram) parts.push(`${e.ram}GB-RAM`);
+            if (e.battery_level) parts.push(`${e.battery_level}%`);
+            if (e.price) parts.push(`€${e.price}`);
+            if (e.min_price) parts.push(`MIN€${e.min_price}`);
+            if (e.max_price) parts.push(`MAX€${e.max_price}`);
+            return parts.join(' ');
+          })
       : [];
 
     const finalData: ProductFormData = {
@@ -88,16 +110,17 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       model: formData.model!,
       year: formData.year,
       category_id: formData.category_id!,
-      price: formData.price || 0, // Use 0 as fallback for optional default prices
+      price: formData.price || 0,
       min_price: formData.min_price || 0,
       max_price: formData.max_price || 0,
-      stock: formData.has_serial ? serialArray.length : formData.stock!,
+      stock: formData.has_serial ? unitEntries.filter(e => e.serial?.trim()).length : formData.stock!,
       threshold: formData.threshold!,
       description: formData.description,
       supplier: formData.supplier,
       barcode: formData.barcode,
       has_serial: formData.has_serial!,
       serial_numbers: formData.has_serial ? serialArray : undefined,
+      unit_entries: formData.has_serial ? unitEntries.filter(e => e.serial?.trim()) : undefined,
     };
 
     setIsSubmitting(true);
@@ -106,15 +129,15 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, serialNumbers, validateForm, onSubmit]);
+  }, [formData, unitEntries, validateForm, onSubmit]);
 
   const resetForm = useCallback(() => {
     setFormData({
       brand: '',
       model: '',
       year: undefined,
-      category_id: 1, // Set default to Phones
-      price: undefined, // Reset to optional
+      category_id: 1,
+      price: undefined,
       min_price: undefined,
       max_price: undefined,
       stock: 0,
@@ -124,17 +147,18 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       barcode: '',
       has_serial: true,
       serial_numbers: [],
+      unit_entries: [],
     });
-    setSerialNumbers('');
+    setUnitEntries([{ serial: '', battery_level: 0 }]);
     clearErrors();
   }, [clearErrors]);
 
   return {
     formData,
-    serialNumbers,
+    unitEntries,
     isSubmitting,
     updateField,
-    updateSerialNumbers,
+    updateUnitEntries,
     handleSubmit,
     resetForm,
     getFieldError,

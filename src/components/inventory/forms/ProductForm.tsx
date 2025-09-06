@@ -15,10 +15,10 @@ export function ProductForm({
 }: ProductFormProps) {
   const {
     formData,
-    serialNumbers,
+    unitEntries,
     isSubmitting,
     updateField,
-    updateSerialNumbers,
+    updateUnitEntries,
     handleSubmit,
     getFieldError,
     hasErrors
@@ -83,14 +83,29 @@ export function ProductForm({
       updateField(key as keyof ProductFormData, value);
     });
 
-    // Add sample serial numbers
-    const sampleSerials = [
-      '123456789012345 Space Black 256GB 85%',
-      '123456789012346 Natural Titanium 256GB 92%',
-      '123456789012347 White Titanium 128GB 78%'
-    ].join('\n');
+    // Add sample unit entries for testing
+    const sampleEntries = [
+      {
+        serial: '123456789012345',
+        color: 'Space Black',
+        storage: 256,
+        battery_level: 85,
+        price: 1000,
+        min_price: 1200,
+        max_price: 1400
+      },
+      {
+        serial: '123456789012346', 
+        color: 'Natural Titanium',
+        storage: 256,
+        battery_level: 92,
+        price: 1000,
+        min_price: 1200,
+        max_price: 1400
+      }
+    ];
     
-    updateSerialNumbers(sampleSerials);
+    updateUnitEntries(sampleEntries);
   };
 
   return (
@@ -192,8 +207,8 @@ export function ProductForm({
       {/* Serial Number Management */}
       {formData.has_serial && (
         <SerialNumberManager
-          serialNumbers={serialNumbers}
-          onSerialNumbersChange={updateSerialNumbers}
+          unitEntries={unitEntries}
+          onUnitEntriesChange={updateUnitEntries}
           onStockChange={(stock) => updateField('stock', stock)}
           hasSerial={formData.has_serial}
           productId={initialData?.barcode}
@@ -202,7 +217,7 @@ export function ProductForm({
 
       {/* Barcode Display */}
       <BarcodeManager
-        serialNumbers={serialNumbers}
+        serialNumbers={unitEntries.map(e => e.serial).join('\n')}
         hasSerial={formData.has_serial || false}
         productId={initialData?.barcode}
         onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
@@ -248,7 +263,7 @@ export function ProductForm({
             </pre>
           </div>
           <div>
-            <strong>Serial Numbers:</strong> "{serialNumbers}"
+            <strong>Unit Entries:</strong> {unitEntries.length} entries
           </div>
           <div>
             <strong>Has Errors:</strong> {hasErrors ? 'Yes' : 'No'}
