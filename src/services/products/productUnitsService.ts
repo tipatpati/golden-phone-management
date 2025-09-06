@@ -11,6 +11,9 @@ export interface ProductUnit {
   battery_level?: number;
   storage?: number; // Storage in GB (64, 128, 256, etc.)
   ram?: number; // RAM in GB (4, 6, 8, 12, 16, etc.)
+  price?: number;      // Base purchase price for this unit
+  min_price?: number;  // Minimum selling price for this unit
+  max_price?: number;  // Maximum selling price for this unit
   status: 'available' | 'sold' | 'reserved' | 'damaged';
   created_at: string;
   updated_at: string;
@@ -23,13 +26,17 @@ export interface CreateProductUnitData {
   battery_level?: number;
   storage?: number;
   ram?: number;
+  price?: number;      // Base purchase price for this unit
+  min_price?: number;  // Minimum selling price for this unit
+  max_price?: number;  // Maximum selling price for this unit
   status?: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 
 export class ProductUnitsService {
   static async createUnitsForProduct(
     productId: string, 
-    serialNumbers: string[]
+    serialNumbers: string[],
+    defaultPricing?: { price?: number; min_price?: number; max_price?: number }
   ): Promise<ProductUnit[]> {
     const units = serialNumbers.map(serialLine => {
       const parsed = parseSerialWithBattery(serialLine);
@@ -46,6 +53,9 @@ export class ProductUnitsService {
         battery_level: parsed.batteryLevel,
         storage: parsed.storage,
         ram: parsed.ram,
+        price: defaultPricing?.price,
+        min_price: defaultPricing?.min_price,
+        max_price: defaultPricing?.max_price,
         status: 'available' as const
       };
     });

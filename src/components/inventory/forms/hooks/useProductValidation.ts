@@ -37,26 +37,32 @@ export function useProductValidation() {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
-    // Price validations with proper number conversion and checks
-    const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
-    console.log('🔍 Price validation:', { original: data.price, converted: price, type: typeof price });
-    if (price === undefined || price === null || (typeof price !== 'number') || isNaN(price) || price < 0) {
-      console.log('❌ Price validation failed:', { price, type: typeof price, isNaN: isNaN(price as number) });
-      newErrors.push({ field: 'price', message: 'Valid price is required (must be 0 or greater)' });
+    // Price validations - now optional at product level since pricing is per unit
+    if (data.price !== undefined && data.price !== null) {
+      const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+      console.log('🔍 Price validation:', { original: data.price, converted: price, type: typeof price });
+      if ((typeof price !== 'number') || isNaN(price) || price < 0) {
+        console.log('❌ Price validation failed:', { price, type: typeof price, isNaN: isNaN(price as number) });
+        newErrors.push({ field: 'price', message: 'Valid default price is required (must be 0 or greater)' });
+      }
     }
 
-    const minPrice = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
-    console.log('🔍 Min price validation:', { original: data.min_price, converted: minPrice, type: typeof minPrice });
-    if (minPrice === undefined || minPrice === null || (typeof minPrice !== 'number') || isNaN(minPrice) || minPrice < 0) {
-      console.log('❌ Min price validation failed:', { minPrice, type: typeof minPrice, isNaN: isNaN(minPrice as number) });
-      newErrors.push({ field: 'min_price', message: 'Valid minimum price is required (must be 0 or greater)' });
+    if (data.min_price !== undefined && data.min_price !== null) {
+      const minPrice = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
+      console.log('🔍 Min price validation:', { original: data.min_price, converted: minPrice, type: typeof minPrice });
+      if ((typeof minPrice !== 'number') || isNaN(minPrice) || minPrice < 0) {
+        console.log('❌ Min price validation failed:', { minPrice, type: typeof minPrice, isNaN: isNaN(minPrice as number) });
+        newErrors.push({ field: 'min_price', message: 'Valid default minimum price is required (must be 0 or greater)' });
+      }
     }
 
-    const maxPrice = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
-    console.log('🔍 Max price validation:', { original: data.max_price, converted: maxPrice, type: typeof maxPrice });
-    if (maxPrice === undefined || maxPrice === null || (typeof maxPrice !== 'number') || isNaN(maxPrice) || maxPrice < 0) {
-      console.log('❌ Max price validation failed:', { maxPrice, type: typeof maxPrice, isNaN: isNaN(maxPrice as number) });
-      newErrors.push({ field: 'max_price', message: 'Valid maximum price is required (must be 0 or greater)' });
+    if (data.max_price !== undefined && data.max_price !== null) {
+      const maxPrice = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
+      console.log('🔍 Max price validation:', { original: data.max_price, converted: maxPrice, type: typeof maxPrice });
+      if ((typeof maxPrice !== 'number') || isNaN(maxPrice) || maxPrice < 0) {
+        console.log('❌ Max price validation failed:', { maxPrice, type: typeof maxPrice, isNaN: isNaN(maxPrice as number) });
+        newErrors.push({ field: 'max_price', message: 'Valid default maximum price is required (must be 0 or greater)' });
+      }
     }
 
     // Threshold validation - allow 0 as valid threshold
@@ -67,21 +73,26 @@ export function useProductValidation() {
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required (must be 0 or greater)' });
     }
 
-    // Min/Max price relationship validation - only validate if both values are present and greater than 0
-    if (minPrice !== undefined && maxPrice !== undefined && 
-        !isNaN(minPrice) && !isNaN(maxPrice) &&
-        minPrice > 0 && maxPrice > 0 &&
-        minPrice >= maxPrice) {
+    // Validate price relationships when all values are present
+    const priceValue = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+    const minPriceValue = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
+    const maxPriceValue = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
+
+    // Min/Max price relationship validation
+    if (minPriceValue !== undefined && maxPriceValue !== undefined && 
+        !isNaN(minPriceValue) && !isNaN(maxPriceValue) &&
+        minPriceValue > 0 && maxPriceValue > 0 &&
+        minPriceValue >= maxPriceValue) {
       newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
     }
 
-    // Pricing relationship validation: selling prices must be greater than base (buy) price
-    if (price !== undefined && !isNaN(price) && price >= 0) {
-      if (minPrice !== undefined && !isNaN(minPrice) && minPrice > 0 && minPrice <= price) {
-        newErrors.push({ field: 'min_price', message: 'Minimum selling price must be greater than base price' });
+    // Default pricing relationship validation when all prices are set
+    if (priceValue !== undefined && !isNaN(priceValue) && priceValue >= 0) {
+      if (minPriceValue !== undefined && !isNaN(minPriceValue) && minPriceValue > 0 && minPriceValue <= priceValue) {
+        newErrors.push({ field: 'min_price', message: 'Default minimum selling price must be greater than default base price' });
       }
-      if (maxPrice !== undefined && !isNaN(maxPrice) && maxPrice > 0 && maxPrice <= price) {
-        newErrors.push({ field: 'max_price', message: 'Maximum selling price must be greater than base price' });
+      if (maxPriceValue !== undefined && !isNaN(maxPriceValue) && maxPriceValue > 0 && maxPriceValue <= priceValue) {
+        newErrors.push({ field: 'max_price', message: 'Default maximum selling price must be greater than default base price' });
       }
     }
 

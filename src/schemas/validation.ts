@@ -20,9 +20,9 @@ const BaseProductSchema = z.object({
   brand: z.string().min(1, 'Brand is required'),
   model: z.string().min(1, 'Model is required'),
   description: z.string().optional(),
-  price: z.number().positive('Price must be positive'),
-  min_price: z.number().positive().optional(),
-  max_price: z.number().positive().optional(),
+  price: z.number().nonnegative('Price must be 0 or greater').optional(),
+  min_price: z.number().positive('Minimum price must be positive').optional(),
+  max_price: z.number().positive('Maximum price must be positive').optional(),
   stock: z.number().int().min(0, 'Stock cannot be negative'),
   threshold: z.number().int().min(0, 'Threshold cannot be negative'),
   category_id: z.number().int().positive().optional(),
@@ -37,13 +37,13 @@ const BaseProductSchema = z.object({
 });
 
 export const ProductSchema = BaseProductSchema.superRefine((data, ctx) => {
-  // Enforce business rule: selling prices must be greater than base (buy) price
+  // Enforce business rule: default selling prices must be greater than default base price
   if (typeof data.price === 'number') {
     if (typeof data.min_price === 'number' && data.min_price <= data.price) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum selling price must be greater than base price' })
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Default minimum selling price must be greater than default base price' })
     }
     if (typeof data.max_price === 'number' && data.max_price <= data.price) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Maximum selling price must be greater than base price' })
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Default maximum selling price must be greater than default base price' })
     }
   }
   if (typeof data.min_price === 'number' && typeof data.max_price === 'number' && data.min_price >= data.max_price) {
@@ -58,10 +58,10 @@ export const CreateProductSchema = BaseProductSchema.omit({
 }).superRefine((data, ctx) => {
   if (typeof data.price === 'number') {
     if (typeof data.min_price === 'number' && data.min_price <= data.price) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum selling price must be greater than base price' })
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Default minimum selling price must be greater than default base price' })
     }
     if (typeof data.max_price === 'number' && data.max_price <= data.price) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Maximum selling price must be greater than base price' })
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Default maximum selling price must be greater than default base price' })
     }
   }
   if (typeof data.min_price === 'number' && typeof data.max_price === 'number' && data.min_price >= data.max_price) {

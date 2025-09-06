@@ -32,9 +32,9 @@ export interface Product extends StrictBaseEntity {
   brand: string;
   model: string;
   category_id: string;
-  price: number;
-  min_price: number;
-  max_price: number;
+  price?: number;      // Optional default price for new units
+  min_price?: number;  // Optional default min price for new units
+  max_price?: number;  // Optional default max price for new units
   threshold: number;
   category?: Category;
   product_units?: ProductUnit[];
@@ -44,9 +44,9 @@ export interface CreateProductData {
   brand: string;
   model: string;
   category_id: string;
-  price: number;
-  min_price: number;
-  max_price: number;
+  price?: number;      // Optional default price for new units
+  min_price?: number;  // Optional default min price for new units
+  max_price?: number;  // Optional default max price for new units
   threshold: number;
 }
 
@@ -62,6 +62,9 @@ export interface ProductUnit extends StrictBaseEntity {
   ram?: string;
   storage?: string;
   color?: string;
+  price?: number;      // Base purchase price for this unit
+  min_price?: number;  // Minimum selling price for this unit
+  max_price?: number;  // Maximum selling price for this unit
   status: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 

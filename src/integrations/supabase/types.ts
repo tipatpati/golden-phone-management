@@ -448,6 +448,9 @@ export type Database = {
           color: string | null
           created_at: string
           id: string
+          max_price: number | null
+          min_price: number | null
+          price: number | null
           product_id: string
           ram: number | null
           serial_number: string
@@ -461,6 +464,9 @@ export type Database = {
           color?: string | null
           created_at?: string
           id?: string
+          max_price?: number | null
+          min_price?: number | null
+          price?: number | null
           product_id: string
           ram?: number | null
           serial_number: string
@@ -474,6 +480,9 @@ export type Database = {
           color?: string | null
           created_at?: string
           id?: string
+          max_price?: number | null
+          min_price?: number | null
+          price?: number | null
           product_id?: string
           ram?: number | null
           serial_number?: string

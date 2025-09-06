@@ -3,9 +3,9 @@ export interface ProductFormData {
   model: string;
   year?: number;
   category_id: number;
-  price: number;
-  min_price: number;
-  max_price: number;
+  price?: number;       // Optional default price for new units
+  min_price?: number;   // Optional default min price for new units
+  max_price?: number;   // Optional default max price for new units
   stock: number;
   threshold: number;
   description?: string;

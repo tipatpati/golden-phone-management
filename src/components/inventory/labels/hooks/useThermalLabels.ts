@@ -9,7 +9,7 @@ interface Product {
   id: string;
   brand: string;
   model: string;
-  price: number;
+  price?: number;      // Optional default price
   stock?: number;
   serial_numbers?: string[];
   category?: { name: string };
@@ -93,7 +93,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             productName: labelProductName,
             serialNumber: parsed.serial,
             barcode,
-            price: product.price,
+            // Use unit-specific price if available, fallback to product default price
+            price: unit?.price || product.price || 0,
             category: product.category?.name,
             color: unit?.color || parsed.color,
             batteryLevel: unit?.battery_level || parsed.batteryLevel,
@@ -133,7 +134,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           labels.push({
             productName,
             barcode,
-            price: product.price,
+            // Use product default price or 0 if not set
+            price: product.price || 0,
             category: product.category?.name,
             storage: product.storage || 128, // Default storage if missing
             ram: product.ram || 6 // Default RAM if missing
