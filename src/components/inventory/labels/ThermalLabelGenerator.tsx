@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Printer, Eye, History, AlertCircle } from "lucide-react";
+import { Printer, Eye, History, AlertCircle, Wrench } from "lucide-react";
 import { ThermalLabelPreview } from "./ThermalLabelPreview";
 import { ProductUnitSelector } from "./ProductUnitSelector";
+import { BarcodeFixTool } from "@/components/inventory/admin/BarcodeFixTool";
 import { useThermalLabelPrint } from "./hooks/useThermalLabelPrint";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 
@@ -49,6 +50,7 @@ export function ThermalLabelGenerator({
     useMasterBarcode: false
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [showBarcodeFixTool, setShowBarcodeFixTool] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>(labels);
 
   // Update selected labels when props change
@@ -269,6 +271,15 @@ export function ThermalLabelGenerator({
                 {showPreview ? 'Hide' : 'Show'} Preview
               </Button>
               <Button
+                variant="outline"
+                onClick={() => setShowBarcodeFixTool(!showBarcodeFixTool)}
+                className="flex-1"
+                disabled={printState.isPrinting}
+              >
+                <Wrench className="h-4 w-4 mr-2" />
+                Fix Barcodes
+              </Button>
+              <Button
                 onClick={handlePrint}
                 disabled={printState.isPrinting || currentLabels.length === 0}
                 className="flex-1"
@@ -306,6 +317,16 @@ export function ThermalLabelGenerator({
               </div>
             )}
           </div>
+
+            {/* Barcode Fix Tool */}
+            {showBarcodeFixTool && (
+              <div className="space-y-4">
+                <BarcodeFixTool onFixed={() => {
+                  // Optionally refresh data here
+                  setShowBarcodeFixTool(false);
+                }} />
+              </div>
+            )}
 
             {/* Preview Panel */}
             {showPreview && currentLabels.length > 0 && (

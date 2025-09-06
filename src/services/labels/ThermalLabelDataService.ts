@@ -106,28 +106,12 @@ export class ThermalLabelDataService {
     let unitsMissingBarcodes = 0;
 
     try {
-      // STEP 1: Force barcode backfill to ensure all units have unique barcodes
-      console.log('🔧 FORCING barcode backfill to fix identical barcode issue...');
-      const backfillResult = await ProductUnitsService.backfillMissingBarcodes();
-      console.log('✅ Barcode backfill completed:', backfillResult);
-
-      // STEP 2: Fetch units after backfill
-      console.log(`📦 Fetching units for product ${product.id} after backfill...`);
+      // Fetch units for the product
+      console.log(`📦 Fetching units for product ${product.id}...`);
       const units = await ProductUnitsService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units`);
 
-      // STEP 3: Debug barcode uniqueness
-      const barcodes = units.map(u => u.barcode).filter(Boolean);
-      const uniqueBarcodes = new Set(barcodes);
-      console.log('🔍 BARCODE UNIQUENESS CHECK:', {
-        totalUnits: units.length,
-        totalBarcodes: barcodes.length,
-        uniqueBarcodes: uniqueBarcodes.size,
-        areUnique: barcodes.length === uniqueBarcodes.size,
-        barcodesList: units.map(u => ({ serial: u.serial_number, barcode: u.barcode }))
-      });
-
-      // STEP 4: Process each unit
+      // Process each unit
       for (const unit of units) {
         if (unit.barcode) {
           const label = this.createUnitLabel(unit, product, cleanBrand, cleanModel);
@@ -138,8 +122,8 @@ export class ThermalLabelDataService {
           }
         } else {
           unitsMissingBarcodes++;
-          errors.push(`Unit ${unit.serial_number} missing barcode even after backfill`);
-          console.error(`❌ Unit ${unit.serial_number} has no barcode`);
+          warnings.push(`Unit ${unit.serial_number} missing barcode - use "Fix Missing Barcodes" button`);
+          console.warn(`⚠️ Unit ${unit.serial_number} has no barcode`);
         }
       }
 
