@@ -442,6 +442,39 @@ export type Database = {
           },
         ]
       }
+      product_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_data: Json | null
+          note: string | null
+          old_data: Json | null
+          operation_type: string
+          product_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          note?: string | null
+          old_data?: Json | null
+          operation_type: string
+          product_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          note?: string | null
+          old_data?: Json | null
+          operation_type?: string
+          product_id?: string
+        }
+        Relationships: []
+      }
       product_recommendations: {
         Row: {
           created_at: string
@@ -500,6 +533,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_unit_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_data: Json | null
+          note: string | null
+          old_data: Json | null
+          operation_type: string
+          product_id: string
+          product_unit_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          note?: string | null
+          old_data?: Json | null
+          operation_type: string
+          product_id: string
+          product_unit_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          note?: string | null
+          old_data?: Json | null
+          operation_type?: string
+          product_id?: string
+          product_unit_id?: string
+        }
+        Relationships: []
       }
       product_units: {
         Row: {
