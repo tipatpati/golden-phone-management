@@ -22,6 +22,7 @@ interface ThermalLabelGeneratorProps {
   productPrice?: number;
   productBarcode?: string;
   productCategory?: string;
+  productId?: string; // Add productId for real data fetching
   allowUnitSelection?: boolean;
 }
 
@@ -35,6 +36,7 @@ export function ThermalLabelGenerator({
   productPrice = 0,
   productBarcode = "",
   productCategory = "",
+  productId, // Accept productId
   allowUnitSelection = false
 }: ThermalLabelGeneratorProps) {
   const [options, setOptions] = useState<ThermalLabelOptions>({
@@ -150,6 +152,7 @@ export function ThermalLabelGenerator({
               productPrice={productPrice}
               productBarcode={productBarcode}
               productCategory={productCategory}
+              productId={productId} // Pass productId for real data fetching
             />
           )}
 

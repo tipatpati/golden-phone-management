@@ -360,6 +360,7 @@ export function InventoryTable({
         onOpenChange={setPrintDialogOpen}
         labels={[]} // Start with empty labels when using unit selection
         allowUnitSelection={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0}
+        productId={selectedProduct.id} // Pass productId for real data fetching
         productSerialNumbers={selectedProduct.serial_numbers || []}
         productName={(() => {
           const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
