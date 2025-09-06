@@ -4,6 +4,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { BarcodeBackfillTool } from "./BarcodeBackfillTool";
+import { BarcodeTestTool } from "./BarcodeTestTool";
 
 // Admin-only tool to purge all product-related data
 const AdminPurgeProducts: React.FC = () => {
@@ -96,36 +98,45 @@ const AdminPurgeProducts: React.FC = () => {
   };
 
   return (
-    <section aria-label="Admin product maintenance" className="bg-background rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold">Admin Maintenance</h2>
-          <p className="text-muted-foreground text-sm">Clear all product-related data to start fresh testing.</p>
+    <div className="space-y-6">
+      {/* Barcode Management Tools */}
+      <BarcodeBackfillTool />
+      
+      {/* Barcode Test Tool */}
+      <BarcodeTestTool />
+      
+      {/* Product Purge Tool */}
+      <section aria-label="Admin product maintenance" className="bg-background rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border border-destructive/20">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-destructive">Danger Zone</h2>
+            <p className="text-muted-foreground text-sm">Clear all product-related data to start fresh testing.</p>
+          </div>
+          <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={loading} aria-label="Clear all product data">
+                {loading ? "Clearing…" : "Clear All Product Data"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm full product data purge?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete Products, Product Units, Product Recommendations, Sale Items, Repair Parts, and Supplier Transaction Items for the selected products.
+                  Sales or repairs referencing those items may lose details. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handlePurge} disabled={loading}>
+                  {loading ? "Purging…" : "Yes, delete all"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
-        <AlertDialog open={open} onOpenChange={setOpen}>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={loading} aria-label="Clear all product data">
-              {loading ? "Clearing…" : "Clear All Product Data"}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirm full product data purge?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete Products, Product Units, Product Recommendations, Sale Items, Repair Parts, and Supplier Transaction Items for the selected products.
-                Sales or repairs referencing those items may lose details. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handlePurge} disabled={loading}>
-                {loading ? "Purging…" : "Yes, delete all"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 

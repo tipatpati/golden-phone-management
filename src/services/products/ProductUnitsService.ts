@@ -246,7 +246,7 @@ export class ProductUnitsService {
 
     for (const unit of units) {
       try {
-        // Generate professional barcode
+        // Generate professional barcode for this specific unit
         const barcode = await Code128GeneratorService.generateUnitBarcode(unit.id, {
           metadata: {
             serial: unit.serial_number,

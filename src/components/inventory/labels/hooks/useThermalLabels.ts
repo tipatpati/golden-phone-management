@@ -131,8 +131,13 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             battery_level: unit.battery_level
           });
           
-          // Use existing barcode or fallback
-          const barcode = unit.barcode || `GPMS${unit.serial_number.slice(-6)}`;
+          // Ensure each unit has a unique barcode
+          let barcode = unit.barcode;
+          if (!barcode) {
+            // Generate unique barcode using unit ID to ensure uniqueness
+            barcode = `GPMSU${unit.id.replace(/-/g, '').slice(-6)}`;
+            console.warn(`⚠️ Unit ${unit.serial_number} missing barcode, using fallback: ${barcode}`);
+          }
           
           // Use unit data directly (no fallbacks to parsed data)
           const storage = unit.storage || product.storage || 128;
@@ -188,13 +193,14 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           console.log('✅ Created label:', {
             productName: labelProductName,
             serialNumber: unit.serial_number,
+            unitId: unit.id,
+            barcode: barcode, // Log the actual barcode being used
             price: labelPrice,
             maxPrice: labelMaxPrice,
             storage,
             ram,
             color: unit.color,
-            batteryLevel: unit.battery_level,
-            unitId: unit.id
+            batteryLevel: unit.battery_level
           });
         });
       } else {
@@ -208,8 +214,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
         });
         
         for (let i = 0; i < quantity; i++) {
-          // Use product's barcode or generate simple fallback
-          const barcode = product.barcode || `GPMSBULK${i + 1}`;
+          // Generate unique barcode for each bulk item
+          const barcode = product.barcode || `GPMSBULK${product.id.slice(-4)}${i.toString().padStart(3, '0')}`;
           
           const labelData = {
             productName,
