@@ -11,38 +11,78 @@ const AdminPurgeProducts: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isAuthorized = isLoggedIn && ["super_admin", "admin", "manager", "inventory_manager"].includes(userRole || "");
+  const isAuthorized = isLoggedIn && ["super_admin", "admin", "manager"].includes(userRole || "");
 
   if (!isAuthorized) return null;
 
   const handlePurge = async () => {
     try {
       setLoading(true);
-      toast.info("Starting purge…", { description: "Deleting product data in stages" });
+      toast.info("Starting purge…", { description: "Deleting related records first (sale items, units, etc.)" });
 
-      // 1) Delete recommendations first
-      const { error: recErr } = await supabase
+      // Gather product IDs to safely delete dependent rows
+      const { data: products, error: idsErr } = await supabase
+        .from("products")
+        .select("id");
+      if (idsErr) throw new Error(`Failed to fetch products: ${idsErr.message}`);
+      const productIds = (products ?? []).map((p: any) => p.id);
+
+      // If nothing to purge, still clean recommendation/unit tables just in case
+      if (productIds.length === 0) {
+        await supabase.from("product_recommendations").delete().not("id", "is", null);
+        await supabase.from("product_units").delete().not("id", "is", null);
+        toast.success("No products found. Cleared units and recommendations.");
+        setOpen(false);
+        return;
+      }
+
+      // 1) Delete product recommendations (both directions)
+      const { error: recErrA } = await supabase
         .from("product_recommendations")
         .delete()
-        .not("id", "is", null);
-      if (recErr) throw new Error(`Recommendations purge failed: ${recErr.message}`);
+        .in("product_id", productIds);
+      if (recErrA) throw new Error(`Recommendations purge (by product) failed: ${recErrA.message}`);
+      const { error: recErrB } = await supabase
+        .from("product_recommendations")
+        .delete()
+        .in("recommended_product_id", productIds);
+      if (recErrB) throw new Error(`Recommendations purge (by recommended) failed: ${recErrB.message}`);
 
-      // 2) Delete product units
+      // 2) Delete transactional/referenced items that block product deletion
+      const { error: saleItemsErr } = await supabase
+        .from("sale_items")
+        .delete()
+        .in("product_id", productIds);
+      if (saleItemsErr) throw new Error(`Sale items purge failed: ${saleItemsErr.message}`);
+
+      const { error: repairPartsErr } = await supabase
+        .from("repair_parts")
+        .delete()
+        .in("product_id", productIds);
+      if (repairPartsErr) throw new Error(`Repair parts purge failed: ${repairPartsErr.message}`);
+
+      const { error: supplierTxItemsErr } = await supabase
+        .from("supplier_transaction_items")
+        .delete()
+        .in("product_id", productIds);
+      if (supplierTxItemsErr) throw new Error(`Supplier transaction items purge failed: ${supplierTxItemsErr.message}`);
+
+      // 3) Delete product units for these products
       const { error: unitsErr } = await supabase
         .from("product_units")
         .delete()
-        .not("id", "is", null);
+        .in("product_id", productIds);
       if (unitsErr) throw new Error(`Units purge failed: ${unitsErr.message}`);
 
-      // 3) Delete products
+      // 4) Delete the products themselves
       const { error: productsErr } = await supabase
         .from("products")
         .delete()
-        .not("id", "is", null);
+        .in("id", productIds);
       if (productsErr) throw new Error(`Products purge failed: ${productsErr.message}`);
 
       toast.success("Product data cleared", {
-        description: "All products, units, and recommendations removed successfully",
+        description: "Removed products, units, sale items, repair parts, and recommendations.",
       });
       setOpen(false);
     } catch (e: any) {
@@ -72,8 +112,8 @@ const AdminPurgeProducts: React.FC = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm full product data purge?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete all records from Products, Product Units, and Product Recommendations.
-                Sales or repairs that referenced products may become orphaned. This action cannot be undone.
+                This will permanently delete Products, Product Units, Product Recommendations, Sale Items, Repair Parts, and Supplier Transaction Items for the selected products.
+                Sales or repairs referencing those items may lose details. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
