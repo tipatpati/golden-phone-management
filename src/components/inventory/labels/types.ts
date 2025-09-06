@@ -17,6 +17,7 @@ export interface ThermalLabelOptions {
   includeCompany: boolean;
   includeCategory: boolean;
   format: "standard" | "compact";
+  useMasterBarcode?: boolean;
 }
 
 export interface ThermalPrintSettings {

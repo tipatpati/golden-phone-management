@@ -43,7 +43,8 @@ export function ThermalLabelGenerator({
     includeBarcode: true,
     includeCompany: true,
     includeCategory: true,
-    format: "standard"
+    format: "standard",
+    useMasterBarcode: false
   });
   const [showPreview, setShowPreview] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>(labels);
@@ -229,6 +230,29 @@ export function ThermalLabelGenerator({
                   </Label>
                 </div>
               </div>
+              
+              {/* Barcode Settings */}
+              {options.includeBarcode && labelStats.hasSerialNumbers && (
+                <div className="space-y-2 pt-2 border-t">
+                  <Label className="text-sm font-medium">Barcode Options</Label>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="use-master-barcode"
+                      checked={options.useMasterBarcode || false}
+                      onCheckedChange={(checked) => updateOption('useMasterBarcode', checked === true)}
+                    />
+                    <Label htmlFor="use-master-barcode" className="text-sm">
+                      Use master product barcode (same for all units)
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {options.useMasterBarcode 
+                      ? "All labels will use the same product barcode"
+                      : "Each unit will have a unique barcode based on its serial number"
+                    }
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">

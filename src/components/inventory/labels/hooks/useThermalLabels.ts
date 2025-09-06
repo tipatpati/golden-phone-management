@@ -19,7 +19,7 @@ interface Product {
   ram?: number; // Add RAM field
 }
 
-export function useThermalLabels(products: Product[]): ThermalLabelData[] {
+export function useThermalLabels(products: Product[], useMasterBarcode?: boolean): ThermalLabelData[] {
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
 
   useEffect(() => {
@@ -72,8 +72,10 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
             productRam: product.ram
           });
           
-          // Use product's barcode if available, otherwise generate based on IMEI/serial
-          const barcode = product.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
+          // Choose barcode strategy based on useMasterBarcode option
+          const barcode = useMasterBarcode && product.barcode 
+            ? product.barcode 
+            : unit?.barcode || generateSKUBasedBarcode(parsed.serial, product.id, parsed.batteryLevel);
           
           // Get storage and RAM with fallback hierarchy
           const storage = unit?.storage || parsed.storage || product.storage || 128;
@@ -141,5 +143,5 @@ export function useThermalLabels(products: Product[]): ThermalLabelData[] {
     });
 
     return labels;
-  }, [products, productUnits]);
+  }, [products, productUnits, useMasterBarcode]);
 }
