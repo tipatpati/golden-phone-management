@@ -8,8 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Search, Battery, Palette } from "lucide-react";
 import { formatProductUnitName } from "@/utils/productNaming";
 import { ThermalLabelData } from "./types";
-import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
-import { ProductForLabels } from "@/services/labels/types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductUnitSelectorProps {
   serialNumbers: string[];
@@ -34,42 +33,58 @@ export function ProductUnitSelector({
   const [searchTerm, setSearchTerm] = useState("");
   const [realLabels, setRealLabels] = useState<ThermalLabelData[]>([]);
 
-  // Fetch real thermal labels using the new service
+  // Fetch existing units with their barcodes directly
   useEffect(() => {
-    const fetchRealLabels = async () => {
+    const fetchExistingUnits = async () => {
       if (!productId) {
         console.warn('No productId provided for ProductUnitSelector');
         return;
       }
 
-      console.log('🔧 ProductUnitSelector: Fetching real thermal labels for product:', productId);
+      console.log('🔧 ProductUnitSelector: Fetching existing units for product:', productId);
       
       try {
-        // Create a minimal product object for the service
-        const product: ProductForLabels = {
-          id: productId,
-          brand: productName.split(' ')[0] || 'Unknown',
-          model: productName.split(' ').slice(1).join(' ') || 'Model',
-          price: productPrice,
-          serial_numbers: serialNumbers,
-          category: productCategory ? { name: productCategory } : undefined,
-          barcode: productBarcode
-        };
+        // Directly fetch existing units from database - no backfill needed
+        const { data: units, error } = await supabase
+          .from('product_units')
+          .select('*')
+          .eq('product_id', productId);
 
-        const result = await ThermalLabelDataService.generateLabelsForProducts([product]);
+        if (error) {
+          throw new Error(`Failed to fetch units: ${error.message}`);
+        }
+
+        if (!units || units.length === 0) {
+          console.log('⚠️ No units found for product:', productId);
+          setRealLabels([]);
+          return;
+        }
+
+        // Convert units to thermal label data format
+        const labels: ThermalLabelData[] = units.map(unit => ({
+          serialNumber: unit.serial_number,
+          barcode: unit.barcode || '', // Use existing barcode from DB
+          productName: productName,
+          price: unit.price || productPrice,
+          color: unit.color,
+          storage: unit.storage,
+          ram: unit.ram,
+          batteryLevel: unit.battery_level,
+          category: productCategory
+        })).filter(label => label.barcode); // Only include units with barcodes
         
-        console.log('✅ ProductUnitSelector: Got real labels:', result.labels.length);
-        console.log('🔍 Real barcodes:', result.labels.map(l => ({ serial: l.serialNumber, barcode: l.barcode })));
+        console.log('✅ ProductUnitSelector: Got existing labels:', labels.length);
+        console.log('🔍 Existing barcodes:', labels.map(l => ({ serial: l.serialNumber, barcode: l.barcode })));
         
-        setRealLabels(result.labels);
+        setRealLabels(labels);
       } catch (error) {
-        console.error('❌ ProductUnitSelector: Failed to fetch real labels:', error);
+        console.error('❌ ProductUnitSelector: Failed to fetch existing units:', error);
         setRealLabels([]);
       }
     };
 
-    fetchRealLabels();
-  }, [productId, serialNumbers, productName, productPrice, productBarcode, productCategory]);
+    fetchExistingUnits();
+  }, [productId, productName, productPrice, productCategory]);
 
   // Parse and filter units using real thermal label data
   const parsedUnits = useMemo(() => {
