@@ -138,8 +138,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             : generateSKUBasedBarcode(unit.serial_number, product.id, unit.battery_level);
           
           // Use unit data directly (no fallbacks to parsed data)
-          const storage = unit.storage ?? product.storage ?? 128;
-          const ram = unit.ram ?? product.ram ?? 6;
+          const storage = unit.storage || product.storage || 128;
+          const ram = unit.ram || product.ram || 6;
           
           console.log('💾 Storage/RAM resolution:', {
             final: { storage, ram },

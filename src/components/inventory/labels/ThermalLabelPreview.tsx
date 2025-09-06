@@ -21,11 +21,8 @@ export function ThermalLabelPreview({
       try {
         console.log('🏷️ Generating barcode for:', label.barcode);
         
-        // Use consistent barcode format - detect based on content
-        let format = 'CODE128';
-        if (/^\d{13}$/.test(label.barcode)) {
-          format = 'EAN13';
-        }
+        // Use CODE128 for all barcodes to avoid EAN13 validation issues
+        const format = 'CODE128';
         
         // Clear the canvas first
         const canvas = canvasRef.current;

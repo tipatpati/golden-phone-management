@@ -59,9 +59,7 @@ export function formatLabelElements(
  * Detect barcode format consistently across preview and print
  */
 export function detectBarcodeFormat(barcode: string): string {
-  if (/^\d{13}$/.test(barcode)) {
-    return 'EAN13';
-  }
+  // Always use CODE128 to avoid EAN13 validation issues
   return 'CODE128';
 }
 
