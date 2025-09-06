@@ -32,18 +32,13 @@ export function formatProductName(data: ProductNameData): string {
 }
 
 /**
- * Formats a product unit name with additional details
- * @param data Product unit data containing brand, model, storage, color, etc.
- * @returns Formatted unit name (e.g., "Apple iPhone 15 Pro 256GB - Space Black")
+ * Formats a product unit name without color concatenation
+ * @param data Product unit data containing brand, model, storage
+ * @returns Formatted unit name (e.g., "Apple iPhone 15 Pro 256GB")
  */
 export function formatProductUnitName(data: ProductUnitData): string {
-  const baseName = formatProductName(data);
-  
-  if (data.color) {
-    return `${baseName} - ${data.color}`;
-  }
-  
-  return baseName;
+  // Color should NOT be concatenated with product name for database storage
+  return formatProductName(data);
 }
 
 /**
