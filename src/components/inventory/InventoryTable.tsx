@@ -17,7 +17,9 @@ import {
   Package, 
   AlertTriangle,
   Barcode,
-  Printer
+  Printer,
+  Euro,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/products/ProductReactQueryService";
@@ -268,6 +270,12 @@ export function InventoryTable({
                         : 'Individual unit pricing'
                       }
                     </div>
+                    {product.has_serial && (
+                      <div className="text-xs text-blue-600 flex items-center gap-1">
+                        <Euro className="h-3 w-3" />
+                        Click info to set unit prices
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -291,6 +299,19 @@ export function InventoryTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProductForDetails(product);
+                        setDetailsDialogOpen(true);
+                      }}
+                      className="h-8 w-8 p-0"
+                      title="View details and manage unit pricing"
+                    >
+                      <Info className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"

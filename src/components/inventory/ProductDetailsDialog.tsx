@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { formatProductName, parseSerialString, formatProductUnitDisplay } from "@/utils/productNaming";
 import {
   Dialog,
@@ -19,9 +19,12 @@ import {
   Calendar,
   DollarSign,
   Edit,
-  Printer
+  Printer,
+  Euro
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductUnitsService, ProductUnit } from "@/services/products/productUnitsService";
+import { UnitPricingDialog } from "./UnitPricingDialog";
 
 interface Product {
   id: string;
@@ -58,6 +61,39 @@ export function ProductDetailsDialog({
   onEdit,
   onPrint
 }: ProductDetailsDialogProps) {
+  const [productUnits, setProductUnits] = useState<ProductUnit[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<ProductUnit | null>(null);
+  const [unitPricingOpen, setUnitPricingOpen] = useState(false);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
+
+  // Fetch product units when dialog opens
+  useEffect(() => {
+    const fetchUnits = async () => {
+      if (!product || !open || !product.has_serial) return;
+      
+      setIsLoadingUnits(true);
+      try {
+        const units = await ProductUnitsService.getUnitsForProduct(product.id);
+        setProductUnits(units);
+      } catch (error) {
+        console.error('Error fetching product units:', error);
+      } finally {
+        setIsLoadingUnits(false);
+      }
+    };
+
+    fetchUnits();
+  }, [product, open]);
+
+  const handleUnitPricingSuccess = () => {
+    // Refresh units after pricing update
+    if (product) {
+      ProductUnitsService.getUnitsForProduct(product.id)
+        .then(setProductUnits)
+        .catch(console.error);
+    }
+  };
+
   if (!product) return null;
 
   const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
@@ -255,25 +291,54 @@ export function ProductDetailsDialog({
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {product.serial_numbers.map((serial, index) => {
                     const parsed = parseSerialString(serial);
-                    const displayName = formatProductUnitDisplay({
-                      brand: cleanBrand,
-                      model: cleanModel,
-                      color: parsed.color,
-                      storage: parsed.storage,
-                      batteryLevel: parsed.batteryLevel,
-                      serialNumber: parsed.serial
-                    });
+                    const unit = productUnits.find(u => u.serial_number === parsed.serial);
                     
                     return (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm"
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded text-sm border"
                       >
-                        <span className="font-mono">{parsed.serial}</span>
-                        <div className="text-xs text-muted-foreground">
-                          {parsed.color && <span className="mr-2">Color: {parsed.color}</span>}
-                          {parsed.storage && <span className="mr-2">{parsed.storage}GB</span>}
-                          {parsed.batteryLevel !== undefined && <span>Battery: {parsed.batteryLevel}%</span>}
+                        <div className="flex-1">
+                          <div className="font-mono font-medium">{parsed.serial}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {parsed.color && <span className="mr-3">Color: {parsed.color}</span>}
+                            {parsed.storage && <span className="mr-3">{parsed.storage}GB</span>}
+                            {parsed.batteryLevel !== undefined && <span className="mr-3">Battery: {parsed.batteryLevel}%</span>}
+                            {unit?.status && (
+                              <Badge 
+                                variant={unit.status === 'available' ? 'default' : 'outline'}
+                                className="text-xs"
+                              >
+                                {unit.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            {unit?.price && (
+                              <div className="text-sm font-medium">{formatCurrency(unit.price)}</div>
+                            )}
+                            {unit?.min_price && unit?.max_price && (
+                              <div className="text-xs text-muted-foreground">
+                                {formatCurrency(unit.min_price)} - {formatCurrency(unit.max_price)}
+                              </div>
+                            )}
+                            {!unit?.price && !unit?.min_price && (
+                              <div className="text-xs text-muted-foreground">No pricing set</div>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedUnit(unit || null);
+                              setUnitPricingOpen(true);
+                            }}
+                            disabled={isLoadingUnits}
+                          >
+                            <Euro className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
                     );
@@ -302,6 +367,17 @@ export function ProductDetailsDialog({
           </div>
         </div>
       </DialogContent>
+
+      {/* Unit Pricing Dialog */}
+      <UnitPricingDialog
+        unit={selectedUnit}
+        open={unitPricingOpen}
+        onClose={() => {
+          setUnitPricingOpen(false);
+          setSelectedUnit(null);
+        }}
+        onSuccess={handleUnitPricingSuccess}
+      />
     </Dialog>
   );
 }
