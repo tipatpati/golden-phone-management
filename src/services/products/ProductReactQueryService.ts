@@ -127,20 +127,8 @@ export const useProduct = (id: string) =>
 export const useCreateProduct = () => 
   productService.useCreate();
 
-export const useUpdateProduct = () => {
-  const baseUpdate = productService.useUpdate();
-  
-  return useMutation({
-    mutationFn: baseUpdate.mutateAsync,
-    onSuccess: (data, variables) => {
-      // Refresh thermal labels after product update
-      if (typeof (window as any).__refreshThermalLabels === 'function') {
-        console.log('🔄 Refreshing thermal labels after product update');
-        (window as any).__refreshThermalLabels();
-      }
-    },
-  });
-};
+export const useUpdateProduct = () => 
+  productService.useUpdate();
 
 export const useDeleteProduct = () => 
   productService.useDelete();
