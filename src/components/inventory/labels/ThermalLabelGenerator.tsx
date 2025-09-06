@@ -326,11 +326,6 @@ export function ThermalLabelGenerator({
                         )}
                       </div>
                     ))}
-                    {currentLabels.length > 3 && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        ... and {currentLabels.length - 3} more units
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
