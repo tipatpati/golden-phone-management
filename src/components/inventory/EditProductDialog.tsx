@@ -192,6 +192,12 @@ export function EditProductDialog({
               }
             );
             console.log(`✅ Created ${newSerials.length} new product units with default pricing`);
+            
+            // Refresh thermal labels after updating product units
+            if (typeof (window as any).__refreshThermalLabels === 'function') {
+              console.log('🔄 Refreshing thermal labels after product unit update');
+              (window as any).__refreshThermalLabels();
+            }
           }
           
         } catch (unitsError) {
@@ -199,6 +205,12 @@ export function EditProductDialog({
           // Don't fail the whole update if units fail
           toast.error("Product updated but there was an issue with unit data. Please check the inventory.");
         }
+      }
+      
+      // Invalidate thermal labels cache after successful update
+      if (typeof (window as any).__refreshThermalLabels === 'function') {
+        console.log('🔄 Refreshing thermal labels after product update');
+        (window as any).__refreshThermalLabels();
       }
       
       if (addedUnits > 0) {

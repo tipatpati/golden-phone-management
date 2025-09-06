@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { ThermalLabelData } from "../types";
 import { generateSKUBasedBarcode } from "@/utils/barcodeGenerator";
 
@@ -24,6 +24,20 @@ interface Product {
 export function useThermalLabels(products: Product[], useMasterBarcode?: boolean): ThermalLabelData[] {
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
   const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Add a global refresh function
+  const forceRefresh = useCallback(() => {
+    console.log('🔄 THERMAL LABELS: Force refreshing...');
+    setRefreshKey(prev => prev + 1);
+  }, []);
+  
+  // Expose refresh function globally for product updates
+  useEffect(() => {
+    (window as any).__refreshThermalLabels = forceRefresh;
+    return () => {
+      delete (window as any).__refreshThermalLabels;
+    };
+  }, [forceRefresh]);
 
   useEffect(() => {
     const fetchProductUnits = async () => {

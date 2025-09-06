@@ -100,8 +100,14 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
                   max_price: data.max_price
                 }
               );
-              console.log(`✅ Created ${units.length} product units with IMEI barcodes and default pricing`);
+            console.log(`✅ Created ${units.length} product units with IMEI barcodes and default pricing`);
+            
+            // Refresh thermal labels after creating new product
+            if (typeof (window as any).__refreshThermalLabels === 'function') {
+              console.log('🔄 Refreshing thermal labels after product creation');
+              (window as any).__refreshThermalLabels();
             }
+          }
             
             handleProductCreated({ 
               ...newProduct, 
