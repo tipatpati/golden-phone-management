@@ -208,6 +208,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
           onRegisterSubmit={(submitFn) => {
             formSubmitRef.current = submitFn;
           }}
+          productId={undefined}
         />
         
         {/* Custom submit button */}

@@ -3,6 +3,7 @@ import { ProductFormProps, ProductFormData } from "./types";
 import { ProductFormFields } from "./ProductFormFields";
 import { SerialNumberManager } from "./SerialNumberManager";
 import { BarcodeManager } from "./BarcodeManager";
+import { BarcodePreview } from "./BarcodePreview";
 import { useProductForm } from "./hooks/useProductForm";
 import { useProducts } from "@/services/products/ProductReactQueryService";
 
@@ -216,7 +217,15 @@ export function ProductForm({
         />
       )}
 
-      {/* Barcode Display */}
+      {/* Enhanced Barcode Preview */}
+      <BarcodePreview
+        productId={productId}
+        unitEntries={unitEntries}
+        productBarcode={formData.barcode}
+        hasSerial={formData.has_serial || false}
+      />
+
+      {/* Legacy Barcode Manager (for compatibility) */}
       <BarcodeManager
         serialNumbers={unitEntries.map(e => e.serial).join('\n')}
         hasSerial={formData.has_serial || false}

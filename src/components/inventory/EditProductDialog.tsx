@@ -269,6 +269,7 @@ export function EditProductDialog({
         onSubmit={handleSubmit}
         isLoading={updateProduct.isPending}
         submitText="Update Product"
+        productId={product.id}
       />
     </FormDialog>
   );
