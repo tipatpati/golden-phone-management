@@ -151,8 +151,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             color: unit?.color || parsed.color
           });
           
-          // Price hierarchy: unit max_price > product max_price > unit price > product price > 0
-          const labelPrice = unit?.max_price ?? product.max_price ?? unit?.price ?? product.price ?? 0;
+          // Price hierarchy: unit max_price > unit price > product max_price > product price > 0
+          const labelPrice = unit?.max_price ?? unit?.price ?? product.max_price ?? product.price ?? 0;
           
           console.log('💰 Price resolution:', {
             finalPrice: labelPrice,

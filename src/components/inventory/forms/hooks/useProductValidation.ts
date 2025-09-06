@@ -37,18 +37,31 @@ export function useProductValidation() {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
-    // Pricing validation - require at least one price to be set (either default or from serial numbers)
-    const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
-                           (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') ||
-                           (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '');
-    
-    const hasSerialPricing = serialNumbers && serialNumbers.split('\n').some(line => {
-      const trimmed = line.trim();
-      return trimmed && (trimmed.includes('price:') || trimmed.includes('minPrice:') || trimmed.includes('maxPrice:'));
-    });
-
-    if (!hasDefaultPrice && !hasSerialPricing) {
-      newErrors.push({ field: 'price', message: 'At least one price must be specified (either default pricing or unit-level pricing)' });
+    // For products with serial numbers, individual unit pricing is required
+    // For products without serial numbers, at least one default price is required
+    if (data.has_serial && serialNumbers) {
+      const serialLines = serialNumbers.split('\n').map(line => line.trim()).filter(line => line !== '');
+      
+      // Check if any unit has pricing information
+      const hasUnitPricing = serialLines.some(line => {
+        return line.includes('price:') || line.includes('minPrice:') || line.includes('maxPrice:');
+      });
+      
+      if (serialLines.length > 0 && !hasUnitPricing) {
+        newErrors.push({ 
+          field: 'serial_numbers', 
+          message: 'Products with serial numbers require unit-level pricing. Add price: value to each serial number line.' 
+        });
+      }
+    } else if (!data.has_serial) {
+      // For products without serial numbers, require at least one default price
+      const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
+                             (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') ||
+                             (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '');
+      
+      if (!hasDefaultPrice) {
+        newErrors.push({ field: 'price', message: 'Products without serial numbers require at least one default price (base, min, or max)' });
+      }
     }
 
     // Price validations when values are provided

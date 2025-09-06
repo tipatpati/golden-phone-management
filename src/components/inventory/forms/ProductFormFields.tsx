@@ -121,12 +121,13 @@ export function ProductFormFields({
 
       {/* Pricing Information Guide */}
       <div className="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Pricing Information</h4>
+        <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Pricing Strategy</h4>
         <div className="text-xs text-yellow-800 space-y-1">
-          <p><strong>Unit-Level Pricing:</strong> Each IMEI/serial number has its own specific pricing</p>
-          <p><strong>Default Values:</strong> These prices will be applied to new units when they're created</p>
-          <p><strong>Individual Unit Pricing:</strong> You can modify prices for each unit after creation in the inventory management section</p>
-          <p className="mt-2 text-yellow-700">💡 Leave fields empty if you prefer to set prices individually for each unit</p>
+          <p><strong>✅ Unit-Level Pricing (Recommended):</strong> Set individual prices for each IMEI/serial number below</p>
+          <p><strong>📋 Default Prices (Optional):</strong> These will apply only to new units without specific pricing</p>
+          <p><strong>🎯 Best Practice:</strong> Leave default fields empty and set specific prices for each unit individually</p>
+          <p className="mt-2 font-medium text-yellow-700">⚡ For products with serial numbers: Unit prices are required, default prices are optional</p>
+          <p className="text-yellow-700">⚡ For products without serial numbers: At least one default price is required</p>
         </div>
       </div>
 

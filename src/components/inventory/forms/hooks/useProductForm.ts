@@ -14,9 +14,9 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     model: '',
     year: undefined,
     category_id: 1, // Set default category to Phones
-    price: 0,
-    min_price: 0,
-    max_price: 0,
+    price: undefined, // Make default prices optional
+    min_price: undefined,
+    max_price: undefined,
     stock: 0,
     threshold: 5,
     description: '',
@@ -88,9 +88,9 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       model: formData.model!,
       year: formData.year,
       category_id: formData.category_id!,
-      price: formData.price!,
-      min_price: formData.min_price!,
-      max_price: formData.max_price!,
+      price: formData.price || 0, // Use 0 as fallback for optional default prices
+      min_price: formData.min_price || 0,
+      max_price: formData.max_price || 0,
       stock: formData.has_serial ? serialArray.length : formData.stock!,
       threshold: formData.threshold!,
       description: formData.description,
@@ -114,9 +114,9 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       model: '',
       year: undefined,
       category_id: 1, // Set default to Phones
-      price: 0,
-      min_price: 0,
-      max_price: 0,
+      price: undefined, // Reset to optional
+      min_price: undefined,
+      max_price: undefined,
       stock: 0,
       threshold: 5,
       description: '',
