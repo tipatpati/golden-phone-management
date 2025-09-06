@@ -49,7 +49,7 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
 
       <div className="space-y-3">
         {entries.map((entry, index) => (
-          <div key={`unit-entry-${index}`} className="p-4 border border-border rounded-lg bg-muted/5 space-y-4 lg:space-y-0 transition-colors hover:bg-muted/10">
+          <div key={`unit-entry-${index}`} className="p-4 border border-border rounded-lg bg-muted/5 space-y-4 transition-colors hover:bg-muted/10">
             {/* Mobile layout */}
             <div className="lg:hidden space-y-3">
               <div className="flex items-center justify-between">
