@@ -4,6 +4,7 @@ import { ConnectionStatus } from "@/components/inventory/ConnectionStatus";
 import { InventoryHeader } from "@/components/inventory/InventoryHeader";
 import { InventoryContent } from "@/components/inventory/InventoryContent";
 import { useInventoryState } from "@/hooks/useInventoryState";
+import AdminPurgeProducts from "@/components/inventory/admin/AdminPurgeProducts";
 
 const Inventory = () => {
   const {
@@ -28,6 +29,9 @@ const Inventory = () => {
         isCheckingConnection={isCheckingConnection}
         onTestConnection={handleTestConnection}
       />
+
+      {/* Admin purge tool */}
+      <AdminPurgeProducts />
       
       <InventoryContent
         showAddProduct={showAddProduct}
