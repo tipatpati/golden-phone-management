@@ -75,13 +75,13 @@ export function useProductValidation() {
       newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
     }
 
-    // Price range validation - only validate if all three values are present, valid, and greater than 0
-    if (price !== undefined && minPrice !== undefined && maxPrice !== undefined && 
-        !isNaN(price) && !isNaN(minPrice) && !isNaN(maxPrice) &&
-        price > 0 && minPrice > 0 && maxPrice > 0) {
-      console.log('🔍 Price validation:', { price, min: minPrice, max: maxPrice });
-      if (price < minPrice || price > maxPrice) {
-        newErrors.push({ field: 'price', message: 'Price must be between minimum and maximum prices' });
+    // Pricing relationship validation: selling prices must be greater than base (buy) price
+    if (price !== undefined && !isNaN(price) && price >= 0) {
+      if (minPrice !== undefined && !isNaN(minPrice) && minPrice > 0 && minPrice <= price) {
+        newErrors.push({ field: 'min_price', message: 'Minimum selling price must be greater than base price' });
+      }
+      if (maxPrice !== undefined && !isNaN(maxPrice) && maxPrice > 0 && maxPrice <= price) {
+        newErrors.push({ field: 'max_price', message: 'Maximum selling price must be greater than base price' });
       }
     }
 

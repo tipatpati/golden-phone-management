@@ -15,7 +15,7 @@ export const UserSchema = z.object({
 });
 
 // Product schemas
-export const ProductSchema = z.object({
+const BaseProductSchema = z.object({
   id: z.string().uuid(),
   brand: z.string().min(1, 'Brand is required'),
   model: z.string().min(1, 'Model is required'),
@@ -36,10 +36,37 @@ export const ProductSchema = z.object({
   updated_at: z.string(),
 });
 
-export const CreateProductSchema = ProductSchema.omit({
+export const ProductSchema = BaseProductSchema.superRefine((data, ctx) => {
+  // Enforce business rule: selling prices must be greater than base (buy) price
+  if (typeof data.price === 'number') {
+    if (typeof data.min_price === 'number' && data.min_price <= data.price) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum selling price must be greater than base price' })
+    }
+    if (typeof data.max_price === 'number' && data.max_price <= data.price) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Maximum selling price must be greater than base price' })
+    }
+  }
+  if (typeof data.min_price === 'number' && typeof data.max_price === 'number' && data.min_price >= data.max_price) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum price must be less than maximum price' })
+  }
+});
+
+export const CreateProductSchema = BaseProductSchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
+}).superRefine((data, ctx) => {
+  if (typeof data.price === 'number') {
+    if (typeof data.min_price === 'number' && data.min_price <= data.price) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum selling price must be greater than base price' })
+    }
+    if (typeof data.max_price === 'number' && data.max_price <= data.price) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['max_price'], message: 'Maximum selling price must be greater than base price' })
+    }
+  }
+  if (typeof data.min_price === 'number' && typeof data.max_price === 'number' && data.min_price >= data.max_price) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['min_price'], message: 'Minimum price must be less than maximum price' })
+  }
 });
 
 // Client schemas
