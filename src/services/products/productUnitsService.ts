@@ -53,9 +53,9 @@ export class ProductUnitsService {
         battery_level: parsed.batteryLevel,
         storage: parsed.storage,
         ram: parsed.ram,
-        price: defaultPricing?.price,
-        min_price: defaultPricing?.min_price,
-        max_price: defaultPricing?.max_price,
+        price: parsed.price ?? defaultPricing?.price,
+        min_price: parsed.minPrice ?? defaultPricing?.min_price,
+        max_price: parsed.maxPrice ?? defaultPricing?.max_price,
         status: 'available' as const
       };
     });

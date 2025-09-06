@@ -4,6 +4,9 @@ export interface SerialWithBattery {
   color?: string;
   storage?: number; // in GB, e.g., 64, 128, 256
   ram?: number; // in GB, e.g., 4, 6, 8, 12, 16
+  price?: number; // Purchase price
+  minPrice?: number; // Min selling price
+  maxPrice?: number; // Max selling price
 }
 
 /**
@@ -24,6 +27,31 @@ export function parseSerialWithBattery(serialString: string): SerialWithBattery 
   const colorTokens: string[] = [];
 
   for (const raw of tokens) {
+    // Handle pricing (highest priority to avoid conflicts)
+    if (raw.startsWith('€') && result.price === undefined) {
+      const priceValue = parseFloat(raw.substring(1));
+      if (!isNaN(priceValue)) {
+        result.price = priceValue;
+        continue;
+      }
+    }
+    
+    if (raw.startsWith('MIN€') && result.minPrice === undefined) {
+      const minPriceValue = parseFloat(raw.substring(4));
+      if (!isNaN(minPriceValue)) {
+        result.minPrice = minPriceValue;
+        continue;
+      }
+    }
+    
+    if (raw.startsWith('MAX€') && result.maxPrice === undefined) {
+      const maxPriceValue = parseFloat(raw.substring(4));
+      if (!isNaN(maxPriceValue)) {
+        result.maxPrice = maxPriceValue;
+        continue;
+      }
+    }
+    
     // Handle RAM first (highest specificity)
     if (raw.includes('GB-RAM')) {
       const ramValue = parseInt(raw.replace('GB-RAM', ''));

@@ -13,6 +13,9 @@ interface SerialEntry {
   batteryLevel: number;
   storage?: number; // GB
   ram?: number; // GB
+  price?: number; // Unit purchase price
+  minPrice?: number; // Min selling price
+  maxPrice?: number; // Max selling price
 }
 
 interface SerialNumbersInputProps {
@@ -46,6 +49,10 @@ useEffect(() => {
       const STORAGE_SET = new Set([16, 32, 64, 128, 256, 512, 1024]);
       const RAM_SET = new Set([1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32]);
 
+      let price: number | undefined = undefined;
+      let minPrice: number | undefined = undefined;
+      let maxPrice: number | undefined = undefined;
+
       tokens.forEach((raw) => {
         const token = raw.replace(/[%]/g, ''); // Remove % but keep GB for proper parsing
         const ramToken = raw.replace(/GB-RAM$/, ''); // Extract RAM values with GB-RAM suffix
@@ -54,7 +61,17 @@ useEffect(() => {
         const n = parseInt(token.replace(/GB.*/, ''));
         const ramValue = parseInt(ramToken);
         
-        if (!isNaN(ramValue) && raw.includes('GB-RAM') && RAM_SET.has(ramValue) && ram === undefined) {
+        // Parse pricing
+        if (raw.startsWith('€') && price === undefined) {
+          const priceValue = parseFloat(raw.substring(1));
+          if (!isNaN(priceValue)) price = priceValue;
+        } else if (raw.startsWith('MIN€') && minPrice === undefined) {
+          const minPriceValue = parseFloat(raw.substring(4));
+          if (!isNaN(minPriceValue)) minPrice = minPriceValue;
+        } else if (raw.startsWith('MAX€') && maxPrice === undefined) {
+          const maxPriceValue = parseFloat(raw.substring(4));
+          if (!isNaN(maxPriceValue)) maxPrice = maxPriceValue;
+        } else if (!isNaN(ramValue) && raw.includes('GB-RAM') && RAM_SET.has(ramValue) && ram === undefined) {
           ram = ramValue;
         } else if (!isNaN(n)) {
           if (n >= 0 && n <= 100 && batteryLevel === 0) {
@@ -75,7 +92,10 @@ useEffect(() => {
         color: colorTokens.join(' '),
         batteryLevel,
         storage,
-        ram
+        ram,
+        price,
+        minPrice,
+        maxPrice
       };
     });
     
@@ -95,7 +115,17 @@ useEffect(() => {
   useEffect(() => {
     const validEntries = entries.filter(entry => entry.serial.trim() !== '');
     const serialString = validEntries
-      .map(entry => `${entry.serial}${entry.color ? ` ${entry.color}` : ''}${entry.storage !== undefined ? ` ${entry.storage}GB` : ''}${entry.ram !== undefined ? ` ${entry.ram}GB-RAM` : ''}${entry.batteryLevel ? ` ${entry.batteryLevel}%` : ''}`)
+      .map(entry => {
+        let parts = [entry.serial];
+        if (entry.color) parts.push(entry.color);
+        if (entry.storage !== undefined) parts.push(`${entry.storage}GB`);
+        if (entry.ram !== undefined) parts.push(`${entry.ram}GB-RAM`);
+        if (entry.batteryLevel) parts.push(`${entry.batteryLevel}%`);
+        if (entry.price !== undefined) parts.push(`€${entry.price}`);
+        if (entry.minPrice !== undefined) parts.push(`MIN€${entry.minPrice}`);
+        if (entry.maxPrice !== undefined) parts.push(`MAX€${entry.maxPrice}`);
+        return parts.join(' ');
+      })
       .join('\n');
 
     // Only update if the string has actually changed to prevent loops
@@ -256,11 +286,63 @@ useEffect(() => {
                     />
                   </div>
                 </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor={`price-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                      Prezzo di Acquisto (€)
+                    </Label>
+                    <Input
+                      id={`price-mobile-${entry.id}`}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={entry.price?.toString() || ''}
+                      onChange={(e) => updateEntry(entry.id, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      placeholder="250.00"
+                      className="text-sm h-10"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor={`minPrice-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                        Prezzo Min (€)
+                      </Label>
+                      <Input
+                        id={`minPrice-mobile-${entry.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={entry.minPrice?.toString() || ''}
+                        onChange={(e) => updateEntry(entry.id, 'minPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        placeholder="300.00"
+                        className="text-sm h-10"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor={`maxPrice-mobile-${entry.id}`} className="text-xs font-medium mb-1 block">
+                        Prezzo Max (€)
+                      </Label>
+                      <Input
+                        id={`maxPrice-mobile-${entry.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={entry.maxPrice?.toString() || ''}
+                        onChange={(e) => updateEntry(entry.id, 'maxPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        placeholder="400.00"
+                        className="text-sm h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Desktop Layout: Grid */}
-            <div className="hidden lg:grid lg:grid-cols-14 lg:gap-3 lg:items-end">
+            <div className="hidden lg:grid lg:grid-cols-20 lg:gap-2 lg:items-end">
               <div className="col-span-1 flex items-end pb-2">
                 <span className="text-sm font-medium text-muted-foreground">
                   #{index + 1}
@@ -305,7 +387,7 @@ useEffect(() => {
                 </Select>
               </div>
               
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <Label htmlFor={`storage-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
                   Storage
                 </Label>
@@ -326,9 +408,9 @@ useEffect(() => {
                 </Select>
               </div>
               
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <Label htmlFor={`ram-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
-                  RAM (GB)
+                  RAM
                 </Label>
                 <Input
                   id={`ram-desktop-${entry.id}`}
@@ -342,9 +424,9 @@ useEffect(() => {
                 />
               </div>
               
-              <div className="col-span-2">
+              <div className="col-span-1">
                 <Label htmlFor={`battery-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
-                  Batteria (%)
+                  Batteria
                 </Label>
                 <Input
                   id={`battery-desktop-${entry.id}`}
@@ -354,6 +436,54 @@ useEffect(() => {
                   value={entry.batteryLevel.toString()}
                   onChange={(e) => updateEntry(entry.id, 'batteryLevel', parseInt(e.target.value) || 0)}
                   placeholder="85"
+                  className="text-sm h-10"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <Label htmlFor={`price-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
+                  Prezzo Acquisto
+                </Label>
+                <Input
+                  id={`price-desktop-${entry.id}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={entry.price?.toString() || ''}
+                  onChange={(e) => updateEntry(entry.id, 'price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  placeholder="250.00"
+                  className="text-sm h-10"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <Label htmlFor={`minPrice-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
+                  Prezzo Min
+                </Label>
+                <Input
+                  id={`minPrice-desktop-${entry.id}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={entry.minPrice?.toString() || ''}
+                  onChange={(e) => updateEntry(entry.id, 'minPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  placeholder="300.00"
+                  className="text-sm h-10"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <Label htmlFor={`maxPrice-desktop-${entry.id}`} className="text-xs font-medium mb-1 block">
+                  Prezzo Max
+                </Label>
+                <Input
+                  id={`maxPrice-desktop-${entry.id}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={entry.maxPrice?.toString() || ''}
+                  onChange={(e) => updateEntry(entry.id, 'maxPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  placeholder="400.00"
                   className="text-sm h-10"
                 />
               </div>
