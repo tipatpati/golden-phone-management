@@ -29,9 +29,9 @@ interface Product {
   model: string;
   year?: number;
   category?: { id: number; name: string };
-  price: number;
-  min_price: number;
-  max_price: number;
+  price?: number;      // Optional default price
+  min_price?: number;  // Optional default min price
+  max_price?: number;  // Optional default max price
   stock: number;
   threshold: number;
   description?: string;
@@ -133,7 +133,7 @@ export function ProductDetailsDialog({
                 </div>
                 <div className="text-right space-y-2">
                   <div className="text-2xl font-bold text-primary">
-                    {formatCurrency(product.price)}
+                    {product.price ? formatCurrency(product.price) : 'Unit-specific'}
                   </div>
                   <Badge variant="outline" className={stockStatus.color}>
                     {stockStatus.label}
@@ -184,16 +184,25 @@ export function ProductDetailsDialog({
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Current Price:</span>
-                  <span className="font-medium">{formatCurrency(product.price)}</span>
+                  <span className="text-sm text-muted-foreground">Default Price:</span>
+                  <span className="font-medium">
+                    {product.price ? formatCurrency(product.price) : 'Not set'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Min Price:</span>
-                  <span className="font-medium">{formatCurrency(product.min_price)}</span>
+                  <span className="text-sm text-muted-foreground">Default Min Price:</span>
+                  <span className="font-medium">
+                    {product.min_price ? formatCurrency(product.min_price) : 'Not set'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Max Price:</span>
-                  <span className="font-medium">{formatCurrency(product.max_price)}</span>
+                  <span className="text-sm text-muted-foreground">Default Max Price:</span>
+                  <span className="font-medium">
+                    {product.max_price ? formatCurrency(product.max_price) : 'Not set'}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-2 p-2 bg-blue-50 rounded">
+                  💰 Pricing is now managed at the unit level. These are default values for new units.
                 </div>
               </CardContent>
             </Card>

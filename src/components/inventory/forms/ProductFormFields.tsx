@@ -80,44 +80,55 @@ export function ProductFormFields({
         error={getFieldError('category_id')}
       />
 
-      {/* Price Field */}
+      {/* Default Price Field - Optional for new units */}
       <FormField
-        label="Price (€)"
+        label="Default Base Price (€)"
         type="input"
         inputType="number"
-        value={formData.price?.toString() || '0'}
-        onChange={(value) => onFieldChange('price', value ? parseFloat(value) : 0)}
+        value={formData.price?.toString() || ''}
+        onChange={(value) => onFieldChange('price', value ? parseFloat(value) : undefined)}
         placeholder="0.00"
-        required
+        description="Optional default purchase price for new units"
         className="md:col-span-1"
         error={getFieldError('price')}
       />
 
-      {/* Min Price Field */}
+      {/* Default Min Price Field - Optional for new units */}
       <FormField
-        label="Min Price (€)"
+        label="Default Min Selling Price (€)"
         type="input"
         inputType="number"
-        value={formData.min_price?.toString() || '0'}
-        onChange={(value) => onFieldChange('min_price', value ? parseFloat(value) : 0)}
+        value={formData.min_price?.toString() || ''}
+        onChange={(value) => onFieldChange('min_price', value ? parseFloat(value) : undefined)}
         placeholder="0.00"
-        required
+        description="Optional default minimum selling price for new units"
         className="md:col-span-1"
         error={getFieldError('min_price')}
       />
 
-      {/* Max Price Field */}
+      {/* Default Max Price Field - Optional for new units */}
       <FormField
-        label="Max Price (€)"
+        label="Default Max Selling Price (€)"
         type="input"
         inputType="number"
-        value={formData.max_price?.toString() || '0'}
-        onChange={(value) => onFieldChange('max_price', value ? parseFloat(value) : 0)}
+        value={formData.max_price?.toString() || ''}
+        onChange={(value) => onFieldChange('max_price', value ? parseFloat(value) : undefined)}
         placeholder="0.00"
-        required
+        description="Optional default maximum selling price for new units"
         className="md:col-span-1"
         error={getFieldError('max_price')}
       />
+
+      {/* Pricing Information Guide */}
+      <div className="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Pricing Information</h4>
+        <div className="text-xs text-yellow-800 space-y-1">
+          <p><strong>Unit-Level Pricing:</strong> Each IMEI/serial number has its own specific pricing</p>
+          <p><strong>Default Values:</strong> These prices will be applied to new units when they're created</p>
+          <p><strong>Individual Unit Pricing:</strong> You can modify prices for each unit after creation in the inventory management section</p>
+          <p className="mt-2 text-yellow-700">💡 Leave fields empty if you prefer to set prices individually for each unit</p>
+        </div>
+      </div>
 
       {/* Stock Field - Only show if not using serial numbers */}
       {!formData.has_serial && (

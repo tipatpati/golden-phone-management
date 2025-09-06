@@ -85,8 +85,17 @@ export function EditProductDialog({
           );
           
           if (newSerials.length > 0) {
-            await ProductUnitsService.createUnitsForProduct(product.id, newSerials);
-            console.log(`✅ Created ${newSerials.length} new product units with RAM/storage data`);
+            await ProductUnitsService.createUnitsForProduct(
+              product.id, 
+              newSerials,
+              // Pass default pricing from product form
+              {
+                price: data.price,
+                min_price: data.min_price,
+                max_price: data.max_price
+              }
+            );
+            console.log(`✅ Created ${newSerials.length} new product units with default pricing`);
           }
           
         } catch (unitsError) {

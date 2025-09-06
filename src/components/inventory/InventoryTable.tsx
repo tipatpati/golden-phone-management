@@ -32,9 +32,9 @@ interface Product {
   model: string;
   year?: number;
   category?: { id: number; name: string };
-  price: number;
-  min_price: number;
-  max_price: number;
+  price?: number;      // Optional default price
+  min_price?: number;  // Optional default min price  
+  max_price?: number;  // Optional default max price
   stock: number;
   threshold: number;
   description?: string;
@@ -258,10 +258,15 @@ export function InventoryTable({
                 <TableCell>
                   <div className="space-y-1">
                     <div className="text-sm">
-                      <span className="font-medium">{formatCurrency(product.price)}</span>
+                      <span className="font-medium">
+                        {product.price ? formatCurrency(product.price) : 'Unit-specific'}
+                      </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Range: {formatCurrency(product.min_price)} - {formatCurrency(product.max_price)}
+                      {product.min_price && product.max_price 
+                        ? `Range: ${formatCurrency(product.min_price)} - ${formatCurrency(product.max_price)}`
+                        : 'Individual unit pricing'
+                      }
                     </div>
                   </div>
                 </TableCell>
@@ -340,7 +345,7 @@ export function InventoryTable({
           const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
           return formatProductName({ brand: cleanBrand, model: cleanModel });
         })()}
-        productPrice={selectedProduct.price}
+        productPrice={selectedProduct.price || 0}
         productBarcode={selectedProduct.barcode}
         productCategory={selectedProduct.category?.name}
         companyName="GOLDEN PHONE SRL"
