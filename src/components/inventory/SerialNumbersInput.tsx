@@ -13,11 +13,6 @@ interface SerialNumbersInputProps {
   setStock: (value: string) => void; // kept for backward compatibility
 }
 
-const COLOR_OPTIONS = [
-  "Black", "White", "Silver", "Gold", "Blue", "Red", "Green",
-  "Purple", "Pink", "Gray", "Rose Gold", "Space Gray", "Other"
-];
-
 export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumbersInputProps) {
   // Handlers
   const addEntry = () => {
@@ -138,7 +133,7 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
 
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs font-medium mb-1 block">Prezzo di Acquisto (€)</Label>
+                    <Label className="text-xs font-medium mb-1 block">Prezzo di Acquisto (€) *</Label>
                     <Input
                       type="number"
                       min={0}
@@ -147,12 +142,13 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                       onChange={(e) => updateEntry(index, 'price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                       placeholder="250.00"
                       className="text-sm h-10"
+                      required
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs font-medium mb-1 block">Prezzo Min (€)</Label>
+                      <Label className="text-xs font-medium mb-1 block">Prezzo Min (€) *</Label>
                       <Input
                         type="number"
                         min={0}
@@ -161,11 +157,12 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                         onChange={(e) => updateEntry(index, 'min_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                         placeholder="300.00"
                         className="text-sm h-10"
+                        required
                       />
                     </div>
 
                     <div>
-                      <Label className="text-xs font-medium mb-1 block">Prezzo Max (€)</Label>
+                      <Label className="text-xs font-medium mb-1 block">Prezzo Max (€) *</Label>
                       <Input
                         type="number"
                         min={0}
@@ -174,129 +171,98 @@ export function SerialNumbersInput({ entries, setEntries, setStock }: SerialNumb
                         onChange={(e) => updateEntry(index, 'max_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
                         placeholder="400.00"
                         className="text-sm h-10"
+                        required
                       />
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Desktop layout */}
-              <div className="hidden lg:grid lg:grid-cols-20 lg:gap-2 lg:items-end">
-                <div className="col-span-1 flex items-end pb-2">
-                  <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
-                </div>
+            {/* Desktop layout */}
+            <div className="hidden lg:grid lg:grid-cols-12 lg:gap-2 lg:items-end">
+              <div className="col-span-1 flex items-center">
+                <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+              </div>
 
-                <div className="col-span-3">
-                  <Label className="text-xs font-medium mb-1 block">IMEI/Seriale</Label>
-                  <Input
-                    value={entry.serial}
-                    onChange={(e) => updateEntry(index, 'serial', e.target.value.replace(/\s/g, ''))}
-                    placeholder="123456789012345"
-                    className="text-sm h-10 font-mono"
-                  />
-                </div>
+              <div className="col-span-3">
+                <Label className="text-xs font-medium mb-1 block">IMEI/Seriale *</Label>
+                <Input
+                  value={entry.serial}
+                  onChange={(e) => updateEntry(index, 'serial', e.target.value.replace(/\s/g, ''))}
+                  placeholder="123456789012345"
+                  className="text-sm h-10 font-mono"
+                />
+              </div>
 
-                <div className="col-span-2">
-                  <Label className="text-xs font-medium mb-1 block">Colore</Label>
-                  <Input
-                    value={entry.color || ''}
-                    onChange={(e) => updateEntry(index, 'color', e.target.value)}
-                    placeholder="Black / Titanium / ..."
-                    className="text-sm h-10"
-                  />
-                </div>
+              <div className="col-span-1">
+                <Label className="text-xs font-medium mb-1 block">Colore</Label>
+                <Input
+                  value={entry.color || ''}
+                  onChange={(e) => updateEntry(index, 'color', e.target.value)}
+                  placeholder="Black"
+                  className="text-sm h-10"
+                />
+              </div>
 
-                <div className="col-span-1">
-                  <Label className="text-xs font-medium mb-1 block">Storage</Label>
-                  <Select 
-                    value={entry.storage?.toString() || ''} 
-                    onValueChange={(value) => updateEntry(index, 'storage', value ? parseInt(value) : undefined)}
-                  >
-                    <SelectTrigger className="text-sm h-10">
-                      <SelectValue placeholder="GB" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {STORAGE_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value.toString()} className="hover:bg-muted">
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="col-span-1">
+                <Label className="text-xs font-medium mb-1 block">Batteria *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={entry.battery_level ?? 0}
+                  onChange={(e) => updateEntry(index, 'battery_level', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                  placeholder="85"
+                  className="text-sm h-10"
+                />
+              </div>
 
-                <div className="col-span-1">
-                  <Label className="text-xs font-medium mb-1 block">RAM</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={64}
-                    value={entry.ram ?? ''}
-                    onChange={(e) => updateEntry(index, 'ram', e.target.value === '' ? undefined : parseInt(e.target.value))}
-                    placeholder="8"
-                    className="text-sm h-10"
-                  />
-                </div>
+              <div className="col-span-2">
+                <Label className="text-xs font-medium mb-1 block">Prezzo Acquisto *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={entry.price ?? ''}
+                  onChange={(e) => updateEntry(index, 'price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                  placeholder="250.00"
+                  className="text-sm h-10"
+                />
+              </div>
 
-                <div className="col-span-1">
-                  <Label className="text-xs font-medium mb-1 block">Batteria</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={entry.battery_level ?? 0}
-                    onChange={(e) => updateEntry(index, 'battery_level', e.target.value === '' ? undefined : parseInt(e.target.value))}
-                    placeholder="85"
-                    className="text-sm h-10"
-                  />
-                </div>
+              <div className="col-span-2">
+                <Label className="text-xs font-medium mb-1 block">Prezzo Min *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={entry.min_price ?? ''}
+                  onChange={(e) => updateEntry(index, 'min_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                  placeholder="300.00"
+                  className="text-sm h-10"
+                />
+              </div>
 
-                <div className="col-span-2">
-                  <Label className="text-xs font-medium mb-1 block">Prezzo Acquisto</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={entry.price ?? ''}
-                    onChange={(e) => updateEntry(index, 'price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                    placeholder="250.00"
-                    className="text-sm h-10"
-                  />
-                </div>
+              <div className="col-span-2">
+                <Label className="text-xs font-medium mb-1 block">Prezzo Max *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={entry.max_price ?? ''}
+                  onChange={(e) => updateEntry(index, 'max_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                  placeholder="400.00"
+                  className="text-sm h-10"
+                />
+              </div>
 
-                <div className="col-span-2">
-                  <Label className="text-xs font-medium mb-1 block">Prezzo Min</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={entry.min_price ?? ''}
-                    onChange={(e) => updateEntry(index, 'min_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                    placeholder="300.00"
-                    className="text-sm h-10"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <Label className="text-xs font-medium mb-1 block">Prezzo Max</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={entry.max_price ?? ''}
-                    onChange={(e) => updateEntry(index, 'max_price', e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                    placeholder="400.00"
-                    className="text-sm h-10"
-                  />
-                </div>
-
-                <div className="col-span-1 flex items-end pb-2">
-                  {entries.length > 1 && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => removeEntry(index)} className="h-10 w-10 p-0">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+              <div className="col-span-1 flex items-end">
+                {entries.length > 1 && (
+                  <Button type="button" variant="outline" size="sm" onClick={() => removeEntry(index)} className="h-10 w-10 p-0">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
