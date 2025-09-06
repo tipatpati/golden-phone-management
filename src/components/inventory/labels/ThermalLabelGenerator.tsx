@@ -313,13 +313,13 @@ export function ThermalLabelGenerator({
                 <Label>Label Preview</Label>
                 <div className="border rounded-lg p-4 bg-muted/30 max-h-96 overflow-y-auto">
                   <div className="space-y-3">
-                    {currentLabels.slice(0, 3).map((label, index) => (
+                    {currentLabels.map((label, index) => (
                       <div key={index}>
                         <ThermalLabelPreview
                           label={label}
                           options={{ ...options, companyName }}
                         />
-                        {index === 0 && currentLabels.length > 1 && (
+                        {currentLabels.length > 1 && (
                           <p className="text-xs text-muted-foreground mt-1 text-center">
                             Unit {index + 1} of {currentLabels.length}
                           </p>
