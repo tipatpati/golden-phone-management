@@ -6,11 +6,14 @@ import { InventoryTableToolbar } from "./InventoryTableToolbar";
 import { AddProductDialog } from "./AddProductDialog";
 import { EditProductDialog } from "./EditProductDialog";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
+import { BarcodeUpdateTool } from "./admin/BarcodeUpdateTool";
 import { useProducts, useDeleteProduct } from "@/services/products/ProductReactQueryService";
 import { useBulkActions } from "./hooks/useBulkActions";
 import { toast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingState } from "@/components/common/LoadingState";
+import { RoleGuard } from "@/components/common/RoleGuard";
+import { UserRole } from "@/types/roles";
 import { Package } from "lucide-react";
 
 interface InventoryContentProps {
@@ -125,6 +128,13 @@ export function InventoryContent({
 
   return (
     <>
+      {/* Barcode Update Tool - Only for authorized roles */}
+      <RoleGuard requiredRoles={['super_admin' as UserRole, 'admin' as UserRole, 'inventory_manager' as UserRole]}>
+        <div className="mb-6">
+          <BarcodeUpdateTool />
+        </div>
+      </RoleGuard>
+
       <InventoryTableToolbar 
         onSearchChange={handleSearchChange}
         onViewModeChange={handleViewModeChange}

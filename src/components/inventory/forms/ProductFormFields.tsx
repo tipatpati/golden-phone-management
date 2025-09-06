@@ -188,14 +188,28 @@ export function ProductFormFields({
         error={getFieldError('supplier')}
       />
 
+      {/* Barcode Field - Only for products without serial numbers */}
+      {!formData.has_serial && (
+        <FormField
+          label="Product Barcode"
+          type="input"
+          value={formData.barcode || ''}
+          onChange={(value) => onFieldChange('barcode', value)}
+          placeholder="Enter or scan barcode"
+          className="md:col-span-2"
+          description="For bulk products without individual serial numbers"
+          error={getFieldError('barcode')}
+        />
+      )}
+
       {/* Barcode Information Guide */}
       <div className="md:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <h4 className="text-sm font-semibold text-blue-900 mb-2">📦 Barcode Information</h4>
         <div className="text-xs text-blue-800 space-y-1">
-          <p><strong>EAN13 (International Standard):</strong> 13 digits exactly (e.g., 1234567890123)</p>
-          <p><strong>CODE128:</strong> Any alphanumeric text, used when EAN13 isn't suitable</p>
-          <p><strong>Auto-generation:</strong> Barcodes will be automatically generated based on serial numbers or product info</p>
-          <p className="mt-2 text-blue-700">💡 The system will automatically choose the best format for your barcode</p>
+          <p><strong>Products with Serial Numbers:</strong> Each unit gets its own unique barcode automatically</p>
+          <p><strong>Bulk Products:</strong> Single barcode for the entire product (editable above)</p>
+          <p><strong>Format:</strong> System uses CODE128 format for maximum compatibility</p>
+          <p className="mt-2 text-blue-700">💡 Barcodes can be updated after product creation using the barcode management tools</p>
         </div>
       </div>
     </div>

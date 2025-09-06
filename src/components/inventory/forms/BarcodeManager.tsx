@@ -95,9 +95,16 @@ export function BarcodeManager({
   return (
     <div className="space-y-6">
       <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-        <h4 className="font-medium">
-          Unit Barcodes ({unitBarcodes.length} units)
-        </h4>
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium">
+            Unit Barcodes ({unitBarcodes.length} units)
+          </h4>
+          {productId && (
+            <div className="text-xs text-muted-foreground">
+              Use inventory admin tools to update barcodes
+            </div>
+          )}
+        </div>
         <div className="flex flex-col gap-4">
           {unitBarcodes.map((unit) => (
             <div key={unit.index} className="border rounded-lg p-4 space-y-3 bg-background">
