@@ -92,16 +92,12 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         onSuccess: async (responseData) => {
           try {
             // Create individual units with IMEI barcodes if product has serials
-            if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
+            if (data.has_serial && data.unit_entries && data.unit_entries.length > 0) {
               const units = await ProductUnitsService.createUnitsForProduct(
                 responseData?.id,
-                data.serial_numbers,
-                // Pass default pricing from product form
-                {
-                  price: data.price,
-                  min_price: data.min_price,
-                  max_price: data.max_price
-                }
+                data.unit_entries.map(entry => entry.serial), // Use only serial numbers
+                undefined, // No default pricing - use individual unit pricing
+                data.unit_entries // Pass individual unit entries with pricing
               );
               console.log(`✅ Created ${units.length} product units with IMEI barcodes and default pricing`);
             }

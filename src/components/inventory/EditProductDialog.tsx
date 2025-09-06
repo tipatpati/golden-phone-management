@@ -85,6 +85,11 @@ export function EditProductDialog({
           );
           
           if (newSerials.length > 0) {
+            // For edit dialog, we need to handle unit entries if they exist
+            const correspondingEntries = data.unit_entries?.filter(entry => 
+              newSerials.some(serial => serial.split(' ')[0] === entry.serial)
+            );
+            
             await ProductUnitsService.createUnitsForProduct(
               product.id, 
               newSerials,
@@ -93,7 +98,8 @@ export function EditProductDialog({
                 price: data.price,
                 min_price: data.min_price,
                 max_price: data.max_price
-              }
+              },
+              correspondingEntries // Pass individual unit entries with pricing
             );
             console.log(`✅ Created ${newSerials.length} new product units with default pricing`);
           }

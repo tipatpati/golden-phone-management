@@ -36,26 +36,40 @@ export class ProductUnitsService {
   static async createUnitsForProduct(
     productId: string, 
     serialNumbers: string[],
-    defaultPricing?: { price?: number; min_price?: number; max_price?: number }
+    defaultPricing?: { price?: number; min_price?: number; max_price?: number },
+    unitEntries?: Array<{
+      serial: string;
+      price?: number;
+      min_price?: number;
+      max_price?: number;
+      battery_level?: number;
+      color?: string;
+      storage?: number;
+      ram?: number;
+    }>
   ): Promise<ProductUnit[]> {
-    const units = serialNumbers.map(serialLine => {
+    const units = serialNumbers.map((serialLine, index) => {
       const parsed = parseSerialWithBattery(serialLine);
       const barcodeResult = generateIMEIBarcode(parsed.serial, { 
         format: 'AUTO',
         productId 
       });
       
+      // Get corresponding unit entry for individual pricing
+      const unitEntry = unitEntries?.find(entry => entry.serial === parsed.serial) || unitEntries?.[index];
+      
       return {
         product_id: productId,
         serial_number: parsed.serial,
         barcode: barcodeResult.barcode,
-        color: parsed.color,
-        battery_level: parsed.batteryLevel,
-        storage: parsed.storage,
-        ram: parsed.ram,
-        price: parsed.price ?? defaultPricing?.price,
-        min_price: parsed.minPrice ?? defaultPricing?.min_price,
-        max_price: parsed.maxPrice ?? defaultPricing?.max_price,
+        color: unitEntry?.color || parsed.color,
+        battery_level: unitEntry?.battery_level || parsed.batteryLevel,
+        storage: unitEntry?.storage || parsed.storage,
+        ram: unitEntry?.ram || parsed.ram,
+        // Use unit-specific pricing if available, otherwise fall back to defaults
+        price: unitEntry?.price ?? defaultPricing?.price,
+        min_price: unitEntry?.min_price ?? defaultPricing?.min_price,
+        max_price: unitEntry?.max_price ?? defaultPricing?.max_price,
         status: 'available' as const
       };
     });
