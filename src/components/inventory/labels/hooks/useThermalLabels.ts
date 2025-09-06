@@ -27,14 +27,19 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
 
   useEffect(() => {
     const fetchProductUnits = async () => {
-      console.log('Fetching product units for labels...');
+      console.log('Fetching product units for labels with refresh key:', refreshKey);
       const unitsMap: Record<string, ProductUnit[]> = {};
       
       for (const product of products) {
         if (product.serial_numbers && product.serial_numbers.length > 0) {
           try {
             const units = await ProductUnitsService.getUnitsForProduct(product.id);
-            console.log(`Fetched ${units.length} units for product ${product.id}:`, units);
+            console.log(`Fetched ${units.length} units for product ${product.id}:`, units.map(u => ({
+              serial: u.serial_number,
+              price: u.price,
+              min_price: u.min_price,
+              max_price: u.max_price
+            })));
             unitsMap[product.id] = units;
           } catch (error) {
             console.error(`Failed to fetch units for product ${product.id}:`, error);
@@ -53,6 +58,8 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
 
   // Force refresh when component mounts or products change
   useEffect(() => {
+    const productIds = products.map(p => p.id).join(',');
+    console.log('Products changed, forcing refresh for:', productIds);
     setRefreshKey(prev => prev + 1);
   }, [products.map(p => p.id).join(',')]);  // Trigger when product IDs change
 
@@ -78,8 +85,16 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           console.log('Serial parsing for:', serialNumber, {
             parsed,
             unit,
-            productStorage: product.storage,
-            productRam: product.ram
+            unitPricing: unit ? {
+              price: unit.price,
+              min_price: unit.min_price,
+              max_price: unit.max_price
+            } : null,
+            productPricing: {
+              price: product.price,
+              min_price: product.min_price,
+              max_price: product.max_price
+            }
           });
           
           // Choose barcode strategy based on useMasterBarcode option
@@ -99,12 +114,14 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             color: unit?.color || parsed.color
           });
           
+          // Price hierarchy: unit max_price > product max_price > unit price > product price > 0
+          const labelPrice = unit?.max_price ?? product.max_price ?? unit?.price ?? product.price ?? 0;
+          
           labels.push({
             productName: labelProductName,
             serialNumber: parsed.serial,
             barcode,
-            // Always use max selling price for labels (unit-specific max price or product max price)
-            price: unit?.max_price ?? product.max_price ?? unit?.price ?? product.price ?? 0,
+            price: labelPrice,
             category: product.category?.name,
             color: unit?.color || parsed.color,
             batteryLevel: unit?.battery_level || parsed.batteryLevel,
@@ -116,10 +133,10 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           console.log('Created label:', {
             productName: labelProductName,
             serialNumber: parsed.serial,
-            storage,
-            ram,
-            hasStorage: !!storage,
-            hasRam: !!ram
+            labelPrice,
+            unitMaxPrice: unit?.max_price,
+            productMaxPrice: product.max_price,
+            finalPrice: labelPrice
           });
         });
       } else {

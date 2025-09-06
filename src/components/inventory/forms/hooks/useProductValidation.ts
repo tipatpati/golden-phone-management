@@ -37,8 +37,22 @@ export function useProductValidation() {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
-    // Price validations - now optional at product level since pricing is per unit
-    if (data.price !== undefined && data.price !== null) {
+    // Pricing validation - require at least one price to be set (either default or from serial numbers)
+    const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
+                           (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') ||
+                           (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '');
+    
+    const hasSerialPricing = serialNumbers && serialNumbers.split('\n').some(line => {
+      const trimmed = line.trim();
+      return trimmed && (trimmed.includes('price:') || trimmed.includes('minPrice:') || trimmed.includes('maxPrice:'));
+    });
+
+    if (!hasDefaultPrice && !hasSerialPricing) {
+      newErrors.push({ field: 'price', message: 'At least one price must be specified (either default pricing or unit-level pricing)' });
+    }
+
+    // Price validations when values are provided
+    if (data.price !== undefined && data.price !== null && String(data.price) !== '') {
       const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
       console.log('🔍 Price validation:', { original: data.price, converted: price, type: typeof price });
       if ((typeof price !== 'number') || isNaN(price) || price < 0) {
@@ -47,7 +61,7 @@ export function useProductValidation() {
       }
     }
 
-    if (data.min_price !== undefined && data.min_price !== null) {
+    if (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') {
       const minPrice = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
       console.log('🔍 Min price validation:', { original: data.min_price, converted: minPrice, type: typeof minPrice });
       if ((typeof minPrice !== 'number') || isNaN(minPrice) || minPrice < 0) {
@@ -56,7 +70,7 @@ export function useProductValidation() {
       }
     }
 
-    if (data.max_price !== undefined && data.max_price !== null) {
+    if (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '') {
       const maxPrice = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
       console.log('🔍 Max price validation:', { original: data.max_price, converted: maxPrice, type: typeof maxPrice });
       if ((typeof maxPrice !== 'number') || isNaN(maxPrice) || maxPrice < 0) {
