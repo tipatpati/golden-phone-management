@@ -165,12 +165,28 @@ export class ThermalLabelDataService {
       model: cleanModel 
     });
 
+    // Only create labels if product has existing barcode - no generation
+    if (!product.barcode) {
+      console.warn(`⚠️ Bulk product ${product.id} has no barcode - cannot create labels`);
+      return {
+        success: false,
+        labels: [],
+        errors: [`Product ${cleanBrand} ${cleanModel} has no barcode`],
+        warnings: [],
+        stats: {
+          totalProducts: 1,
+          totalLabels: 0,
+          unitsWithBarcodes: 0,
+          unitsMissingBarcodes: 0,
+          genericLabels: 0
+        }
+      };
+    }
+
     for (let i = 0; i < quantity; i++) {
-      const barcode = product.barcode || `GPMSBULK${product.id.slice(-4)}${i.toString().padStart(3, '0')}`;
-      
       const label: ThermalLabelData = {
         productName,
-        barcode,
+        barcode: product.barcode, // ONLY use existing product barcode
         price: product.max_price ?? product.price ?? 0,
         category: product.category?.name,
         storage: product.storage || 128,
@@ -178,7 +194,7 @@ export class ThermalLabelDataService {
       };
       
       labels.push(label);
-      console.log(`✅ Created generic label ${i + 1}/${quantity}`);
+      console.log(`✅ Created generic label ${i + 1}/${quantity} using existing barcode`);
     }
 
     return {
