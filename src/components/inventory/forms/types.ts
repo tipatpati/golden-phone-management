@@ -1,33 +1,11 @@
-export interface ProductFormData {
-  brand: string;
-  model: string;
-  year?: number;
-  category_id: number;
-  price?: number;       // Optional default price for new units
-  min_price?: number;   // Optional default min price for new units
-  max_price?: number;   // Optional default max price for new units
-  stock: number;
-  threshold: number;
-  description?: string;
-  supplier?: string;
-  barcode?: string;
-  has_serial: boolean;
-  serial_numbers?: string[];
-  // New: structured unit entries for products with serial numbers
-  unit_entries?: UnitEntryForm[];
-}
+// Re-export types from the unified inventory types
+// This file is kept for backward compatibility
+export type { 
+  ProductFormData,
+  UnitEntryForm
+} from '../../../services/inventory/types';
 
-// New: Structured unit entry used by forms (clean, readable fields)
-export interface UnitEntryForm {
-  serial: string;              // IMEI/SN only
-  price?: number;              // Purchase price
-  min_price?: number;          // Min selling (must be > price)
-  max_price?: number;          // Max selling (must be > min_price)
-  battery_level?: number;      // 0-100 integer
-  color?: string;              // Text
-  storage?: number;            // GB
-  ram?: number;                // GB
-}
+// Legacy interfaces for existing components
 
 export interface SerialEntry {
   serial: string;
@@ -45,8 +23,8 @@ export interface ProductFormValidationError {
 }
 
 export interface ProductFormProps {
-  initialData?: Partial<ProductFormData>;
-  onSubmit: (data: ProductFormData) => Promise<void>;
+  initialData?: Partial<any>;
+  onSubmit: (data: any) => Promise<void>;
   isLoading?: boolean;
   submitText?: string;
   onRegisterSubmit?: (submit: () => Promise<void>) => void;
@@ -57,8 +35,8 @@ export interface SerialNumberManagerProps {
   // Deprecated but kept for compatibility in UI hints
   serialNumbers?: string;
   // New structured entries
-  unitEntries: UnitEntryForm[];
-  onUnitEntriesChange: (entries: UnitEntryForm[]) => void;
+  unitEntries: any[];
+  onUnitEntriesChange: (entries: any[]) => void;
   onStockChange: (stock: number) => void;
   hasSerial: boolean;
   productId?: string;

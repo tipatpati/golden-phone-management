@@ -27,14 +27,19 @@ export class ProductApiService extends BaseApiService<Product, CreateProductData
   }
 
   async create(productData: CreateProductData): Promise<Product> {
-    // Filter out unit_entries which is not a database column
+    // Use the InventoryManagementService for consistent product creation
+    console.log('⚠️ ProductApiService.create is deprecated. Use InventoryManagementService.createProduct instead.');
+    
+    // Filter out any form-specific fields that might leak through
     const { unit_entries, ...dbProductData } = productData as any;
     const data = await super.create(dbProductData);
     return this.transformProduct(data);
   }
 
   async update(id: string, productData: Partial<CreateProductData>): Promise<Product> {
-    const data = await super.update(id, productData);
+    // Filter out any form-specific fields that might leak through
+    const { unit_entries, ...dbProductData } = productData as any;
+    const data = await super.update(id, dbProductData);
     return this.transformProduct(data);
   }
 

@@ -53,7 +53,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   }, [initialData]);
 
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
-    console.log(`🔄 updateField: ${field} = ${value}`);
+    console.log(`🔄 updateField: ${String(field)} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
     clearErrors();
   }, [clearErrors]);

@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { ProductFormData } from "./forms/types";
-import { useCreateProduct } from "@/services/products/ProductReactQueryService";
-import { ProductUnitsService } from "@/services/products/ProductUnitsService";
-import { Code128GeneratorService } from "@/services/barcodes";
+import { InventoryManagementService } from "@/services/inventory/InventoryManagementService";
 
 import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
@@ -31,7 +29,8 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const formSubmitRef = useRef<(() => Promise<void>) | null>(null);
   
-  const createProduct = useCreateProduct();
+  // Use the centralized inventory management service
+  const [isCreating, setIsCreating] = useState(false);
   const { data: products } = useProducts();
 
   const handleBarcodeScanned = (scannedBarcode: string) => {
@@ -47,63 +46,41 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    // Create product with professional CODE128 barcode system
-    const productData = {
-      ...data,
-      barcode: data.has_serial 
-        ? `GPMS-PRODUCT-${Date.now()}` // Temporary placeholder for products with serials
-        : `GPMS-SINGLE-${Date.now()}`, // Single product barcode
-      serial_numbers: data.has_serial ? (data.unit_entries?.map(e => e.serial) || []) : undefined,
-    } as any;
-    // Ensure we do NOT send unit_entries to the products table (not a DB column)
-    delete productData.unit_entries;
-    logger.debug('Submitting product', { 
-      categoryId: productData.category_id,
-      unitEntriesCount: data.unit_entries?.length || 0
-    }, 'AddProductDialog');
+    console.log('🔄 AddProductDialog: Starting product creation with InventoryManagementService');
     
-    return new Promise<void>((resolve, reject) => {
-      createProduct.mutate(productData, {
-        onSuccess: async (responseData) => {
-          try {
-            // Create individual units with IMEI barcodes if product has serials
-            if (data.has_serial && data.unit_entries && data.unit_entries.length > 0) {
-              const units = await ProductUnitsService.createUnitsForProduct(
-                responseData?.id,
-                data.unit_entries, // Pass structured unit entries directly
-                { // Default pricing fallback
-                  price: data.price,
-                  min_price: data.min_price,
-                  max_price: data.max_price
-                }
-              );
-            console.log(`✅ Created ${units.length} product units with IMEI barcodes and default pricing`);
-            
-            // Refresh thermal labels after creating new product
-            if (typeof (window as any).__refreshThermalLabels === 'function') {
-              console.log('🔄 Refreshing thermal labels after product creation');
-              (window as any).__refreshThermalLabels();
-            }
-          }
-            
-            handleProductCreated({ 
-              ...productData, 
-              id: responseData?.id
-            });
-            setOpen(false);
-            resolve();
-          } catch (error) {
-            console.error('Error creating product units:', error);
-            toast.error('Product created but failed to generate unit barcodes');
-            reject(error);
-          }
-        },
-        onError: (error) => {
-          logger.error('Product creation failed', error, 'AddProductDialog');
-          reject(error);
-        }
+    setIsCreating(true);
+    try {
+      // Use the centralized service for consistent product creation
+      const result = await InventoryManagementService.createProduct(data);
+      
+      if (!result.success) {
+        throw new Error(result.errors.join(', '));
+      }
+
+      // Show warnings if any
+      if (result.warnings.length > 0) {
+        toast.warning(`Product created with warnings: ${result.warnings.join(', ')}`);
+      }
+
+      // Handle successful creation
+      handleProductCreated({
+        ...result.data.product,
+        serialEntries: result.data.units?.map(unit => ({
+          serial: unit.serial_number,
+          barcode: unit.barcode,
+          color: unit.color,
+          batteryLevel: unit.battery_level
+        })) || []
       });
-    });
+      
+      setOpen(false);
+      
+    } catch (error) {
+      console.error('❌ AddProductDialog: Product creation failed', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create product');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleProductCreated = (data: any) => {
@@ -226,8 +203,8 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
         <ProductForm
           key={open ? 'open' : 'closed'} // Force remount when dialog opens to reset state
           onSubmit={handleSubmit}
-          isLoading={createProduct.isPending}
-          submitText={createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
+          isLoading={isCreating}
+          submitText={isCreating ? "Aggiungendo..." : "Aggiungi Prodotto"}
           onRegisterSubmit={(submitFn) => {
             formSubmitRef.current = submitFn;
           }}
@@ -245,7 +222,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
                 setInternalOpen(false);
               }
             }}
-            disabled={createProduct.isPending}
+            disabled={isCreating}
             className="w-full sm:w-auto order-2 sm:order-1"
           >
             Annulla
@@ -259,11 +236,11 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
                 console.error('❌ Form submit function not available');
               }
             }}
-            disabled={createProduct.isPending}
+            disabled={isCreating}
             className="w-full sm:w-auto min-w-[120px] order-1 sm:order-2"
           >
-            {createProduct.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {createProduct.isPending ? "Aggiungendo..." : "Aggiungi Prodotto"}
+            {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isCreating ? "Aggiungendo..." : "Aggiungi Prodotto"}
           </Button>
         </div>
       </BaseDialog>
