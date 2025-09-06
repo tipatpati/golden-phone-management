@@ -190,7 +190,7 @@ export function ThermalLabelPreview({
       </div>
 
       {/* Price Section */}
-      {formattedLabel.price && <div style={{
+      {formattedLabel.maxPrice && <div style={{
       fontSize: '24px',
       fontWeight: '900',
       color: '#000',
@@ -201,7 +201,7 @@ export function ThermalLabelPreview({
       letterSpacing: '0.3px',
       lineHeight: '1.0'
     }}>
-          {formattedLabel.price}
+          {formattedLabel.maxPrice}
         </div>}
 
       {/* Barcode Section */}
