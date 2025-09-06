@@ -153,12 +153,16 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
 
     .product-specs {
       font-size: 9px;
-      font-weight: 600;
-      color: #333;
+      font-weight: 700;
+      color: #000;
       text-align: center;
       margin-top: 1px;
       margin-bottom: 2px;
       line-height: 1.0;
+      background-color: #f8f8f8;
+      padding: 1px 3px;
+      border-radius: 2px;
+      border: 1px solid #ddd;
     }
 
     .barcode-container {

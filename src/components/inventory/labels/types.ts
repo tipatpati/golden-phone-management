@@ -3,6 +3,7 @@ export interface ThermalLabelData {
   serialNumber?: string;
   barcode: string;
   price: number;
+  maxPrice?: number; // Added for max selling price
   category?: string;
   color?: string;
   batteryLevel?: number;

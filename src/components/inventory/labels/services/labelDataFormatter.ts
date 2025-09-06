@@ -8,6 +8,7 @@ export interface FormattedLabelElements {
   productName: string;
   serialNumber: string | null;
   price: string | null;
+  maxPrice: string | null;
   companyName: string | null;
   category: string | null;
   barcode: string | null;
@@ -25,15 +26,19 @@ export function formatLabelElements(
   // Debug log to see what data we're working with
   console.log('formatLabelElements input:', { label, options });
   
+  // Price logic: Use max price if available, otherwise fall back to unit price
+  const displayPrice = label.maxPrice || label.price;
+  
   const formatted = {
     productName: label.productName || '',
     serialNumber: label.serialNumber ? `SN: ${label.serialNumber}` : null,
-    price: options.includePrice && typeof label.price === 'number' ? `€${label.price.toFixed(2)}` : null,
+    price: options.includePrice && typeof displayPrice === 'number' ? `€${displayPrice.toFixed(2)}` : null,
+    maxPrice: label.maxPrice && typeof label.maxPrice === 'number' ? `€${label.maxPrice.toFixed(2)}` : null,
     companyName: options.includeCompany && options.companyName?.trim() ? options.companyName : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,
     barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,
-    storage: label.storage ? `${label.storage}GB` : null,
-    ram: label.ram ? `${label.ram}GB RAM` : null
+    storage: label.storage && label.storage > 0 ? `${label.storage}GB` : null,
+    ram: label.ram && label.ram > 0 ? `${label.ram}GB RAM` : null
   };
   
   // Debug log to see what data we're outputting

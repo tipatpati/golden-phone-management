@@ -37,14 +37,17 @@ export function generateSingleLabel(
     `;
   }
 
-  // Price section
+  // Price section - Show max price if available, otherwise fall back to unit price
   let priceSection = '';
-  if (options.includePrice && typeof label.price === 'number') {
-    priceSection = `
-      <div class="price-section">
-        €${label.price.toFixed(2)}
-      </div>
-    `;
+  if (options.includePrice) {
+    const displayPrice = label.maxPrice || label.price;
+    if (typeof displayPrice === 'number') {
+      priceSection = `
+        <div class="price-section">
+          €${displayPrice.toFixed(2)}
+        </div>
+      `;
+    }
   }
 
   // Barcode section
@@ -102,13 +105,15 @@ export function generateSingleLabel(
 
       <!-- Main Content Section -->
       <div class="main-content">
-        <!-- Product Name with Storage/RAM - Primary focus -->
+        <!-- Product Name - Primary focus -->
         <div class="product-name">
           ${escapeHtml(formattedLabel.productName)}
         </div>
+        
+        <!-- Storage and RAM specifications -->
         ${(formattedLabel.storage || formattedLabel.ram) ? `
           <div class="product-specs">
-            ${formattedLabel.storage || ''}${formattedLabel.storage && formattedLabel.ram ? ' • ' : ''}${formattedLabel.ram || ''}
+            ${[formattedLabel.storage, formattedLabel.ram].filter(Boolean).join(' • ')}
           </div>
         ` : ''}
         
@@ -121,9 +126,9 @@ export function generateSingleLabel(
       </div>
 
       <!-- Price Section -->
-      ${options.includePrice && typeof label.price === 'number' ? `
+      ${options.includePrice ? `
         <div class="price-section">
-          €${label.price.toFixed(2)}
+          €${(label.maxPrice || label.price).toFixed(2)}
         </div>
       ` : ''}
 

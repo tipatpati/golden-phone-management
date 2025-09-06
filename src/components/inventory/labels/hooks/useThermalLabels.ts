@@ -158,10 +158,12 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           });
           
           // Price hierarchy: unit max_price > unit price > product max_price > product price > 0
-          const labelPrice = unit.max_price ?? unit.price ?? product.max_price ?? product.price ?? 0;
+          const labelPrice = unit.price ?? product.price ?? 0;
+          const labelMaxPrice = unit.max_price ?? product.max_price ?? null;
           
           console.log('💰 Price resolution:', {
             finalPrice: labelPrice,
+            finalMaxPrice: labelMaxPrice,
             sources: {
               unitMaxPrice: unit.max_price,
               productMaxPrice: product.max_price,
@@ -175,6 +177,7 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
             serialNumber: unit.serial_number,
             barcode,
             price: labelPrice,
+            maxPrice: labelMaxPrice,
             category: product.category?.name,
             color: unit.color,
             batteryLevel: unit.battery_level,
@@ -184,11 +187,11 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
           
           labels.push(labelData);
           
-          // Debug log for each label being created
           console.log('✅ Created label:', {
             productName: labelProductName,
             serialNumber: unit.serial_number,
             price: labelPrice,
+            maxPrice: labelMaxPrice,
             storage,
             ram,
             color: unit.color,
