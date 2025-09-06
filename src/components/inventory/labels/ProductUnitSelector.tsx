@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Package, Search, Battery, Palette } from "lucide-react";
 import { parseSerialString } from "@/utils/productNaming";
+import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
 import { ThermalLabelData } from "./types";
 
 interface ProductUnitSelectorProps {
@@ -32,7 +33,7 @@ export function ProductUnitSelector({
   // Parse and filter serial numbers
   const parsedUnits = useMemo(() => {
     return serialNumbers.map((serialNumber, index) => {
-      const parsed = parseSerialString(serialNumber);
+      const parsed = parseSerialWithBattery(serialNumber);
       return {
         index,
         original: serialNumber,
@@ -60,7 +61,9 @@ export function ProductUnitSelector({
         price: productPrice,
         category: productCategory,
         color: unit.color,
-        batteryLevel: unit.batteryLevel
+        batteryLevel: unit.batteryLevel,
+        storage: unit.storage,
+        ram: unit.ram
       };
     }).filter(Boolean) as ThermalLabelData[];
   };
@@ -170,6 +173,12 @@ export function ProductUnitSelector({
                     {unit.storage && (
                       <Badge variant="outline" className="text-xs">
                         {unit.storage}GB
+                      </Badge>
+                    )}
+                    
+                    {unit.ram && (
+                      <Badge variant="outline" className="text-xs">
+                        {unit.ram}GB RAM
                       </Badge>
                     )}
                     
