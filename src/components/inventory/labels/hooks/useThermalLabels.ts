@@ -135,27 +135,15 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
               battery_level: unit.battery_level
             });
             
-            // Use professional barcode from database or generate one
-            let barcode = unit.barcode;
+            // ALWAYS use the actual barcode from database - no fallbacks!
+            const barcode = unit.barcode;
             if (!barcode) {
-              // Generate professional CODE128 barcode for this unit
-              try {
-                barcode = await Code128GeneratorService.generateUnitBarcode(unit.id, {
-                  metadata: {
-                    serial: unit.serial_number,
-                    product_id: product.id,
-                    color: unit.color,
-                    storage: unit.storage,
-                    ram: unit.ram,
-                    battery_level: unit.battery_level
-                  }
-                });
-                console.log(`✅ Generated professional barcode for unit ${unit.serial_number}: ${barcode}`);
-              } catch (error) {
-                console.error(`❌ Failed to generate barcode for unit ${unit.serial_number}:`, error);
-                barcode = `GPMSU${unit.id.replace(/-/g, '').slice(-6)}`;
-              }
+              console.error(`❌ THERMAL LABELS: Unit ${unit.serial_number} (${unit.id}) has no barcode in database! Skipping this unit.`);
+              console.error('❌ THERMAL LABELS: Use the Barcode Backfill Tool to generate missing barcodes first.');
+              continue; // Skip units without barcodes
             }
+            
+            console.log(`✅ Using database barcode for unit ${unit.serial_number}: ${barcode}`);
             
             // Use unit data directly (no fallbacks to parsed data)
             const storage = unit.storage || product.storage || 128;
