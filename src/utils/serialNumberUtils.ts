@@ -34,11 +34,14 @@ export function validateSerialNumber(serial: string): { isValid: boolean; error?
   return { isValid: true };
 }
 
-// Legacy compatibility - kept for existing code that might still use it
+// DEPRECATED: These functions are no longer used in the new thermal label system
+// They are kept for backward compatibility with existing code
 export function parseSerialWithBattery(serialString: string): SerialWithBattery {
+  console.warn('⚠️ parseSerialWithBattery is deprecated - use ThermalLabelDataService instead');
   return { serial: serialString.trim() };
 }
 
 export function validateSerialWithBattery(serialString: string): { isValid: boolean; error?: string } {
+  console.warn('⚠️ validateSerialWithBattery is deprecated - use LabelDataValidator instead');
   return validateSerialNumber(serialString);
 }

@@ -1,6 +1,6 @@
 import { ThermalLabelData, ThermalLabelOptions } from "../types";
 import { escapeHtml } from "./utils";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+// Legacy parsing removed - using label data directly
 import { formatLabelElements } from "./labelDataFormatter";
 
 export function generateSingleLabel(
@@ -69,15 +69,9 @@ export function generateSingleLabel(
       specs.push(escapeHtml(label.color));
     }
     
-    // Extract storage from product name or serial number
-    const storageMatch = label.productName.match(/(\d+GB)/);
-    if (storageMatch) {
-      specs.push(storageMatch[1]);
-    } else if (label.serialNumber) {
-      const parsed = parseSerialWithBattery(label.serialNumber);
-      if (parsed.storage) {
-        specs.push(`${parsed.storage}GB`);
-      }
+    // Use storage data directly from label (no parsing needed)
+    if (label.storage) {
+      specs.push(`${label.storage}GB`);
     }
     
     // Extract RAM if available (look for pattern like "12GB RAM" or just "12GB" after storage)

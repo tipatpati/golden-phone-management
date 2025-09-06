@@ -1,25 +1,6 @@
-export interface ThermalLabelData {
-  productName: string;
-  serialNumber?: string;
-  barcode: string;
-  price: number;
-  maxPrice?: number; // Added for max selling price
-  category?: string;
-  color?: string;
-  batteryLevel?: number;
-  storage?: number;
-  ram?: number;
-}
+// Re-export from services for backward compatibility
+export type { ThermalLabelData, ThermalLabelOptions } from "@/services/labels/types";
 
-export interface ThermalLabelOptions {
-  copies: number;
-  includePrice: boolean;
-  includeBarcode: boolean;
-  includeCompany: boolean;
-  includeCategory: boolean;
-  format: "standard" | "compact";
-  useMasterBarcode?: boolean;
-}
 
 export interface ThermalPrintSettings {
   width: number;   // 6cm in pixels at 203 DPI ≈ 472px (landscape)

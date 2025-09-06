@@ -3,7 +3,7 @@ import { formatProductName } from "@/utils/productNaming";
 import { BarcodeManagerProps } from "./types";
 import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
-import { parseSerialWithBattery } from "@/utils/serialNumberUtils";
+// Legacy import removed - using simple serial parsing directly
 
 
 interface SerialEntry {
@@ -38,7 +38,7 @@ export function BarcodeManager({
       
       for (let index = 0; index < lines.length; index++) {
         const line = lines[index];
-        const parsed = parseSerialWithBattery(line);
+        const serial = line.trim(); // Simple serial parsing
         
         // Generate temporary unit ID for barcode generation
         const tempUnitId = `temp-${productId}-${index}-${Date.now()}`;
@@ -47,9 +47,7 @@ export function BarcodeManager({
           // Use professional CODE128 service for barcode generation
           const barcode = await Code128GeneratorService.generateUnitBarcode(tempUnitId, {
             metadata: {
-              serial: parsed.serial,
-              color: parsed.color,
-              battery_level: parsed.batteryLevel,
+              serial,
               product_id: productId
             }
           });
@@ -57,22 +55,18 @@ export function BarcodeManager({
           const validation = Code128GeneratorService.validateCode128(barcode);
           
           barcodes.push({
-            serial: parsed.serial,
-            color: parsed.color,
-            batteryLevel: parsed.batteryLevel,
+            serial,
             barcode: barcode,
             barcodeFormat: 'CODE128',
             isValid: validation.isValid,
             index: index
           });
         } catch (error) {
-          console.error(`Failed to generate barcode for ${parsed.serial}:`, error);
+          console.error(`Failed to generate barcode for ${serial}:`, error);
           // Fallback barcode
           const fallbackBarcode = `GPMSU${tempUnitId.slice(-6)}`;
           barcodes.push({
-            serial: parsed.serial,
-            color: parsed.color,
-            batteryLevel: parsed.batteryLevel,
+            serial,
             barcode: fallbackBarcode,
             barcodeFormat: 'CODE128',
             isValid: false,
@@ -127,8 +121,6 @@ export function BarcodeManager({
               
               <div className="text-xs text-muted-foreground space-y-1">
                 <div><strong>Serial:</strong> {unit.serial}</div>
-                {unit.color && <div><strong>Color:</strong> {unit.color}</div>}
-                {unit.batteryLevel && <div><strong>Battery:</strong> {unit.batteryLevel}%</div>}
               </div>
               
               <BarcodeGenerator 
