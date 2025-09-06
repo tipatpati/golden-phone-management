@@ -42,12 +42,13 @@ export function useProductValidation() {
     if (data.has_serial && serialNumbers) {
       const serialLines = serialNumbers.split('\n').map(line => line.trim()).filter(line => line !== '');
       
-      // Check if any unit has pricing information - look for specific pricing patterns
+      // Check if any unit has pricing information - look for € pricing patterns used by serialNumberUtils
       const hasUnitPricing = serialLines.some(line => {
-        // Check for any of the price patterns: price:X, minPrice:X, maxPrice:X (case insensitive)
-        return /price:\s*\d+(\.\d+)?/i.test(line) || 
-               /minprice:\s*\d+(\.\d+)?/i.test(line) || 
-               /maxprice:\s*\d+(\.\d+)?/i.test(line);
+        // Check for any of the price patterns used in parseSerialWithBattery:
+        // €X (price), MIN€X (minPrice), MAX€X (maxPrice)
+        return /€\d+(\.\d+)?/.test(line) || 
+               /MIN€\d+(\.\d+)?/.test(line) || 
+               /MAX€\d+(\.\d+)?/.test(line);
       });
       
       console.log('🔍 Unit pricing validation:', { 
@@ -55,16 +56,16 @@ export function useProductValidation() {
         hasUnitPricing,
         sampleChecks: serialLines.slice(0, 3).map(line => ({
           line,
-          hasPrice: /price:\s*\d+(\.\d+)?/i.test(line),
-          hasMinPrice: /minprice:\s*\d+(\.\d+)?/i.test(line),
-          hasMaxPrice: /maxprice:\s*\d+(\.\d+)?/i.test(line)
+          hasPrice: /€\d+(\.\d+)?/.test(line),
+          hasMinPrice: /MIN€\d+(\.\d+)?/.test(line),
+          hasMaxPrice: /MAX€\d+(\.\d+)?/.test(line)
         }))
       });
       
       if (serialLines.length > 0 && !hasUnitPricing) {
         newErrors.push({ 
           field: 'serial_numbers', 
-          message: 'Products with serial numbers require unit-level pricing. Add price:value to each serial number line.' 
+          message: 'Products with serial numbers require unit-level pricing. Add €value (e.g., €150 or MIN€120 MAX€180) to each serial number line.' 
         });
       }
     } else if (!data.has_serial) {
