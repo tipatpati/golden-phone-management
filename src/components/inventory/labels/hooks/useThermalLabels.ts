@@ -23,15 +23,18 @@ interface Product {
 
 export function useThermalLabels(products: Product[], useMasterBarcode?: boolean): ThermalLabelData[] {
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchProductUnits = async () => {
+      console.log('Fetching product units for labels...');
       const unitsMap: Record<string, ProductUnit[]> = {};
       
       for (const product of products) {
         if (product.serial_numbers && product.serial_numbers.length > 0) {
           try {
             const units = await ProductUnitsService.getUnitsForProduct(product.id);
+            console.log(`Fetched ${units.length} units for product ${product.id}:`, units);
             unitsMap[product.id] = units;
           } catch (error) {
             console.error(`Failed to fetch units for product ${product.id}:`, error);
@@ -46,7 +49,12 @@ export function useThermalLabels(products: Product[], useMasterBarcode?: boolean
     if (products.length > 0) {
       fetchProductUnits();
     }
-  }, [products]);
+  }, [products, refreshKey]);
+
+  // Force refresh when component mounts or products change
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [products.map(p => p.id).join(',')]);  // Trigger when product IDs change
 
   return useMemo(() => {
     const labels: ThermalLabelData[] = [];
