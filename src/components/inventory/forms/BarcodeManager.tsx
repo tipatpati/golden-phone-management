@@ -1,9 +1,8 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { formatProductName } from "@/utils/productNaming";
+import React, { useState, useEffect } from "react";
 import { BarcodeManagerProps } from "./types";
 import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
-// Legacy import removed - using simple serial parsing directly
+import { supabase } from "@/integrations/supabase/client";
 
 
 interface SerialEntry {
@@ -27,70 +26,71 @@ export function BarcodeManager({
   const [unitBarcodes, setUnitBarcodes] = useState<SerialEntry[]>([]);
   
   useEffect(() => {
-    const generateBarcodes = async () => {
-      if (!hasSerial || !serialNumbers.trim()) {
+    const fetchUnitBarcodes = async () => {
+      if (!hasSerial) {
         setUnitBarcodes([]);
         return;
       }
-      
-      const lines = serialNumbers.split('\n').filter(line => line.trim() !== '');
-      const barcodes: SerialEntry[] = [];
-      
-      for (let index = 0; index < lines.length; index++) {
-        const line = lines[index];
-        const serial = line.trim(); // Simple serial parsing
-        
-        // Generate temporary unit ID for barcode generation
-        const tempUnitId = `temp-${productId}-${index}-${Date.now()}`;
-        
-        try {
-          // Use professional CODE128 service for barcode generation
-          const barcode = await Code128GeneratorService.generateUnitBarcode(tempUnitId, {
-            metadata: {
-              serial,
-              product_id: productId
-            }
-          });
-          
-          const validation = Code128GeneratorService.validateCode128(barcode);
-          
-          barcodes.push({
-            serial,
-            barcode: barcode,
-            barcodeFormat: 'CODE128',
-            isValid: validation.isValid,
-            index: index
-          });
-        } catch (error) {
-          console.error(`Failed to generate barcode for ${serial}:`, error);
-          // Fallback barcode
-          const fallbackBarcode = `GPMSU${tempUnitId.slice(-6)}`;
-          barcodes.push({
-            serial,
-            barcode: fallbackBarcode,
-            barcodeFormat: 'CODE128',
-            isValid: false,
-            index: index
-          });
-        }
-      }
-      
-      setUnitBarcodes(barcodes);
-    };
-    
-    generateBarcodes();
-  }, [serialNumbers, productId, hasSerial]);
 
-  // Notify parent whenever barcode changes (but avoid infinite loops)
+      if (!productId) {
+        setUnitBarcodes([]);
+        return;
+      }
+
+      // Validate UUID to avoid PostgREST casting errors
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(productId)) {
+        console.warn('BarcodeManager: Provided productId is not a UUID; skipping fetch.');
+        setUnitBarcodes([]);
+        return;
+      }
+
+      try {
+        const { data: units, error } = await supabase
+          .from('product_units')
+          .select('*')
+          .eq('product_id', productId)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        const mapped: SerialEntry[] = (units || []).map((u: any, index: number) => {
+          const validation = u.barcode
+            ? Code128GeneratorService.validateCode128(u.barcode)
+            : { isValid: false, format: 'CODE128', errors: [] };
+
+          return {
+            serial: u.serial_number,
+            color: u.color || undefined,
+            batteryLevel: u.battery_level ?? undefined,
+            barcode: u.barcode || '',
+            barcodeFormat: 'CODE128',
+            isValid: !!u.barcode && validation.isValid,
+            index
+          };
+        }).filter(e => !!e.barcode);
+
+        setUnitBarcodes(mapped);
+      } catch (err) {
+        console.error('BarcodeManager: failed to fetch unit barcodes:', err);
+        setUnitBarcodes([]);
+      }
+    };
+
+    fetchUnitBarcodes();
+  }, [hasSerial, productId]);
+
+  // Notify parent ONLY for non-serial products (we do not auto-set product barcode from unit barcodes)
   const firstBarcode = unitBarcodes.length > 0 ? unitBarcodes[0].barcode : null;
   const prevBarcodeRef = React.useRef<string | null>(null);
   
   React.useEffect(() => {
-    if (firstBarcode && firstBarcode !== prevBarcodeRef.current && onBarcodeGenerated) {
+    if (!firstBarcode || hasSerial || !onBarcodeGenerated) return; // guard: never propagate unit barcode to product when has serials
+    if (firstBarcode !== prevBarcodeRef.current) {
       prevBarcodeRef.current = firstBarcode;
       onBarcodeGenerated(firstBarcode);
     }
-  }, [firstBarcode, onBarcodeGenerated]);
+  }, [firstBarcode, onBarcodeGenerated, hasSerial]);
 
   if (!hasSerial || unitBarcodes.length === 0) {
     return null;

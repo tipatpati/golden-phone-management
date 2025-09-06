@@ -11,7 +11,8 @@ export function ProductForm({
   onSubmit, 
   isLoading, 
   submitText = "Save Product",
-  onRegisterSubmit
+  onRegisterSubmit,
+  productId
 }: ProductFormProps) {
   const {
     formData,
@@ -211,7 +212,7 @@ export function ProductForm({
           onUnitEntriesChange={updateUnitEntries}
           onStockChange={(stock) => updateField('stock', stock)}
           hasSerial={formData.has_serial}
-          productId={initialData?.barcode}
+          productId={productId}
         />
       )}
 
@@ -219,7 +220,7 @@ export function ProductForm({
       <BarcodeManager
         serialNumbers={unitEntries.map(e => e.serial).join('\n')}
         hasSerial={formData.has_serial || false}
-        productId={initialData?.barcode}
+        productId={productId}
         onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
       />
 
