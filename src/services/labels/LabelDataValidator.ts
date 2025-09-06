@@ -1,4 +1,4 @@
-import { ProductUnit } from "@/services/products/ProductUnitsService";
+import type { ProductUnit } from "@/services/inventory/types";
 import { ProductForLabels, ValidationResult } from "./types";
 
 export class LabelDataValidator {

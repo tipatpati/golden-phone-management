@@ -1,5 +1,10 @@
-// Central exports for the inventory management system
+// ============================================
+// INVENTORY MODULE - SINGLE SOURCE OF TRUTH
+// ============================================
+// Central exports for the unified inventory management system
+
 export { InventoryManagementService } from './InventoryManagementService';
+export { InventoryError, handleInventoryError, ERROR_CODES } from './errors';
 export type * from './types';
 
 // Re-export commonly used types for convenience
@@ -11,5 +16,8 @@ export type {
   CreateProductData,
   CreateProductUnitData,
   ProductWithUnits,
-  InventoryOperationResult
+  InventoryOperationResult,
+  InventoryError as InventoryErrorType,
+  BulkOperationResult,
+  Category
 } from './types';

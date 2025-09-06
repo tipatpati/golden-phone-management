@@ -1,4 +1,5 @@
-import { ProductUnitsService, ProductUnit } from "@/services/products/ProductUnitsService";
+import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import type { ProductUnit } from "@/services/inventory/types";
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 import { LabelDataValidator } from "./LabelDataValidator";
 import { ProductForLabels, ThermalLabelData, LabelDataResult } from "./types";

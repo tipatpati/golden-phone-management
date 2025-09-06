@@ -1,7 +1,12 @@
+// ============================================
+// INVENTORY MANAGEMENT SERVICE - REFACTORED
+// ============================================
+// Centralized service for all inventory operations with unified error handling
+
 import { supabase } from "@/integrations/supabase/client";
-import { ProductUnitsService } from "../products/ProductUnitsService";
-import { Code128GeneratorService } from "../barcodes/Code128GeneratorService";
-import { ThermalLabelDataService } from "../labels/ThermalLabelDataService";
+import { Code128GeneratorService } from "@/services/barcodes";
+import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
+import { ProductUnitsService } from "./ProductUnitsService";
 import type {
   Product,
   ProductUnit,
@@ -12,8 +17,14 @@ import type {
   InventoryOperationResult,
   UnitEntryForm,
   LabelData,
-  LabelGenerationOptions
+  LabelGenerationOptions,
+  InventorySearchFilters,
+  BulkOperationResult,
+  BulkUpdateRequest,
+  BulkDeleteRequest,
+  Category
 } from "./types";
+import { InventoryError, handleInventoryError } from "./errors";
 
 /**
  * Centralized Inventory Management Service
@@ -21,22 +32,132 @@ import type {
  * Orchestrates product, unit, barcode, and label operations
  */
 export class InventoryManagementService {
-  
-  // =================== PRODUCT OPERATIONS ===================
-  
+  // ============================================
+  // QUERY OPERATIONS
+  // ============================================
+
+  /**
+   * Get all products with optional filtering
+   */
+  static async getProducts(filters?: InventorySearchFilters): Promise<Product[]> {
+    try {
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(id, name)
+        `)
+        .order('created_at', { ascending: false });
+
+      // Apply filters
+      if (filters?.searchTerm) {
+        query = query.or(`brand.ilike.%${filters.searchTerm}%,model.ilike.%${filters.searchTerm}%,barcode.ilike.%${filters.searchTerm}%`);
+      }
+      
+      if (filters?.category) {
+        query = query.eq('category_id', filters.category);
+      }
+      
+      if (filters?.stockStatus) {
+        switch (filters.stockStatus) {
+          case 'out_of_stock':
+            query = query.eq('stock', 0);
+            break;
+          case 'low_stock':
+            query = query.gt('stock', 0).lte('stock', 'threshold');
+            break;
+          case 'in_stock':
+            query = query.gt('stock', 'threshold');
+            break;
+        }
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getProducts', error);
+      }
+
+      return (data || []).map(this.transformProduct);
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
+   * Get all categories
+   */
+  static async getCategories(): Promise<Category[]> {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getCategories', error);
+      }
+
+      return data || [];
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
+   * Get product units for a specific product
+   */
+  static async getProductUnits(productId: string): Promise<ProductUnit[]> {
+    try {
+      const { data, error } = await supabase
+        .from('product_units')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getProductUnits', error, { productId });
+      }
+
+      return (data || []).map(unit => ({
+        ...unit,
+        status: unit.status as 'available' | 'sold' | 'reserved' | 'damaged'
+      })) as ProductUnit[];
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  // ============================================
+  // PRODUCT OPERATIONS
+  // ============================================
+
   /**
    * Create a new product with optional units
-   * Handles the complete product creation workflow
    */
   static async createProduct(formData: ProductFormData): Promise<InventoryOperationResult> {
-    console.log('🏭 InventoryManagementService: Creating product', { brand: formData.brand, model: formData.model });
+    console.log('🎯 InventoryManagementService: Creating product:', formData.brand, formData.model);
     
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
+
     try {
-      // 1. Transform form data to database format (remove form-only fields)
+      // Validate form data
+      const validation = this.validateProductForm(formData);
+      if (!validation.isValid) {
+        result.errors = validation.errors;
+        return result;
+      }
+
+      // Transform form data to database format
       const productData = this.transformFormToProductData(formData);
-      
-      // 2. Create the product record
-      const { data: product, error: productError } = await supabase
+
+      // Create the product
+      const { data: product, error } = await supabase
         .from('products')
         .insert(productData as any)
         .select(`
@@ -45,83 +166,71 @@ export class InventoryManagementService {
         `)
         .single();
 
-      if (productError) {
-        throw new Error(`Failed to create product: ${productError.message}`);
+      if (error) {
+        throw InventoryError.createDatabaseError('createProduct', error);
       }
 
-      let units: ProductUnit[] = [];
-      const warnings: string[] = [];
+      result.data = this.transformProduct(product);
 
-      // 3. Create units if product has serials
-      if (formData.has_serial && formData.unit_entries?.length > 0) {
-        const unitResult = await this.createProductUnits(
-          product.id,
-          formData.unit_entries,
-          {
-            price: formData.price,
-            min_price: formData.min_price,
-            max_price: formData.max_price
-          }
-        );
+      // Create units if product has serial numbers
+      if (formData.has_serial && formData.unit_entries && formData.unit_entries.length > 0) {
+        console.log('📦 Creating product units:', formData.unit_entries.length);
         
-        if (!unitResult.success) {
-          warnings.push(`Product created but some units failed: ${unitResult.errors.join(', ')}`);
-        } else {
-          units = unitResult.data || [];
+        const defaultPricing = {
+          price: formData.price,
+          min_price: formData.min_price,
+          max_price: formData.max_price
+        };
+
+        try {
+          const units = await ProductUnitsService.createUnitsForProduct(
+            product.id,
+            formData.unit_entries,
+            defaultPricing
+          );
+          
+          result.data.units = units;
+          result.data.unitCount = units.length;
+          console.log(`✅ Created ${units.length} units for product`);
+        } catch (unitsError) {
+          console.error('❌ Failed to create some units:', unitsError);
+          result.warnings.push(`Some units failed to create: ${unitsError.message}`);
         }
       }
 
-      // 4. Update product stock based on created units
-      if (formData.has_serial && units.length > 0) {
-        await supabase
-          .from('products')
-          .update({ stock: units.length })
-          .eq('id', product.id);
-      }
-
-      console.log('✅ InventoryManagementService: Product created successfully', { 
-        productId: product.id, 
-        unitsCount: units.length 
-      });
-
-      return {
-        success: true,
-        data: { 
-          product: { ...product, category_name: product.category?.name },
-          units,
-          unitCount: units.length
-        },
-        errors: [],
-        warnings
-      };
-
+      result.success = true;
+      console.log('✅ Product created successfully:', result.data.id);
+      
     } catch (error) {
-      console.error('❌ InventoryManagementService: Product creation failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Unknown error occurred'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
+      console.error('❌ Failed to create product:', inventoryError);
     }
+
+    return result;
   }
 
   /**
-   * Update an existing product and its units
+   * Update an existing product
    */
-  static async updateProduct(
-    productId: string, 
-    formData: Partial<ProductFormData>
-  ): Promise<InventoryOperationResult> {
-    console.log('🔄 InventoryManagementService: Updating product', { productId });
+  static async updateProduct(productId: string, formData: Partial<ProductFormData>): Promise<InventoryOperationResult> {
+    console.log('🔄 InventoryManagementService: Updating product:', productId);
     
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
+
     try {
-      // 1. Transform form data to database format
+      // Transform form data to database format
       const productData = this.transformFormToProductData(formData);
-      
-      // 2. Update the product record
-      const { data: product, error: productError } = await supabase
+
+      // Update the product
+      const { data: product, error } = await supabase
         .from('products')
-        .update(productData)
+        .update(productData as any)
         .eq('id', productId)
         .select(`
           *,
@@ -129,209 +238,247 @@ export class InventoryManagementService {
         `)
         .single();
 
-      if (productError) {
-        throw new Error(`Failed to update product: ${productError.message}`);
+      if (error) {
+        throw InventoryError.createDatabaseError('updateProduct', error, { productId });
       }
 
-      let units: ProductUnit[] = [];
-      const warnings: string[] = [];
+      result.data = this.transformProduct(product);
 
-      // 3. Handle unit updates if needed
-      if (formData.has_serial && formData.unit_entries) {
-        const unitResult = await this.updateProductUnits(productId, formData.unit_entries);
-        
-        if (!unitResult.success) {
-          warnings.push(`Product updated but unit updates failed: ${unitResult.errors.join(', ')}`);
-        } else {
-          units = unitResult.data || [];
+      // Update units if provided
+      if (formData.unit_entries) {
+        try {
+          await this.updateProductUnits(productId, formData.unit_entries);
+          console.log('✅ Updated product units');
+        } catch (unitsError) {
+          console.error('❌ Failed to update some units:', unitsError);
+          result.warnings.push(`Some units failed to update: ${unitsError.message}`);
         }
       }
 
-      console.log('✅ InventoryManagementService: Product updated successfully', { productId });
-
-      return {
-        success: true,
-        data: { 
-          product: { ...product, category_name: product.category?.name },
-          units
-        },
-        errors: [],
-        warnings
-      };
-
+      result.success = true;
+      console.log('✅ Product updated successfully:', productId);
+      
     } catch (error) {
-      console.error('❌ InventoryManagementService: Product update failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Unknown error occurred'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
+      console.error('❌ Failed to update product:', inventoryError);
     }
+
+    return result;
   }
 
   /**
    * Delete a product and all its units
    */
   static async deleteProduct(productId: string): Promise<InventoryOperationResult> {
-    console.log('🗑️ InventoryManagementService: Deleting product', { productId });
+    console.log('🗑️ InventoryManagementService: Deleting product:', productId);
     
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
+
     try {
-      // 1. Delete all product units first (cascade)
-      await supabase
+      // First delete all units
+      const { error: unitsError } = await supabase
         .from('product_units')
         .delete()
         .eq('product_id', productId);
 
-      // 2. Delete product
-      const { error } = await supabase
+      if (unitsError) {
+        throw InventoryError.createDatabaseError('deleteProductUnits', unitsError, { productId });
+      }
+
+      // Then delete the product
+      const { error: productError } = await supabase
         .from('products')
         .delete()
         .eq('id', productId);
 
-      if (error) {
-        throw new Error(`Failed to delete product: ${error.message}`);
+      if (productError) {
+        throw InventoryError.createDatabaseError('deleteProduct', productError, { productId });
       }
 
-      console.log('✅ InventoryManagementService: Product deleted successfully', { productId });
-
-      return {
-        success: true,
-        errors: [],
-        warnings: []
-      };
-
+      result.success = true;
+      console.log('✅ Product deleted successfully:', productId);
+      
     } catch (error) {
-      console.error('❌ InventoryManagementService: Product deletion failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Unknown error occurred'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
+      console.error('❌ Failed to delete product:', inventoryError);
     }
+
+    return result;
   }
 
-  // =================== UNIT OPERATIONS ===================
-  
+  // ============================================
+  // UNIT OPERATIONS
+  // ============================================
+
   /**
-   * Create product units with barcodes
+   * Create product units for a product
    */
   static async createProductUnits(
     productId: string,
     unitEntries: UnitEntryForm[],
     defaultPricing?: { price?: number; min_price?: number; max_price?: number }
   ): Promise<InventoryOperationResult> {
-    console.log('🏷️ InventoryManagementService: Creating product units', { 
-      productId, 
-      count: unitEntries.length 
-    });
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
 
     try {
-      const units = await ProductUnitsService.createUnitsForProduct(
-        productId,
-        unitEntries,
-        defaultPricing
-      );
-
-      return {
-        success: true,
-        data: units,
-        errors: [],
-        warnings: []
-      };
-
+      const units = await ProductUnitsService.createUnitsForProduct(productId, unitEntries, defaultPricing);
+      result.data = units;
+      result.success = true;
     } catch (error) {
-      console.error('❌ InventoryManagementService: Unit creation failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Failed to create product units'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
     }
+
+    return result;
   }
 
   /**
-   * Update product units (replace existing with new ones)
+   * Update product units
    */
-  static async updateProductUnits(
-    productId: string,
-    unitEntries: UnitEntryForm[]
-  ): Promise<InventoryOperationResult> {
-    console.log('🔄 InventoryManagementService: Updating product units', { 
-      productId, 
-      newCount: unitEntries.length 
-    });
+  static async updateProductUnits(productId: string, unitEntries: UnitEntryForm[]): Promise<InventoryOperationResult> {
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
 
     try {
-      // 1. Get existing units
+      // Get existing units
       const existingUnits = await ProductUnitsService.getUnitsForProduct(productId);
       
-      // 2. Delete existing units that are not in the new list
-      const newSerials = new Set(unitEntries.map(entry => entry.serial));
-      const unitsToDelete = existingUnits.filter(unit => !newSerials.has(unit.serial_number));
+      // Delete units not in the new entries
+      const newSerials = unitEntries.map(e => e.serial);
+      const unitsToDelete = existingUnits.filter(unit => !newSerials.includes(unit.serial_number));
       
       for (const unit of unitsToDelete) {
         await ProductUnitsService.deleteUnit(unit.id);
       }
 
-      // 3. Create or update units
-      const existingSerials = new Set(existingUnits.map(unit => unit.serial_number));
-      const entriesToCreate = unitEntries.filter(entry => !existingSerials.has(entry.serial));
+      // Create new units
+      const existingSerials = existingUnits.map(u => u.serial_number);
+      const newEntries = unitEntries.filter(e => !existingSerials.includes(e.serial));
       
-      let allUnits = existingUnits.filter(unit => newSerials.has(unit.serial_number));
-      
-      if (entriesToCreate.length > 0) {
-        const newUnits = await ProductUnitsService.createUnitsForProduct(
-          productId,
-          entriesToCreate
-        );
-        allUnits.push(...newUnits);
+      if (newEntries.length > 0) {
+        await ProductUnitsService.createUnitsForProduct(productId, newEntries);
       }
 
-      return {
-        success: true,
-        data: allUnits,
-        errors: [],
-        warnings: []
-      };
-
+      result.success = true;
     } catch (error) {
-      console.error('❌ InventoryManagementService: Unit update failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Failed to update product units'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
+    }
+
+    return result;
+  }
+
+  // ============================================
+  // BULK OPERATIONS
+  // ============================================
+
+  /**
+   * Bulk update products
+   */
+  static async bulkUpdateProducts(request: BulkUpdateRequest): Promise<BulkOperationResult> {
+    const result: BulkOperationResult = {
+      success: true,
+      processed: 0,
+      failed: 0,
+      errors: [],
+      warnings: []
+    };
+
+    try {
+      for (const productId of request.productIds) {
+        try {
+          await this.updateProduct(productId, request.updates);
+          result.processed++;
+        } catch (error) {
+          result.failed++;
+          result.errors.push(`Product ${productId}: ${error.message}`);
+        }
+      }
+
+      result.success = result.failed === 0;
+      return result;
+    } catch (error) {
+      throw handleInventoryError(error);
     }
   }
 
-  // =================== BARCODE OPERATIONS ===================
-  
   /**
-   * Generate or update barcode for a product unit
+   * Bulk delete products
+   */
+  static async bulkDeleteProducts(request: BulkDeleteRequest): Promise<BulkOperationResult> {
+    const result: BulkOperationResult = {
+      success: true,
+      processed: 0,
+      failed: 0,
+      errors: [],
+      warnings: []
+    };
+
+    try {
+      for (const productId of request.productIds) {
+        try {
+          await this.deleteProduct(productId);
+          result.processed++;
+        } catch (error) {
+          result.failed++;
+          result.errors.push(`Product ${productId}: ${error.message}`);
+        }
+      }
+
+      result.success = result.failed === 0;
+      return result;
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  // ============================================
+  // BARCODE OPERATIONS
+  // ============================================
+
+  /**
+   * Generate barcode for a product unit
    */
   static async generateUnitBarcode(unitId: string): Promise<InventoryOperationResult> {
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
+
     try {
       const barcode = await Code128GeneratorService.generateUnitBarcode(unitId);
-      
-      return {
-        success: true,
-        data: { barcode },
-        errors: [],
-        warnings: []
-      };
-
+      result.data = barcode;
+      result.success = true;
     } catch (error) {
-      console.error('❌ InventoryManagementService: Barcode generation failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Failed to generate barcode'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
     }
+
+    return result;
   }
 
-  // =================== LABEL OPERATIONS ===================
-  
+  // ============================================
+  // LABEL OPERATIONS
+  // ============================================
+
   /**
    * Generate thermal labels for products
    */
@@ -339,53 +486,48 @@ export class InventoryManagementService {
     products: Product[],
     options?: { useMasterBarcode?: boolean }
   ): Promise<InventoryOperationResult> {
-    try {
-      const result = await ThermalLabelDataService.generateLabelsForProducts(products, options);
-      
-      return {
-        success: result.labels.length > 0,
-        data: result,
-        errors: result.errors,
-        warnings: result.warnings
-      };
+    const result: InventoryOperationResult = {
+      success: false,
+      data: null,
+      errors: [],
+      warnings: []
+    };
 
+    try {
+      const labelResult = await ThermalLabelDataService.generateLabelsForProducts(products, options);
+      result.data = labelResult.labels;
+      result.success = labelResult.success;
+      result.errors = labelResult.errors;
+      result.warnings = labelResult.warnings;
     } catch (error) {
-      console.error('❌ InventoryManagementService: Label generation failed', error);
-      return {
-        success: false,
-        errors: [error instanceof Error ? error.message : 'Failed to generate labels'],
-        warnings: []
-      };
+      const inventoryError = handleInventoryError(error);
+      result.errors.push(inventoryError.message);
     }
+
+    return result;
   }
 
-  // =================== UTILITY METHODS ===================
-  
+  // ============================================
+  // UTILITY METHODS
+  // ============================================
+
   /**
-   * Transform form data to database-compatible product data
+   * Transform form data to database product data
    */
   private static transformFormToProductData(formData: Partial<ProductFormData>): Partial<CreateProductData> {
-    const { unit_entries, ...productData } = formData as any;
-    
-    // Remove form-only fields and ensure proper types
+    const { unit_entries, ...productData } = formData;
     return {
       ...productData,
-      stock: productData.stock || 0,
-      threshold: productData.threshold || 5,
-      price: productData.price || 0,
-      min_price: productData.min_price || 0,
-      max_price: productData.max_price || 0,
-      has_serial: productData.has_serial || false
+      serial_numbers: formData.has_serial ? formData.serial_numbers : undefined
     };
   }
 
   /**
-   * Get product with its units
+   * Get a product with its units
    */
   static async getProductWithUnits(productId: string): Promise<ProductWithUnits | null> {
     try {
-      // Get product
-      const { data: product, error: productError } = await supabase
+      const { data: product, error } = await supabase
         .from('products')
         .select(`
           *,
@@ -394,28 +536,27 @@ export class InventoryManagementService {
         .eq('id', productId)
         .single();
 
-      if (productError || !product) {
-        console.error('Product not found:', productError);
-        return null;
+      if (error) {
+        if (error.code === 'PGRST116') return null;
+        throw InventoryError.createDatabaseError('getProductWithUnits', error, { productId });
       }
 
-      // Get units if product has serials
-      let units: ProductUnit[] = [];
+      const transformedProduct = this.transformProduct(product);
+      
+      // Get units if product has serial numbers
       if (product.has_serial) {
-        units = await ProductUnitsService.getUnitsForProduct(productId);
+        const units = await this.getProductUnits(productId);
+        return {
+          ...transformedProduct,
+          units,
+          unitCount: units.length,
+          availableUnits: units.filter(u => u.status === 'available').length
+        };
       }
 
-      return {
-        ...product,
-        category_name: product.category?.name,
-        units,
-        unitCount: units.length,
-        availableUnits: units.filter(unit => unit.status === 'available').length
-      };
-
+      return transformedProduct;
     } catch (error) {
-      console.error('❌ InventoryManagementService: Failed to get product with units', error);
-      return null;
+      throw handleInventoryError(error);
     }
   }
 
@@ -425,51 +566,35 @@ export class InventoryManagementService {
   static validateProductForm(formData: Partial<ProductFormData>): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    // Required fields
     if (!formData.brand?.trim()) {
       errors.push('Brand is required');
     }
+
     if (!formData.model?.trim()) {
       errors.push('Model is required');
     }
-    if (!formData.category_id) {
-      errors.push('Category is required');
-    }
-    if (formData.threshold !== undefined && formData.threshold < 0) {
-      errors.push('Threshold must be non-negative');
+
+    if (!formData.category_id || formData.category_id < 1 || formData.category_id > 4) {
+      errors.push('Valid category is required');
     }
 
-    // Serial number validation
-    if (formData.has_serial) {
-      if (!formData.unit_entries || formData.unit_entries.length === 0) {
-        errors.push('Products with serial numbers must have at least one unit entry');
-      } else {
-        // Check for duplicate serials
-        const serials = formData.unit_entries.map(entry => entry.serial).filter(Boolean);
-        const uniqueSerials = new Set(serials);
-        if (serials.length !== uniqueSerials.size) {
-          errors.push('Duplicate serial numbers are not allowed');
-        }
-
-        // Validate serial format (basic validation)
-        for (const entry of formData.unit_entries) {
-          if (entry.serial && entry.serial.length < 10) {
-            errors.push(`Serial number "${entry.serial}" is too short (minimum 10 characters)`);
-          }
-        }
-      }
-    }
-
-    // Price validation
-    if (formData.min_price !== undefined && formData.max_price !== undefined) {
-      if (formData.min_price >= formData.max_price) {
-        errors.push('Minimum price must be less than maximum price');
-      }
+    if (formData.threshold === undefined || formData.threshold < 0) {
+      errors.push('Threshold must be 0 or greater');
     }
 
     return {
       isValid: errors.length === 0,
       errors
+    };
+  }
+
+  /**
+   * Transform raw product data from database
+   */
+  private static transformProduct(product: any): Product {
+    return {
+      ...product,
+      category_name: product.category?.name,
     };
   }
 }

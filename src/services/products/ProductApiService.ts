@@ -1,170 +1,86 @@
-import { BaseApiService } from '../core/BaseApiService';
-import type { Product, CreateProductData } from './types';
+// ============================================
+// DEPRECATED - Use InventoryManagementService instead
+// ============================================
+// This service is kept for backward compatibility only.
+// All new code should use InventoryManagementService.
 
-export class ProductApiService extends BaseApiService<Product, CreateProductData> {
+import { InventoryManagementService } from '../inventory/InventoryManagementService';
+import type { Product, CreateProductData } from '../inventory/types';
+
+/**
+ * @deprecated Use InventoryManagementService instead
+ */
+export class ProductApiService {
   constructor() {
-    super('products', `
-      *,
-      category:categories(id, name)
-    `);
-  }
-
-  protected transformProduct(product: any): Product {
-    return {
-      ...product,
-      category_name: product.category?.name,
-    };
+    console.warn('⚠️ ProductApiService is deprecated. Use InventoryManagementService instead.');
   }
 
   async getAll(filters = {}): Promise<Product[]> {
-    const data = await super.getAll(filters);
-    return data.map(this.transformProduct);
+    console.warn('⚠️ ProductApiService.getAll is deprecated. Use InventoryManagementService.getProducts instead.');
+    return InventoryManagementService.getProducts(filters);
   }
 
   async getById(id: string): Promise<Product> {
-    const data = await super.getById(id);
-    return this.transformProduct(data);
+    console.warn('⚠️ ProductApiService.getById is deprecated. Use InventoryManagementService.getProductWithUnits instead.');
+    const product = await InventoryManagementService.getProductWithUnits(id);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    return product;
   }
 
   async create(productData: CreateProductData): Promise<Product> {
-    // Use the InventoryManagementService for consistent product creation
-    console.log('⚠️ ProductApiService.create is deprecated. Use InventoryManagementService.createProduct instead.');
-    
-    // Filter out any form-specific fields that might leak through
-    const { unit_entries, ...dbProductData } = productData as any;
-    const data = await super.create(dbProductData);
-    return this.transformProduct(data);
+    console.warn('⚠️ ProductApiService.create is deprecated. Use InventoryManagementService.createProduct instead.');
+    const result = await InventoryManagementService.createProduct(productData as any);
+    if (!result.success) {
+      throw new Error(result.errors.join(', '));
+    }
+    return result.data;
   }
 
   async update(id: string, productData: Partial<CreateProductData>): Promise<Product> {
-    // Filter out any form-specific fields that might leak through
-    const { unit_entries, ...dbProductData } = productData as any;
-    const data = await super.update(id, dbProductData);
-    return this.transformProduct(data);
+    console.warn('⚠️ ProductApiService.update is deprecated. Use InventoryManagementService.updateProduct instead.');
+    const result = await InventoryManagementService.updateProduct(id, productData);
+    if (!result.success) {
+      throw new Error(result.errors.join(', '));
+    }
+    return result.data;
   }
 
   async search(searchTerm: string): Promise<Product[]> {
-    if (!searchTerm) return this.getAll();
-
-    // First try database search
-    const searchFields = ['brand', 'model', 'barcode'];
-    let results = await super.search(searchTerm, searchFields);
-
-    // If no results, try broader client-side search
-    if (results.length === 0) {
-      const allProducts = await this.getAll();
-      const search = searchTerm.toLowerCase().trim();
-      
-      results = allProducts.filter(product => {
-        const brandModel = `${product.brand} ${product.model}`.toLowerCase();
-        const brand = product.brand?.toLowerCase() || '';
-        const model = product.model?.toLowerCase() || '';
-        const barcode = product.barcode?.toLowerCase() || '';
-        
-        return brandModel.includes(search) || 
-               brand.includes(search) || 
-               model.includes(search) || 
-               barcode.includes(search) ||
-               (product.serial_numbers && product.serial_numbers.some(serial => 
-                 serial.toLowerCase().includes(search)
-               ));
-      });
-    }
-
-    return results.map(this.transformProduct);
+    console.warn('⚠️ ProductApiService.search is deprecated. Use InventoryManagementService.getProducts with filters instead.');
+    return InventoryManagementService.getProducts({ searchTerm });
   }
 
   async getCategories() {
-    return this.performQuery(
-      this.supabase
-        .from('categories' as any)
-        .select('*')
-        .order('name'),
-      'fetching categories'
-    );
+    console.warn('⚠️ ProductApiService.getCategories is deprecated. Use InventoryManagementService.getCategories instead.');
+    return InventoryManagementService.getCategories();
   }
 
-  async getProductRecommendations(productId: string) {
-    const data = await this.performQuery(
-      this.supabase
-        .from('product_recommendations' as any)
-        .select(`
-          id,
-          recommendation_type,
-          priority,
-          recommended_product:products!recommended_product_id(
-            id,
-            brand,
-            model,
-            year,
-            price,
-            min_price,
-            max_price,
-            stock,
-            category:categories(id, name)
-          )
-        `)
-        .eq('product_id', productId)
-        .order('priority', { ascending: true }),
-      'fetching recommendations'
-    );
-
-    return Array.isArray(data) ? data.map(rec => ({
-      ...rec.recommended_product,
-      category_name: rec.recommended_product?.category?.name,
-      recommendation_type: rec.recommendation_type,
-      priority: rec.priority
-    })) : [];
-  }
-
-  // Bulk operations
   async bulkDelete(ids: string[]): Promise<void> {
-    console.log('🗑️ ProductApiService: Bulk deleting products', { ids });
-    
-    if (ids.length === 0) {
-      throw new Error('No product IDs provided for bulk delete');
+    console.warn('⚠️ ProductApiService.bulkDelete is deprecated. Use InventoryManagementService.bulkDeleteProducts instead.');
+    const result = await InventoryManagementService.bulkDeleteProducts({ productIds: ids });
+    if (!result.success) {
+      throw new Error(result.errors.join(', '));
     }
-
-    const { error } = await this.supabase
-      .from('products')
-      .delete()
-      .in('id', ids);
-
-    if (error) {
-      console.error('❌ ProductApiService: Bulk delete failed', error);
-      throw new Error(`Failed to delete products: ${error.message}`);
-    }
-
-    console.log('✅ ProductApiService: Bulk delete successful');
   }
 
   async bulkUpdate(updates: Array<{ id: string; [key: string]: any }>): Promise<void> {
-    console.log('🔄 ProductApiService: Bulk updating products', { updates });
+    console.warn('⚠️ ProductApiService.bulkUpdate is deprecated. Use InventoryManagementService.bulkUpdateProducts instead.');
     
-    if (updates.length === 0) {
-      throw new Error('No updates provided for bulk update');
-    }
-
-    // For bulk updates, we need to update each product individually
-    // since Supabase doesn't support bulk UPSERT with different values
-    const promises = updates.map(async (update) => {
-      const { id, ...updateData } = update;
-      const { error } = await this.supabase
-        .from('products')
-        .update(updateData)
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(`Failed to update product ${id}: ${error.message}`);
-      }
+    // Group updates by their update data (assuming all updates have the same shape)
+    if (updates.length === 0) return;
+    
+    const { id, ...updateData } = updates[0];
+    const productIds = updates.map(u => u.id);
+    
+    const result = await InventoryManagementService.bulkUpdateProducts({
+      productIds,
+      updates: updateData
     });
-
-    try {
-      await Promise.all(promises);
-      console.log('✅ ProductApiService: Bulk update successful');
-    } catch (error) {
-      console.error('❌ ProductApiService: Bulk update failed', error);
-      throw error;
+    
+    if (!result.success) {
+      throw new Error(result.errors.join(', '));
     }
   }
 }
