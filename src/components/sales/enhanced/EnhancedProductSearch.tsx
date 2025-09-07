@@ -7,35 +7,7 @@ import { toast } from "sonner";
 import { BarcodeScanner } from "@/components/ui/barcode-scanner";
 import { useProducts } from "@/hooks/useInventory";
 import { ProductUnitSelector } from "./ProductUnitSelector";
-
-interface ProductUnit {
-  id: string;
-  serial_number: string;
-  barcode?: string;
-  color?: string;
-  storage?: number;
-  ram?: number;
-  battery_level?: number;
-  status: 'available' | 'sold' | 'reserved' | 'damaged';
-  price?: number;
-  min_price?: number;
-  max_price?: number;
-}
-
-interface Product {
-  id: string;
-  brand: string;
-  model: string;
-  year?: number;
-  stock: number;
-  price: number;
-  min_price?: number;
-  max_price?: number;
-  serial_numbers?: string[];
-  barcode?: string;
-  category_id?: number;
-  product_units?: ProductUnit[];
-}
+import type { Product, ProductUnit } from "@/services/inventory/types";
 
 interface SaleItem {
   product_id: string;
@@ -102,7 +74,7 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
         product_unit_id: '', // Will be empty for legacy products
         serial_number: '', // Will be empty for legacy products
         quantity: 1,
-        unit_price: product.max_price || product.price,
+        unit_price: product.max_price || product.price || 0,
         brand: product.brand,
         model: product.model,
         year: product.year
@@ -163,11 +135,7 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
             className="pl-10 pr-16 h-14 text-base bg-background border-2 focus:border-primary"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <BarcodeScanner
-              onScan={handleBarcodeScanned}
-              className="h-10 w-10 rounded-lg bg-primary/10 hover:bg-primary/20 p-2"
-              scanIcon={<Scan className="h-4 w-4" />}
-            />
+            <BarcodeScanner onScan={handleBarcodeScanned} />
           </div>
         </div>
 
@@ -193,7 +161,7 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
                     </div>
                     <div className="text-right">
                       <div className="font-semibold text-sm">
-                        €{product.max_price || product.price}
+                        €{product.max_price || product.price || 0}
                       </div>
                     </div>
                   </div>
@@ -251,10 +219,10 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
                         </div>
 
                         <div className="text-right shrink-0">
-                          <div className="text-xl font-bold text-primary">€{product.max_price || product.price}</div>
-                          {product.min_price !== product.max_price && (
+                          <div className="text-xl font-bold text-primary">€{product.max_price || product.price || 0}</div>
+                          {product.min_price && product.min_price !== (product.max_price || product.price) && (
                             <div className="text-sm text-muted-foreground">
-                              €{product.min_price} - €{product.max_price}
+                              €{product.min_price} - €{product.max_price || product.price}
                             </div>
                           )}
                         </div>

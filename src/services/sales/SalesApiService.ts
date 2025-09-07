@@ -124,7 +124,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
       for (const item of saleData.sale_items) {
         const saleItemData = {
-          sale_id: (sale as any).id,
+          sale_id: sale.id,
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
@@ -147,7 +147,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
           // Prepare sold unit data
           const soldUnitData = {
-            sale_id: (sale as any).id,
+            sale_id: sale.id,
             sale_item_id: '', // Will be filled after sale items are created
             product_id: item.product_id,
             product_unit_id: item.product_unit_id,
@@ -167,7 +167,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
       if (itemsError) {
         // Clean up the sale if item creation fails
-        await supabase.from('sales').delete().eq('id', (sale as any).id);
+        await supabase.from('sales').delete().eq('id', sale.id);
         throw new Error(itemsError.message);
       }
 
@@ -196,7 +196,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       return sale;
     } catch (error) {
       // Clean up the sale if anything fails
-      await supabase.from('sales').delete().eq('id', (sale as any).id);
+      await supabase.from('sales').delete().eq('id', sale.id);
       throw error;
     }
   }

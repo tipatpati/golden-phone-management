@@ -6,31 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Smartphone, Battery, Palette, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-
-interface ProductUnit {
-  id: string;
-  serial_number: string;
-  barcode?: string;
-  color?: string;
-  storage?: number;
-  ram?: number;
-  battery_level?: number;
-  status: 'available' | 'sold' | 'reserved' | 'damaged';
-  price?: number;
-  min_price?: number;
-  max_price?: number;
-}
-
-interface Product {
-  id: string;
-  brand: string;
-  model: string;
-  year?: number;
-  price: number;
-  min_price?: number;
-  max_price?: number;
-  product_units?: ProductUnit[];
-}
+import type { Product, ProductUnit } from "@/services/inventory/types";
 
 interface SaleItem {
   product_id: string;
@@ -74,7 +50,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
   // Set default price when unit is selected
   React.useEffect(() => {
     if (selectedUnit) {
-      const defaultPrice = selectedUnit.max_price || product.max_price || product.price;
+      const defaultPrice = selectedUnit.max_price || product.max_price || product.price || 0;
       setCustomPrice(defaultPrice.toString());
     }
   }, [selectedUnit, product]);
@@ -91,7 +67,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
 
     const price = parseFloat(customPrice);
     const minPrice = selectedUnit.min_price || product.min_price || 0;
-    const maxPrice = selectedUnit.max_price || product.max_price || product.price;
+    const maxPrice = selectedUnit.max_price || product.max_price || product.price || 0;
 
     if (isNaN(price) || price <= 0) {
       toast.error("Inserisci un prezzo valido");
@@ -240,7 +216,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
                   <div className="flex items-center space-x-3">
                     <div className="text-right">
                       <div className="font-semibold">
-                        €{unit.max_price || product.max_price || product.price}
+                        €{unit.max_price || product.max_price || product.price || 0}
                       </div>
                       {(unit.min_price || product.min_price) && (
                         <div className="text-xs text-muted-foreground">
@@ -273,7 +249,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
                     placeholder="0.00"
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Range: €{selectedUnit.min_price || product.min_price || 0} - €{selectedUnit.max_price || product.max_price || product.price}
+                    Range: €{selectedUnit.min_price || product.min_price || 0} - €{selectedUnit.max_price || product.max_price || product.price || 0}
                   </div>
                 </div>
                 

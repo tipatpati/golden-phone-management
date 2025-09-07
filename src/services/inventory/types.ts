@@ -30,6 +30,7 @@ export interface Product extends BaseEntity {
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
+  product_units?: ProductUnit[];
 }
 
 export interface ProductUnit extends BaseEntity {
