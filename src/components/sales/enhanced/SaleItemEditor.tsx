@@ -48,14 +48,14 @@ export function SaleItemEditor({
   onRemoveItem
 }: SaleItemEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [tempPrice, setTempPrice] = useState(item.unit_price.toString());
+  const [tempPrice, setTempPrice] = useState((item.unit_price || 0).toString());
 
   const hasStockWarning = item.quantity > availableStock;
   // More flexible price validation - only show warning for significant deviations
   const hasPriceWarning = item.min_price && item.max_price && 
     (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2)); // Allow 20% above max
   
-  const subtotal = item.quantity * item.unit_price;
+  const subtotal = item.quantity * (item.unit_price || 0);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, item.quantity + delta);
@@ -74,7 +74,7 @@ export function SaleItemEditor({
     setIsEditing(false);
     const price = parseFloat(tempPrice);
     if (isNaN(price) || price <= 0) {
-      setTempPrice(item.unit_price.toString());
+      setTempPrice((item.unit_price || 0).toString());
     }
   };
 
@@ -189,7 +189,7 @@ export function SaleItemEditor({
                   className="h-8 px-2 text-sm font-mono"
                   onClick={() => setIsEditing(true)}
                 >
-                  €{item.unit_price.toFixed(2)}
+                  €{(item.unit_price || 0).toFixed(2)}
                 </Button>
               )}
             </div>
@@ -210,7 +210,7 @@ export function SaleItemEditor({
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                {item.quantity} × €{item.unit_price.toFixed(2)}
+                {item.quantity} × €{(item.unit_price || 0).toFixed(2)}
               </span>
             </div>
             <div className="text-lg font-bold">

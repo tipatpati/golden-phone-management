@@ -75,7 +75,7 @@ export function NewSaleDialog() {
           model: product.model,
           year: product.year,
           quantity: 1,
-          unit_price: product.price,
+          unit_price: product.price || product.max_price || 0,
           min_price: product.min_price,
           max_price: product.max_price,
           stock: product.stock,
