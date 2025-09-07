@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useThermalLabels } from '@/components/inventory/labels/hooks/useThermalLabels';
-import { ProductUnitsService } from '@/services/products/ProductUnitsService';
+import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
 
 // Mock the ProductUnitsService
-vi.mock('@/services/products/ProductUnitsService', () => ({
+vi.mock('@/services/inventory/ProductUnitsService', () => ({
   ProductUnitsService: {
     getUnitsForProduct: vi.fn()
   }

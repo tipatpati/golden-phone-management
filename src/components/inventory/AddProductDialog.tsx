@@ -9,7 +9,7 @@ import { InventoryManagementService } from "@/services/inventory/InventoryManage
 import { ThermalLabelGenerator } from "./labels";
 import { BarcodeGenerator } from "./BarcodeGenerator";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { toast } from "@/components/ui/sonner";
 import { logger } from "@/utils/logger";
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useSearchBrands, useModelsByBrand } from "@/services/brands/BrandsReactQueryService";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 
 /**
  * Custom hook that provides inventory-related data services

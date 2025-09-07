@@ -4,7 +4,7 @@
  */
 
 import type { Sale, CreateSaleData, SaleItem } from '@/services/sales/types';
-import type { ProductFormData } from '@/components/inventory/forms/types';
+import type { ProductFormData } from '@/services/inventory/types';
 
 export interface MockClient {
   id: string;

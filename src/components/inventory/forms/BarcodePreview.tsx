@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
-import { ProductUnitsService } from "@/services/products/ProductUnitsService";
+import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw, Download, Printer, Eye, EyeOff } from "lucide-react";

@@ -2,7 +2,7 @@ import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package, Headphones, Wrench } from "lucide-react";
-import { useCategories } from "@/services/products/ProductReactQueryService";
+import { useCategories } from "@/services/inventory/InventoryReactQueryService";
 
 interface Category {
   id: number;

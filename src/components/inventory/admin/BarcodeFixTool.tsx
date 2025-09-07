@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle, Wrench, AlertTriangle } from "lucide-react";
-import { ProductUnitsService } from "@/services/products/ProductUnitsService";
+import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
 import { toast } from "sonner";
 
 interface BarcodeFixToolProps {

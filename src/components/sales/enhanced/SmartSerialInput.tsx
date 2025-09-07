@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Search, Hash, CheckCircle, AlertTriangle } from "lucide-react";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 
 type SmartSerialInputProps = {
   productId: string;

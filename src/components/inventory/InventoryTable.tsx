@@ -22,7 +22,7 @@ import {
   Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { ThermalLabelGenerator } from "./labels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 

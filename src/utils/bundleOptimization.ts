@@ -13,8 +13,8 @@ export const loadServiceDynamically = async <T>(serviceName: string): Promise<T>
       const { clientService } = await import('@/services/clients/ClientReactQueryService');
       return clientService as T;
     case 'products':
-      const { productService } = await import('@/services/products/ProductReactQueryService');
-      return productService as T;
+      const inventoryService = await import('@/services/inventory/InventoryReactQueryService');
+      return inventoryService as T;
     default:
       throw new Error(`Service ${serviceName} not found`);
   }
@@ -24,7 +24,7 @@ export const loadServiceDynamically = async <T>(serviceName: string): Promise<T>
 export const preloadCriticalServices = () => {
   // Preload most commonly used services
   import('@/services/clients/ClientReactQueryService');
-  import('@/services/products/ProductReactQueryService');
+  import('@/services/inventory/InventoryReactQueryService');
 };
 
 // Tree-shaking friendly re-exports

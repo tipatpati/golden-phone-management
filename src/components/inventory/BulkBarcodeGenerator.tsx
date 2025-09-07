@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useProducts, useUpdateProduct } from '@/services/products/ProductReactQueryService';
+import { useProducts, useUpdateProduct } from '@/services/inventory/InventoryReactQueryService';
 import { Code128GeneratorService } from '@/services/barcodes';
 
 import { toast } from '@/components/ui/sonner';

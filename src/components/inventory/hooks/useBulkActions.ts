@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useDeleteProducts, useUpdateProducts } from "@/services/products/ProductReactQueryService";
+import { useDeleteProducts, useUpdateProducts } from "@/services/inventory/InventoryReactQueryService";
 
 export interface BulkActionsState {
   selectedItems: string[];

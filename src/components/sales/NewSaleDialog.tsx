@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useCreateSale } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { DiscountManager } from "./DiscountManager";
 import { HybridPaymentManager } from "./HybridPaymentManager";

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThermalLabelDataService } from '@/services/labels/ThermalLabelDataService';
-import { ProductUnitsService } from '@/services/products/ProductUnitsService';
+import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
 import { ProductForLabels } from '@/services/labels/types';
 
 // Mock the dependencies
-vi.mock('@/services/products/ProductUnitsService', () => ({
+vi.mock('@/services/inventory/ProductUnitsService', () => ({
   ProductUnitsService: {
     getUnitsForProduct: vi.fn()
   }

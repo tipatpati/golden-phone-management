@@ -5,7 +5,7 @@
 // Service loader with optimized error handling
 export const loadService = async (serviceName: string) => {
   const serviceMap: Record<string, () => Promise<any>> = {
-    inventory: () => import('@/services/products/ProductReactQueryService'),
+    inventory: () => import('@/services/inventory/InventoryReactQueryService'),
     sales: () => import('@/services/sales/SalesReactQueryService'),
     clients: () => import('@/services/clients/ClientReactQueryService'),
     repairs: () => import('@/services/repairs/RepairsReactQueryService'),

@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useSuppliers } from "@/services";
 import { useSupplierTransactions } from "@/services/useSupplierTransactions";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { Plus, Trash2 } from "lucide-react";
 
 const transactionSchema = z.object({
