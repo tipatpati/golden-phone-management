@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
+import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { 
   Table, 
   TableBody, 
@@ -259,23 +260,34 @@ export function InventoryTable({
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="text-sm">
-                      <span className="font-medium">
-                        {product.price ? formatCurrency(product.price) : 'Unit-specific'}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {product.min_price && product.max_price 
-                        ? `Range: ${formatCurrency(product.min_price)} - ${formatCurrency(product.max_price)}`
-                        : 'Individual unit pricing'
-                      }
-                    </div>
-                    {product.has_serial && (
-                      <div className="text-xs text-blue-600 flex items-center gap-1">
-                        <Euro className="h-3 w-3" />
-                        Click info to set unit prices
-                      </div>
-                    )}
+                    {(() => {
+                      const pricingInfo = getProductPricingInfoSync({
+                        price: product.price || 0,
+                        has_serial: product.has_serial,
+                        min_price: product.min_price,
+                        max_price: product.max_price
+                      });
+                      
+                      return (
+                        <>
+                          <div className="text-sm">
+                            <span className={cn(
+                              "font-medium",
+                              pricingInfo.type === 'unit-pricing' ? "text-blue-600" : "text-primary",
+                              pricingInfo.type === 'no-price' ? "text-muted-foreground" : ""
+                            )}>
+                              {pricingInfo.display}
+                            </span>
+                          </div>
+                          {pricingInfo.type === 'unit-pricing' && (
+                            <div className="text-xs text-blue-600 flex items-center gap-1">
+                              <Euro className="h-3 w-3" />
+                              Click info to set unit prices
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </TableCell>
                 <TableCell>

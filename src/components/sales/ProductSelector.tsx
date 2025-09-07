@@ -1,9 +1,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { formatProductName, formatProductUnitDisplay, parseSerialString } from "@/utils/productNaming";
+import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, DollarSign } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabaseProductApi } from "@/services/supabaseProducts";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
@@ -117,8 +119,16 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
               className="p-4 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors active:bg-muted"
               onClick={() => handleProductSelect(product)}
             >
-              <div className="font-medium text-base">
-                {formatProductName({ brand: product.brand, model: product.model })}
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-medium text-base flex-1">
+                  {formatProductName({ brand: product.brand, model: product.model })}
+                </div>
+                {product.has_serial && (
+                  <Badge variant="outline" className="text-xs flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    Unità
+                  </Badge>
+                )}
               </div>
               <div className="text-sm text-muted-foreground flex flex-wrap gap-2 mt-2">
                 <span>
@@ -158,8 +168,25 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
                   )}
                 </div>
               )}
-              <div className="text-sm text-green-600 font-medium mt-2">
-                Range: €{product.min_price} - €{product.max_price}
+              <div className="text-sm font-medium mt-2">
+                {(() => {
+                  const pricingInfo = getProductPricingInfoSync({
+                    price: product.price || 0,
+                    has_serial: product.has_serial || false,
+                    min_price: product.min_price,
+                    max_price: product.max_price
+                  });
+                  
+                  return (
+                    <span className={
+                      pricingInfo.type === 'unit-pricing' ? 'text-blue-600' : 
+                      pricingInfo.type === 'no-price' ? 'text-muted-foreground' : 
+                      'text-green-600'
+                    }>
+                      {pricingInfo.display}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           ))}

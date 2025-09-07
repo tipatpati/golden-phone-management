@@ -1,9 +1,10 @@
 import React from "react";
 import { formatProductName } from "@/utils/productNaming";
+import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Package, AlertTriangle } from "lucide-react";
+import { Edit, Trash2, Package, AlertTriangle, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface InventoryCardProps {
@@ -14,6 +15,9 @@ interface InventoryCardProps {
   stock: number;
   threshold: number;
   price: number;
+  has_serial?: boolean;
+  min_price?: number;
+  max_price?: number;
   category?: string;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -33,6 +37,9 @@ export function InventoryCard({
   stock,
   threshold,
   price,
+  has_serial = false,
+  min_price,
+  max_price,
   category,
   onEdit,
   onDelete,
@@ -42,6 +49,14 @@ export function InventoryCard({
   const isLowStock = stock <= threshold;
   const isOutOfStock = stock === 0;
   const productName = formatProductName({ brand, model, storage });
+  
+  // Get pricing display information
+  const pricingInfo = getProductPricingInfoSync({
+    price,
+    has_serial,
+    min_price,
+    max_price
+  });
 
   return (
     <Card className={cn("relative overflow-hidden", className)}>
@@ -73,11 +88,19 @@ export function InventoryCard({
           </div>
         </div>
         
-        {category && (
-          <Badge variant="secondary" className="w-fit">
-            {category}
-          </Badge>
-        )}
+        <div className="flex gap-2 flex-wrap">
+          {category && (
+            <Badge variant="secondary" className="w-fit">
+              {category}
+            </Badge>
+          )}
+          {pricingInfo.type === 'unit-pricing' && (
+            <Badge variant="outline" className="w-fit flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              Prezzi Unità Individuali
+            </Badge>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -94,8 +117,12 @@ export function InventoryCard({
               </span>
             )}
           </div>
-          <div className="text-lg font-bold text-primary">
-            €{price.toFixed(2)}
+          <div className={cn(
+            "text-lg font-bold",
+            pricingInfo.type === 'unit-pricing' ? "text-blue-600" : "text-primary",
+            pricingInfo.type === 'no-price' ? "text-muted-foreground" : ""
+          )}>
+            {pricingInfo.display}
           </div>
         </div>
 
