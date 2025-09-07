@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { EnhancedProductSearch } from './enhanced/EnhancedProductSearch';
 import { ClientSelector } from './ClientSelector';
+import { HybridPaymentManager } from './HybridPaymentManager';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -179,6 +180,13 @@ export function SimplifiedSaleForm({ onSaleComplete, onCancel }: SimplifiedSaleF
     setItems(prev => prev.map(item =>
       item.product_id === productId ? { ...item, serial_number: serialNumber } : item
     ));
+  }, []);
+
+  // Handle hybrid payment changes
+  const handlePaymentChange = useCallback((type: 'cash' | 'card' | 'bank_transfer', amount: number) => {
+    if (type === 'cash') setCashAmount(amount);
+    else if (type === 'card') setCardAmount(amount);
+    else if (type === 'bank_transfer') setBankTransferAmount(amount);
   }, []);
 
   // Validation
@@ -400,45 +408,13 @@ export function SimplifiedSaleForm({ onSaleComplete, onCancel }: SimplifiedSaleF
 
             {/* Hybrid Payment */}
             {paymentMethod === 'hybrid' && (
-              <div className="space-y-3 p-3 border rounded-lg">
-                <div className="space-y-2">
-                  <Label>Contanti</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={cashAmount}
-                    onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Carta</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={cardAmount}
-                    onChange={(e) => setCardAmount(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bonifico</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={bankTransferAmount}
-                    onChange={(e) => setBankTransferAmount(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Totale pagato: </span>
-                  <span className={Math.abs(totalPaid - totalAmount) < 0.01 ? 'text-green-600' : 'text-red-600'}>
-                    €{totalPaid.toFixed(2)}
-                  </span>
-                  <span className="text-muted-foreground"> / €{totalAmount.toFixed(2)}</span>
-                </div>
-              </div>
+              <HybridPaymentManager
+                totalAmount={totalAmount}
+                cashAmount={cashAmount}
+                cardAmount={cardAmount}
+                bankTransferAmount={bankTransferAmount}
+                onPaymentChange={handlePaymentChange}
+              />
             )}
           </CardContent>
         </Card>
