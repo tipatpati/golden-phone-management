@@ -173,7 +173,7 @@ export function NewSaleDialog() {
     ? Math.abs(totalPaid - totalAmount) < 0.005 // Improved tolerance for floating point precision
     : Boolean(paymentMethod);
 
-  // Helper function to get product stock - handles both serialized and non-serialized products
+  // Helper function to get product stock - uses unified calculation logic
   const getProductStock = (productId: string) => {
     const productsArray = Array.isArray(allProducts) ? allProducts : [];
     const product = productsArray.find(p => p.id === productId);

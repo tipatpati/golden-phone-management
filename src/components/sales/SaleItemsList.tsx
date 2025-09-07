@@ -182,7 +182,7 @@ export function SaleItemsList({
   // Fetch all products to get current stock information
   const { data: allProducts = [] } = useProducts();
   
-  // Helper function to get product stock - handles both serialized and non-serialized products
+  // Helper function to get product stock - uses unified calculation logic
   const getProductStock = (productId: string) => {
     const productsArray = Array.isArray(allProducts) ? allProducts : [];
     const product = productsArray.find(p => p.id === productId);
