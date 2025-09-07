@@ -2,23 +2,15 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Scan } from "lucide-react";
-import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { supabaseProductApi } from "@/services/supabaseProducts";
+import { Plus } from "lucide-react";
 import { useCreateSale } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
-import { ClientSelector } from "./ClientSelector";
-import { ProductSelector } from "./ProductSelector";
-import { ProductRecommendations } from "./ProductRecommendations";
-import { SaleItemsList } from "./SaleItemsList";
-import { SaleTotals } from "./SaleTotals";
+import { useProducts } from "@/services/products/ProductReactQueryService";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { DiscountManager } from "./DiscountManager";
 import { HybridPaymentManager } from "./HybridPaymentManager";
-import { CategorySelector } from "./CategorySelector";
+import { SaleTotals } from "./SaleTotals";
+import { StreamlinedSaleForm } from "./enhanced/StreamlinedSaleForm";
 import { toast } from "@/components/ui/sonner";
 import { SalesValidationService } from './SalesValidationService';
 import { useSalesMonitoring } from './SalesMonitoringService';
@@ -42,7 +34,6 @@ export function NewSaleDialog() {
   const [notes, setNotes] = useState("");
   const [createdSale, setCreatedSale] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   
   // Discount state
   const [discountType, setDiscountType] = useState<'percentage' | 'amount' | null>(null);
@@ -56,6 +47,7 @@ export function NewSaleDialog() {
   const createSale = useCreateSale();
   const { user } = useAuth();
   const { recordAudit, measureAsync, trackInteraction } = useSalesMonitoring();
+  const { data: allProducts = [] } = useProducts();
 
   
 
@@ -143,6 +135,19 @@ export function NewSaleDialog() {
   const isPaymentValid = isHybridPayment 
     ? Math.abs(totalPaid - totalAmount) < 0.005 // Improved tolerance for floating point precision
     : Boolean(paymentMethod);
+
+  // Helper function to get product stock
+  const getProductStock = (productId: string) => {
+    const productsArray = Array.isArray(allProducts) ? allProducts : [];
+    const product = productsArray.find(p => p.id === productId);
+    return product?.stock || 0;
+  };
+
+  // Recent products for quick add (could be enhanced with actual recent data)
+  const recentProducts = React.useMemo(() => {
+    const productsArray = Array.isArray(allProducts) ? allProducts : [];
+    return productsArray.slice(0, 4); // Simple implementation
+  }, [allProducts]);
 
   // Check if form is valid
   const isFormValid = saleItems.length > 0 && isPaymentValid && user?.id;
@@ -259,7 +264,6 @@ export function NewSaleDialog() {
       setCardAmount(0);
       setBankTransferAmount(0);
       setNotes("");
-      setSelectedCategory(null);
       setOpen(false);
       
       toast.success("Garentille creata con successo! La ricevuta è pronta per la stampa.");
@@ -269,25 +273,6 @@ export function NewSaleDialog() {
     }
   };
 
-  // Handle direct barcode scanning for quick product addition
-  const handleDirectBarcodeScanned = async (barcode: string) => {
-    
-    try {
-      const scannedProducts = await supabaseProductApi.getProducts(barcode);
-      
-      if (scannedProducts && scannedProducts.length === 1) {
-        addProduct(scannedProducts[0]);
-        toast.success(`Added ${scannedProducts[0].brand} ${scannedProducts[0].model} to sale`);
-      } else if (scannedProducts && scannedProducts.length > 1) {
-        toast.error(`Multiple products found for barcode ${barcode}. Please use the product search to select the correct one.`);
-      } else {
-        toast.error(`No product found for barcode ${barcode}`);
-      }
-    } catch (error) {
-      console.error('Error searching for scanned product:', error);
-      toast.error('Error scanning barcode. Please try again.');
-    }
-  };
 
   return (
     <SalesPermissionGuard requiredRole="create">
@@ -298,63 +283,27 @@ export function NewSaleDialog() {
           NUOVA GARENTILLE
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-h-[90vh] overflow-y-auto p-3 sm:p-4 md:p-6">
+      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-y-auto p-4">
         <DialogHeader>
-          <DialogTitle>Crea Nuova Garentille</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Crea Nuova Garentille</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-          {/* Quick Barcode Scanner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-blue-50 rounded-lg border">
-            <div className="flex-1">
-              <h3 className="font-medium text-blue-900 text-base sm:text-lg">Scansione Rapida</h3>
-              <p className="text-sm sm:text-base text-blue-700 mt-1">Scansiona i codici a barre dei prodotti per aggiungerli istantaneamente</p>
-            </div>
-            <BarcodeScannerTrigger
-              onScan={handleDirectBarcodeScanned}
-              variant="default"
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] px-4 sm:px-6 text-sm sm:text-base font-medium shrink-0 w-full sm:w-auto"
-            >
-              <Scan className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Scansiona Codice
-            </BarcodeScannerTrigger>
-          </div>
-
-          {/* Client Selection */}
-          <ClientSelector
-            selectedClient={selectedClient}
-            onClientSelect={setSelectedClient}
-            onClientClear={() => setSelectedClient(null)}
-          />
-
-          {/* Category Selection */}
-          <CategorySelector
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-          />
-
-          {/* Product Selection */}
-          <ProductSelector 
-            onProductAdd={addProduct} 
-            selectedCategory={selectedCategory}
-          />
-        
-
-          {saleItems.length > 0 && (
-            <ProductRecommendations 
-              productId={saleItems[saleItems.length - 1].product_id}
-              onProductAdd={addProduct}
-              addedProductIds={saleItems.map(item => item.product_id)}
-            />
-          )}
-
-          <SaleItemsList
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <StreamlinedSaleForm
             saleItems={saleItems}
+            selectedClient={selectedClient}
+            paymentMethod={paymentMethod}
+            notes={notes}
+            onClientSelect={setSelectedClient}
+            onPaymentMethodChange={handlePaymentMethodChange}
+            onNotesChange={setNotes}
+            onProductAdd={addProduct}
             onQuantityUpdate={updateQuantity}
             onPriceUpdate={updatePrice}
             onSerialNumberUpdate={updateSerialNumber}
             onRemoveItem={removeProduct}
+            getProductStock={getProductStock}
+            recentProducts={recentProducts}
           />
 
           {/* Discount Manager */}
@@ -367,36 +316,6 @@ export function NewSaleDialog() {
             />
           )}
 
-          {/* Payment Method and Notes - Side by side on larger screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Metodo di Pagamento *</Label>
-              <Select value={paymentMethod} onValueChange={handlePaymentMethodChange} required>
-                <SelectTrigger className="h-12 text-base">
-                  <SelectValue placeholder="Seleziona metodo di pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash" className="h-12 text-base">Contanti</SelectItem>
-                  <SelectItem value="card" className="h-12 text-base">Carta</SelectItem>
-                  <SelectItem value="bank_transfer" className="h-12 text-base">Bonifico Bancario</SelectItem>
-                  <SelectItem value="hybrid" className="h-12 text-base">Pagamento Ibrido</SelectItem>
-                  <SelectItem value="other" className="h-12 text-base">Altro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Note</Label>
-              <Textarea
-                placeholder="Note aggiuntive..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[48px] text-base resize-none"
-                rows={3}
-              />
-            </div>
-          </div>
-
           {/* Hybrid Payment Manager */}
           {isHybridPayment && (
             <HybridPaymentManager
@@ -408,33 +327,39 @@ export function NewSaleDialog() {
             />
           )}
 
-          <SaleTotals 
-            saleItems={saleItems} 
-            discountAmount={discountAmount}
-            finalSubtotal={finalSubtotal}
-            taxAmount={taxAmount}
-            totalAmount={totalAmount}
-          />
+          {/* Sale Totals */}
+          {saleItems.length > 0 && (
+            <SaleTotals 
+              saleItems={saleItems} 
+              discountAmount={discountAmount}
+              finalSubtotal={finalSubtotal}
+              taxAmount={taxAmount}
+              totalAmount={totalAmount}
+            />
+          )}
 
-          <div className="flex flex-col gap-3 sm:gap-4 pt-4 border-t">
-            <Button 
-              type="submit" 
-              disabled={!isFormValid || createSale.isPending}
-              className="w-full min-h-[48px] text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
-              size="lg"
-            >
-              {createSale.isPending ? "Creazione..." : "Crea Garentille"}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setOpen(false)}
-              className="w-full min-h-[44px] text-base"
-              size="lg"
-            >
-              Annulla
-            </Button>
-          </div>
+          {/* Submit Buttons */}
+          {saleItems.length > 0 && (
+            <div className="flex flex-col gap-3 pt-6 border-t bg-muted/30 -mx-4 px-4 py-4 rounded-b-lg">
+              <Button 
+                type="submit" 
+                disabled={!isFormValid || createSale.isPending}
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+                size="lg"
+              >
+                {createSale.isPending ? "Creazione..." : `Crea Garentille - €${totalAmount.toFixed(2)}`}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setOpen(false)}
+                className="w-full h-12 text-base"
+                size="lg"
+              >
+                Annulla
+              </Button>
+            </div>
+          )}
         </form>
       </DialogContent>
       
