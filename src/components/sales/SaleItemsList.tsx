@@ -296,21 +296,21 @@ export function SaleItemsList({
                       onChange={(e) => onPriceUpdate(item.product_id, parseFloat(e.target.value) || 0)}
                       className={`h-10 md:h-12 pl-7 md:pl-8 font-medium text-sm md:text-base ${
                         item.min_price && item.max_price && 
-                        (item.unit_price < item.min_price || item.unit_price > item.max_price)
-                          ? "border-destructive focus:border-destructive bg-destructive/5" 
+                        (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2))
+                          ? "border-amber-400 focus:border-amber-500 bg-amber-50" 
                           : "bg-background"
                       }`}
                     />
                   </div>
                   {item.min_price && item.max_price && 
-                   (item.unit_price < item.min_price || item.unit_price > item.max_price) && (
-                    <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                      <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-destructive mt-0.5 shrink-0" />
-                      <span className="text-xs md:text-sm text-destructive leading-tight">
-                        Prezzo fuori range (€{item.min_price} - €{item.max_price})
-                      </span>
-                    </div>
-                  )}
+                   (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2)) && (
+                     <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 bg-amber-100 border border-amber-200 rounded-md">
+                       <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-amber-600 mt-0.5 shrink-0" />
+                       <span className="text-xs md:text-sm text-amber-800 leading-tight">
+                         Prezzo consigliato: €{item.min_price} - €{item.max_price}
+                       </span>
+                     </div>
+                   )}
                 </div>
               </div>
 

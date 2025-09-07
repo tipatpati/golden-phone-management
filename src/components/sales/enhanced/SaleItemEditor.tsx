@@ -47,8 +47,9 @@ export function SaleItemEditor({
   const [tempPrice, setTempPrice] = useState(item.unit_price.toString());
 
   const hasStockWarning = item.quantity > availableStock;
+  // More flexible price validation - only show warning for significant deviations
   const hasPriceWarning = item.min_price && item.max_price && 
-    (item.unit_price < item.min_price || item.unit_price > item.max_price);
+    (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2)); // Allow 20% above max
   
   const subtotal = item.quantity * item.unit_price;
 
@@ -120,7 +121,7 @@ export function SaleItemEditor({
               <div className="flex items-center gap-2 text-amber-700">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-sm font-medium">
-                  Prezzo fuori range (€{item.min_price} - €{item.max_price})
+                  Prezzo consigliato: €{item.min_price} - €{item.max_price}
                 </span>
               </div>
             )}

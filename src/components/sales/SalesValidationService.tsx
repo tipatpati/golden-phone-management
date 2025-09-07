@@ -56,11 +56,17 @@ export class SalesValidationService {
       }
     }
 
-    // Validate item prices are within allowed ranges
+    // Validate item prices are within allowed ranges (with tolerance)
     for (const item of data.sale_items) {
-      if (item.min_price && item.max_price) {
-        if (item.unit_price < item.min_price || item.unit_price > item.max_price) {
-          errors.push(`Il prezzo per ${item.product_name} è fuori dal range consentito (€${item.min_price} - €${item.max_price})`);
+      if (item.min_price && item.max_price && item.min_price > 0 && item.max_price > 0) {
+        // Allow 10% tolerance above max price and any price above min price
+        const tolerance = item.max_price * 0.1;
+        const allowedMaxPrice = item.max_price + tolerance;
+        
+        if (item.unit_price < item.min_price) {
+          errors.push(`Il prezzo per ${item.product_name} è troppo basso (minimo €${item.min_price})`);
+        } else if (item.unit_price > allowedMaxPrice) {
+          errors.push(`Il prezzo per ${item.product_name} è eccessivamente alto (massimo consigliato €${item.max_price}, con tolleranza fino a €${allowedMaxPrice.toFixed(2)})`);
         }
       }
     }
