@@ -34,14 +34,14 @@ Deno.serve(async (req) => {
       .from('sales')
       .select(`
         *,
-        client:clients(*),
-        sale_items(
+        clients!inner(*),
+        sale_items!inner(
           *,
-          product:products(*)
+          products!inner(*)
         )
       `)
       .eq('id', saleId)
-      .single();
+      .maybeSingle();
 
     if (saleError || !sale) {
       console.error('Error fetching sale:', saleError);
@@ -112,8 +112,8 @@ Deno.serve(async (req) => {
       sale.sale_items.forEach((item: any) => {
         // Build product name (Brand + Model)
         const nameParts: string[] = [];
-        if (item.product?.brand) nameParts.push(item.product.brand);
-        if (item.product?.model) nameParts.push(item.product.model);
+        if (item.products?.brand) nameParts.push(item.products.brand);
+        if (item.products?.model) nameParts.push(item.products.model);
         const productName = (nameParts.join(' ') || 'Articolo');
 
         // Wrap long names to fit receipt width
