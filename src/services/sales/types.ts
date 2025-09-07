@@ -65,8 +65,10 @@ export type CreateSaleData = {
   notes?: string;
   sale_items: {
     product_id: string;
+    product_unit_id?: string; // ID of the specific unit being sold
     quantity: number;
     unit_price: number;
     serial_number?: string;
+    barcode?: string; // Barcode of the specific unit
   }[];
 };

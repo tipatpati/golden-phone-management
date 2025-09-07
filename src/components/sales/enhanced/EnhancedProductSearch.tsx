@@ -1,76 +1,130 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Search, Scan, Plus, Package, Hash, Zap } from "lucide-react";
-import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { useProducts } from "@/services/products/ProductReactQueryService";
-import { formatProductName } from "@/utils/productNaming";
-import { toast } from "@/components/ui/sonner";
+import { Search, Package, Scan } from "lucide-react";
+import { toast } from "sonner";
+import { BarcodeScanner } from "@/components/ui/barcode-scanner";
+import { useProducts } from "@/hooks/useInventory";
+import { ProductUnitSelector } from "./ProductUnitSelector";
 
-type Product = {
+interface ProductUnit {
+  id: string;
+  serial_number: string;
+  barcode?: string;
+  color?: string;
+  storage?: number;
+  ram?: number;
+  battery_level?: number;
+  status: 'available' | 'sold' | 'reserved' | 'damaged';
+  price?: number;
+  min_price?: number;
+  max_price?: number;
+}
+
+interface Product {
   id: string;
   brand: string;
   model: string;
-  price: number;
-  min_price: number;
-  max_price: number;
+  year?: number;
   stock: number;
+  price: number;
+  min_price?: number;
+  max_price?: number;
   serial_numbers?: string[];
   barcode?: string;
   category_id?: number;
-};
+  product_units?: ProductUnit[];
+}
 
-type EnhancedProductSearchProps = {
-  onProductAdd: (product: Product) => void;
+interface SaleItem {
+  product_id: string;
+  product_unit_id: string;
+  serial_number: string;
+  barcode?: string;
+  quantity: number;
+  unit_price: number;
+  brand: string;
+  model: string;
+  year?: number;
+  color?: string;
+  storage?: number;
+  ram?: number;
+}
+
+interface EnhancedProductSearchProps {
+  onProductAdd: (saleItem: SaleItem) => void;
   selectedCategory?: number | null;
   recentProducts?: Product[];
-};
+}
 
-export function EnhancedProductSearch({ 
-  onProductAdd, 
+export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
+  onProductAdd,
   selectedCategory,
   recentProducts = []
-}: EnhancedProductSearchProps) {
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
-  const { data: products = [] } = useProducts(searchTerm);
-  
-  // Filter products by category and search term
-  const filteredProducts = React.useMemo(() => {
-    const productArray = Array.isArray(products) ? products : [];
-    let filtered = productArray;
+  const { data: products = [], isLoading } = useProducts({
+    searchTerm: searchTerm.trim(),
+    category: selectedCategory || undefined
+  });
+
+  // Filter and limit results
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
     
     if (selectedCategory) {
       filtered = filtered.filter(product => product.category_id === selectedCategory);
     }
     
-    return filtered.slice(0, 6); // Limit to 6 results for clean UI
+    // Limit to 6 results for better UX
+    return filtered.slice(0, 6);
   }, [products, selectedCategory]);
 
-  // Quick add recent products (last 5)
-  const quickAddProducts = React.useMemo(() => {
+  // Get recent products for quick add (limit to 4)
+  const quickAddProducts = useMemo(() => {
     return recentProducts.slice(0, 4);
   }, [recentProducts]);
 
   const handleProductSelect = (product: Product) => {
-    // Use max price as default selling price
-    const productWithMaxPrice = {
-      ...product,
-      price: product.max_price || product.price
-    };
-    onProductAdd(productWithMaxPrice);
-    setSearchTerm("");
-    setIsSearchFocused(false);
-    toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+    // Check if product has units - if so, show unit selector
+    if (product.product_units && product.product_units.length > 0) {
+      setSelectedProduct(product);
+      setSearchTerm("");
+      setIsSearchFocused(false);
+    } else {
+      // Legacy fallback - create a basic sale item
+      const saleItem: SaleItem = {
+        product_id: product.id,
+        product_unit_id: '', // Will be empty for legacy products
+        serial_number: '', // Will be empty for legacy products
+        quantity: 1,
+        unit_price: product.max_price || product.price,
+        brand: product.brand,
+        model: product.model,
+        year: product.year
+      };
+      onProductAdd(saleItem);
+      setSearchTerm("");
+      setIsSearchFocused(false);
+      toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+    }
   };
 
-  const handleBarcodeScanned = async (barcode: string) => {
+  const handleUnitSelect = (saleItem: SaleItem) => {
+    setSelectedProduct(null);
+    onProductAdd(saleItem);
+  };
+
+  const handleCancelUnitSelection = () => {
+    setSelectedProduct(null);
+  };
+
+  const handleBarcodeScanned = (barcode: string) => {
     setSearchTerm(barcode);
-    // Auto-search will trigger via the searchTerm change
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -80,17 +134,26 @@ export function EnhancedProductSearch({
     }
   };
 
-  const showResults = isSearchFocused && searchTerm.length >= 2;
-  const showQuickAdd = !searchTerm && quickAddProducts.length > 0;
+  const shouldShowResults = isSearchFocused && searchTerm.length >= 2 && !isLoading;
+
+  // Show unit selector if product is selected
+  if (selectedProduct) {
+    return (
+      <ProductUnitSelector
+        product={selectedProduct}
+        onUnitSelect={handleUnitSelect}
+        onCancel={handleCancelUnitSelection}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Search Input */}
-      <div className="relative">
+    <div className="relative w-full">
+      <div className="space-y-4">
+        {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            ref={searchInputRef}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
@@ -100,119 +163,118 @@ export function EnhancedProductSearch({
             className="pl-10 pr-16 h-14 text-base bg-background border-2 focus:border-primary"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <BarcodeScannerTrigger
+            <BarcodeScanner
               onScan={handleBarcodeScanned}
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 hover:bg-primary/10"
-            >
-              <Scan className="h-5 w-5" />
-            </BarcodeScannerTrigger>
+              className="h-10 w-10 rounded-lg bg-primary/10 hover:bg-primary/20 p-2"
+              scanIcon={<Scan className="h-4 w-4" />}
+            />
           </div>
         </div>
 
-        {/* Search tip */}
-        {searchTerm.length > 0 && searchTerm.length < 2 && (
-          <p className="text-sm text-muted-foreground mt-2">
-            Continua a digitare per cercare prodotti...
-          </p>
-        )}
-      </div>
-
-      {/* Quick Add Recent Products */}
-      {showQuickAdd && (
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Zap className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-medium text-muted-foreground">Aggiungi Rapido</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {quickAddProducts.map((product) => (
-              <Button
-                key={product.id}
-                variant="outline"
-                size="sm"
-                onClick={() => handleProductSelect(product)}
-                className="justify-start h-auto p-3 text-left"
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
-                      {formatProductName({ brand: product.brand, model: product.model })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">€{product.price}</div>
-                  </div>
-                  <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
-                </div>
-              </Button>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Search Results */}
-      {showResults && (
-        <Card className="absolute z-50 w-full bg-background border-2 border-primary/20 shadow-xl">
-          {filteredProducts.length > 0 ? (
-            <div className="max-h-96 overflow-y-auto">
-              {filteredProducts.map((product, index) => (
+        {/* Quick Add Recent Products */}
+        {!searchTerm && quickAddProducts.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">Aggiungi Rapido</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {quickAddProducts.map((product) => (
                 <div
                   key={product.id}
-                  className={`p-4 cursor-pointer transition-colors hover:bg-muted/50 active:bg-muted ${
-                    index !== filteredProducts.length - 1 ? 'border-b' : ''
-                  }`}
+                  className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleProductSelect(product)}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-base mb-1">
-                        {formatProductName({ brand: product.brand, model: product.model })}
+                      <div className="font-medium text-sm">
+                        {product.brand} {product.model}
                       </div>
-                      
-                      <div className="flex items-center gap-3 mb-2">
-                        <Badge variant={product.stock > 10 ? "default" : product.stock > 0 ? "secondary" : "destructive"}>
-                          <Package className="h-3 w-3 mr-1" />
-                          {product.stock} in stock
-                        </Badge>
-                        {product.barcode && (
-                          <Badge variant="outline">
-                            <Hash className="h-3 w-3 mr-1" />
-                            {product.barcode}
-                          </Badge>
-                        )}
+                      <div className="text-xs text-muted-foreground">
+                        Stock: {product.stock}
                       </div>
-
-                      {product.serial_numbers && product.serial_numbers.length > 0 && (
-                        <div className="text-sm text-muted-foreground mb-2">
-                          Seriali: {product.serial_numbers.slice(0, 2).join(", ")}
-                          {product.serial_numbers.length > 2 && ` (+${product.serial_numbers.length - 2} altri)`}
-                        </div>
-                      )}
                     </div>
-
-                    <div className="text-right shrink-0">
-                      <div className="text-xl font-bold text-primary">€{product.max_price || product.price}</div>
-                      {product.min_price !== product.max_price && (
-                        <div className="text-sm text-muted-foreground">
-                          €{product.min_price} - €{product.max_price}
-                        </div>
-                      )}
+                    <div className="text-right">
+                      <div className="font-semibold text-sm">
+                        €{product.max_price || product.price}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="p-6 text-center">
-              <div className="text-muted-foreground mb-2">Nessun prodotto trovato</div>
-              <div className="text-sm text-muted-foreground">
-                Prova con un termine di ricerca diverso
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
+          </div>
+        )}
+
+        {/* Search Results */}
+        {shouldShowResults && (
+          <Card className="absolute z-50 w-full bg-background border shadow-lg">
+            <CardContent className="p-0">
+              {filteredProducts.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  {filteredProducts.map((product, index) => (
+                    <div
+                      key={product.id}
+                      className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
+                        index < filteredProducts.length - 1 ? 'border-b' : ''
+                      }`}
+                      onClick={() => handleProductSelect(product)}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground">
+                            {product.brand} {product.model}
+                            {product.year && (
+                              <span className="text-muted-foreground ml-1">({product.year})</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1">
+                            <Badge 
+                              variant={product.stock > 0 ? "default" : "destructive"}
+                              className="text-xs"
+                            >
+                              Stock: {product.stock}
+                            </Badge>
+                            {product.barcode && (
+                              <span className="text-xs text-muted-foreground font-mono">
+                                {product.barcode}
+                              </span>
+                            )}
+                            {product.product_units && product.product_units.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {product.product_units.filter(u => u.status === 'available').length} Unità
+                              </Badge>
+                            )}
+                            {product.serial_numbers && product.serial_numbers.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {product.serial_numbers.length} Seriali (Legacy)
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="text-xl font-bold text-primary">€{product.max_price || product.price}</div>
+                          {product.min_price !== product.max_price && (
+                            <div className="text-sm text-muted-foreground">
+                              €{product.min_price} - €{product.max_price}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">Nessun prodotto trovato</p>
+                  <p className="text-sm text-muted-foreground">
+                    Prova con un termine diverso
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
-}
+};

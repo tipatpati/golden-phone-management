@@ -17,62 +17,75 @@ import { SaleItemEditor } from "./SaleItemEditor";
 import { ClientSelector } from "../ClientSelector";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { SaleNotesInput } from "./SaleNotesInput";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
-type SaleItem = {
+interface SaleItem {
   product_id: string;
-  product_name: string;
+  product_unit_id?: string; // ID of the specific unit being sold
   quantity: number;
   unit_price: number;
+  serial_number?: string;
+  barcode?: string; // Barcode of the specific unit
+  brand: string;
+  model: string;
+  year?: number;
+  stock?: number;
   min_price?: number;
   max_price?: number;
-  serial_number?: string;
-};
+  color?: string;
+  storage?: number;
+  ram?: number;
+}
 
-type StreamlinedSaleFormProps = {
+interface StreamlinedSaleFormProps {
   saleItems: SaleItem[];
-  selectedClient: any;
-  paymentMethod: string;
-  notes: string;
-  onClientSelect: (client: any) => void;
-  onPaymentMethodChange: (method: string) => void;
-  onNotesChange: (notes: string) => void;
-  onProductAdd: (product: any) => void;
-  onQuantityUpdate: (productId: string, quantity: number) => void;
-  onPriceUpdate: (productId: string, price: number) => void;
-  onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
+  onAddProduct: (saleItem: SaleItem) => void;
+  onUpdateQuantity: (productId: string, quantity: number) => void;
+  onUpdatePrice: (productId: string, price: number) => void;
   onRemoveItem: (productId: string) => void;
-  getProductStock: (productId: string) => number;
-  recentProducts?: any[];
-};
+  onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
+  selectedClient?: any;
+  onClientChange: (client: any) => void;
+  notes: string;
+  onNotesChange: (notes: string) => void;
+  paymentMethod: string;
+  onPaymentMethodChange: (method: string) => void;
+  discountAmount: number;
+  onDiscountAmountChange: (amount: number) => void;
+  onCreateSale: () => void;
+  isCreatingSale: boolean;
+  totals: {
+    subtotal: number;
+    tax: number;
+    total: number;
+  };
+}
 
-export function StreamlinedSaleForm({
+export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
   saleItems,
-  selectedClient,
-  paymentMethod,
-  notes,
-  onClientSelect,
-  onPaymentMethodChange,
-  onNotesChange,
-  onProductAdd,
-  onQuantityUpdate,
-  onPriceUpdate,
-  onSerialNumberUpdate,
+  onAddProduct,
+  onUpdateQuantity,
+  onUpdatePrice,
   onRemoveItem,
-  getProductStock,
-  recentProducts = []
-}: StreamlinedSaleFormProps) {
+  onSerialNumberUpdate,
+  selectedClient,
+  onClientChange,
+  notes,
+  onNotesChange,
+  paymentMethod,
+  onPaymentMethodChange,
+  discountAmount,
+  onDiscountAmountChange,
+  onCreateSale,
+  isCreatingSale,
+  totals
+}) => {
   const [activeStep, setActiveStep] = useState<'products' | 'details' | 'payment'>('products');
-
-  // Calculate totals
-  const subtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const taxAmount = subtotal * 0.22;
-  const totalAmount = subtotal + taxAmount;
 
   // Validation states
   const hasProducts = saleItems.length > 0;
   const hasValidPayment = Boolean(paymentMethod);
-  const hasStockIssues = saleItems.some(item => item.quantity > getProductStock(item.product_id));
+  const hasStockIssues = saleItems.some(item => item.quantity > (item.stock || 0));
 
   const getStepStatus = (step: 'products' | 'details' | 'payment') => {
     switch (step) {
@@ -154,8 +167,7 @@ export function StreamlinedSaleForm({
             </CardHeader>
             <CardContent>
               <EnhancedProductSearch
-                onProductAdd={onProductAdd}
-                recentProducts={recentProducts}
+                onProductAdd={onAddProduct}
               />
             </CardContent>
           </Card>
@@ -172,11 +184,11 @@ export function StreamlinedSaleForm({
               <CardContent className="space-y-4">
                 {saleItems.map((item) => (
                   <SaleItemEditor
-                    key={item.product_id}
+                    key={`${item.product_id}-${item.serial_number || 'no-serial'}`}
                     item={item}
-                    availableStock={getProductStock(item.product_id)}
-                    onQuantityUpdate={onQuantityUpdate}
-                    onPriceUpdate={onPriceUpdate}
+                    availableStock={item.stock || 0}
+                    onQuantityUpdate={onUpdateQuantity}
+                    onPriceUpdate={onUpdatePrice}
                     onSerialNumberUpdate={onSerialNumberUpdate}
                     onRemoveItem={onRemoveItem}
                   />
@@ -184,9 +196,19 @@ export function StreamlinedSaleForm({
 
                 <Separator />
 
-                <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>Totale:</span>
-                  <span>€{totalAmount.toFixed(2)}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotale:</span>
+                    <span>€{totals.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>IVA (22%):</span>
+                    <span>€{totals.tax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                    <span>Totale:</span>
+                    <span>€{totals.total.toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {hasProducts && (
@@ -214,8 +236,8 @@ export function StreamlinedSaleForm({
             <CardContent>
               <ClientSelector
                 selectedClient={selectedClient}
-                onClientSelect={onClientSelect}
-                onClientClear={() => onClientSelect(null)}
+                onClientSelect={onClientChange}
+                onClientClear={() => onClientChange(null)}
               />
             </CardContent>
           </Card>
@@ -244,22 +266,67 @@ export function StreamlinedSaleForm({
       )}
 
       {activeStep === 'payment' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Metodo di Pagamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PaymentMethodSelector
-              value={paymentMethod}
-              onChange={onPaymentMethodChange}
-              totalAmount={totalAmount}
-            />
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Metodo di Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PaymentMethodSelector
+                value={paymentMethod}
+                onChange={onPaymentMethodChange}
+                totalAmount={totals.total}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Sale Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Riepilogo Vendita</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Prodotti:</span>
+                  <span>{saleItems.length}</span>
+                </div>
+                {selectedClient && (
+                  <div className="flex justify-between">
+                    <span>Cliente:</span>
+                    <span>
+                      {selectedClient.type === 'individual' 
+                        ? `${selectedClient.first_name} ${selectedClient.last_name}`
+                        : selectedClient.company_name
+                      }
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Pagamento:</span>
+                  <span className="capitalize">{paymentMethod}</span>
+                </div>
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Totale:</span>
+                  <span>€{totals.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={onCreateSale}
+                className="w-full"
+                size="lg"
+                disabled={isCreatingSale || hasStockIssues}
+              >
+                {isCreatingSale ? 'Creazione in corso...' : 'Completa Vendita'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
-}
+};

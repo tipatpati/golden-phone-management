@@ -1024,6 +1024,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sold_product_units: {
+        Row: {
+          barcode: string | null
+          created_at: string
+          id: string
+          product_id: string
+          product_unit_id: string
+          sale_id: string
+          sale_item_id: string
+          serial_number: string
+          sold_at: string
+          sold_price: number
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          product_unit_id: string
+          sale_id: string
+          sale_item_id: string
+          serial_number: string
+          sold_at?: string
+          sold_price: number
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          product_unit_id?: string
+          sale_id?: string
+          sale_item_id?: string
+          serial_number?: string
+          sold_at?: string
+          sold_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       supplier_transaction_items: {
         Row: {
           created_at: string

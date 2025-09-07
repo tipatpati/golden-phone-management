@@ -50,7 +50,7 @@ export class InventoryManagementService {
         .select(`
           *,
           category:categories(id, name),
-          product_units(serial_number)
+          product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
         `)
         .order('created_at', { ascending: false });
 
@@ -74,8 +74,25 @@ export class InventoryManagementService {
             query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
           }
         } else {
-          // Regular search in brand, model, barcode
-          query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
+          // Regular search in brand, model, barcode, and also check if it matches a serial number
+          const searchConditions = [
+            `brand.ilike.%${searchTerm}%`,
+            `model.ilike.%${searchTerm}%`,
+            `barcode.ilike.%${searchTerm}%`
+          ];
+          
+          // Also search for products that have units with matching serial numbers
+          const { data: unitsData } = await supabase
+            .from('product_units')
+            .select('product_id')
+            .ilike('serial_number', `%${searchTerm}%`);
+          
+          if (unitsData && unitsData.length > 0) {
+            const productIds = [...new Set(unitsData.map(u => u.product_id))];
+            query = query.or([...searchConditions, `id.in.(${productIds.join(',')})`].join(','));
+          } else {
+            query = query.or(searchConditions.join(','));
+          }
         }
       }
       
