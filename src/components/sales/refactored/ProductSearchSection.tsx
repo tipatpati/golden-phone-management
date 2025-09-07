@@ -74,16 +74,6 @@ export function ProductSearchSection() {
       return;
     }
 
-    // For serialized products with units, need to select specific unit
-    if (product.has_serial && product.product_units && product.product_units.length > 0) {
-      toast({ 
-        title: 'Prodotto con unità', 
-        description: 'Seleziona un\'unità specifica dall\'inventario',
-        variant: 'default' 
-      });
-      return;
-    }
-
     // Add non-serialized product
     const saleItem = {
       product_id: product.id,
@@ -100,6 +90,31 @@ export function ProductSearchSection() {
     };
 
     console.log('🛒 Adding sale item:', saleItem);
+    addItem(saleItem);
+    setSearchTerm('');
+    setSearchResults([]);
+  };
+
+  // Handle unit selection for serialized products
+  const handleUnitSelect = (product: Product, unit: any) => {
+    const saleItem = {
+      product_id: product.id,
+      product_unit_id: unit.id,
+      product_name: `${product.brand} ${product.model}`,
+      brand: product.brand,
+      model: product.model,
+      year: product.year,
+      quantity: 1,
+      unit_price: product.max_price || product.price || 0,
+      min_price: product.min_price,
+      max_price: product.max_price,
+      serial_number: unit.serial_number,
+      barcode: unit.barcode,
+      has_serial: true,
+      stock: 1
+    };
+
+    console.log('🛒 Adding serialized sale item:', saleItem);
     addItem(saleItem);
     setSearchTerm('');
     setSearchResults([]);
@@ -145,56 +160,87 @@ export function ProductSearchSection() {
               const hasAvailableStock = product.has_serial ? availableUnits.length > 0 : product.stock > 0;
               
               return (
-                <div
-                  key={product.id}
-                  className={`p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
-                    !hasAvailableStock ? 'opacity-50' : ''
-                  }`}
-                  onClick={() => hasAvailableStock && handleProductSelect(product)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Package className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <h4 className="font-medium">
-                          {product.brand} {product.model}
-                          {product.year && ` (${product.year})`}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge 
-                            variant={hasAvailableStock ? "default" : "destructive"}
-                          >
-                            {product.has_serial 
-                              ? `${availableUnits.length} unità`
-                              : `${product.stock} pz`
-                            }
-                          </Badge>
-                          {product.has_serial && (
-                            <Badge variant="outline">
-                              <Smartphone className="h-3 w-3 mr-1" />
-                              Con IMEI
+                <div key={product.id} className="space-y-2">
+                  {/* Product Header */}
+                  <div
+                    className={`p-3 border rounded-lg ${
+                      !hasAvailableStock ? 'opacity-50' : 'cursor-pointer hover:bg-muted/50'
+                    } transition-colors`}
+                    onClick={() => !product.has_serial && hasAvailableStock && handleProductSelect(product)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Package className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <h4 className="font-medium">
+                            {product.brand} {product.model}
+                            {product.year && ` (${product.year})`}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge 
+                              variant={hasAvailableStock ? "default" : "destructive"}
+                            >
+                              {product.has_serial 
+                                ? `${availableUnits.length} unità`
+                                : `${product.stock} pz`
+                              }
                             </Badge>
-                          )}
+                            {product.has_serial && (
+                              <Badge variant="outline">
+                                <Smartphone className="h-3 w-3 mr-1" />
+                                Con IMEI
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="text-right">
-                      <div className="font-semibold">
-                        €{product.max_price || product.price || 0}
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          €{product.max_price || product.price || 0}
+                        </div>
+                        {product.min_price && (
+                          <div className="text-xs text-muted-foreground">
+                            da €{product.min_price}
+                          </div>
+                        )}
+                        {!hasAvailableStock && (
+                          <div className="text-xs text-destructive mt-1">
+                            Non disponibile
+                          </div>
+                        )}
                       </div>
-                      {product.min_price && (
-                        <div className="text-xs text-muted-foreground">
-                          da €{product.min_price}
-                        </div>
-                      )}
-                      {!hasAvailableStock && (
-                        <div className="text-xs text-destructive mt-1">
-                          Non disponibile
-                        </div>
-                      )}
                     </div>
                   </div>
+
+                  {/* Units List for Serialized Products */}
+                  {product.has_serial && availableUnits.length > 0 && (
+                    <div className="ml-8 space-y-1">
+                      {availableUnits.map((unit) => (
+                        <div
+                          key={unit.id}
+                          className="p-2 bg-muted/30 rounded border cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => handleUnitSelect(product, unit)}
+                        >
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                IMEI: {unit.serial_number}
+                              </Badge>
+                              {unit.barcode && (
+                                <Badge variant="outline" className="text-xs">
+                                  {unit.barcode}
+                                </Badge>
+                              )}
+                            </div>
+                            <Button size="sm" variant="ghost" className="h-6 text-xs">
+                              Seleziona
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
