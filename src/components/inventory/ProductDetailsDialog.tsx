@@ -25,7 +25,7 @@ import {
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProductUnitsService, ProductUnit } from "@/services/products/ProductUnitsService";
+import { ProductUnitsService, type ProductUnit } from "@/services/inventory";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 import { ProductHistoryView } from "./ProductHistoryView";
 

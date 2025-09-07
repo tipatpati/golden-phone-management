@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProductFormData } from './forms/types';
+import type { ProductFormData } from '@/services/inventory/types';
 
 interface FormDebuggerProps {
   formData: Partial<ProductFormData>;

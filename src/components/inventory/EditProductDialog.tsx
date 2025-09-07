@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
-import { useUpdateProduct } from "@/services/products/ProductReactQueryService";
-import { Product } from "@/services/products/types";
-import { ProductFormData, UnitEntryForm } from "./forms/types";
-import { ProductUnitsService } from "@/services/products/ProductUnitsService";
+import { useUpdateProduct } from "@/services/inventory/InventoryReactQueryService";
+import type { Product, ProductFormData, UnitEntryForm } from "@/services/inventory/types";
+import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
 import { toast } from "@/components/ui/sonner";
 import { log } from "@/utils/logger";
 

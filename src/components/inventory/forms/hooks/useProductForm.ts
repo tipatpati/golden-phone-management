@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { ProductFormData, UnitEntryForm } from "../types";
+import type { ProductFormData, UnitEntryForm } from "@/services/inventory/types";
 import { useProductValidation } from "./useProductValidation";
 import { toast } from "@/hooks/use-toast";
 

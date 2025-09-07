@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { UnitEntryForm } from "./forms/types";
+import type { UnitEntryForm } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
 
 interface SerialNumbersInputProps {

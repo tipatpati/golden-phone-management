@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ProductFormData, ProductFormValidationError, UnitEntryForm } from "../types";
+import type { ProductFormData, ProductFormValidationError, UnitEntryForm } from "@/services/inventory/types";
 import { validateSerialWithBattery } from "@/utils/serialNumberUtils";
 
 export function useProductValidation() {

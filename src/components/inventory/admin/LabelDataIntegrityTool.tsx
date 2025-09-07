@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, RefreshCw, Database } from 'lucide-react';
 import { ThermalLabelDataService } from '@/services/labels/ThermalLabelDataService';
-import { ProductUnitsService } from '@/services/products/ProductUnitsService';
+import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
 import { LabelDataValidator } from '@/services/labels/LabelDataValidator';
 
 interface ValidationReport {

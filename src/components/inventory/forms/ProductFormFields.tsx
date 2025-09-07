@@ -2,8 +2,8 @@ import React from "react";
 import { FormField } from "@/components/common/FormField";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 import { Label } from "@/components/ui/label";
-import { ProductFormData, STORAGE_OPTIONS } from "./types";
-import { CATEGORY_OPTIONS } from "@/services/inventory/types";
+import type { ProductFormData } from "@/services/inventory/types";
+import { STORAGE_OPTIONS, CATEGORY_OPTIONS } from "@/services/inventory/types";
 
 interface ProductFormFieldsProps {
   formData: Partial<ProductFormData>;

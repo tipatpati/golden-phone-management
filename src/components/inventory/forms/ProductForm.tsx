@@ -1,11 +1,11 @@
 import React from "react";
-import { ProductFormProps, ProductFormData } from "./types";
+import type { ProductFormProps, ProductFormData } from "@/services/inventory/types";
 import { ProductFormFields } from "./ProductFormFields";
 import { SerialNumberManager } from "./SerialNumberManager";
 import { BarcodeManager } from "./BarcodeManager";
 import { BarcodePreview } from "./BarcodePreview";
 import { useProductForm } from "./hooks/useProductForm";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 
 export function ProductForm({ 
   initialData, 

@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarcodeUpdateManager } from "../BarcodeUpdateManager";
-import { useProducts } from "@/services/products/ProductReactQueryService";
+import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { RoleGuard } from "@/components/common/RoleGuard";
-import { Product } from "@/services/products/types";
+import type { Product } from "@/services/inventory/types";
 import { UserRole } from "@/types/roles";
 
 export function BarcodeUpdateTool() {

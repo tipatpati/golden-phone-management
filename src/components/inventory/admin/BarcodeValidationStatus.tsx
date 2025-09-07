@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ProductUnitsService } from '@/services/products/ProductUnitsService';
+import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';

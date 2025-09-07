@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BarcodeManagerProps } from "./types";
+import type { BarcodeManagerProps } from "@/services/inventory/types";
 import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
 import { supabase } from "@/integrations/supabase/client";

@@ -12,7 +12,7 @@ export { SerialNumberManager } from "../forms/SerialNumberManager";
 export { BarcodeManager } from "../forms/BarcodeManager";
 
 // Re-export types
-export type { ProductFormData, SerialEntry } from "../forms/types";
+export type { ProductFormData, SerialEntry } from "@/services/inventory/types";
 
 // Re-export hooks
 export { useProductForm } from "../forms/hooks/useProductForm";

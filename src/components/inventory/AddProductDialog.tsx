@@ -3,7 +3,7 @@ import { Plus, Scan, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
 import { ProductForm } from "./forms/ProductForm";
-import { ProductFormData } from "./forms/types";
+import type { ProductFormData } from "@/services/inventory/types";
 import { InventoryManagementService } from "@/services/inventory/InventoryManagementService";
 
 import { ThermalLabelGenerator } from "./labels";

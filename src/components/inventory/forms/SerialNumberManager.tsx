@@ -1,5 +1,5 @@
 import React from "react";
-import { SerialNumberManagerProps } from "./types";
+import type { SerialNumberManagerProps } from "@/services/inventory/types";
 import { SerialNumbersInput } from "../SerialNumbersInput";
 
 export function SerialNumberManager({
