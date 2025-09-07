@@ -1,16 +1,25 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Package, Scan } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { 
+  Search, 
+  Package, 
+  Smartphone, 
+  AlertTriangle,
+  QrCode,
+  ArrowLeft,
+  Check
+} from "lucide-react";
+import { BarcodeScanner } from "@/components/ui/barcode-scanner";
 import { toast } from "sonner";
-import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { useQuery } from "@tanstack/react-query";
 import { SalesProductService } from "@/services/sales/SalesProductService";
 import { ProductUnitSelector } from "./ProductUnitSelector";
-import type { Product, ProductUnit } from "@/services/inventory/types";
+import type { Product } from "@/services/inventory/types";
 
-interface SaleItem {
+interface SaleItemWithUnit {
   product_id: string;
   product_unit_id?: string;
   serial_number?: string;
@@ -26,242 +35,320 @@ interface SaleItem {
 }
 
 interface EnhancedProductSearchProps {
-  onProductAdd: (saleItem: SaleItem) => void;
-  selectedCategory?: number | null;
-  recentProducts?: Product[];
+  onProductAdd: (product: SaleItemWithUnit) => void;
 }
 
 export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
-  onProductAdd,
-  selectedCategory,
-  recentProducts = []
+  onProductAdd
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['sales-products', searchTerm.trim(), selectedCategory],
-    queryFn: () => SalesProductService.getProductsForSales(searchTerm.trim()),
-    enabled: searchTerm.trim().length >= 2,
-    staleTime: 30000 // 30 seconds
-  });
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
 
-  // Filter and limit results
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
-    
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category_id === selectedCategory);
+  // Search for products
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
     }
-    
-    // Limit to 6 results for better UX
-    return filtered.slice(0, 6);
-  }, [products, selectedCategory]);
 
-  // Get recent products for quick add (limit to 4)
-  const quickAddProducts = useMemo(() => {
-    return recentProducts.slice(0, 4);
-  }, [recentProducts]);
+    setIsLoading(true);
+    try {
+      const results = await SalesProductService.getProductsForSales(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error("Errore durante la ricerca prodotti");
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const handleProductSelect = (product: Product) => {
-    // Check if product has units - if so, show unit selector
-    if (product.product_units && product.product_units.length > 0) {
-      setSelectedProduct(product);
-      setSearchTerm("");
-      setIsSearchFocused(false);
+  // Handle search input
+  const handleSearchInput = (value: string) => {
+    setSearchTerm(value);
+    if (value.length >= 2) {
+      performSearch(value);
     } else {
-      // Legacy fallback - create a basic sale item
-      const saleItem: SaleItem = {
-        product_id: product.id,
-        quantity: 1,
-        unit_price: product.max_price || product.price || 0,
-        brand: product.brand,
-        model: product.model,
-        year: product.year
-      };
-      onProductAdd(saleItem);
-      setSearchTerm("");
-      setIsSearchFocused(false);
-      toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+      setSearchResults([]);
     }
   };
 
-  const handleUnitSelect = (saleItem: SaleItem) => {
-    setSelectedProduct(null);
-    onProductAdd(saleItem);
-  };
-
-  const handleCancelUnitSelection = () => {
-    setSelectedProduct(null);
-  };
-
-  const handleBarcodeScanned = async (barcode: string) => {
-    // Try to find exact match first
+  // Handle barcode scan
+  const handleBarcodeScan = async (barcode: string) => {
+    setShowScanner(false);
+    setIsLoading(true);
+    
     try {
       const product = await SalesProductService.searchByCode(barcode);
       if (product) {
-        handleProductSelect(product);
-        return;
+        // If product has units, show unit selector
+        if (product.has_serial && product.product_units && product.product_units.length > 0) {
+          setSelectedProduct(product);
+          setShowUnitSelector(true);
+        } else {
+          // Handle non-serialized product
+          handleNonSerializedProductSelect(product);
+        }
+      } else {
+        toast.error("Prodotto non trovato per il codice scansionato");
       }
     } catch (error) {
-      console.error('Error searching by barcode:', error);
-    }
-    
-    // Fallback to regular search
-    setSearchTerm(barcode);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && filteredProducts.length === 1) {
-      e.preventDefault();
-      handleProductSelect(filteredProducts[0]);
+      console.error('Barcode search error:', error);
+      toast.error("Errore durante la ricerca del codice a barre");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const shouldShowResults = isSearchFocused && searchTerm.length >= 2 && !isLoading;
+  // Handle product selection from search results
+  const handleProductSelect = (product: Product) => {
+    // Check if product has serialized units
+    if (product.has_serial && product.product_units && product.product_units.length > 0) {
+      const availableUnits = product.product_units.filter(unit => unit.status === 'available');
+      if (availableUnits.length === 0) {
+        toast.error("Nessuna unità disponibile per questo prodotto");
+        return;
+      }
+      setSelectedProduct(product);
+      setShowUnitSelector(true);
+    } else {
+      // Handle non-serialized product
+      handleNonSerializedProductSelect(product);
+    }
+  };
 
-  // Show unit selector if product is selected
-  if (selectedProduct) {
+  // Handle non-serialized product selection
+  const handleNonSerializedProductSelect = (product: Product) => {
+    if (product.stock <= 0) {
+      toast.error("Prodotto non disponibile");
+      return;
+    }
+
+    const saleItem: SaleItemWithUnit = {
+      product_id: product.id,
+      quantity: 1,
+      unit_price: product.max_price || product.price || 0,
+      brand: product.brand,
+      model: product.model,
+      year: product.year
+    };
+
+    onProductAdd(saleItem);
+    setSearchTerm("");
+    setSearchResults([]);
+    toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+  };
+
+  // Handle unit selection
+  const handleUnitSelect = (saleItem: SaleItemWithUnit) => {
+    onProductAdd(saleItem);
+    setShowUnitSelector(false);
+    setSelectedProduct(null);
+    setSearchTerm("");
+    setSearchResults([]);
+  };
+
+  // Handle unit selector cancel
+  const handleUnitCancel = () => {
+    setShowUnitSelector(false);
+    setSelectedProduct(null);
+  };
+
+  // Reset search
+  const resetSearch = () => {
+    setSearchTerm("");
+    setSearchResults([]);
+    setShowScanner(false);
+    setSelectedProduct(null);
+    setShowUnitSelector(false);
+  };
+
+  // Show unit selector if selected
+  if (showUnitSelector && selectedProduct) {
     return (
       <ProductUnitSelector
         product={selectedProduct}
         onUnitSelect={handleUnitSelect}
-        onCancel={handleCancelUnitSelection}
+        onCancel={handleUnitCancel}
       />
     );
   }
 
   return (
-    <div className="relative w-full">
-      <div className="space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+    <div className="space-y-4">
+      {/* Search Header */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-            onKeyDown={handleKeyDown}
-            placeholder="Cerca prodotto per nome, codice, IMEI o ultimi 4 cifre seriale..."
-            className="pl-10 pr-16 h-14 text-base bg-background border-2 focus:border-primary"
+            onChange={(e) => handleSearchInput(e.target.value)}
+            placeholder="Cerca per nome, IMEI o ultime 4 cifre..."
+            className="pl-10"
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <BarcodeScannerTrigger 
-              onScan={handleBarcodeScanned}
-              variant="outline"
-              size="icon"
-            >
-              <Scan className="h-4 w-4" />
-            </BarcodeScannerTrigger>
-          </div>
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowScanner(!showScanner)}
+          className="h-10 w-10"
+        >
+          <QrCode className="h-4 w-4" />
+        </Button>
+        {(searchTerm || searchResults.length > 0) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={resetSearch}
+            className="h-10 w-10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
 
-        {/* Quick Add Recent Products */}
-        {!searchTerm && quickAddProducts.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Aggiungi Rapido</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {quickAddProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => handleProductSelect(product)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm">
-                        {product.brand} {product.model}
+      {/* Barcode Scanner */}
+      {showScanner && (
+        <Card className="border-2 border-primary">
+          <CardContent className="p-4">
+            <div className="text-center space-y-4">
+              <QrCode className="h-12 w-12 mx-auto text-primary" />
+              <div>
+                <h3 className="font-semibold">Scanner Codice a Barre</h3>
+                <p className="text-sm text-muted-foreground">
+                  Inquadra il codice a barre del prodotto
+                </p>
+              </div>
+              <div className="p-4 border rounded">
+                <p className="text-sm">Scanner disponibile - implementazione semplificata</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowScanner(false)}
+                className="w-full"
+              >
+                Annulla Scanner
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center text-muted-foreground">
+              Ricerca in corso...
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Search Results */}
+      {searchResults.length > 0 && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {searchResults.map((product) => {
+                const availableUnits = product.product_units?.filter(unit => unit.status === 'available') || [];
+                const hasAvailableStock = product.has_serial ? availableUnits.length > 0 : product.stock > 0;
+                
+                return (
+                  <div
+                    key={product.id}
+                    className={`p-4 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors ${
+                      !hasAvailableStock ? 'opacity-50' : ''
+                    }`}
+                    onClick={() => hasAvailableStock && handleProductSelect(product)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Package className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <h4 className="font-medium">
+                            {product.brand} {product.model}
+                            {product.year && ` (${product.year})`}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge 
+                              variant={hasAvailableStock ? "default" : "destructive"}
+                            >
+                              {product.has_serial 
+                                ? `${availableUnits.length} unità`
+                                : `${product.stock} pz`
+                              }
+                            </Badge>
+                            {product.has_serial && (
+                              <Badge variant="outline">
+                                <Smartphone className="h-3 w-3 mr-1" />
+                                Con IMEI
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Stock: {product.stock}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-sm">
-                        €{product.max_price || product.price || 0}
+
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          €{product.max_price || product.price || 0}
+                        </div>
+                        {product.min_price && (
+                          <div className="text-xs text-muted-foreground">
+                            da €{product.min_price}
+                          </div>
+                        )}
+                        {!hasAvailableStock && (
+                          <div className="text-xs text-destructive mt-1">
+                            Non disponibile
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        )}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Search Results */}
-        {shouldShowResults && (
-          <Card className="absolute z-50 w-full bg-background border shadow-lg">
-            <CardContent className="p-0">
-              {filteredProducts.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  {filteredProducts.map((product, index) => (
-                    <div
-                      key={product.id}
-                      className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                        index < filteredProducts.length - 1 ? 'border-b' : ''
-                      }`}
-                      onClick={() => handleProductSelect(product)}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground">
-                            {product.brand} {product.model}
-                            {product.year && (
-                              <span className="text-muted-foreground ml-1">({product.year})</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 mt-1">
-                            <Badge 
-                              variant={product.stock > 0 ? "default" : "destructive"}
-                              className="text-xs"
-                            >
-                              Stock: {product.stock}
-                            </Badge>
-                            {product.barcode && (
-                              <span className="text-xs text-muted-foreground font-mono">
-                                {product.barcode}
-                              </span>
-                            )}
-                            {product.product_units && product.product_units.length > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                {product.product_units.filter(u => u.status === 'available').length} Unità
-                              </Badge>
-                            )}
-                            {product.serial_numbers && product.serial_numbers.length > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                {product.serial_numbers.length} Seriali (Legacy)
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+      {/* No Results */}
+      {searchTerm.length >= 2 && !isLoading && searchResults.length === 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center text-muted-foreground">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>Nessun prodotto trovato per "{searchTerm}"</p>
+              <p className="text-sm mt-1">
+                Prova a cercare con nome, IMEI o scansiona il codice a barre
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-                        <div className="text-right shrink-0">
-                          <div className="text-xl font-bold text-primary">€{product.max_price || product.price || 0}</div>
-                          {product.min_price && product.min_price !== (product.max_price || product.price) && (
-                            <div className="text-sm text-muted-foreground">
-                              €{product.min_price} - €{product.max_price || product.price}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 text-center">
-                  <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">Nessun prodotto trovato</p>
-                  <p className="text-sm text-muted-foreground">
-                    Prova con un termine diverso
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Search Instructions */}
+      {!searchTerm && searchResults.length === 0 && !showScanner && (
+        <Card className="border-dashed">
+          <CardContent className="p-4">
+            <div className="text-center text-muted-foreground space-y-2">
+              <Package className="h-8 w-8 mx-auto opacity-50" />
+              <p className="font-medium">Cerca il prodotto da vendere</p>
+              <div className="text-sm space-y-1">
+                <p>• Digita il nome del prodotto</p>
+                <p>• Inserisci IMEI completo o ultime 4 cifre</p>
+                <p>• Usa lo scanner per il codice a barre</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

@@ -28,6 +28,11 @@ type SaleItem = {
   max_price?: number;
   serial_number?: string;
   stock?: number;
+  product_unit_id?: string;
+  barcode?: string;
+  color?: string;
+  storage?: number;
+  ram?: number;
 };
 
 export function NewSaleDialog() {
@@ -55,32 +60,56 @@ export function NewSaleDialog() {
 
   
 
-  const addProduct = (product: any) => {
-    const existingItem = saleItems.find(item => item.product_id === product.id);
-    if (existingItem) {
-      setSaleItems(items => 
-        items.map(item => 
-          item.product_id === product.id 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
+  const addProduct = (saleItem: any) => {
+    // Handle SaleItemWithUnit (from unit selector) or regular product
+    if (saleItem.product_unit_id) {
+      // This is a unit-level sale item
       setSaleItems(items => [
         ...items,
         {
-          product_id: product.id,
-          product_name: `${product.brand} ${product.model}`,
-          brand: product.brand,
-          model: product.model,
-          year: product.year,
-          quantity: 1,
-          unit_price: product.price || product.max_price || 0,
-          min_price: product.min_price,
-          max_price: product.max_price,
-          stock: product.stock,
+          product_id: saleItem.product_id,
+          product_name: `${saleItem.brand} ${saleItem.model}`,
+          brand: saleItem.brand,
+          model: saleItem.model,
+          year: saleItem.year,
+          quantity: saleItem.quantity,
+          unit_price: saleItem.unit_price,
+          serial_number: saleItem.serial_number,
+          product_unit_id: saleItem.product_unit_id,
+          barcode: saleItem.barcode,
+          color: saleItem.color,
+          storage: saleItem.storage,
+          ram: saleItem.ram
         }
       ]);
+    } else {
+      // Regular product selection (fallback)
+      const existingItem = saleItems.find(item => item.product_id === saleItem.product_id);
+      if (existingItem) {
+        setSaleItems(items => 
+          items.map(item => 
+            item.product_id === saleItem.product_id 
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+      } else {
+        setSaleItems(items => [
+          ...items,
+          {
+            product_id: saleItem.product_id,
+            product_name: `${saleItem.brand} ${saleItem.model}`,
+            brand: saleItem.brand,
+            model: saleItem.model,
+            year: saleItem.year,
+            quantity: saleItem.quantity || 1,
+            unit_price: saleItem.unit_price || saleItem.price || saleItem.max_price || 0,
+            min_price: saleItem.min_price,
+            max_price: saleItem.max_price,
+            stock: saleItem.stock,
+          }
+        ]);
+      }
     }
   };
 
@@ -236,9 +265,11 @@ export function NewSaleDialog() {
         notes,
         sale_items: saleItems.map(item => ({
           product_id: item.product_id,
+          product_unit_id: item.product_unit_id,
           quantity: Number(item.quantity),
           unit_price: Number(Number(item.unit_price).toFixed(2)),
-          serial_number: item.serial_number
+          serial_number: item.serial_number,
+          barcode: item.barcode
         }))
       };
       
