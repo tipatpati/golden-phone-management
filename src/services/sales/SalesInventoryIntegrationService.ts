@@ -50,7 +50,7 @@ export class SalesInventoryIntegrationService {
     const findUnit = (productId: string, serial?: string) =>
       units.find(u => u.product_id === productId && (u.serial_number || '').trim() === (serial || '').trim());
 
-    // Validate
+    // Validate each item
     for (const item of items) {
       const p: any = productsMap.get(item.product_id);
       if (!p) {

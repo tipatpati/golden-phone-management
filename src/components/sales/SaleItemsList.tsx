@@ -1,15 +1,16 @@
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { formatProductName } from "@/utils/productNaming";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, AlertTriangle, Search } from "lucide-react";
+import { X, AlertTriangle, Search, RefreshCw } from "lucide-react";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
+import { useToast } from "@/hooks/use-toast";
 
 type SaleItem = {
   product_id: string;
@@ -180,13 +181,69 @@ export function SaleItemsList({
   onSerialNumberUpdate, 
   onRemoveItem 
 }: SaleItemsListProps) {
+  const { toast } = useToast();
+  const [realTimeStock, setRealTimeStock] = useState<Map<string, number>>(new Map());
+  const [isRefreshingStock, setIsRefreshingStock] = useState(false);
+  
   // Fetch all products to get current stock information
   const { data: allProducts = [] } = useProducts();
+
+  // Refresh real-time stock for all sale items
+  const refreshStock = useCallback(async () => {
+    if (saleItems.length === 0) return;
+    
+    setIsRefreshingStock(true);
+    try {
+      const productIds = saleItems.map(item => item.product_id);
+      const stockMap = await StockCalculationService.fetchEffectiveStockBatch(productIds);
+      setRealTimeStock(stockMap);
+    } catch (error) {
+      console.error('Error refreshing stock:', error);
+      toast({
+        title: "Errore aggiornamento stock",
+        description: "Impossibile aggiornare le informazioni di stock",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshingStock(false);
+    }
+  }, [saleItems, toast]);
+
+  // Auto-refresh stock when sale items change
+  useEffect(() => {
+    refreshStock();
+  }, [refreshStock]);
   
-  // Helper function to get product stock - centralized
-  const getProductStock = (productId: string) => {
+  // Helper function to get product stock - now uses real-time data when available
+  const getProductStock = useCallback((productId: string) => {
+    const realTimeValue = realTimeStock.get(productId);
+    if (realTimeValue !== undefined) {
+      return realTimeValue;
+    }
     return StockCalculationService.effectiveFromList(allProducts as any[], productId);
-  };
+  }, [realTimeStock, allProducts]);
+
+  // Enhanced quantity update with real-time validation
+  const handleQuantityUpdate = useCallback(async (productId: string, quantity: number) => {
+    if (quantity <= 0) return;
+
+    // Get real-time stock for validation
+    const currentStock = await StockCalculationService.fetchEffectiveStock(productId);
+    
+    if (quantity > currentStock) {
+      toast({
+        title: "Stock insufficiente",
+        description: `Disponibile: ${currentStock}, Richiesto: ${quantity}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    onQuantityUpdate(productId, quantity);
+    
+    // Update local stock cache
+    setRealTimeStock(prev => new Map(prev.set(productId, currentStock)));
+  }, [onQuantityUpdate, toast]);
 
   if (saleItems.length === 0) {
     return null;
@@ -194,7 +251,19 @@ export function SaleItemsList({
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-medium text-foreground">Articoli Vendita</Label>
+      <div className="flex items-center justify-between">
+        <Label className="text-base font-medium text-foreground">Articoli Vendita</Label>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={refreshStock}
+          disabled={isRefreshingStock}
+          className="h-8 px-3 text-xs"
+        >
+          <RefreshCw className={`h-3 w-3 mr-2 ${isRefreshingStock ? 'animate-spin' : ''}`} />
+          Aggiorna Stock
+        </Button>
+      </div>
       <div className="space-y-3">
         {saleItems.map((item) => (
           <div 
@@ -252,7 +321,7 @@ export function SaleItemsList({
                           min="1"
                           max={availableStock}
                           value={item.quantity}
-                          onChange={(e) => onQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
+                          onChange={(e) => handleQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
                           className={`h-10 md:h-12 text-center font-medium text-sm md:text-base ${
                             hasStockWarning ? "border-destructive focus:border-destructive bg-destructive/5" : "bg-background"
                           }`}

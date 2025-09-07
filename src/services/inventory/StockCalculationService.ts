@@ -22,18 +22,50 @@ export class StockCalculationService {
   // Fetch effective stock from DB view when needed (server-authoritative)
   static async fetchEffectiveStock(productId: string): Promise<number> {
     if (!productId) return 0;
-    const { data, error } = await (supabase as any)
-      .from('product_effective_stock')
-      .select('effective_stock')
-      .eq('product_id', productId)
-      .maybeSingle();
+    try {
+      const { data, error } = await (supabase as any)
+        .from('product_effective_stock')
+        .select('effective_stock')
+        .eq('product_id', productId)
+        .maybeSingle();
 
-    if (error) {
-      console.error('fetchEffectiveStock error:', error);
+      if (error) {
+        console.error('fetchEffectiveStock error:', error);
+        return 0;
+      }
+
+      return Number((data as any)?.effective_stock) || 0;
+    } catch (error) {
+      console.error('fetchEffectiveStock exception:', error);
       return 0;
     }
+  }
 
-    return Number((data as any)?.effective_stock) || 0;
+  // Refresh effective stock for multiple products
+  static async fetchEffectiveStockBatch(productIds: string[]): Promise<Map<string, number>> {
+    if (!productIds.length) return new Map();
+    
+    try {
+      const { data, error } = await (supabase as any)
+        .from('product_effective_stock')
+        .select('product_id, effective_stock')
+        .in('product_id', productIds);
+
+      if (error) {
+        console.error('fetchEffectiveStockBatch error:', error);
+        return new Map();
+      }
+
+      const stockMap = new Map<string, number>();
+      (data || []).forEach((row: any) => {
+        stockMap.set(row.product_id, Number(row.effective_stock) || 0);
+      });
+      
+      return stockMap;
+    } catch (error) {
+      console.error('fetchEffectiveStockBatch exception:', error);
+      return new Map();
+    }
   }
 }
 
