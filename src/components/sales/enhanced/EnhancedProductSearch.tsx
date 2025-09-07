@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Package, Scan } from "lucide-react";
 import { toast } from "sonner";
-import { BarcodeScanner } from "@/components/ui/barcode-scanner";
+import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useProducts } from "@/hooks/useInventory";
 import { ProductUnitSelector } from "./ProductUnitSelector";
 import type { Product, ProductUnit } from "@/services/inventory/types";
@@ -135,7 +135,13 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
             className="pl-10 pr-16 h-14 text-base bg-background border-2 focus:border-primary"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <BarcodeScanner onScan={handleBarcodeScanned} />
+            <BarcodeScannerTrigger 
+              onScan={handleBarcodeScanned}
+              variant="outline"
+              size="icon"
+            >
+              <Scan className="h-4 w-4" />
+            </BarcodeScannerTrigger>
           </div>
         </div>
 

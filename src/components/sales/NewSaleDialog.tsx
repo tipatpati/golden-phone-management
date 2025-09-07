@@ -19,11 +19,15 @@ import { SalesPermissionGuard } from './SalesPermissionGuard';
 type SaleItem = {
   product_id: string;
   product_name: string;
+  brand: string;
+  model: string;
+  year?: number;
   quantity: number;
   unit_price: number;
   min_price?: number;
   max_price?: number;
   serial_number?: string;
+  stock?: number;
 };
 
 export function NewSaleDialog() {
@@ -67,10 +71,14 @@ export function NewSaleDialog() {
         {
           product_id: product.id,
           product_name: `${product.brand} ${product.model}`,
+          brand: product.brand,
+          model: product.model,
+          year: product.year,
           quantity: 1,
           unit_price: product.price,
           min_price: product.min_price,
           max_price: product.max_price,
+          stock: product.stock,
         }
       ]);
     }
@@ -294,16 +302,14 @@ export function NewSaleDialog() {
             selectedClient={selectedClient}
             paymentMethod={paymentMethod}
             notes={notes}
-            onClientSelect={setSelectedClient}
+            onClientChange={setSelectedClient}
             onPaymentMethodChange={handlePaymentMethodChange}
             onNotesChange={setNotes}
-            onProductAdd={addProduct}
-            onQuantityUpdate={updateQuantity}
-            onPriceUpdate={updatePrice}
+            onAddProduct={addProduct}
+            onUpdateQuantity={updateQuantity}
+            onUpdatePrice={updatePrice}
             onSerialNumberUpdate={updateSerialNumber}
             onRemoveItem={removeProduct}
-            getProductStock={getProductStock}
-            recentProducts={recentProducts}
           />
 
           {/* Discount Manager */}
