@@ -176,13 +176,13 @@ export function EnhancedSalesFilters({
             <Label>Status</Label>
             <Select 
               value={localFilters.status || ''} 
-              onValueChange={(value) => handleFilterChange('status', value || undefined)}
+              onValueChange={(value) => handleFilterChange('status', value === 'all' ? undefined : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Tutti gli status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tutti</SelectItem>
+                <SelectItem value="all">Tutti</SelectItem>
                 <SelectItem value="completed">Completata</SelectItem>
                 <SelectItem value="pending">In Attesa</SelectItem>
                 <SelectItem value="cancelled">Annullata</SelectItem>
@@ -201,13 +201,13 @@ export function EnhancedSalesFilters({
                 <Label>Metodo di Pagamento</Label>
                 <Select 
                   value={localFilters.paymentMethod || ''} 
-                  onValueChange={(value) => handleFilterChange('paymentMethod', value || undefined)}
+                  onValueChange={(value) => handleFilterChange('paymentMethod', value === 'all' ? undefined : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Tutti i metodi" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tutti</SelectItem>
+                    <SelectItem value="all">Tutti</SelectItem>
                     <SelectItem value="cash">Contanti</SelectItem>
                     <SelectItem value="card">Carta</SelectItem>
                     <SelectItem value="bank_transfer">Bonifico</SelectItem>
