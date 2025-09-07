@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Search, Smartphone, Battery, Palette, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { Product, ProductUnit } from "@/services/inventory/types";
+import type { CreateSaleData } from "@/services/sales/types";
 
-interface SaleItem {
+interface SaleItemWithUnit {
   product_id: string;
-  product_unit_id: string;
-  serial_number: string;
+  product_unit_id?: string;
+  serial_number?: string;
   barcode?: string;
   quantity: number;
   unit_price: number;
@@ -25,7 +26,7 @@ interface SaleItem {
 
 interface ProductUnitSelectorProps {
   product: Product;
-  onUnitSelect: (saleItem: SaleItem) => void;
+  onUnitSelect: (saleItem: SaleItemWithUnit) => void;
   onCancel: () => void;
 }
 
@@ -84,7 +85,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
       return;
     }
 
-    const saleItem: SaleItem = {
+    const saleItem: SaleItemWithUnit = {
       product_id: product.id,
       product_unit_id: selectedUnit.id,
       serial_number: selectedUnit.serial_number,

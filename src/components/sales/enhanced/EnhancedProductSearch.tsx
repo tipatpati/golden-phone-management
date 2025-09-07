@@ -5,14 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Package, Scan } from "lucide-react";
 import { toast } from "sonner";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { useProducts } from "@/hooks/useInventory";
+import { useQuery } from "@tanstack/react-query";
+import { SalesProductService } from "@/services/sales/SalesProductService";
 import { ProductUnitSelector } from "./ProductUnitSelector";
 import type { Product, ProductUnit } from "@/services/inventory/types";
 
 interface SaleItem {
   product_id: string;
-  product_unit_id: string;
-  serial_number: string;
+  product_unit_id?: string;
+  serial_number?: string;
   barcode?: string;
   quantity: number;
   unit_price: number;
@@ -39,9 +40,11 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
-  const { data: products = [], isLoading } = useProducts({
-    searchTerm: searchTerm.trim(),
-    category: selectedCategory || undefined
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['sales-products', searchTerm.trim(), selectedCategory],
+    queryFn: () => SalesProductService.getProductsForSales(searchTerm.trim()),
+    enabled: searchTerm.trim().length >= 2,
+    staleTime: 30000 // 30 seconds
   });
 
   // Filter and limit results
@@ -71,8 +74,6 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
       // Legacy fallback - create a basic sale item
       const saleItem: SaleItem = {
         product_id: product.id,
-        product_unit_id: '', // Will be empty for legacy products
-        serial_number: '', // Will be empty for legacy products
         quantity: 1,
         unit_price: product.max_price || product.price || 0,
         brand: product.brand,
@@ -95,7 +96,19 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
     setSelectedProduct(null);
   };
 
-  const handleBarcodeScanned = (barcode: string) => {
+  const handleBarcodeScanned = async (barcode: string) => {
+    // Try to find exact match first
+    try {
+      const product = await SalesProductService.searchByCode(barcode);
+      if (product) {
+        handleProductSelect(product);
+        return;
+      }
+    } catch (error) {
+      console.error('Error searching by barcode:', error);
+    }
+    
+    // Fallback to regular search
     setSearchTerm(barcode);
   };
 

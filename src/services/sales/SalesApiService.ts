@@ -104,7 +104,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
       const sale = data as any;
 
-      // Create sale items
+      // Create sale items and update product units status
       const saleItemsData = saleData.sale_items.map(item => ({
         sale_id: sale.id,
         product_id: item.product_id,
@@ -114,14 +114,59 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         serial_number: item.serial_number || null
       }));
 
-      const { error: itemsError } = await supabase
+      // Update product unit status to 'sold' for serialized items
+      for (const item of saleData.sale_items) {
+        if (item.product_unit_id) {
+          const { error: unitUpdateError } = await supabase
+            .from('product_units')
+            .update({ status: 'sold' })
+            .eq('id', item.product_unit_id);
+          
+          if (unitUpdateError) {
+            console.warn('Failed to update product unit status:', unitUpdateError);
+          }
+
+          // Create sold_product_units record
+          const { error: soldUnitError } = await supabase
+            .from('sold_product_units')
+            .insert({
+              product_id: item.product_id,
+              product_unit_id: item.product_unit_id,
+              sale_id: sale.id,
+              sale_item_id: '', // Will be updated after sale_items creation
+              serial_number: item.serial_number || '',
+              barcode: item.barcode,
+              sold_price: item.unit_price
+            });
+          
+          if (soldUnitError) {
+            console.warn('Failed to create sold product unit record:', soldUnitError);
+          }
+        }
+      }
+
+      const { data: createdItems, error: itemsError } = await supabase
         .from('sale_items')
-        .insert(saleItemsData);
+        .insert(saleItemsData)
+        .select('id, serial_number');
 
       if (itemsError) {
         // Clean up the sale if item creation fails
         await supabase.from('sales').delete().eq('id', sale.id);
         throw new Error(itemsError.message);
+      }
+
+      // Update sold_product_units with sale_item_id
+      if (createdItems) {
+        for (const saleItem of createdItems) {
+          if (saleItem.serial_number) {
+            await supabase
+              .from('sold_product_units')
+              .update({ sale_item_id: saleItem.id })
+              .eq('sale_id', sale.id)
+              .eq('serial_number', saleItem.serial_number);
+          }
+        }
       }
 
       return sale;
