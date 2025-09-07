@@ -5,6 +5,7 @@ import { InventoryHeader } from "@/components/inventory/InventoryHeader";
 import { InventoryContent } from "@/components/inventory/InventoryContent";
 import { useInventoryState } from "@/hooks/useInventoryState";
 import AdminPurgeProducts from "@/components/inventory/admin/AdminPurgeProducts";
+import { InventoryIntegrityDashboard } from "@/components/inventory/admin/InventoryIntegrityDashboard";
 
 const Inventory = () => {
   const {
@@ -32,6 +33,9 @@ const Inventory = () => {
 
       {/* Admin purge tool */}
       <AdminPurgeProducts />
+      
+      {/* Data Integrity Dashboard */}
+      <InventoryIntegrityDashboard />
       
       <InventoryContent
         showAddProduct={showAddProduct}
