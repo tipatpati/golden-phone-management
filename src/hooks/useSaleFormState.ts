@@ -76,19 +76,30 @@ export function useSaleFormState(): SaleFormState & SaleFormActions {
   // Stock management
   const refreshStock = useCallback(async (productIds?: string[]) => {
     const idsToRefresh = productIds || state.items.map(item => item.product_id);
-    if (idsToRefresh.length === 0) return;
+    console.log('🔄 refreshStock called with IDs:', idsToRefresh);
+    
+    // Filter out any undefined or null IDs
+    const validIds = idsToRefresh.filter(id => id && typeof id === 'string');
+    console.log('✅ Valid IDs after filtering:', validIds);
+    
+    if (validIds.length === 0) {
+      console.log('⚠️ No valid product IDs to refresh stock for');
+      return;
+    }
 
     setState(prev => ({ ...prev, isLoading: true }));
     
     try {
-      const stockMap = await StockCalculationService.fetchEffectiveStockBatch(idsToRefresh);
+      const stockMap = await StockCalculationService.fetchEffectiveStockBatch(validIds);
+      console.log('📊 Stock data received:', stockMap);
+      
       setState(prev => ({
         ...prev,
         stockCache: new Map([...prev.stockCache, ...stockMap]),
         isLoading: false,
       }));
     } catch (error) {
-      console.error('Failed to refresh stock:', error);
+      console.error('❌ Failed to refresh stock:', error);
       toast({
         title: "Errore",
         description: "Impossibile aggiornare le informazioni di stock",
@@ -99,11 +110,25 @@ export function useSaleFormState(): SaleFormState & SaleFormActions {
   }, [state.items, toast]);
 
   const getStock = useCallback((productId: string): number => {
-    return state.stockCache.get(productId) ?? 0;
+    const stockValue = state.stockCache.get(productId) ?? 0;
+    console.log(`📦 getStock for ${productId}:`, stockValue);
+    return stockValue;
   }, [state.stockCache]);
 
   // Item management
   const addItem = useCallback((product: any) => {
+    console.log('🔍 addItem called with product:', product);
+    
+    if (!product?.id) {
+      console.error('❌ Product ID is missing:', product);
+      toast({
+        title: "Errore",
+        description: "ID prodotto mancante",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const existingItem = state.items.find(item => item.product_id === product.id);
     
     if (existingItem) {
@@ -131,9 +156,10 @@ export function useSaleFormState(): SaleFormState & SaleFormActions {
       items: [...prev.items, newItem],
     }));
 
-    // Refresh stock for new item
+    // Refresh stock for new item immediately
+    console.log('🔄 Refreshing stock for product:', product.id);
     refreshStock([product.id]);
-  }, [state.items, refreshStock]);
+  }, [state.items, refreshStock, toast]);
 
   const removeItem = useCallback((productId: string) => {
     setState(prev => ({

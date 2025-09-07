@@ -40,27 +40,41 @@ export class StockCalculationService {
 
   // Refresh effective stock for multiple products
   static async fetchEffectiveStockBatch(productIds: string[]): Promise<Map<string, number>> {
-    if (!productIds.length) return new Map();
+    console.log('🔄 fetchEffectiveStockBatch called with:', productIds);
+    
+    // Filter out invalid IDs
+    const validIds = productIds.filter(id => id && typeof id === 'string' && id.trim() !== '');
+    console.log('✅ Valid product IDs:', validIds);
+    
+    if (!validIds.length) {
+      console.log('⚠️ No valid product IDs provided');
+      return new Map();
+    }
     
     try {
       const stockMap = new Map<string, number>();
       
       // Use database function for each product to get accurate stock
-      for (const productId of productIds) {
+      for (const productId of validIds) {
+        console.log(`📦 Fetching stock for product: ${productId}`);
+        
         const { data, error } = await (supabase as any)
           .rpc('get_product_effective_stock', { product_uuid: productId });
 
         if (error) {
-          console.error(`fetchEffectiveStock error for ${productId}:`, error);
+          console.error(`❌ fetchEffectiveStock error for ${productId}:`, error);
           stockMap.set(productId, 0);
         } else {
-          stockMap.set(productId, Number(data) || 0);
+          const stockValue = Number(data) || 0;
+          console.log(`✅ Stock for ${productId}: ${stockValue}`);
+          stockMap.set(productId, stockValue);
         }
       }
       
+      console.log('📊 Final stock map:', Object.fromEntries(stockMap));
       return stockMap;
     } catch (error) {
-      console.error('fetchEffectiveStockBatch exception:', error);
+      console.error('❌ fetchEffectiveStockBatch exception:', error);
       return new Map();
     }
   }
