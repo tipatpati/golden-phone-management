@@ -182,11 +182,20 @@ export function SaleItemsList({
   // Fetch all products to get current stock information
   const { data: allProducts = [] } = useProducts();
   
-  // Helper function to get product stock
+  // Helper function to get product stock - handles both serialized and non-serialized products
   const getProductStock = (productId: string) => {
     const productsArray = Array.isArray(allProducts) ? allProducts : [];
     const product = productsArray.find(p => p.id === productId);
-    return product?.stock || 0;
+    
+    if (!product) return 0;
+    
+    // For serialized products, count available product units
+    if (product.has_serial && product.product_units) {
+      return product.product_units.filter(unit => unit.status === 'available').length;
+    }
+    
+    // For non-serialized products, use stock field
+    return product.stock || 0;
   };
 
   if (saleItems.length === 0) {
