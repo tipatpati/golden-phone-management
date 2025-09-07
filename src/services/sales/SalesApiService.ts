@@ -99,43 +99,8 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         throw new Error(itemsError.message);
       }
 
-      // Handle unit-level inventory updates
-      for (const item of saleData.sale_items) {
-        if (item.product_unit_id && item.serial_number) {
-          // Update product unit status to 'sold'
-          const { error: unitError } = await supabase
-            .from('product_units')
-            .update({ status: 'sold' })
-            .eq('id', item.product_unit_id);
-
-          if (unitError) {
-            console.error('Error updating product unit:', unitError);
-            // Continue with other items even if one fails
-          }
-
-          // Create sold product unit record
-          const { error: soldUnitError } = await supabase
-            .from('sold_product_units')
-            .insert([{
-              sale_id: sale.id,
-              sale_item_id: null, // Will be populated by trigger if needed
-              product_id: item.product_id,
-              product_unit_id: item.product_unit_id,
-              serial_number: item.serial_number,
-              barcode: item.barcode,
-              sold_price: item.unit_price,
-            }]);
-
-          if (soldUnitError) {
-            console.error('Error creating sold product unit record:', soldUnitError);
-            // Continue with other items even if one fails
-          }
-        } else {
-          // Handle non-serialized products - will be handled by trigger
-          // Stock reduction will be automatic via database trigger
-          console.log(`Stock will be reduced for product ${item.product_id} by ${item.quantity} units`);
-        }
-      }
+      // Inventory updates are handled by database triggers (stock, unit status, sold units)
+      console.debug('Inventory updates handled by DB triggers for sale items:', saleData.sale_items.length);
 
       return sale as Sale;
     } catch (error) {
