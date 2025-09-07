@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -9,70 +9,39 @@ import {
   DollarSign,
   FileText,
   Plus,
-  AlertTriangle,
   CheckCircle,
-  Package
+  Package,
+  RefreshCw
 } from "lucide-react";
 import { EnhancedProductSearch } from "./EnhancedProductSearch";
-import { SaleItemEditor } from "./SaleItemEditor";
+import { RefactoredSaleItemEditor } from "./RefactoredSaleItemEditor";
 import { ClientSelector } from "../ClientSelector";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { SaleNotesInput } from "./SaleNotesInput";
-import { toast } from "sonner";
+import { useSaleForm } from "./SaleFormProvider";
 
-interface SaleItem {
-  product_id: string;
-  product_name: string;
-  brand: string;
-  model: string;
-  year?: number;
-  quantity: number;
-  unit_price: number;
-  min_price?: number;
-  max_price?: number;
-  serial_number?: string;
-  stock?: number;
-}
-
-interface StreamlinedSaleFormProps {
-  saleItems: SaleItem[];
-  selectedClient?: any;
-  paymentMethod: string;
-  notes: string;
-  onClientChange: (client: any) => void;
-  onPaymentMethodChange: (method: string) => void;
-  onNotesChange: (notes: string) => void;
-  onAddProduct: (product: any) => void;
-  onUpdateQuantity: (productId: string, quantity: number) => void;
-  onUpdatePrice: (productId: string, price: number) => void;
-  onRemoveItem: (productId: string) => void;
-  onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
-  getProductStock?: (productId: string) => number;
-  recentProducts?: any[];
-}
-
-export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
-  saleItems,
-  selectedClient,
-  paymentMethod,
-  notes,
-  onClientChange,
-  onPaymentMethodChange,
-  onNotesChange,
-  onAddProduct,
-  onUpdateQuantity,
-  onUpdatePrice,
-  onRemoveItem,
-  onSerialNumberUpdate,
-  getProductStock = () => 0,
-  recentProducts = []
-}) => {
-
-  const totalItems = saleItems.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = saleItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+export function RefactoredStreamlinedSaleForm() {
+  const {
+    items,
+    selectedClient,
+    paymentMethod,
+    notes,
+    totalItems,
+    subtotal,
+    isLoading,
+    addItem,
+    setClient,
+    setPaymentMethod,
+    setNotes,
+    refreshStock
+  } = useSaleForm();
 
   const handleProductAdd = (product: any) => {
-    onAddProduct(product);
+    addItem(product);
+  };
+
+  const handleStockRefresh = () => {
+    refreshStock();
   };
 
   return (
@@ -100,27 +69,34 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
-                Prodotti nella Vendita ({saleItems.length})
+                Prodotti nella Vendita ({items.length})
               </div>
-              <Badge variant="secondary" className="text-sm">
-                {totalItems} item{totalItems !== 1 ? 's' : ''}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-sm">
+                  {totalItems} item{totalItems !== 1 ? 's' : ''}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStockRefresh}
+                  disabled={isLoading || items.length === 0}
+                  className="h-8 px-3 text-xs"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Aggiorna
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {saleItems.map((item) => (
-              <SaleItemEditor
+            {items.map((item) => (
+              <RefactoredSaleItemEditor
                 key={`${item.product_id}-${item.serial_number || 'no-serial'}`}
                 item={item}
-                availableStock={getProductStock(item.product_id)}
-                onQuantityUpdate={onUpdateQuantity}
-                onPriceUpdate={onUpdatePrice}
-                onSerialNumberUpdate={onSerialNumberUpdate}
-                onRemoveItem={onRemoveItem}
               />
             ))}
 
-            {saleItems.length === 0 && (
+            {items.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>Nessun prodotto aggiunto</p>
@@ -128,14 +104,17 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
               </div>
             )}
 
-            <Separator />
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="font-medium">Subtotale:</span>
-                <span className="font-bold">€{subtotal.toFixed(2)}</span>
-              </div>
-            </div>
+            {items.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Subtotale:</span>
+                    <span className="font-bold">€{subtotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -153,8 +132,8 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
           <CardContent>
             <ClientSelector
               selectedClient={selectedClient}
-              onClientSelect={onClientChange}
-              onClientClear={() => onClientChange(null)}
+              onClientSelect={setClient}
+              onClientClear={() => setClient(null)}
             />
           </CardContent>
         </Card>
@@ -170,7 +149,7 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
           <CardContent>
             <PaymentMethodSelector
               value={paymentMethod}
-              onChange={onPaymentMethodChange}
+              onChange={setPaymentMethod}
               totalAmount={subtotal}
             />
           </CardContent>
@@ -187,7 +166,7 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
           <CardContent>
             <SaleNotesInput
               value={notes}
-              onChange={onNotesChange}
+              onChange={setNotes}
             />
           </CardContent>
         </Card>
@@ -219,4 +198,4 @@ export const StreamlinedSaleForm: React.FC<StreamlinedSaleFormProps> = ({
       </div>
     </div>
   );
-};
+}

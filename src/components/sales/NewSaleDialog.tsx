@@ -10,7 +10,8 @@ import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { DiscountManager } from "./DiscountManager";
 import { HybridPaymentManager } from "./HybridPaymentManager";
 import { SaleTotals } from "./SaleTotals";
-import { StreamlinedSaleForm } from "./enhanced/StreamlinedSaleForm";
+import { SaleFormProvider } from "./enhanced/SaleFormProvider";
+import { SaleFormWrapper } from "./enhanced/SaleFormWrapper";
 import { toast } from "@/components/ui/sonner";
 import { SalesValidationService } from './SalesValidationService';
 import { useSalesMonitoring } from './SalesMonitoringService';
@@ -338,24 +339,23 @@ export function NewSaleDialog() {
         </DialogHeader>
         
         <EnhancedErrorBoundary context="Nuova Garentille" showDetails={false}>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Sale Form */}
-            <div className="lg:col-span-3">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <StreamlinedSaleForm
-                  saleItems={saleItems}
-                  selectedClient={selectedClient}
-                  paymentMethod={paymentMethod}
-                  notes={notes}
-                  onClientChange={setSelectedClient}
-                  onPaymentMethodChange={handlePaymentMethodChange}
-                  onNotesChange={setNotes}
-                  onAddProduct={addProduct}
-                  onUpdateQuantity={updateQuantity}
-                  onUpdatePrice={updatePrice}
-                  onSerialNumberUpdate={updateSerialNumber}
-                  onRemoveItem={removeProduct}
-                />
+          <SaleFormProvider>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Main Sale Form */}
+              <div className="lg:col-span-3">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <SaleFormWrapper
+                    initialItems={saleItems}
+                    initialClient={selectedClient}
+                    initialPaymentMethod={paymentMethod}
+                    initialNotes={notes}
+                    onSaleDataChange={(data) => {
+                      setSaleItems(data.items);
+                      setSelectedClient(data.client);
+                      setPaymentMethod(data.paymentMethod);
+                      setNotes(data.notes);
+                    }}
+                  />
 
                 {/* Discount Manager */}
                 {saleItems.length > 0 && (
@@ -449,7 +449,8 @@ export function NewSaleDialog() {
                 />
               )}
             </div>
-          </div>
+            </div>
+          </SaleFormProvider>
         </EnhancedErrorBoundary>
       </DialogContent>
       

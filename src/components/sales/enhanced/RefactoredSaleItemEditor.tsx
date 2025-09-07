@@ -15,67 +15,64 @@ import {
   ShoppingCart
 } from "lucide-react";
 import { SmartSerialInput } from "./SmartSerialInput";
+import { useSaleForm } from "./SaleFormProvider";
+import type { SaleItem } from "@/hooks/useSaleFormState";
 
-type SaleItem = {
-  product_id: string;
-  product_name: string;
-  brand: string;
-  model: string;
-  year?: number;
-  quantity: number;
-  unit_price: number;
-  min_price?: number;
-  max_price?: number;
-  serial_number?: string;
-  stock?: number;
-};
-
-type SaleItemEditorProps = {
+interface SaleItemEditorProps {
   item: SaleItem;
-  availableStock: number;
-  onQuantityUpdate: (productId: string, quantity: number) => void;
-  onPriceUpdate: (productId: string, price: number) => void;
-  onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
-  onRemoveItem: (productId: string) => void;
-};
+}
 
-export function SaleItemEditor({
-  item,
-  availableStock,
-  onQuantityUpdate,
-  onPriceUpdate,
-  onSerialNumberUpdate,
-  onRemoveItem
-}: SaleItemEditorProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export function RefactoredSaleItemEditor({ item }: SaleItemEditorProps) {
+  const {
+    getStock,
+    updateItemQuantity,
+    updateItemPrice,
+    updateItemSerial,
+    removeItem
+  } = useSaleForm();
+  
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [tempPrice, setTempPrice] = useState((item.unit_price || 0).toString());
 
+  const availableStock = getStock(item.product_id);
   const hasStockWarning = item.quantity > availableStock;
-  // More flexible price validation - only show warning for significant deviations
   const hasPriceWarning = item.min_price && item.max_price && 
-    (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2)); // Allow 20% above max
+    (item.unit_price < item.min_price || item.unit_price > (item.max_price * 1.2));
   
   const subtotal = item.quantity * (item.unit_price || 0);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, item.quantity + delta);
-    onQuantityUpdate(item.product_id, newQuantity);
+    updateItemQuantity(item.product_id, newQuantity);
   };
 
   const handlePriceChange = (newPrice: string) => {
     setTempPrice(newPrice);
     const price = parseFloat(newPrice);
     if (!isNaN(price) && price > 0) {
-      onPriceUpdate(item.product_id, price);
+      updateItemPrice(item.product_id, price);
     }
   };
 
   const handlePriceBlur = () => {
-    setIsEditing(false);
+    setIsEditingPrice(false);
     const price = parseFloat(tempPrice);
     if (isNaN(price) || price <= 0) {
       setTempPrice((item.unit_price || 0).toString());
     }
+  };
+
+  const handleQuantityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const quantity = parseInt(e.target.value) || 1;
+    updateItemQuantity(item.product_id, quantity);
+  };
+
+  const handleSerialUpdate = (serialNumber: string) => {
+    updateItemSerial(item.product_id, serialNumber);
+  };
+
+  const handleRemove = () => {
+    removeItem(item.product_id);
   };
 
   return (
@@ -103,7 +100,7 @@ export function SaleItemEditor({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onRemoveItem(item.product_id)}
+            onClick={handleRemove}
             className="h-9 w-9 hover:bg-destructive/10 hover:text-destructive"
           >
             <X className="h-4 w-4" />
@@ -152,7 +149,7 @@ export function SaleItemEditor({
                   type="number"
                   min="1"
                   value={item.quantity}
-                  onChange={(e) => onQuantityUpdate(item.product_id, parseInt(e.target.value) || 1)}
+                  onChange={handleQuantityInputChange}
                   className="h-8 text-center text-sm"
                 />
               </div>
@@ -172,7 +169,7 @@ export function SaleItemEditor({
             <Label className="text-sm font-medium">Prezzo Unitario</Label>
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              {isEditing ? (
+              {isEditingPrice ? (
                 <Input
                   type="number"
                   step="0.01"
@@ -187,7 +184,7 @@ export function SaleItemEditor({
                 <Button
                   variant="ghost"
                   className="h-8 px-2 text-sm font-mono"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => setIsEditingPrice(true)}
                 >
                   €{(item.unit_price || 0).toFixed(2)}
                 </Button>
@@ -201,7 +198,7 @@ export function SaleItemEditor({
             <SmartSerialInput
               productId={item.product_id}
               value={item.serial_number || ""}
-              onSerialNumberUpdate={onSerialNumberUpdate}
+              onSerialNumberUpdate={handleSerialUpdate}
             />
           </div>
 
