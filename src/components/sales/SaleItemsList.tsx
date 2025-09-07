@@ -9,6 +9,7 @@ import { X, AlertTriangle, Search } from "lucide-react";
 import { useProducts } from "@/services/products/ProductReactQueryService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { StockCalculationService } from '@/services/inventory/StockCalculationService';
 
 type SaleItem = {
   product_id: string;
@@ -182,20 +183,9 @@ export function SaleItemsList({
   // Fetch all products to get current stock information
   const { data: allProducts = [] } = useProducts();
   
-  // Helper function to get product stock - uses unified calculation logic
+  // Helper function to get product stock - centralized
   const getProductStock = (productId: string) => {
-    const productsArray = Array.isArray(allProducts) ? allProducts : [];
-    const product = productsArray.find(p => p.id === productId);
-    
-    if (!product) return 0;
-    
-    // For serialized products, count available product units
-    if (product.has_serial && product.product_units) {
-      return product.product_units.filter(unit => unit.status === 'available').length;
-    }
-    
-    // For non-serialized products, use stock field
-    return product.stock || 0;
+    return StockCalculationService.effectiveFromList(allProducts as any[], productId);
   };
 
   if (saleItems.length === 0) {

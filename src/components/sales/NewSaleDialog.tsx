@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/sonner";
 import { SalesValidationService } from './SalesValidationService';
 import { useSalesMonitoring } from './SalesMonitoringService';
 import { SalesPermissionGuard } from './SalesPermissionGuard';
+import { StockCalculationService } from '@/services/inventory/StockCalculationService';
 
 type SaleItem = {
   product_id: string;
@@ -173,20 +174,9 @@ export function NewSaleDialog() {
     ? Math.abs(totalPaid - totalAmount) < 0.005 // Improved tolerance for floating point precision
     : Boolean(paymentMethod);
 
-  // Helper function to get product stock - uses unified calculation logic
+  // Helper function to get product stock - centralized
   const getProductStock = (productId: string) => {
-    const productsArray = Array.isArray(allProducts) ? allProducts : [];
-    const product = productsArray.find(p => p.id === productId);
-    
-    if (!product) return 0;
-    
-    // For serialized products, count available product units
-    if (product.has_serial && product.product_units) {
-      return product.product_units.filter(unit => unit.status === 'available').length;
-    }
-    
-    // For non-serialized products, use stock field
-    return product.stock || 0;
+    return StockCalculationService.effectiveFromList(allProducts as any[], productId);
   };
 
   // Recent products for quick add (could be enhanced with actual recent data)

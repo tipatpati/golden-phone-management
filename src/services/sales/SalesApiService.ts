@@ -2,6 +2,7 @@ import { BaseApiService } from '../core/BaseApiService';
 import { SalesValidationService } from '@/components/sales/SalesValidationService';
 import type { Sale, CreateSaleData } from './types';
 import { supabase } from '@/integrations/supabase/client';
+import { SalesInventoryIntegrationService } from './SalesInventoryIntegrationService';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {
@@ -38,6 +39,8 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
   static async createSale(saleData: CreateSaleData): Promise<Sale> {
     try {
+      // Pre-validate sale against inventory to ensure consistency
+      await SalesInventoryIntegrationService.validatePreSale(saleData);
       // Generate sale number
       const saleNumber = await this.generateSaleNumber();
       
