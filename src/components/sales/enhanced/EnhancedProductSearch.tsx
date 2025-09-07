@@ -57,7 +57,12 @@ export function EnhancedProductSearch({
   }, [recentProducts]);
 
   const handleProductSelect = (product: Product) => {
-    onProductAdd(product);
+    // Use max price as default selling price
+    const productWithMaxPrice = {
+      ...product,
+      price: product.max_price || product.price
+    };
+    onProductAdd(productWithMaxPrice);
     setSearchTerm("");
     setIsSearchFocused(false);
     toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
@@ -91,7 +96,7 @@ export function EnhancedProductSearch({
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
             onKeyDown={handleKeyDown}
-            placeholder="Cerca prodotto per nome, codice, IMEI..."
+            placeholder="Cerca prodotto per nome, codice, IMEI o ultimi 4 cifre seriale..."
             className="pl-10 pr-16 h-14 text-base bg-background border-2 focus:border-primary"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -187,7 +192,7 @@ export function EnhancedProductSearch({
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-xl font-bold text-primary">€{product.price}</div>
+                      <div className="text-xl font-bold text-primary">€{product.max_price || product.price}</div>
                       {product.min_price !== product.max_price && (
                         <div className="text-sm text-muted-foreground">
                           €{product.min_price} - €{product.max_price}

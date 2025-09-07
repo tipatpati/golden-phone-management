@@ -41,7 +41,7 @@ export class InventoryManagementService {
   // ============================================
 
   /**
-   * Get all products with optional filtering
+   * Get all products with optional filtering including serial number search
    */
   static async getProducts(filters?: InventorySearchFilters): Promise<Product[]> {
     try {
@@ -49,13 +49,34 @@ export class InventoryManagementService {
         .from('products')
         .select(`
           *,
-          category:categories(id, name)
+          category:categories(id, name),
+          product_units(serial_number)
         `)
         .order('created_at', { ascending: false });
 
       // Apply filters
       if (filters?.searchTerm) {
-        query = query.or(`brand.ilike.%${filters.searchTerm}%,model.ilike.%${filters.searchTerm}%,barcode.ilike.%${filters.searchTerm}%`);
+        const searchTerm = filters.searchTerm.trim();
+        
+        // If search term is 4 digits, search in serial numbers (last 4 digits)
+        if (/^\d{4}$/.test(searchTerm)) {
+          // Search for products that have units with serial numbers ending with these 4 digits
+          const { data: unitsData } = await supabase
+            .from('product_units')
+            .select('product_id')
+            .ilike('serial_number', `%${searchTerm}`);
+          
+          if (unitsData && unitsData.length > 0) {
+            const productIds = [...new Set(unitsData.map(u => u.product_id))];
+            query = query.in('id', productIds);
+          } else {
+            // Also search in regular fields as fallback
+            query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
+          }
+        } else {
+          // Regular search in brand, model, barcode
+          query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
+        }
       }
       
       if (filters?.category) {
