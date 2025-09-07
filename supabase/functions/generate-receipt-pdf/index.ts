@@ -102,15 +102,46 @@ Deno.serve(async (req) => {
     addCenteredText('DOCUMENTO DI GARANZIA', 11);
     y += 2;
 
-    // Product info (first item)
+    // Items summary
+    addCenteredText('Articoli', 11);
+    y += 2;
+    doc.line(5, y, pageWidth - 5, y);
+    y += 4;
+
     if (sale.sale_items && sale.sale_items.length > 0) {
-      const firstItem = sale.sale_items[0];
-      doc.setFontSize(12);
-      addCenteredText(firstItem.product?.brand || 'Smartphone');
-      doc.setFontSize(10);
-      addCenteredText(firstItem.product?.model || 'iPhone 13 Pro Max');
-      addCenteredText(`SN: ${firstItem.serial_number || 'N/A'}`);
-      addCenteredText('Garanzia: 1 anno');
+      sale.sale_items.forEach((item: any) => {
+        // Build product name (Brand + Model)
+        const nameParts: string[] = [];
+        if (item.product?.brand) nameParts.push(item.product.brand);
+        if (item.product?.model) nameParts.push(item.product.model);
+        const productName = (nameParts.join(' ') || 'Articolo');
+
+        // Wrap long names to fit receipt width
+        const wrapped = doc.splitTextToSize(productName, pageWidth - 10);
+        doc.setFontSize(10);
+        wrapped.forEach((line: string) => {
+          doc.text(line, 5, y);
+          y += lineHeight;
+        });
+
+        // Quantity, unit price and line total
+        const qty = Number(item.quantity) || 1;
+        const unit = Number(item.unit_price) || 0;
+        const lineTotal = Number(item.total_price) || (qty * unit);
+        addLRText(`x${qty} @ €${unit.toFixed(2)}`, `€${lineTotal.toFixed(2)}`);
+
+        // Optional serial number line
+        if (item.serial_number) {
+          doc.setFontSize(8);
+          doc.text(`SN: ${item.serial_number}`, 5, y);
+          y += lineHeight;
+          doc.setFontSize(10);
+        }
+
+        y += 2; // spacing between items
+      });
+    } else {
+      addCenteredText('Nessun articolo', 9);
     }
 
     y += 4;
