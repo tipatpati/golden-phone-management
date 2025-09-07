@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
-import { SimplifiedSaleForm } from "./SimplifiedSaleForm";
+import { SaleFormContainer } from "./refactored/SaleFormContainer";
 import { SalesPermissionGuard } from './SalesPermissionGuard';
 
 export function NewSaleDialog() {
@@ -33,7 +33,7 @@ export function NewSaleDialog() {
           <DialogTitle className="text-xl font-bold">Crea Nuova Garentille</DialogTitle>
         </DialogHeader>
         
-        <SimplifiedSaleForm
+        <SaleFormContainer
           onSaleComplete={handleSaleComplete}
           onCancel={() => setOpen(false)}
         />
