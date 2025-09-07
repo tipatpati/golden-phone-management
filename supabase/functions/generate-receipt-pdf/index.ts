@@ -68,7 +68,9 @@ Deno.serve(async (req) => {
     const lineHeight = 4;
     const pageWidth = 80;
 
-    // Helper function to add centered text
+    // Helper utilities
+    const formatAmount = (amount: number) => `${amount.toFixed(2)} €`;
+
     const addCenteredText = (text: string, fontSize = 10) => {
       doc.setFontSize(fontSize);
       const textWidth = doc.getTextWidth(text);
@@ -77,7 +79,6 @@ Deno.serve(async (req) => {
       y += lineHeight;
     };
 
-    // Helper function to add left-right aligned text
     const addLRText = (left: string, right: string) => {
       doc.setFontSize(9);
       doc.text(left, 5, y);
@@ -86,6 +87,20 @@ Deno.serve(async (req) => {
       y += lineHeight;
     };
 
+    const addDivider = () => {
+      y += 2;
+      doc.line(5, y, pageWidth - 5, y);
+      y += 4;
+    };
+
+    const addWrappedLeftText = (text: string, maxWidth: number, fontSize = 10) => {
+      doc.setFontSize(fontSize);
+      const wrapped = doc.splitTextToSize(text, maxWidth);
+      wrapped.forEach((line: string) => {
+        doc.text(line, 5, y);
+        y += lineHeight;
+      });
+    };
     // Company header
     addCenteredText('GOLDEN TRADE Q&A SRL', 14);
     addCenteredText('Corso Buenos Aires, 90,');
@@ -117,12 +132,7 @@ Deno.serve(async (req) => {
         const productName = (nameParts.join(' ') || 'Articolo');
 
         // Wrap long names to fit receipt width
-        const wrapped = doc.splitTextToSize(productName, pageWidth - 10);
-        doc.setFontSize(10);
-        wrapped.forEach((line: string) => {
-          doc.text(line, 5, y);
-          y += lineHeight;
-        });
+        addWrappedLeftText(productName, pageWidth - 10, 10);
 
         // Quantity, unit price and line total
         const qty = Number(item.quantity) || 1;
@@ -144,23 +154,47 @@ Deno.serve(async (req) => {
       addCenteredText('Nessun articolo', 9);
     }
 
-    y += 4;
+    // Payment summary and totals
+    const cash = Number(sale.cash_amount) || 0;
+    const card = Number(sale.card_amount) || 0;
+    const bank = Number(sale.bank_transfer_amount) || 0;
 
-    // Payment details
-    const cardAmount = sale.payment_method === 'card' ? sale.total_amount : 0;
-    const cashAmount = sale.payment_method === 'cash' ? sale.total_amount : 0;
+    type PaymentLine = { label: string; amount: number };
+    const payments: PaymentLine[] = [];
 
-    addLRText('Pagato con Carta:', `${cardAmount.toFixed(2)} €`);
-    addLRText('Pagato in Contanti:', `${cashAmount.toFixed(2)} €`);
-    addLRText('Sconto:', `${(sale.discount_amount || 0).toFixed(2)} €`);
-    
-    // Add line for total
-    y += 2;
-    doc.line(5, y, pageWidth - 5, y);
-    y += 4;
-    
+    if ((sale.payment_type === 'single' || !sale.payment_type) && cash === 0 && card === 0 && bank === 0) {
+      // Fallback to single payment_method when split amounts are not provided
+      switch (String(sale.payment_method)) {
+        case 'cash':
+          payments.push({ label: 'Pagato in Contanti:', amount: Number(sale.total_amount) || 0 });
+          break;
+        case 'card':
+          payments.push({ label: 'Pagato con Carta:', amount: Number(sale.total_amount) || 0 });
+          break;
+        case 'bank_transfer':
+          payments.push({ label: 'Pagato con Bonifico:', amount: Number(sale.total_amount) || 0 });
+          break;
+        default:
+          // Unknown method: skip explicit line
+          break;
+      }
+    } else {
+      if (cash > 0) payments.push({ label: 'Pagato in Contanti:', amount: cash });
+      if (card > 0) payments.push({ label: 'Pagato con Carta:', amount: card });
+      if (bank > 0) payments.push({ label: 'Pagato con Bonifico:', amount: bank });
+    }
+
+    console.log('Receipt payments breakdown:', payments);
+    console.log('Items count:', sale.sale_items?.length || 0);
+    console.log('Totals:', { subtotal: sale.subtotal, tax: sale.tax_amount, discount: sale.discount_amount, total: sale.total_amount });
+
+    payments.forEach(p => addLRText(p.label, formatAmount(p.amount)));
+    addLRText('Sconto:', formatAmount(Number(sale.discount_amount) || 0));
+
+    // Divider and total
+    addDivider();
     doc.setFontSize(11);
-    addLRText('Totale:', `${sale.total_amount.toFixed(2)} €`);
+    addLRText('Totale:', formatAmount(Number(sale.total_amount) || 0));
     y += 4;
 
     // Date and time
