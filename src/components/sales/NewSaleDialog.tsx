@@ -16,6 +16,9 @@ import { SalesValidationService } from './SalesValidationService';
 import { useSalesMonitoring } from './SalesMonitoringService';
 import { SalesPermissionGuard } from './SalesPermissionGuard';
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
+import { EnhancedErrorBoundary } from "@/components/common/EnhancedErrorBoundary";
+import { ValidationErrorDisplay } from "@/components/common/ValidationErrorDisplay";
+import { EnhancedSalesValidation } from "./enhanced/EnhancedSalesValidation";
 
 type SaleItem = {
   product_id: string;
@@ -44,6 +47,8 @@ export function NewSaleDialog() {
   const [notes, setNotes] = useState("");
   const [createdSale, setCreatedSale] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [validationError, setValidationError] = useState<Error | null>(null);
+  const [realTimeValidation, setRealTimeValidation] = useState(true);
   
   // Discount state
   const [discountType, setDiscountType] = useState<'percentage' | 'amount' | null>(null);
@@ -224,9 +229,10 @@ export function NewSaleDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
     
     if (!isFormValid) {
-      toast.error("Per favore compila tutti i campi obbligatori");
+      setValidationError(new Error("Per favore compila tutti i campi obbligatori"));
       return;
     }
 
@@ -246,7 +252,9 @@ export function NewSaleDialog() {
 
     const validation = await SalesValidationService.validateSaleData(saleDataForValidation);
     if (!validation.isValid) {
-      toast.error(`Errori di validazione: ${validation.errors.join(', ')}`);
+      const errorMessage = `Errori di validazione: ${validation.errors.join(', ')}`;
+      setValidationError(new Error(errorMessage));
+      toast.error(errorMessage);
       return;
     }
 
@@ -302,12 +310,15 @@ export function NewSaleDialog() {
       setCardAmount(0);
       setBankTransferAmount(0);
       setNotes("");
+      setValidationError(null);
       setOpen(false);
       
       toast.success("Garentille creata con successo! La ricevuta è pronta per la stampa.");
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error("Errore nella creazione della garentille. Verificare i dati e riprovare.");
+      const errorMessage = error instanceof Error ? error.message : "Errore nella creazione della garentille. Verificare i dati e riprovare.";
+      setValidationError(error instanceof Error ? error : new Error(errorMessage));
+      toast.error(errorMessage);
     }
   };
 
@@ -326,77 +337,120 @@ export function NewSaleDialog() {
           <DialogTitle className="text-xl font-bold">Crea Nuova Garentille</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <StreamlinedSaleForm
-            saleItems={saleItems}
-            selectedClient={selectedClient}
-            paymentMethod={paymentMethod}
-            notes={notes}
-            onClientChange={setSelectedClient}
-            onPaymentMethodChange={handlePaymentMethodChange}
-            onNotesChange={setNotes}
-            onAddProduct={addProduct}
-            onUpdateQuantity={updateQuantity}
-            onUpdatePrice={updatePrice}
-            onSerialNumberUpdate={updateSerialNumber}
-            onRemoveItem={removeProduct}
-          />
+        <EnhancedErrorBoundary context="Nuova Garentille" showDetails={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main Sale Form */}
+            <div className="lg:col-span-3">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <StreamlinedSaleForm
+                  saleItems={saleItems}
+                  selectedClient={selectedClient}
+                  paymentMethod={paymentMethod}
+                  notes={notes}
+                  onClientChange={setSelectedClient}
+                  onPaymentMethodChange={handlePaymentMethodChange}
+                  onNotesChange={setNotes}
+                  onAddProduct={addProduct}
+                  onUpdateQuantity={updateQuantity}
+                  onUpdatePrice={updatePrice}
+                  onSerialNumberUpdate={updateSerialNumber}
+                  onRemoveItem={removeProduct}
+                />
 
-          {/* Discount Manager */}
-          {saleItems.length > 0 && (
-            <DiscountManager
-              subtotal={subtotal}
-              discountType={discountType}
-              discountValue={discountValue}
-              onDiscountChange={handleDiscountChange}
-            />
-          )}
+                {/* Discount Manager */}
+                {saleItems.length > 0 && (
+                  <DiscountManager
+                    subtotal={subtotal}
+                    discountType={discountType}
+                    discountValue={discountValue}
+                    onDiscountChange={handleDiscountChange}
+                  />
+                )}
 
-          {/* Hybrid Payment Manager */}
-          {isHybridPayment && (
-            <HybridPaymentManager
-              totalAmount={totalAmount}
-              cashAmount={cashAmount}
-              cardAmount={cardAmount}
-              bankTransferAmount={bankTransferAmount}
-              onPaymentChange={handlePaymentChange}
-            />
-          )}
+                {/* Hybrid Payment Manager */}
+                {isHybridPayment && (
+                  <HybridPaymentManager
+                    totalAmount={totalAmount}
+                    cashAmount={cashAmount}
+                    cardAmount={cardAmount}
+                    bankTransferAmount={bankTransferAmount}
+                    onPaymentChange={handlePaymentChange}
+                  />
+                )}
 
-          {/* Sale Totals */}
-          {saleItems.length > 0 && (
-            <SaleTotals 
-              saleItems={saleItems} 
-              discountAmount={discountAmount}
-              finalSubtotal={finalSubtotal}
-              taxAmount={taxAmount}
-              totalAmount={totalAmount}
-            />
-          )}
+                {/* Sale Totals */}
+                {saleItems.length > 0 && (
+                  <SaleTotals 
+                    saleItems={saleItems} 
+                    discountAmount={discountAmount}
+                    finalSubtotal={finalSubtotal}
+                    taxAmount={taxAmount}
+                    totalAmount={totalAmount}
+                  />
+                )}
 
-          {/* Submit Buttons */}
-          {saleItems.length > 0 && (
-            <div className="flex flex-col gap-3 pt-6 border-t bg-muted/30 -mx-4 px-4 py-4 rounded-b-lg">
-              <Button 
-                type="submit" 
-                disabled={!isFormValid || createSale.isPending}
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
-                size="lg"
-              >
-                {createSale.isPending ? "Creazione..." : `Crea Garentille - €${totalAmount.toFixed(2)}`}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setOpen(false)}
-                className="w-full h-12 text-base"
-                size="lg"
-              >
-                Annulla
-              </Button>
+                {/* Submit Buttons */}
+                {saleItems.length > 0 && (
+                  <div className="flex flex-col gap-3 pt-6 border-t bg-muted/30 -mx-4 px-4 py-4 rounded-b-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="text-sm text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={realTimeValidation}
+                          onChange={(e) => setRealTimeValidation(e.target.checked)}
+                          className="mr-2"
+                        />
+                        Validazione in tempo reale
+                      </label>
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      disabled={!isFormValid || createSale.isPending || !!validationError}
+                      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+                      size="lg"
+                    >
+                      {createSale.isPending ? "Creazione..." : `Crea Garentille - €${totalAmount.toFixed(2)}`}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setOpen(false)}
+                      className="w-full h-12 text-base"
+                      size="lg"
+                    >
+                      Annulla
+                    </Button>
+                  </div>
+                )}
+              </form>
             </div>
-          )}
-        </form>
+
+            {/* Validation Panel */}
+            <div className="lg:col-span-1 space-y-4">
+              {realTimeValidation && (
+                <EnhancedSalesValidation
+                  saleData={{
+                    client_id: selectedClient?.id,
+                    salesperson_id: user?.id || '',
+                    sale_items: saleItems,
+                    payment_method: paymentMethod as any,
+                    notes
+                  }}
+                  realTimeValidation={realTimeValidation}
+                />
+              )}
+              
+              {validationError && (
+                <ValidationErrorDisplay
+                  error={validationError}
+                  context="Validazione Garentille"
+                  showDetails={false}
+                />
+              )}
+            </div>
+          </div>
+        </EnhancedErrorBoundary>
       </DialogContent>
       
       {/* Auto-show receipt dialog after sale creation */}
