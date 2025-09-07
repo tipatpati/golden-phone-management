@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 // Types
@@ -82,81 +81,12 @@ const initialState: SaleCreationState = {
   isValid: false
 };
 
-// Reducer
-function saleCreationReducer(state: SaleCreationState, action: SaleCreationAction): SaleCreationState {
-  switch (action.type) {
-    case 'ADD_ITEM': {
-      const existingItemIndex = state.items.findIndex(item => item.product_id === action.payload.product_id);
-      let newItems: SaleItem[];
-      
-      if (existingItemIndex >= 0) {
-        // Update existing item quantity
-        newItems = state.items.map((item, index) =>
-          index === existingItemIndex
-            ? { ...item, quantity: item.quantity + action.payload.quantity }
-            : item
-        );
-      } else {
-        // Add new item
-        newItems = [...state.items, action.payload];
-      }
-      
-      const newState = { ...state, items: newItems };
-      return calculateTotals(newState);
-    }
-
-    case 'UPDATE_ITEM': {
-      const newItems = state.items.map(item =>
-        item.product_id === action.payload.product_id
-          ? { ...item, ...action.payload.updates }
-          : item
-      );
-      const newState = { ...state, items: newItems };
-      return calculateTotals(newState);
-    }
-
-    case 'REMOVE_ITEM': {
-      const newItems = state.items.filter(item => item.product_id !== action.payload);
-      const newState = { ...state, items: newItems };
-      return calculateTotals(newState);
-    }
-
-    case 'UPDATE_FORM_DATA': {
-      const newFormData = { ...state.formData, ...action.payload };
-      const newState = { ...state, formData: newFormData };
-      return calculateTotals(newState);
-    }
-
-    case 'UPDATE_STOCK': {
-      const newStockCache = new Map([...state.stockCache, ...action.payload]);
-      // Update item stock values
-      const newItems = state.items.map(item => ({
-        ...item,
-        stock: newStockCache.get(item.product_id) ?? item.stock
-      }));
-      return { ...state, stockCache: newStockCache, items: newItems };
-    }
-
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-
-    case 'SET_VALIDATION_ERRORS':
-      return { ...state, validationErrors: action.payload };
-
-    case 'CALCULATE_TOTALS':
-      return calculateTotals(state);
-
-    case 'RESET_SALE':
-      return { ...initialState, stockCache: state.stockCache };
-
-    default:
-      return state;
-  }
-}
-
 // Helper function to calculate totals
 function calculateTotals(state: SaleCreationState): SaleCreationState {
+  console.log('🧮 Calculating totals for items:', state.items.length);
+  
   const subtotal = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  console.log('💰 Subtotal:', subtotal);
   
   let discountAmount = 0;
   if (state.formData.discount_type && state.formData.discount_value > 0) {
@@ -194,6 +124,8 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
 
   const isValid = errors.length === 0;
 
+  console.log('✅ Calculated totals:', { subtotal, discountAmount, taxAmount, totalAmount, isValid });
+
   return {
     ...state,
     subtotal,
@@ -203,6 +135,82 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
     validationErrors: errors,
     isValid
   };
+}
+
+// Reducer
+function saleCreationReducer(state: SaleCreationState, action: SaleCreationAction): SaleCreationState {
+  console.log('🔄 Reducer action:', action.type);
+  
+  switch (action.type) {
+    case 'ADD_ITEM': {
+      console.log('➕ ADD_ITEM - New item:', action.payload);
+      
+      const existingItemIndex = state.items.findIndex(item => item.product_id === action.payload.product_id);
+      let newItems: SaleItem[];
+      
+      if (existingItemIndex >= 0) {
+        console.log('📈 Updating existing item quantity');
+        newItems = state.items.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + action.payload.quantity }
+            : item
+        );
+      } else {
+        console.log('🆕 Adding new item to list');
+        newItems = [...state.items, action.payload];
+      }
+      
+      console.log('✅ New items array length:', newItems.length);
+      const newState = { ...state, items: newItems };
+      return calculateTotals(newState);
+    }
+
+    case 'UPDATE_ITEM': {
+      const newItems = state.items.map(item =>
+        item.product_id === action.payload.product_id
+          ? { ...item, ...action.payload.updates }
+          : item
+      );
+      const newState = { ...state, items: newItems };
+      return calculateTotals(newState);
+    }
+
+    case 'REMOVE_ITEM': {
+      const newItems = state.items.filter(item => item.product_id !== action.payload);
+      const newState = { ...state, items: newItems };
+      return calculateTotals(newState);
+    }
+
+    case 'UPDATE_FORM_DATA': {
+      const newFormData = { ...state.formData, ...action.payload };
+      const newState = { ...state, formData: newFormData };
+      return calculateTotals(newState);
+    }
+
+    case 'UPDATE_STOCK': {
+      const newStockCache = new Map([...state.stockCache, ...action.payload]);
+      const newItems = state.items.map(item => ({
+        ...item,
+        stock: newStockCache.get(item.product_id) ?? item.stock
+      }));
+      return { ...state, stockCache: newStockCache, items: newItems };
+    }
+
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+
+    case 'SET_VALIDATION_ERRORS':
+      return { ...state, validationErrors: action.payload };
+
+    case 'CALCULATE_TOTALS':
+      return calculateTotals(state);
+
+    case 'RESET_SALE':
+      return { ...initialState, stockCache: state.stockCache };
+
+    default:
+      return state;
+  }
 }
 
 // Context
@@ -224,12 +232,19 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
   const [state, dispatch] = useReducer(saleCreationReducer, initialState);
   const { toast } = useToast();
 
+  console.log('🔄 SaleCreationProvider rendering with state:', {
+    itemsCount: state.items.length,
+    subtotal: state.subtotal,
+    totalAmount: state.totalAmount,
+    isValid: state.isValid
+  });
+
   // Real-time stock updates via Supabase subscriptions
   useEffect(() => {
     const productIds = state.items.map(item => item.product_id);
+    console.log('📦 Setting up subscriptions for products:', productIds);
     if (productIds.length === 0) return;
 
-    // Subscribe to product changes
     const channel = supabase
       .channel('product-changes')
       .on(
@@ -242,7 +257,6 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
         },
         async (payload) => {
           console.log('Product updated:', payload);
-          // Refresh stock for updated product
           if (payload.new?.id) {
             await refreshStock([payload.new.id]);
           }
@@ -258,7 +272,6 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
         },
         async (payload) => {
           console.log('Product unit updated:', payload);
-          // Refresh stock for affected product
           if (payload.new?.product_id) {
             await refreshStock([payload.new.product_id]);
           }
@@ -273,11 +286,13 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
 
   // Actions
   const addItem = useCallback((item: SaleItem) => {
+    console.log('➕ Adding item:', item);
     dispatch({ type: 'ADD_ITEM', payload: item });
     toast({ title: 'Prodotto aggiunto', description: `${item.product_name} aggiunto alla vendita` });
   }, [toast]);
 
   const updateItem = useCallback((productId: string, updates: Partial<SaleItem>) => {
+    console.log('🔄 Updating item:', productId, updates);
     dispatch({ type: 'UPDATE_ITEM', payload: { product_id: productId, updates } });
   }, []);
 
@@ -287,6 +302,7 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
   }, [toast]);
 
   const updateFormData = useCallback((data: Partial<SaleFormData>) => {
+    console.log('📝 Updating form data:', data);
     dispatch({ type: 'UPDATE_FORM_DATA', payload: data });
   }, []);
 
@@ -315,15 +331,12 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
   }, [toast]);
 
   const validateSale = useCallback(async (): Promise<boolean> => {
-    // Refresh stock before validation
     const productIds = state.items.map(item => item.product_id);
     if (productIds.length > 0) {
       await refreshStock(productIds);
     }
     
-    // Force recalculation
     dispatch({ type: 'CALCULATE_TOTALS' });
-    
     return state.isValid;
   }, [state.items, state.isValid, refreshStock]);
 

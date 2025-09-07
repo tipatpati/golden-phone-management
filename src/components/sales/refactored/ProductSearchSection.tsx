@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/services/inventory/types';
 
 export function ProductSearchSection() {
+  console.log('🔍 ProductSearchSection rendering');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,10 +95,11 @@ export function ProductSearchSection() {
       unit_price: product.max_price || product.price || 0,
       min_price: product.min_price,
       max_price: product.max_price,
-      has_serial: product.has_serial,
-      stock: product.stock
+      has_serial: product.has_serial || false,
+      stock: product.stock || 0
     };
 
+    console.log('🛒 Adding sale item:', saleItem);
     addItem(saleItem);
     setSearchTerm('');
     setSearchResults([]);
