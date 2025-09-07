@@ -508,22 +508,8 @@ export type Database = {
             foreignKeyName: "fk_product_recommendations_product"
             columns: ["product_id"]
             isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
-          {
-            foreignKeyName: "fk_product_recommendations_product"
-            columns: ["product_id"]
-            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_product_recommendations_recommended"
-            columns: ["recommended_product_id"]
-            isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "fk_product_recommendations_recommended"
@@ -536,22 +522,8 @@ export type Database = {
             foreignKeyName: "product_recommendations_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
-          {
-            foreignKeyName: "product_recommendations_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_recommendations_recommended_product_id_fkey"
-            columns: ["recommended_product_id"]
-            isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "product_recommendations_recommended_product_id_fkey"
@@ -648,13 +620,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "product_units_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
           {
             foreignKeyName: "product_units_product_id_fkey"
             columns: ["product_id"]
@@ -813,13 +778,6 @@ export type Database = {
             foreignKeyName: "repair_parts_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
-          {
-            foreignKeyName: "repair_parts_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -939,13 +897,6 @@ export type Database = {
           unit_price?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "sale_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
           {
             foreignKeyName: "sale_items_product_id_fkey"
             columns: ["product_id"]
@@ -1148,13 +1099,6 @@ export type Database = {
             foreignKeyName: "supplier_transaction_items_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
-            referencedRelation: "product_effective_stock"
-            referencedColumns: ["product_id"]
-          },
-          {
-            foreignKeyName: "supplier_transaction_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -1294,21 +1238,7 @@ export type Database = {
       }
     }
     Views: {
-      product_effective_stock: {
-        Row: {
-          effective_stock: number | null
-          product_id: string | null
-        }
-        Insert: {
-          effective_stock?: never
-          product_id?: string | null
-        }
-        Update: {
-          effective_stock?: never
-          product_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_add_user_role: {
@@ -1420,6 +1350,10 @@ export type Database = {
           user_id: string
           yearly_sales_target: number
         }[]
+      }
+      get_product_effective_stock: {
+        Args: { product_uuid: string }
+        Returns: number
       }
       get_user_roles: {
         Args: { _user_id: string }

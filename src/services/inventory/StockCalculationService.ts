@@ -19,22 +19,19 @@ export class StockCalculationService {
     return this.effectiveFromProduct(product || {});
   }
 
-  // Fetch effective stock from DB view when needed (server-authoritative)
+  // Fetch effective stock from DB function when needed (server-authoritative)
   static async fetchEffectiveStock(productId: string): Promise<number> {
     if (!productId) return 0;
     try {
       const { data, error } = await (supabase as any)
-        .from('product_effective_stock')
-        .select('effective_stock')
-        .eq('product_id', productId)
-        .maybeSingle();
+        .rpc('get_product_effective_stock', { product_uuid: productId });
 
       if (error) {
         console.error('fetchEffectiveStock error:', error);
         return 0;
       }
 
-      return Number((data as any)?.effective_stock) || 0;
+      return Number(data) || 0;
     } catch (error) {
       console.error('fetchEffectiveStock exception:', error);
       return 0;
@@ -46,20 +43,20 @@ export class StockCalculationService {
     if (!productIds.length) return new Map();
     
     try {
-      const { data, error } = await (supabase as any)
-        .from('product_effective_stock')
-        .select('product_id, effective_stock')
-        .in('product_id', productIds);
-
-      if (error) {
-        console.error('fetchEffectiveStockBatch error:', error);
-        return new Map();
-      }
-
       const stockMap = new Map<string, number>();
-      (data || []).forEach((row: any) => {
-        stockMap.set(row.product_id, Number(row.effective_stock) || 0);
-      });
+      
+      // Use database function for each product to get accurate stock
+      for (const productId of productIds) {
+        const { data, error } = await (supabase as any)
+          .rpc('get_product_effective_stock', { product_uuid: productId });
+
+        if (error) {
+          console.error(`fetchEffectiveStock error for ${productId}:`, error);
+          stockMap.set(productId, 0);
+        } else {
+          stockMap.set(productId, Number(data) || 0);
+        }
+      }
       
       return stockMap;
     } catch (error) {

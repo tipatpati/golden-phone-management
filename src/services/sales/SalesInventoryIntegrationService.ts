@@ -23,14 +23,14 @@ export class SalesInventoryIntegrationService {
 
     const productsMap = new Map(((products as any[]) || []).map((p: any) => [p.id, p]));
 
-    // Fetch effective stock for all involved products via view
-    const { data: stockRows, error: stockErr } = await supabase
-      .from('product_effective_stock' as any)
-      .select('product_id, effective_stock')
-      .in('product_id', productIds);
-    if (stockErr) throw new Error(`Impossibile leggere lo stock: ${stockErr.message}`);
-
-    const stockMap = new Map((((stockRows as any[]) || []) as any[]).map((r: any) => [r.product_id, Number(r.effective_stock) || 0]));
+    // Fetch effective stock for all involved products via database function
+    const stockMap = new Map<string, number>();
+    for (const productId of productIds) {
+      const { data: effectiveStock, error: stockErr } = await supabase
+        .rpc('get_product_effective_stock', { product_uuid: productId });
+      if (stockErr) throw new Error(`Impossibile leggere lo stock per ${productId}: ${stockErr.message}`);
+      stockMap.set(productId, Number(effectiveStock) || 0);
+    }
 
     // Fetch product units for serial validation (batch by serial)
     let units: Array<any> = [];
