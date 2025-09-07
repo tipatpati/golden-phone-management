@@ -19,11 +19,15 @@ import { SmartSerialInput } from "./SmartSerialInput";
 type SaleItem = {
   product_id: string;
   product_name: string;
+  brand: string;
+  model: string;
+  year?: number;
   quantity: number;
   unit_price: number;
   min_price?: number;
   max_price?: number;
   serial_number?: string;
+  stock?: number;
 };
 
 type SaleItemEditorProps = {
