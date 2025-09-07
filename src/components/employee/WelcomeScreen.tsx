@@ -33,14 +33,20 @@ interface ModuleButton {
 
 export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
   const navigate = useNavigate();
+  
+  console.log('🔍 WelcomeScreen Debug:', { userRole, availableRoles: Object.keys(ROLE_CONFIGS) });
+  
   const config = ROLE_CONFIGS[userRole];
 
   if (!config) {
+    console.error('❌ No config found for role:', userRole);
+    console.log('📋 Available roles:', Object.keys(ROLE_CONFIGS));
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Caricamento...</h2>
-          <p className="text-gray-600">Preparazione del tuo spazio di lavoro...</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Errore di configurazione</h2>
+          <p className="text-gray-600">Ruolo non riconosciuto: {userRole}</p>
+          <p className="text-gray-500 text-sm mt-2">Ruoli disponibili: {Object.keys(ROLE_CONFIGS).join(', ')}</p>
         </div>
       </div>
     );

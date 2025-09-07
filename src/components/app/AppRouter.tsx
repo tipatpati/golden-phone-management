@@ -38,13 +38,15 @@ export function AppRouter() {
     isLoggedIn,
     userId: user?.id,
     isInitialized,
-    userRole
+    userRole,
+    userType: typeof userRole
   });
 
   // TEMPORARY FIX: Use the role from AuthContext instead of the problematic hook
   const effectiveRole = userRole || 'salesperson';
   
   console.log('✅ AppRouter proceeding with role from AuthContext:', effectiveRole);
+  console.log('🎯 Passing to EmployeeDashboard:', { userRole: effectiveRole, type: typeof effectiveRole });
 
   // Show loading only while auth is being initialized
   if (!isInitialized) {
