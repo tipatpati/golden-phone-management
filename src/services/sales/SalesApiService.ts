@@ -105,7 +105,32 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       // Inventory updates are handled by database triggers (stock, unit status, sold units)
       console.debug('Inventory updates handled by DB triggers for sale items:', saleData.sale_items.length);
 
-      return sale as Sale;
+      // Return full sale data with items for consistent receipt generation
+      const { data: fullSale, error: fetchError } = await supabase
+        .from('sales')
+        .select(`
+          *,
+          client:clients(id, type, first_name, last_name, company_name, contact_person, email, phone),
+          salesperson:profiles(id, username),
+          sale_items(
+            id,
+            product_id,
+            quantity,
+            unit_price,
+            total_price,
+            serial_number,
+            product:products(id, brand, model, year)
+          )
+        `)
+        .eq('id', sale.id)
+        .single();
+
+      if (fetchError) {
+        console.warn('Could not fetch full sale data, returning basic sale:', fetchError);
+        return sale as Sale;
+      }
+
+      return fullSale as Sale;
     } catch (error) {
       console.error('Error in createSale:', error);
       throw error;

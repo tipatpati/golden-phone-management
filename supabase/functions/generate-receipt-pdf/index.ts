@@ -29,15 +29,15 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch sale data with related information
+    // Fetch sale data with related information using left joins for resilience
     const { data: sale, error: saleError } = await supabase
       .from('sales')
       .select(`
         *,
-        clients!inner(*),
-        sale_items!inner(
+        clients(*),
+        sale_items(
           *,
-          products!inner(*)
+          products(*)
         )
       `)
       .eq('id', saleId)
