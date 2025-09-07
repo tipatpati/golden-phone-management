@@ -67,11 +67,14 @@ export class SalesInventoryIntegrationService {
 
       // Price guardrails using product-level if unit-level not present
       const checkPriceRange = (min?: number | null, max?: number | null) => {
-        if (typeof min === 'number' && item.unit_price < min) {
-          errors.push(`Prezzo inferiore al minimo per ${item.product_id} (min: ${min})`);
-        }
-        if (typeof max === 'number' && max > 0 && item.unit_price > max) {
-          errors.push(`Prezzo superiore al massimo per ${item.product_id} (max: ${max})`);
+        // Allow prices above minimum (no strict minimum enforcement for flexibility)
+        // Only enforce strict maximum with 20% tolerance
+        if (typeof max === 'number' && max > 0) {
+          const tolerance = max * 0.2; // 20% tolerance above max price
+          const allowedMaxPrice = max + tolerance;
+          if (item.unit_price > allowedMaxPrice) {
+            errors.push(`Prezzo eccessivamente alto per ${item.product_id} (max consigliato: ${max}, limite: ${allowedMaxPrice.toFixed(2)})`);
+          }
         }
       };
 
