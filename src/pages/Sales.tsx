@@ -9,12 +9,20 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleUtils } from "@/utils/roleUtils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { useDebouncedSalesSearch } from "@/components/sales/hooks/useDebouncedSalesSearch";
 import { SalesDataService } from "@/services/sales/SalesDataService";
+import { SalesAnalyticsDashboard } from "@/components/sales/SalesAnalyticsDashboard";
+import { EnhancedSalesFilters, type SalesFilters } from "@/components/sales/EnhancedSalesFilters";
+import { useSalesMonitoring } from "@/components/sales/SalesMonitoringService";
 
 const Garentille = () => {
   const { userRole } = useAuth();
+  const { trackInteraction } = useSalesMonitoring();
+  const [filters, setFilters] = React.useState<SalesFilters>({});
+  const [showAnalytics, setShowAnalytics] = React.useState(false);
+  
   const {
     searchTerm,
     setSearchTerm,
@@ -27,10 +35,48 @@ const Garentille = () => {
   // Check if user has admin-level permissions to see analytics
   const canViewAnalytics = userRole && roleUtils.hasPermissionLevel(userRole, 'admin');
   
+  // Filter sales based on active filters
+  const filteredGarentille = React.useMemo(() => {
+    let filtered = garentille;
+    
+    if (filters.dateFrom) {
+      filtered = filtered.filter(sale => new Date(sale.created_at) >= filters.dateFrom!);
+    }
+    if (filters.dateTo) {
+      const endDate = new Date(filters.dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(sale => new Date(sale.created_at) <= endDate);
+    }
+    if (filters.status) {
+      filtered = filtered.filter(sale => sale.status === filters.status);
+    }
+    if (filters.paymentMethod) {
+      filtered = filtered.filter(sale => sale.payment_method === filters.paymentMethod);
+    }
+    if (filters.minAmount !== undefined) {
+      filtered = filtered.filter(sale => sale.total_amount >= filters.minAmount!);
+    }
+    if (filters.maxAmount !== undefined) {
+      filtered = filtered.filter(sale => sale.total_amount <= filters.maxAmount!);
+    }
+    
+    return filtered;
+  }, [garentille, filters]);
+  
+  // Track page view
+  React.useEffect(() => {
+    trackInteraction('page_view', { page: 'sales' });
+  }, [trackInteraction]);
+  
   // Format sales data for display
-  const formattedGarentille = garentille.map(sale => 
+  const formattedGarentille = filteredGarentille.map(sale => 
     SalesDataService.formatSaleForDisplay(sale)
   );
+  
+  const resetFilters = () => {
+    setFilters({});
+    trackInteraction('filters_reset');
+  };
 
   if (isLoading && !garentille.length) {
     return (
@@ -64,9 +110,34 @@ const Garentille = () => {
         <SalesHeader />
         <SalesNavCards />
         
-        {/* Only show analytics for admin users */}
+        {/* Enhanced Filters */}
+        <EnhancedSalesFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          onReset={resetFilters}
+          isLoading={isLoading}
+        />
+        
+        {/* Analytics Dashboard for admin users */}
         {canViewAnalytics && (
-          <SalesStats sales={garentille} />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Analytics</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAnalytics(!showAnalytics)}
+              >
+                {showAnalytics ? 'Nascondi' : 'Mostra'} Analytics
+              </Button>
+            </div>
+            
+            {showAnalytics ? (
+              <SalesAnalyticsDashboard sales={filteredGarentille} isLoading={isLoading} />
+            ) : (
+              <SalesStats sales={filteredGarentille} />
+            )}
+          </div>
         )}
         
         <SalesSearchBar 

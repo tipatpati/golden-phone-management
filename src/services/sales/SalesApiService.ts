@@ -1,5 +1,7 @@
 import { BaseApiService } from '../core/BaseApiService';
 import type { Sale, CreateSaleData } from './types';
+import { SalesValidationService } from '../../components/sales/SalesValidationService';
+import { useSalesMonitoring } from '../../components/sales/SalesMonitoringService';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {
@@ -38,6 +40,15 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
   async create(saleData: CreateSaleData): Promise<Sale> {
     console.log('Creating sale:', saleData);
+    
+    // Enhanced validation with security checks
+    const validation = await SalesValidationService.validateSaleData(saleData);
+    if (!validation.isValid) {
+      throw new Error(`Dati non validi: ${validation.errors.join(', ')}`);
+    }
+    
+    // Sanitize input data
+    const sanitizedData = SalesValidationService.sanitizeInput(saleData);
     
     // Validate stock availability first
     const productItems = saleData.sale_items.map(item => ({

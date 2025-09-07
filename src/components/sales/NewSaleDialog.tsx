@@ -20,6 +20,9 @@ import { DiscountManager } from "./DiscountManager";
 import { HybridPaymentManager } from "./HybridPaymentManager";
 import { CategorySelector } from "./CategorySelector";
 import { toast } from "@/components/ui/sonner";
+import { SalesValidationService } from './SalesValidationService';
+import { useSalesMonitoring } from './SalesMonitoringService';
+import { SalesPermissionGuard } from './SalesPermissionGuard';
 
 type SaleItem = {
   product_id: string;
@@ -52,6 +55,7 @@ export function NewSaleDialog() {
 
   const createSale = useCreateSale();
   const { user } = useAuth();
+  const { recordAudit, measureAsync, trackInteraction } = useSalesMonitoring();
 
   
 
@@ -185,27 +189,23 @@ export function NewSaleDialog() {
       return;
     }
 
-    // Validate that all prices are within allowed range
-    const invalidPriceItems = saleItems.filter(item => 
-      item.min_price && item.max_price && 
-      (item.unit_price < item.min_price || item.unit_price > item.max_price)
-    );
-    
-    if (invalidPriceItems.length > 0) {
-      const invalidNames = invalidPriceItems.map(item => item.product_name).join(', ');
-      toast.error(`I seguenti articoli hanno prezzi fuori dal range consentito: ${invalidNames}`);
-      return;
-    }
+    // Enhanced validation with security checks
+    const saleDataForValidation = {
+      client_id: selectedClient?.id,
+      payment_method: paymentMethod,
+      payment_type: isHybridPayment ? 'hybrid' as const : 'single' as const,
+      cash_amount: isHybridPayment ? cashAmount : (paymentMethod === 'cash' ? totalAmount : 0),
+      card_amount: isHybridPayment ? cardAmount : (paymentMethod === 'card' ? totalAmount : 0),
+      bank_transfer_amount: isHybridPayment ? bankTransferAmount : (paymentMethod === 'bank_transfer' ? totalAmount : 0),
+      discount_amount: discountAmount,
+      discount_percentage: discountType === 'percentage' ? discountValue : 0,
+      notes,
+      sale_items: saleItems
+    };
 
-    // Validate hybrid payment total with improved precision
-    if (isHybridPayment && Math.abs(totalPaid - totalAmount) > 0.005) {
-      toast.error(`Il totale pagato (€${totalPaid.toFixed(2)}) non corrisponde al totale dovuto (€${totalAmount.toFixed(2)}). Differenza: €${Math.abs(totalPaid - totalAmount).toFixed(2)}`);
-      return;
-    }
-
-    // Validate discount doesn't exceed subtotal
-    if (discountAmount > subtotal) {
-      toast.error(`Lo sconto (€${discountAmount.toFixed(2)}) non può essere superiore al subtotale (€${subtotal.toFixed(2)})`);
+    const validation = await SalesValidationService.validateSaleData(saleDataForValidation);
+    if (!validation.isValid) {
+      toast.error(`Errori di validazione: ${validation.errors.join(', ')}`);
       return;
     }
 
@@ -231,7 +231,17 @@ export function NewSaleDialog() {
       
       console.log('Creating sale with validated data:', saleData);
       
-      const createdSaleData = await createSale.mutateAsync(saleData);
+      // Record audit log and measure performance
+      const createdSaleData = await measureAsync(
+        () => createSale.mutateAsync(saleData),
+        'create',
+        { itemCount: saleItems.length, totalAmount }
+      );
+      
+      recordAudit('sale_created', {
+        entityId: createdSaleData.id,
+        newValues: { sale_number: createdSaleData.sale_number, total_amount: totalAmount }
+      });
       
       console.log('Sale creation completed:', createdSaleData);
       
@@ -280,7 +290,8 @@ export function NewSaleDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <SalesPermissionGuard requiredRole="create">
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg font-bold py-6 px-8 min-h-[60px]">
           <Plus className="mr-3 h-7 w-7" />
@@ -435,6 +446,7 @@ export function NewSaleDialog() {
           onOpenChange={setShowReceipt}
         />
       )}
-    </Dialog>
+      </Dialog>
+    </SalesPermissionGuard>
   );
 }

@@ -5,6 +5,43 @@ import type { Sale } from './types';
  */
 export class SalesDataService {
   /**
+   * Format client display name consistently (alias for compatibility)
+   */
+  static getClientDisplayName(client: any): string {
+    if (!client) return 'Cliente non specificato';
+    
+    if (client.type === 'business' && client.company_name) {
+      return client.company_name;
+    }
+    
+    if (client.first_name || client.last_name) {
+      return [client.first_name, client.last_name].filter(Boolean).join(' ');
+    }
+    
+    return 'Cliente senza nome';
+  }
+
+  /**
+   * Format date consistently
+   */
+  static formatDate(date: string | Date): string {
+    return new Intl.DateTimeFormat('it-IT', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(date));
+  }
+
+  /**
+   * Format payment method (alias for compatibility)
+   */
+  static formatPaymentMethod(method: string): string {
+    return this.getPaymentMethodDisplay(method);
+  }
+
+  /**
    * Extract client name from sale data with proper fallback
    */
   static getClientName(sale: Sale): string {
