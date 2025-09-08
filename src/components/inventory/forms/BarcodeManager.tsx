@@ -88,8 +88,38 @@ export function BarcodeManager({
 
   // Don't auto-generate barcodes - they're only created through the product units system
 
-  if (!hasSerial || unitBarcodes.length === 0) {
+  if (!hasSerial) {
     return null;
+  }
+
+  // For new products without productId, show info message
+  if (!productId) {
+    return (
+      <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium">Barcode Generation</h4>
+        </div>
+        <div className="text-sm text-muted-foreground space-y-2">
+          <p>✨ Barcodes will be automatically generated when you save this product.</p>
+          <p>Each unit will receive a unique CODE128 barcode with GPMS prefix.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // For existing products, show actual barcodes or message if none exist
+  if (unitBarcodes.length === 0) {
+    return (
+      <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium">Unit Barcodes</h4>
+        </div>
+        <div className="text-sm text-muted-foreground space-y-2">
+          <p>No units found for this product yet.</p>
+          <p>Add units to see their barcodes here.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
