@@ -146,13 +146,13 @@ export function ThermalLabelPreview({
     }}>
         {/* Product Name with Storage/RAM - Primary focus */}
         <div style={{
-        fontSize: '11px',
+        fontSize: '13px',
         fontWeight: '800',
         lineHeight: '1.0',
         color: '#000',
         textTransform: 'uppercase',
         letterSpacing: '0.2px',
-        maxHeight: '32px',
+        maxHeight: '40px',
         overflow: 'hidden',
         display: '-webkit-box',
         WebkitLineClamp: 3,
@@ -164,7 +164,7 @@ export function ThermalLabelPreview({
           {formattedLabel.productName}
           {(formattedLabel.storage || formattedLabel.ram) && (
             <div style={{
-              fontSize: '9px',
+              fontSize: '11px',
               fontWeight: '600',
               marginTop: '1px',
               color: '#333'
