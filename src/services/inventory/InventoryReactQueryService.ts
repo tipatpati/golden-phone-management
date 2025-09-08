@@ -1,5 +1,5 @@
 import { InventoryManagementService } from './InventoryManagementService';
-import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { useOptimizedQuery } from '@/hooks/useAdvancedCaching';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,13 @@ export const useProducts = (searchTerm: string = '') => {
   return useOptimizedQuery(
     ['products', 'list', searchTerm],
     () => InventoryManagementService.getProducts({ searchTerm }),
-    'realtime'
+    {
+      priority: 'high',
+      enablePrefetching: true,
+      enableOptimisticUpdates: true,
+      cacheTags: ['dynamic', 'inventory'],
+      dependencies: ['categories', 'brands']
+    }
   );
 };
 
@@ -20,7 +26,12 @@ export const useProduct = (id: string) => {
   return useOptimizedQuery(
     ['products', 'detail', id],
     () => InventoryManagementService.getProductWithUnits(id),
-    'realtime'
+    {
+      priority: 'normal',
+      enablePrefetching: false,
+      enableOptimisticUpdates: true,
+      cacheTags: ['realtime', 'inventory']
+    }
   );
 };
 
@@ -108,7 +119,11 @@ export const useCategories = () => {
   return useOptimizedQuery(
     ['categories'],
     () => InventoryManagementService.getCategories(),
-    'static'
+    {
+      priority: 'low',
+      enablePrefetching: true,
+      cacheTags: ['static', 'reference']
+    }
   );
 };
 
@@ -116,7 +131,10 @@ export const useProductRecommendations = (productId: string) => {
   return useOptimizedQuery(
     ['product-recommendations', productId],
     () => Promise.resolve([]), // TODO: Implement recommendations
-    'moderate'
+    {
+      priority: 'low',
+      cacheTags: ['static']
+    }
   );
 };
 

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { dataOrchestrator } from './DataOrchestrator';
 import { eventBus } from './EventBus';
 import { cacheManager } from './CacheManager';
+import { advancedCacheManager } from './AdvancedCacheManager';
 import { logger } from '@/utils/logger';
 
 interface OrchestrationContextType {
@@ -10,6 +11,7 @@ interface OrchestrationContextType {
   orchestrator: typeof dataOrchestrator;
   eventBus: typeof eventBus;
   cacheManager: typeof cacheManager;
+  advancedCacheManager: typeof advancedCacheManager;
 }
 
 const OrchestrationContext = createContext<OrchestrationContextType | null>(null);
@@ -34,6 +36,14 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
         // Initialize the orchestrator with the query client
         await dataOrchestrator.initialize(queryClient);
         
+        // Initialize advanced cache manager with optimizations
+        await advancedCacheManager.initialize(queryClient, {
+          enablePrefetching: true,
+          enableBatchInvalidation: true,
+          enableOptimisticUpdates: true,
+          enableBackgroundRefresh: true
+        });
+        
         setIsInitialized(true);
         
         logger.info('OrchestrationProvider: Data orchestration system initialized successfully');
@@ -49,7 +59,8 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
     isInitialized,
     orchestrator: dataOrchestrator,
     eventBus,
-    cacheManager
+    cacheManager,
+    advancedCacheManager
   };
 
   return (
