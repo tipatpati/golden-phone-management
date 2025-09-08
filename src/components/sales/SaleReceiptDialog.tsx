@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Receipt, Download } from "lucide-react";
 import { type Sale } from "@/services";
+import QRCode from "qrcode";
 import { ReceiptContent } from "./ReceiptContent";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +19,8 @@ export function SaleReceiptDialog({
   onOpenChange
 }: SaleReceiptDialogProps) {
   const previewRef = useRef<HTMLDivElement>(null);
+  const [qrCode, setQrCode] = React.useState<string>('');
+  const [isQrCodeGenerating, setIsQrCodeGenerating] = React.useState<boolean>(false);
 
   // Client name calculation
   const clientName = React.useMemo(() => {
@@ -27,11 +30,43 @@ export function SaleReceiptDialog({
     return sale.client.type === "business" ? sale.client.company_name : `${sale.client.first_name} ${sale.client.last_name}`;
   }, [sale?.client]);
 
-  // QR code for receipt preview (simple placeholder)
-  const qrCode = React.useMemo(() => 
-    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSIzMCIgeT0iMzAiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+UVI8L3RleHQ+Cjwvc3ZnPgo=',
-    []
-  );
+  // Generate actual QR code for the receipt
+  const generateQRCode = React.useCallback(async (saleId: string) => {
+    if (isQrCodeGenerating) return;
+    
+    setIsQrCodeGenerating(true);
+    
+    try {
+      // Create QR content with URL to the receipt
+      const receiptUrl = `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/capture-and-convert?sale_id=${saleId}`;
+      
+      // Generate actual QR code
+      const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
+        width: 60,
+        margin: 0,
+        errorCorrectionLevel: 'L',
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      setQrCode(qrDataUrl);
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+      // Create fallback QR code
+      setQrCode('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSIzMCIgeT0iMzAiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+UVI8L3RleHQ+Cjwvc3ZnPgo=');
+    } finally {
+      setIsQrCodeGenerating(false);
+    }
+  }, [isQrCodeGenerating]);
+
+  // Generate QR code when dialog opens
+  React.useEffect(() => {
+    if (open && sale?.id && !qrCode && !isQrCodeGenerating) {
+      generateQRCode(sale.id);
+    }
+  }, [open, sale?.id, qrCode, isQrCodeGenerating, generateQRCode]);
 
   const capturePreviewHTML = (): string => {
     if (!previewRef.current) {
@@ -49,6 +84,7 @@ export function SaleReceiptDialog({
         <head>
           <meta charset="UTF-8">
           <title>Ricevuta #${sale.sale_number}</title>
+          <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
           <style>
             @page { 
               margin: 0; 
@@ -69,6 +105,32 @@ export function SaleReceiptDialog({
         </head>
         <body>
           ${clonedElement.innerHTML}
+          <script>
+            // Generate QR code if needed
+            window.addEventListener('load', function() {
+              const qrPlaceholders = document.querySelectorAll('[data-qr-url]');
+              qrPlaceholders.forEach(placeholder => {
+                const url = placeholder.getAttribute('data-qr-url');
+                if (url && window.QRCode) {
+                  const canvas = document.createElement('canvas');
+                  QRCode.toCanvas(canvas, url, {
+                    width: 60,
+                    margin: 0,
+                    errorCorrectionLevel: 'L',
+                    color: {
+                      dark: '#000000',
+                      light: '#FFFFFF'
+                    }
+                  }, function(error) {
+                    if (!error) {
+                      placeholder.innerHTML = '';
+                      placeholder.appendChild(canvas);
+                    }
+                  });
+                }
+              });
+            });
+          </script>
         </body>
       </html>
     `;
@@ -95,7 +157,7 @@ export function SaleReceiptDialog({
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
-      }, 500);
+      }, 2000); // Increased delay for QR code generation
 
     } catch (error) {
       console.error('Print failed:', error);

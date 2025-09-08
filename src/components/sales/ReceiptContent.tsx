@@ -181,19 +181,37 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
       </div>
 
       {/* QR Code */}
-      {qrCode && (
+      {qrCode ? (
         <div style={{
           textAlign: 'center',
           marginBottom: '8px'
         }}>
-          <img src={qrCode} alt="QR Code" style={{
-            width: '60px',
-            height: '60px',
-            margin: '0 auto',
-            border: '1px solid #000'
-          }} />
+          {qrCode.startsWith('data:image') ? (
+            <img src={qrCode} alt="QR Code" style={{
+              width: '60px',
+              height: '60px',
+              margin: '0 auto',
+              border: '1px solid #000'
+            }} />
+          ) : (
+            <div 
+              data-qr-url={qrCode}
+              style={{
+                width: '60px',
+                height: '60px',
+                margin: '0 auto',
+                border: '1px solid #000',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '8px'
+              }}
+            >
+              QR
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* Date and Time */}
       <div style={{
