@@ -147,104 +147,65 @@ export class ThermalLabelService {
   }
 
   /**
-   * Opens print dialog with generated labels using single-source approach
+   * NEW SINGLE-SOURCE APPROACH: Print labels using exact preview HTML
    */
   public static async printLabels(
     labels: ThermalLabelData[],
     options: ThermalLabelOptions & { companyName?: string }
   ): Promise<{ success: boolean; message: string; totalLabels: number }> {
     try {
-      // Generate the exact same HTML content as preview
-      const htmlContent = this.generateThermalLabels(labels, options);
       const totalLabels = labels.length * options.copies;
-      
-      // Use the unified capture-and-convert approach for consistent output
-      try {
-        const response = await fetch(`https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/capture-and-convert`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            html: htmlContent,
-            type: 'html', // Keep as HTML for direct printing
-            filename: `thermal-labels-${Date.now()}`
-          })
-        });
 
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          
-          // Create print window with the processed content
-          const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=no,resizable=no');
-          
-          if (!printWindow) {
-            throw new Error('Print popup was blocked. Please allow popups and try again.');
-          }
+      // Generate the exact same HTML structure as the preview components
+      const labelsHTML = labels.flatMap(label => 
+        Array(options.copies).fill(null).map(() => this.generateSingleLabelHTML(label, options))
+      ).join('\n');
 
-          printWindow.location.href = url;
-          
-          // Wait for content to load then print
-          printWindow.addEventListener('load', () => {
-            setTimeout(() => {
-              printWindow.print();
-              window.URL.revokeObjectURL(url);
-            }, 1000);
-          });
+      const completeHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Thermal Labels</title>
+            <style>
+              @page { margin: 0; size: auto; }
+              body { margin: 8px; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+              .label-container { display: flex; flex-wrap: wrap; gap: 8px; }
+              .thermal-label {
+                width: 227px; height: 189px; border: 2px solid #000; border-radius: 4px;
+                padding: 3px; margin: 8px; font-size: 8px; background: white;
+                display: flex; flex-direction: column; text-align: center; line-height: 1.1;
+                box-sizing: border-box; overflow: hidden; page-break-inside: avoid; gap: 1px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="label-container">${labelsHTML}</div>
+          </body>
+        </html>
+      `;
 
-          return {
-            success: true,
-            message: `Successfully prepared ${totalLabels} thermal labels for printing`,
-            totalLabels
-          };
-        }
-      } catch (serviceError) {
-        console.warn('Unified service failed, falling back to direct printing:', serviceError);
-      }
-
-      // Fallback to direct printing if service fails
-      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=no,resizable=no');
-      
+      // Use direct printing (most reliable for thermal labels)
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
       if (!printWindow) {
-        throw new Error('Print popup was blocked. Please allow popups and try again.');
+        throw new Error('Print popup blocked. Please allow popups.');
       }
 
-      // Write content and prepare for printing
-      printWindow.document.write(htmlContent);
+      printWindow.document.write(completeHTML);
       printWindow.document.close();
       printWindow.focus();
-
-      // Wait for content to load and barcodes to render
-      await new Promise(resolve => {
-        if (printWindow.document.readyState === 'complete') {
-          resolve(void 0);
-        } else {
-          printWindow.addEventListener('load', () => resolve(void 0));
-        }
-      });
-
-      // Additional delay to ensure barcode library loads and renders
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Wait for barcodes to be converted to images
-      await this.waitForBarcodeImages(printWindow);
-
-      // Final delay before initiating print
+      
+      // Wait for content to load, then print
       setTimeout(() => {
-        try {
-          printWindow.print();
-        } catch (printError) {
-          console.error('Print initiation failed:', printError);
-          alert('Print failed. Please try using your browser\'s print function (Ctrl+P)');
-        }
-      }, 500);
+        printWindow.print();
+      }, 1000);
 
       return {
         success: true,
         message: `Successfully prepared ${totalLabels} thermal labels for printing`,
         totalLabels
       };
+
     } catch (error) {
       console.error('Print operation failed:', error);
       return {
@@ -253,5 +214,62 @@ export class ThermalLabelService {
         totalLabels: 0
       };
     }
+  }
+
+  /**
+   * Generate HTML for a single label that matches the preview exactly
+   */
+  private static generateSingleLabelHTML(
+    label: ThermalLabelData,
+    options: ThermalLabelOptions & { companyName?: string }
+  ): string {
+    return `
+      <div class="thermal-label">
+        <!-- Header Section -->
+        <div style="min-height: 16px; border-bottom: 1px solid #e5e5e5; padding-bottom: 1px; margin-bottom: 2px; overflow: hidden;">
+          ${options.companyName ? `
+            <div style="font-size: 8px; font-weight: 700; text-transform: uppercase; color: #000; letter-spacing: 0.5px; line-height: 1.0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${this.escapeHtml(options.companyName)}
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Main Content Section -->
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 0; overflow: hidden;">
+          <!-- Product Name with Storage/RAM -->
+          <div style="font-size: 16px; font-weight: 800; line-height: 1.0; color: #000; text-transform: uppercase; letter-spacing: 0.2px; max-height: 50px; overflow: hidden; text-align: center;">
+            ${this.escapeHtml(label.productName)}
+            ${(label.storage || label.ram) ? `
+              <div style="font-size: 14px; font-weight: 600; margin-top: 1px; color: #333;">
+                ${label.storage || ''}${label.storage && label.ram ? ' • ' : ''}${label.ram || ''}
+              </div>
+            ` : ''}
+          </div>
+          
+          <!-- Serial Number Section -->
+          ${label.serialNumber ? `
+            <div style="font-size: 10px; font-weight: 600; color: #000; text-align: center; margin-top: 2px; letter-spacing: 0.1px;">
+              ${this.escapeHtml(label.serialNumber)}
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Price Section -->
+        ${label.maxPrice ? `
+          <div style="font-size: 24px; font-weight: 900; color: #000; text-align: center; padding: 2px 0; border-top: 2px solid #000; margin-bottom: 2px; letter-spacing: 0.3px; line-height: 1.0;">
+            €${label.maxPrice.toFixed(2)}
+          </div>
+        ` : ''}
+
+        <!-- Barcode Section -->
+        ${label.barcode ? `
+          <div style="display: flex; justify-content: center; align-items: center; min-height: 55px; max-height: 55px; background: #ffffff; padding: 2px; overflow: hidden;">
+            <div style="font-size: 10px; font-family: 'Courier New', monospace; letter-spacing: 1px; font-weight: bold;">
+              ${this.escapeHtml(label.barcode)}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 }

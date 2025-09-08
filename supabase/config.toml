@@ -32,9 +32,6 @@ enable_signup = true
 [functions.product-bulk-operations]
 verify_jwt = true
 
-[functions.generate-receipt-pdf]
-verify_jwt = false
-
 [functions.html-to-pdf]
 verify_jwt = false
 
