@@ -16,6 +16,7 @@ import { useProducts } from '@/hooks/useInventory';
 import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
 import { SerialNumberManager } from '@/components/inventory/forms/SerialNumberManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
+import { BarcodeManager } from '@/components/inventory/forms/BarcodeManager';
 import { useProductForm } from '@/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm } from '@/services/inventory/types';
@@ -35,6 +36,7 @@ interface AcquisitionFormProps {
 export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [productBarcodes, setProductBarcodes] = useState<Record<number, string>>({});
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -120,6 +122,10 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     setItems(prev => prev.map((item, i) => 
       i === index ? { ...item, unitEntries, quantity: unitEntries.length } : item
     ));
+  }, []);
+
+  const handleBarcodeGenerated = useCallback((index: number, barcode: string) => {
+    setProductBarcodes(prev => ({ ...prev, [index]: barcode }));
   }, []);
 
   const calculateTotal = useCallback(() => {
@@ -283,6 +289,15 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                             <BarcodePreview
                               unitEntries={item.unitEntries}
                               hasSerial={item.productData.has_serial}
+                              productBarcode={productBarcodes[index]}
+                            />
+                            
+                            {/* Barcode Manager for Product and Units */}
+                            <BarcodeManager
+                              serialNumbers={item.unitEntries.map(u => u.serial).join(',')}
+                              hasSerial={item.productData.has_serial}
+                              productId={undefined} // New product, no ID yet
+                              onBarcodeGenerated={(barcode) => handleBarcodeGenerated(index, barcode)}
                             />
                           </div>
                         )}
