@@ -44,11 +44,12 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       // Generate sale number
       const saleNumber = await this.generateSaleNumber();
       
-      // Calculate totals
-      const subtotal = saleData.sale_items.reduce(
+      // Calculate totals - prices include 22% VAT, so we need to extract the base price
+      const totalWithVAT = saleData.sale_items.reduce(
         (sum, item) => sum + (item.quantity * item.unit_price), 
         0
       );
+      const subtotal = totalWithVAT / 1.22; // Remove VAT to get base price
       const taxAmount = subtotal * 0.22; // 22% VAT
       const totalAmount = subtotal + taxAmount;
 

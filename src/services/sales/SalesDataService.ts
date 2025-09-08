@@ -170,10 +170,12 @@ export class SalesDataService {
    * Calculate totals for sale items
    */
   static calculateTotals(items: any[], discountAmount: number = 0) {
-    const subtotal = items.reduce((sum, item) => 
+    // Prices include 22% VAT, so we need to extract the base price
+    const totalWithVAT = items.reduce((sum, item) => 
       sum + (Number(item.unit_price) * Number(item.quantity)), 0
     );
     
+    const subtotal = totalWithVAT / 1.22; // Remove VAT to get base price
     const discountedSubtotal = Math.max(0, subtotal - discountAmount);
     const taxAmount = discountedSubtotal * 0.22; // 22% IVA
     const totalAmount = discountedSubtotal + taxAmount;

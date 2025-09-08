@@ -85,8 +85,10 @@ const initialState: SaleCreationState = {
 function calculateTotals(state: SaleCreationState): SaleCreationState {
   console.log('🧮 Calculating totals for items:', state.items.length);
   
-  const subtotal = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  console.log('💰 Subtotal:', subtotal);
+  // Prices include 22% VAT, so we need to extract the base price
+  const totalWithVAT = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  const subtotal = totalWithVAT / 1.22; // Remove VAT to get base price
+  console.log('💰 Subtotal (excluding VAT):', subtotal, 'Total with VAT:', totalWithVAT);
   
   let discountAmount = 0;
   if (state.formData.discount_type && state.formData.discount_value > 0) {

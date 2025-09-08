@@ -28,7 +28,9 @@ export function SaleTotals({
     return null;
   }
 
-  const originalSubtotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  // Prices include 22% VAT, so we need to extract the base price
+  const totalWithVAT = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const originalSubtotal = totalWithVAT / 1.22; // Remove VAT to get base price
   const computedFinalSubtotal = finalSubtotal ?? (originalSubtotal - discountAmount);
   const computedTaxAmount = taxAmount ?? (computedFinalSubtotal * 0.22);
   const computedTotalAmount = totalAmount ?? (computedFinalSubtotal + computedTaxAmount);
