@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Smartphone, Battery, Palette, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Product, ProductUnit } from "@/services/inventory/types";
 import type { CreateSaleData } from "@/services/sales/types";
 
@@ -38,6 +39,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit | null>(null);
   const [customPrice, setCustomPrice] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
+  const { userRole } = useAuth();
 
   // Filter available units based on search term
   const availableUnits = (product.product_units || [])
@@ -51,10 +53,13 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
   // Set default price when unit is selected
   React.useEffect(() => {
     if (selectedUnit) {
-      const defaultPrice = selectedUnit.max_price || product.max_price || product.price || 0;
+      // For salespersons, always use max selling price by default
+      const defaultPrice = userRole === 'salesperson' 
+        ? (selectedUnit.max_price || product.max_price || product.price || 0)
+        : (selectedUnit.max_price || product.max_price || product.price || 0);
       setCustomPrice(defaultPrice.toString());
     }
-  }, [selectedUnit, product]);
+  }, [selectedUnit, product, userRole]);
 
   const handleUnitSelect = (unit: ProductUnit) => {
     setSelectedUnit(unit);
@@ -216,13 +221,22 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
 
                   <div className="flex items-center space-x-3">
                     <div className="text-right">
-                      <div className="font-semibold">
-                        €{unit.max_price || product.max_price || product.price || 0}
-                      </div>
-                      {(unit.min_price || product.min_price) && (
-                        <div className="text-xs text-muted-foreground">
-                          da €{unit.min_price || product.min_price}
+                      {/* For salespersons, only show max selling price */}
+                      {userRole === 'salesperson' ? (
+                        <div className="font-semibold">
+                          €{unit.max_price || product.max_price || product.price || 0}
                         </div>
+                      ) : (
+                        <>
+                          <div className="font-semibold">
+                            €{unit.max_price || product.max_price || product.price || 0}
+                          </div>
+                          {(unit.min_price || product.min_price) && (
+                            <div className="text-xs text-muted-foreground">
+                              da €{unit.min_price || product.min_price}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                     
@@ -250,7 +264,11 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
                     placeholder="0.00"
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Range: €{selectedUnit.min_price || product.min_price || 0} - €{selectedUnit.max_price || product.max_price || product.price || 0}
+                    {/* For salespersons, only show max price */}
+                    {userRole === 'salesperson' 
+                      ? `Prezzo: €${selectedUnit.max_price || product.max_price || product.price || 0}`
+                      : `Range: €${selectedUnit.min_price || product.min_price || 0} - €${selectedUnit.max_price || product.max_price || product.price || 0}`
+                    }
                   </div>
                 </div>
                 

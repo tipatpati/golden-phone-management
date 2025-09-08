@@ -14,6 +14,7 @@ import {
 import { SalesProductService } from '@/services/sales/SalesProductService';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { getProductPricingInfoSync } from '@/utils/unitPricingUtils';
 import type { Product } from '@/services/inventory/types';
 
@@ -24,6 +25,7 @@ export function ProductSearchSection() {
   const [isLoading, setIsLoading] = useState(false);
   const { addItem } = useSaleCreation();
   const { toast } = useToast();
+  const { userRole } = useAuth();
 
   // Search for products
   const performSearch = async (query: string) => {
@@ -84,14 +86,18 @@ export function ProductSearchSection() {
     });
     let unitPrice = 0;
 
-    // Determine the best price to use
-    if (pricingInfo.priceRange) {
-      // Use the minimum price from range as starting point
-      unitPrice = pricingInfo.priceRange.min;
-    } else if (product.price > 0) {
-      unitPrice = product.price;
-    } else if (product.max_price && product.max_price > 0) {
-      unitPrice = product.max_price;
+    // For salespersons, always use max selling price by default
+    if (userRole === 'salesperson') {
+      unitPrice = product.max_price || product.price || 0;
+    } else {
+      // For other roles, use pricing logic with range preference
+      if (pricingInfo.priceRange) {
+        unitPrice = pricingInfo.priceRange.min;
+      } else if (product.price > 0) {
+        unitPrice = product.price;
+      } else if (product.max_price && product.max_price > 0) {
+        unitPrice = product.max_price;
+      }
     }
 
     // Validate price
@@ -127,15 +133,19 @@ export function ProductSearchSection() {
 
   // Handle unit selection for serialized products
   const handleUnitSelect = (product: Product, unit: any) => {
-    // Use the specific unit's price if available, otherwise fall back to product pricing
     let unitPrice = 0;
 
-    if (unit.price && unit.price > 0) {
-      unitPrice = unit.price;
-    } else if (product.max_price && product.max_price > 0) {
-      unitPrice = product.max_price;
-    } else if (product.price > 0) {
-      unitPrice = product.price;
+    // For salespersons, always use max selling price by default
+    if (userRole === 'salesperson') {
+      unitPrice = unit.max_price || product.max_price || product.price || 0;
+    } else {
+      if (unit.price && unit.price > 0) {
+        unitPrice = unit.price;
+      } else if (product.max_price && product.max_price > 0) {
+        unitPrice = product.max_price;
+      } else if (product.price > 0) {
+        unitPrice = product.price;
+      }
     }
 
     // Validate price
@@ -248,6 +258,17 @@ export function ProductSearchSection() {
 
                       <div className="text-right">
                         {(() => {
+                          // For salespersons, only show max selling price
+                          if (userRole === 'salesperson') {
+                            const maxPrice = product.max_price || product.price || 0;
+                            return (
+                              <div className="font-semibold">
+                                €{maxPrice.toFixed(2)}
+                              </div>
+                            );
+                          }
+                          
+                          // For other roles, show pricing info as before
                           const pricingInfo = getProductPricingInfoSync({
                             price: product.price || 0,
                             has_serial: product.has_serial || false,
@@ -290,10 +311,17 @@ export function ProductSearchSection() {
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              {unit.price && unit.price > 0 && (
+                              {/* For salespersons, only show max selling price */}
+                              {userRole === 'salesperson' ? (
                                 <span className="text-xs font-semibold">
-                                  €{unit.price.toFixed(2)}
+                                  €{(unit.max_price || product.max_price || product.price || 0).toFixed(2)}
                                 </span>
+                              ) : (
+                                unit.price && unit.price > 0 && (
+                                  <span className="text-xs font-semibold">
+                                    €{unit.price.toFixed(2)}
+                                  </span>
+                                )
                               )}
                               <Button size="sm" variant="ghost" className="h-6 text-xs">
                                 Seleziona
