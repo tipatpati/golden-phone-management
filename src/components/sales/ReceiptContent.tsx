@@ -206,7 +206,7 @@ export function ReceiptContent({
       paddingLeft: '16px',
       paddingRight: '16px',
       fontWeight: 'bold'
-    }} className="px-[121px]">
+    }}>
         TUTTE LE VENDITE SONO<br />
         DEFINITIVE E NON RIMBORSABILI,<br />
         A MENO CHE IL<br />
