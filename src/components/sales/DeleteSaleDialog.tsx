@@ -4,13 +4,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useDeleteSale, type Sale } from "@/services";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DeleteSaleDialogProps {
   sale: Sale;
 }
 
 export function DeleteSaleDialog({ sale }: DeleteSaleDialogProps) {
+  const { userRole } = useAuth();
   const deleteSale = useDeleteSale();
+
+  // Only show for super admins
+  if (userRole !== 'super_admin') {
+    return null;
+  }
 
   const handleDelete = async () => {
     try {

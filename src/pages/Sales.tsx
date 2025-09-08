@@ -146,7 +146,11 @@ const Garentille = () => {
           isSearching={isSearching}
         />
         
-        <SalesList sales={formattedGarentille} />
+        <SalesList 
+          sales={formattedGarentille} 
+          onEdit={userRole === 'super_admin' ? (sale) => console.log('Edit sale:', sale) : undefined}
+          onDelete={userRole === 'super_admin' ? (sale) => console.log('Delete sale:', sale) : undefined}
+        />
       </div>
     </div>
   );

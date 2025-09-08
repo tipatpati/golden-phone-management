@@ -6,18 +6,25 @@ import { BaseDialog } from "@/components/common/BaseDialog";
 import { FormField } from "@/components/common/FormField";
 import { Edit } from "lucide-react";
 import { useUpdateSale, type Sale } from "@/services";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EditSaleDialogProps {
   sale: Sale;
 }
 
 export function EditSaleDialog({ sale }: EditSaleDialogProps) {
+  const { userRole } = useAuth();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(sale.status);
   const [paymentMethod, setPaymentMethod] = useState(sale.payment_method);
   const [notes, setNotes] = useState(sale.notes || "");
 
   const updateSale = useUpdateSale();
+
+  // Only show for super admins
+  if (userRole !== 'super_admin') {
+    return null;
+  }
 
   const handleSubmit = async () => {
     try {
