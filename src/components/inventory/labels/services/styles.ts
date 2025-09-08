@@ -42,11 +42,48 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 12px !important;
+        font-size: 16px !important;
         line-height: 1.0 !important;
         margin-bottom: 1px !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
+        letter-spacing: 0.2px !important;
+        max-height: 50px !important;
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 3 !important;
+        -webkit-box-orient: vertical !important;
+        word-break: break-word !important;
+        text-align: center !important;
+      }
+
+      .product-specs {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        margin-top: 1px !important;
+        color: #333 !important;
+        text-align: center !important;
+      }
+
+      .serial-section {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        color: #000 !important;
+        text-align: center !important;
+        margin-top: 2px !important;
+        letter-spacing: 0.1px !important;
+      }
+
+      .company-header {
+        font-size: 8px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #000 !important;
+        letter-spacing: 0.5px !important;
+        line-height: 1.0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
 
       .barcode-container {
@@ -56,10 +93,14 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         justify-content: center !important;
         align-items: center !important;
         min-height: 55px !important;
+        max-height: 55px !important;
+        background-color: #ffffff !important;
       }
 
       .barcode-canvas {
+        max-width: 200px !important;
         height: 50px !important;
+        display: block !important;
         margin: 0 !important;
       }
 
@@ -69,22 +110,28 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         padding: 2px 0 !important;
         font-weight: 900 !important;
         border-top: 2px solid #000 !important;
+        margin-bottom: 2px !important;
+        letter-spacing: 0.3px !important;
+        line-height: 1.0 !important;
+        text-align: center !important;
       }
 
       .label-header {
-        min-height: 12px !important;
-        margin-bottom: 2mm !important;
-        padding-bottom: 1mm !important;
+        min-height: 16px !important;
+        border-bottom: 1px solid #e5e5e5 !important;
+        padding-bottom: 1px !important;
+        margin-bottom: 2px !important;
+        overflow: hidden !important;
       }
 
       .main-content {
         flex: 1 !important;
-        gap: 1mm !important;
-      }
-
-      .color-indicator, .battery-level {
-        font-size: 8px !important;
-        margin: 1mm 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 2px !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
       }
 
       .thermal-label:last-child {
@@ -107,39 +154,44 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .label-header {
-      min-height: 20px;
+      min-height: 16px;
       border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 2px;
-      margin-bottom: 3px;
+      padding-bottom: 1px;
+      margin-bottom: 2px;
       text-align: center;
+      overflow: hidden;
     }
 
     .company-header {
-      font-size: 7px;
+      font-size: 8px;
       font-weight: 700;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
-      line-height: 0.9;
+      letter-spacing: 0.5px;
+      line-height: 1.0;
       text-align: center;
-      margin-bottom: 1px;
-      border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 1px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .product-name {
-      font-size: 11px;
+      font-size: 16px;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-align: center;
       margin-bottom: 1px;
-      max-height: 22px;
+      max-height: 50px;
       overflow: hidden;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       text-transform: uppercase;
+      letter-spacing: 0.2px;
+      word-break: break-word;
+      hyphens: auto;
     }
 
     .serial-section {
@@ -152,34 +204,31 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-specs {
-      font-size: 9px;
-      font-weight: 700;
-      color: #000;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
       text-align: center;
       margin-top: 1px;
       margin-bottom: 2px;
       line-height: 1.0;
-      background-color: #f8f8f8;
-      padding: 1px 3px;
-      border-radius: 2px;
-      border: 1px solid #ddd;
     }
 
     .barcode-container {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       margin: 0;
       background-color: #ffffff;
       padding: 2px;
       min-height: 55px;
+      max-height: 55px;
+      overflow: hidden;
     }
 
     .barcode-canvas {
       display: block;
-      margin: 0 auto 0 auto;
-      max-width: 100%;
+      margin: 0 auto;
+      max-width: 200px;
       height: 50px;
     }
 
