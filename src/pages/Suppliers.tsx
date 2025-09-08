@@ -7,15 +7,18 @@ import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
-import { Search, Plus, Building2, Receipt, Mail, Loader2 } from "lucide-react";
+import { Search, Plus, Building2, Receipt, Mail, Loader2, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
+import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
+  const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
   const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
 
   const handleContactAllSuppliers = async () => {
@@ -132,15 +135,27 @@ const Suppliers = () => {
                   <Receipt className="h-5 w-5" />
                   Transaction History
                 </CardTitle>
-                <Button 
-                  onClick={() => setShowNewTransaction(true)}
-                  className="flex items-center gap-2 text-xs sm:text-sm"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">New Transaction</span>
-                  <span className="sm:hidden">New</span>
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowAcquisitionDialog(true)}
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    <span className="hidden sm:inline">New Acquisition</span>
+                    <span className="sm:hidden">Acquire</span>
+                  </Button>
+                  <Button 
+                    onClick={() => setShowNewTransaction(true)}
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">New Transaction</span>
+                    <span className="sm:hidden">New</span>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -170,6 +185,20 @@ const Suppliers = () => {
         open={showNewTransaction}
         onOpenChange={setShowNewTransaction}
       />
+
+      <Dialog open={showAcquisitionDialog} onOpenChange={setShowAcquisitionDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Supplier Acquisition</DialogTitle>
+          </DialogHeader>
+          <AcquisitionForm
+            onSuccess={() => {
+              setShowAcquisitionDialog(false);
+              toast.success('Acquisition completed successfully');
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

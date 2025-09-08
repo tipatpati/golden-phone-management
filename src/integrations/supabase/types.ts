@@ -609,10 +609,13 @@ export type Database = {
           min_price: number | null
           price: number | null
           product_id: string
+          purchase_date: string | null
+          purchase_price: number | null
           ram: number | null
           serial_number: string
           status: string
           storage: number | null
+          supplier_id: string | null
           updated_at: string
         }
         Insert: {
@@ -625,10 +628,13 @@ export type Database = {
           min_price?: number | null
           price?: number | null
           product_id: string
+          purchase_date?: string | null
+          purchase_price?: number | null
           ram?: number | null
           serial_number: string
           status?: string
           storage?: number | null
+          supplier_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -641,10 +647,13 @@ export type Database = {
           min_price?: number | null
           price?: number | null
           product_id?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
           ram?: number | null
           serial_number?: string
           status?: string
           storage?: number | null
+          supplier_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -660,6 +669,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_units_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -1118,30 +1134,39 @@ export type Database = {
       supplier_transaction_items: {
         Row: {
           created_at: string
+          creates_new_product: boolean | null
           id: string
           product_id: string
+          product_unit_ids: Json | null
           quantity: number
           total_cost: number
           transaction_id: string
           unit_cost: number
+          unit_details: Json | null
         }
         Insert: {
           created_at?: string
+          creates_new_product?: boolean | null
           id?: string
           product_id: string
+          product_unit_ids?: Json | null
           quantity?: number
           total_cost: number
           transaction_id: string
           unit_cost: number
+          unit_details?: Json | null
         }
         Update: {
           created_at?: string
+          creates_new_product?: boolean | null
           id?: string
           product_id?: string
+          product_unit_ids?: Json | null
           quantity?: number
           total_cost?: number
           transaction_id?: string
           unit_cost?: number
+          unit_details?: Json | null
         }
         Relationships: [
           {
