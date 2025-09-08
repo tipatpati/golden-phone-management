@@ -251,7 +251,9 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         textAlign: 'center',
         paddingLeft: '16px',
         paddingRight: '16px',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        width: '50%',
+        margin: '0 auto'
       }}>
         <p>TUTTE LE VENDITE SONO
         DEFINITIVE E NON
