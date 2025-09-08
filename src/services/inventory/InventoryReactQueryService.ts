@@ -30,7 +30,9 @@ export const useCreateProduct = () => {
     mutationFn: (productData: CreateProductData) => 
       InventoryManagementService.createProduct(productData as any),
     onSuccess: () => {
+      // Invalidate all product-related queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
     },
   });
 };
@@ -41,8 +43,11 @@ export const useUpdateProduct = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateProductData> }) => 
       InventoryManagementService.updateProduct(id, data),
-    onSuccess: () => {
+    onSuccess: (result, { id }) => {
+      // Invalidate all product-related queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products', 'detail', id] });
+      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
     },
   });
 };
@@ -53,7 +58,9 @@ export const useDeleteProduct = () => {
   return useMutation({
     mutationFn: (id: string) => InventoryManagementService.deleteProduct(id),
     onSuccess: () => {
+      // Invalidate and refetch all product queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
     },
   });
 };
@@ -138,7 +145,9 @@ export const useDeleteProducts = () => {
   return useMutation({
     mutationFn: (ids: string[]) => InventoryManagementService.bulkDeleteProducts({ productIds: ids }),
     onSuccess: () => {
+      // Force immediate refresh for bulk operations
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
     },
   });
 };
@@ -159,7 +168,9 @@ export const useUpdateProducts = () => {
       });
     },
     onSuccess: () => {
+      // Force immediate refresh for bulk operations
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
     },
   });
 };

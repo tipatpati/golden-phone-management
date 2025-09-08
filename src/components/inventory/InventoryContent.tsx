@@ -15,6 +15,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { UserRole } from "@/types/roles";
 import { Package } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface InventoryContentProps {
   showAddProduct: boolean;
@@ -34,8 +35,16 @@ export function InventoryContent({
   // Debounce search term to reduce API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
-  const { data: products, isLoading, error } = useProducts(debouncedSearchTerm);
+  const queryClient = useQueryClient();
+  const { data: products, isLoading, error, refetch } = useProducts(debouncedSearchTerm);
   const deleteProduct = useDeleteProduct();
+
+  // Force refresh function for immediate table updates
+  const refreshTable = useCallback(() => {
+    console.log('🔄 Refreshing inventory table...');
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+  }, [refetch, queryClient]);
   
   const {
     selectedItems,
@@ -67,6 +76,8 @@ export function InventoryContent({
       if (selectedItems.includes(id)) {
         toggleSelectItem(id);
       }
+      // Force immediate table refresh
+      refreshTable();
       toast({
         title: "Product Deleted",
         description: "Product has been successfully deleted",
@@ -80,6 +91,16 @@ export function InventoryContent({
       });
     }
   };
+
+  const handleProductAdded = useCallback(() => {
+    console.log('🔄 Product added - refreshing table');
+    refreshTable();
+  }, [refreshTable]);
+
+  const handleProductUpdated = useCallback(() => {
+    console.log('🔄 Product updated - refreshing table');
+    refreshTable();
+  }, [refreshTable]);
 
   if (isLoading) {
     return <LoadingState />;
@@ -170,6 +191,7 @@ export function InventoryContent({
         <AddProductDialog 
           open={showAddProduct}
           onClose={onCancelAddProduct}
+          onSuccess={handleProductAdded}
         />
       )}
 
@@ -178,7 +200,10 @@ export function InventoryContent({
           product={editingProduct}
           open={!!editingProduct}
           onClose={() => setEditingProduct(null)}
-          onSuccess={() => setEditingProduct(null)}
+          onSuccess={() => {
+            setEditingProduct(null);
+            handleProductUpdated();
+          }}
         />
       )}
     </>

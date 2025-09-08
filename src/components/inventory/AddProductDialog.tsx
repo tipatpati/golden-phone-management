@@ -16,9 +16,10 @@ import { logger } from "@/utils/logger";
 interface AddProductDialogProps {
   open?: boolean;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export function AddProductDialog({ open: externalOpen, onClose: externalOnClose }: AddProductDialogProps = {}) {
+export function AddProductDialog({ open: externalOpen, onClose: externalOnClose, onSuccess }: AddProductDialogProps = {}) {
   const [internalOpen, setInternalOpen] = useState(false);
   
   // Use external state if provided, otherwise use internal state
@@ -74,6 +75,11 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose 
       });
       
       setOpen(false);
+      
+      // Call onSuccess callback to refresh parent component
+      if (onSuccess) {
+        onSuccess();
+      }
       
     } catch (error) {
       console.error('❌ AddProductDialog: Product creation failed', error);
