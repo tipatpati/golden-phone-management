@@ -167,6 +167,7 @@ export class ThermalLabelService {
           <head>
             <meta charset="UTF-8">
             <title>Thermal Labels</title>
+            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
             <style>
               @page { margin: 0; size: auto; }
               body { margin: 8px; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -181,6 +182,40 @@ export class ThermalLabelService {
           </head>
           <body>
             <div class="label-container">${labelsHTML}</div>
+            <script>
+              // Generate barcodes after page loads - exactly like preview
+              window.addEventListener('load', function() {
+                const canvases = document.querySelectorAll('.barcode-canvas');
+                canvases.forEach(canvas => {
+                  const barcode = canvas.getAttribute('data-barcode');
+                  if (barcode && window.JsBarcode) {
+                    try {
+                      JsBarcode(canvas, barcode, {
+                        format: 'CODE128',
+                        width: 1.8,
+                        height: 35,
+                        displayValue: true,
+                        fontSize: 10,
+                        fontOptions: 'bold',
+                        font: 'Arial',
+                        textAlign: 'center',
+                        textPosition: 'bottom',
+                        textMargin: 4,
+                        margin: 5,
+                        background: '#ffffff',
+                        lineColor: '#000000',
+                        marginTop: 2,
+                        marginBottom: 2,
+                        marginLeft: 10,
+                        marginRight: 10
+                      });
+                    } catch (error) {
+                      console.error('Barcode generation failed:', error);
+                    }
+                  }
+                });
+              });
+            </script>
           </body>
         </html>
       `;
@@ -195,10 +230,10 @@ export class ThermalLabelService {
       printWindow.document.close();
       printWindow.focus();
       
-      // Wait for content to load, then print
+      // Wait for content and barcodes to load, then print
       setTimeout(() => {
         printWindow.print();
-      }, 1000);
+      }, 2000); // Increased delay to ensure barcodes render
 
       return {
         success: true,
@@ -264,9 +299,7 @@ export class ThermalLabelService {
         <!-- Barcode Section -->
         ${label.barcode ? `
           <div style="display: flex; justify-content: center; align-items: center; min-height: 55px; max-height: 55px; background: #ffffff; padding: 2px; overflow: hidden;">
-            <div style="font-size: 10px; font-family: 'Courier New', monospace; letter-spacing: 1px; font-weight: bold;">
-              ${this.escapeHtml(label.barcode)}
-            </div>
+            <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(label.barcode)}" style="max-width: 200px; height: 50px;"></canvas>
           </div>
         ` : ''}
       </div>
