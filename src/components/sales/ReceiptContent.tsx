@@ -191,31 +191,25 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         fontSize: '9px',
         lineHeight: '2.24',
         marginBottom: '8px',
-        textAlign: 'justify center',
+        textAlign: 'center',
+        width:'40%',
         paddingLeft: '16px',
         paddingRight: '16px',
         fontWeight: 'bold'
       }}>
-        <p>TUTTE LE VENDITE SONO
-        DEFINITIVE E NON
-        RIMBORSABILI, A MENO
-        CHE IL PRODOTTO NON SIA
-        DIFETTOSO O
-        DANNEGGIATO.
-        IL NEGOZIO NON SI
-        ASSUME RESPONSABILITÀ
-        PER EVENTUALI DANNI
-        DERIVANTI DALL'USO
-        IMPROPRIO DEI PRODOTTI
-        ACQUISTATI.
-        IL NEGOZIO SI RISERVA
-        IL DIRITTO DI RIFIUTARE
-        LA RESTITUZIONE DI
-        ARTICOLI DANNEGGIATI O
-        UTILIZZATI IN MODO NON
-        APPROPRIATO.
-        Questo documento non è
-        un documento fiscale.</p>
+        TUTTE LE VENDITE SONO<br />
+        DEFINITIVE E NON RIMBORSABILI,<br />
+        A MENO CHE IL<br />
+        PRODOTTO NON SIA DANNEGGIATO.<br />
+        IL NEGOZIO NON<br />
+        SI ASSUME RESPONSABILITÀ PER<br />
+        EVENTUALI DANNI DERIVANTI DA<br />
+        USO IMPROPRIO DEI PRODOTTI<br />
+        ACQUISTATI. IL NEGOZIO HA<br />
+        IL DIRITTO DI RIFIUTARE<br />
+        QUALSIASI DANNEGGIAMENTO ARTICOLI<br />
+        DANNEGGIATO E UTILIZZATI IN<br />
+        MODO NON APPROPRIATO.
       </div>
 
       {/* Final Footer */}
