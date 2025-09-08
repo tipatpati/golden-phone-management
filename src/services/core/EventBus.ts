@@ -1,10 +1,9 @@
 import { logger } from '@/utils/logger';
 
-// Event types for cross-module communication
-export interface ModuleEvent {
+export interface SystemEvent {
   type: string;
-  module: 'sales' | 'inventory' | 'clients';
-  operation: 'create' | 'update' | 'delete';
+  module: 'sales' | 'inventory' | 'clients' | 'consistency' | 'conflict_resolution' | 'ui';
+  operation: 'create' | 'update' | 'delete' | 'check' | 'resolve' | 'violation' | 'notification';
   entityId: string;
   data?: any;
   metadata?: {
@@ -14,8 +13,11 @@ export interface ModuleEvent {
   };
 }
 
+// For compatibility with ModuleEvent
+export type ModuleEvent = SystemEvent;
+
 // Event listener function type
-export type EventListener = (event: ModuleEvent) => void | Promise<void>;
+export type EventListener = (event: SystemEvent) => void | Promise<void>;
 
 // Event subscription type
 export interface EventSubscription {
@@ -32,8 +34,10 @@ export interface EventSubscription {
 export class EventBus {
   private static instance: EventBus;
   private subscriptions = new Map<string, EventSubscription[]>();
-  private processingQueue: ModuleEvent[] = [];
+  private listeners = new Map<string, Array<(event: any) => void>>();
+  private processingQueue: SystemEvent[] = [];
   private isProcessing = false;
+  private logger = logger;
 
   private constructor() {}
 
@@ -88,7 +92,7 @@ export class EventBus {
   /**
    * Emit an event to all subscribers
    */
-  async emit(event: ModuleEvent): Promise<void> {
+  async emit(event: SystemEvent): Promise<void> {
     // Add metadata if not present
     if (!event.metadata) {
       event.metadata = {
@@ -97,19 +101,49 @@ export class EventBus {
       };
     }
 
-    logger.info(`EventBus: Emitting event ${event.type}`, {
+    this.logger.info(`EventBus: Emitting event ${event.type}`, {
       module: event.module,
       operation: event.operation,
       entityId: event.entityId,
       correlationId: event.metadata.correlationId
     });
 
-    // Add to processing queue
+    // Emit to both old and new style listeners
+    const listeners = this.listeners.get(event.type) || [];
+    const promises = listeners.map(listener => {
+      try {
+        return listener(event);
+      } catch (error) {
+        this.logger.error(`EventBus: Error in listener for ${event.type}`, error);
+        return Promise.resolve();
+      }
+    });
+
+    await Promise.allSettled(promises);
+
+    // Add to processing queue for subscriptions
     this.processingQueue.push(event);
     
     // Process queue if not already processing
     if (!this.isProcessing) {
       await this.processQueue();
+    }
+  }
+
+  on(eventType: string, listener: (event: any) => void): void {
+    if (!this.listeners.has(eventType)) {
+      this.listeners.set(eventType, []);
+    }
+    this.listeners.get(eventType)!.push(listener);
+  }
+
+  off(eventType: string, listener: (event: any) => void): void {
+    const listeners = this.listeners.get(eventType);
+    if (listeners) {
+      const index = listeners.indexOf(listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
     }
   }
 
@@ -136,7 +170,7 @@ export class EventBus {
   /**
    * Process a single event
    */
-  private async processEvent(event: ModuleEvent): Promise<void> {
+  private async processEvent(event: SystemEvent): Promise<void> {
     const subscriptions = this.subscriptions.get(event.type) || [];
     const errors: Array<{ subscriptionId: string; error: any }> = [];
 
@@ -159,7 +193,7 @@ export class EventBus {
 
     // If there were errors, emit an error event
     if (errors.length > 0) {
-      const errorEvent: ModuleEvent = {
+      const errorEvent: SystemEvent = {
         type: 'system.event_processing_error',
         module: event.module,
         operation: 'update',

@@ -1,248 +1,134 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, AlertTriangle, XCircle, RefreshCw } from 'lucide-react';
+import { useConsistencyReport, useConsistencyViolations } from '@/hooks/useDataConsistency';
 
 export function DataConsistencyChecker() {
   const { report, isRunning, runCheck, hasViolations, status } = useConsistencyReport();
   const { violations, criticalCount, errorCount, warningCount } = useConsistencyViolations();
 
-  const checkDataConsistency = async () => {
-    setIsChecking(true);
-    const foundIssues: DataIssue[] = [];
-
-    try {
-      // Check for category mismatches
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, brand, model, category_id, category:categories(name)')
-        .not('category', 'is', null);
-
-      products?.forEach(product => {
-        const productName = `${product.brand} ${product.model}`.toLowerCase();
-        const categoryName = (product.category as any)?.name?.toLowerCase();
-        
-        if (productName.includes('dell') || productName.includes('laptop') || productName.includes('xps')) {
-          if (categoryName !== 'computers') {
-            foundIssues.push({
-              id: `category_${product.id}`,
-              type: 'category_mismatch',
-              table: 'products',
-              description: `Product "${product.brand} ${product.model}" appears to be a computer but is categorized as "${categoryName}"`,
-              recordId: product.id,
-              severity: 'medium'
-            });
-          }
-        }
-      });
-
-      // Check for missing serial numbers
-      const { data: serialProducts } = await supabase
-        .from('products')
-        .select('id, brand, model, has_serial, serial_numbers')
-        .eq('has_serial', true);
-
-      serialProducts?.forEach(product => {
-        if (!product.serial_numbers || product.serial_numbers.length === 0) {
-          foundIssues.push({
-            id: `serial_${product.id}`,
-            type: 'missing_serial_numbers',
-            table: 'products',
-            description: `Product "${product.brand} ${product.model}" is marked as having serial numbers but none are recorded`,
-            recordId: product.id,
-            severity: 'low'
-          });
-        }
-      });
-
-      // Check for invalid price ranges
-      const { data: priceProducts } = await supabase
-        .from('products')
-        .select('id, brand, model, price, min_price, max_price');
-
-      priceProducts?.forEach(product => {
-        if (product.min_price && product.max_price && product.min_price > product.max_price) {
-          foundIssues.push({
-            id: `price_${product.id}`,
-            type: 'invalid_price_range',
-            table: 'products',
-            description: `Product "${product.brand} ${product.model}" has min_price (${product.min_price}) greater than max_price (${product.max_price})`,
-            recordId: product.id,
-            severity: 'high'
-          });
-        }
-        
-        if (product.price < (product.min_price || 0) || product.price > (product.max_price || Infinity)) {
-          foundIssues.push({
-            id: `price_range_${product.id}`,
-            type: 'invalid_price_range',
-            table: 'products',
-            description: `Product "${product.brand} ${product.model}" current price (${product.price}) is outside the defined range`,
-            recordId: product.id,
-            severity: 'medium'
-          });
-        }
-      });
-
-      // Check for orphaned sale items
-      const { data: saleItems } = await supabase
-        .from('sale_items')
-        .select('id, sale_id, product_id, sales!inner(id), products!inner(id)');
-
-      const { data: orphanedSaleItems } = await supabase
-        .from('sale_items')
-        .select('id, sale_id, product_id')
-        .not('sale_id', 'in', `(${saleItems?.map(item => `'${item.sale_id}'`).join(',') || "''"})`)
-        .limit(10);
-
-      orphanedSaleItems?.forEach(item => {
-        foundIssues.push({
-          id: `orphaned_sale_${item.id}`,
-          type: 'orphaned_records',
-          table: 'sale_items',
-          description: `Sale item references non-existent sale ID: ${item.sale_id}`,
-          recordId: item.id,
-          severity: 'high'
-        });
-      });
-
-      setIssues(foundIssues);
-      setLastCheck(new Date());
-      
-      if (foundIssues.length === 0) {
-        toast.success('Data consistency check completed - no issues found!');
-      } else {
-        toast.warning(`Found ${foundIssues.length} data consistency issues`);
-      }
-    } catch (error) {
-      console.error('Data consistency check failed:', error);
-      toast.error('Failed to run data consistency check');
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const fixIssue = async (issue: DataIssue) => {
-    try {
-      switch (issue.type) {
-        case 'category_mismatch':
-          // Auto-fix category based on product name
-          const productName = issue.description.split('"')[1]?.toLowerCase();
-          let correctCategoryId = 1; // default
-          
-          if (productName?.includes('dell') || productName?.includes('laptop') || productName?.includes('xps')) {
-            correctCategoryId = 9; // Computers category
-          }
-          
-          await supabase
-            .from('products')
-            .update({ category_id: correctCategoryId })
-            .eq('id', issue.recordId);
-          break;
-          
-        case 'missing_serial_numbers':
-          // Set has_serial to false if no serial numbers
-          await supabase
-            .from('products')
-            .update({ has_serial: false })
-            .eq('id', issue.recordId);
-          break;
-          
-        case 'orphaned_records':
-          // Delete orphaned records
-          if (issue.table === 'sale_items') {
-            await supabase
-              .from('sale_items')
-              .delete()
-              .eq('id', issue.recordId);
-          }
-          break;
-      }
-      
-      // Remove fixed issue from list
-      setIssues(prev => prev.filter(i => i.id !== issue.id));
-      toast.success('Issue fixed successfully');
-    } catch (error) {
-      console.error('Failed to fix issue:', error);
-      toast.error('Failed to fix issue');
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-400" />;
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      default:
+        return <AlertTriangle className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      case 'low': return 'secondary';
-      default: return 'secondary';
+      case 'critical':
+        return 'destructive';
+      case 'error':
+        return 'destructive';
+      case 'warning':
+        return 'default';
+      default:
+        return 'outline';
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
-            Data Consistency
-          </CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          Data Consistency Check
           <Button 
-            onClick={checkDataConsistency}
-            disabled={isChecking}
+            onClick={runCheck} 
+            disabled={isRunning}
             size="sm"
-            variant="outline"
           >
-            {isChecking ? (
+            {isRunning ? (
               <RefreshCw className="h-4 w-4 animate-spin mr-2" />
             ) : (
-              <CheckCircle className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            {isChecking ? 'Checking...' : 'Run Check'}
+            {isRunning ? 'Checking...' : 'Run Check'}
           </Button>
-        </div>
-        {lastCheck && (
-          <p className="text-sm text-muted-foreground">
-            Last checked: {lastCheck.toLocaleString()}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        {report && (
+          <p className="text-sm text-muted-foreground mb-4">
+            Last checked: {report.timestamp.toLocaleString()}
           </p>
         )}
-      </CardHeader>
-      <CardContent>
-        {issues.length === 0 ? (
-          <div className="text-center py-4">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              {lastCheck ? 'No data consistency issues found' : 'Run a check to verify data consistency'}
-            </p>
-          </div>
-        ) : (
+
+        {!hasViolations && !isRunning && report && (
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>
+              No data consistency issues found. Your data appears to be in good shape!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasViolations && (
           <div className="space-y-3">
-            {issues.map(issue => (
-              <div key={issue.id} className="flex items-start justify-between p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
-                    <Badge variant={getSeverityColor(issue.severity)}>
-                      {issue.severity.toUpperCase()}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {issue.table}
-                    </span>
+            <div className="flex gap-2 mb-4">
+              <Badge variant="outline">
+                {violations.length} issue{violations.length !== 1 ? 's' : ''} found
+              </Badge>
+              <Badge variant="destructive">
+                {criticalCount} critical
+              </Badge>
+              <Badge variant="destructive">
+                {errorCount} errors
+              </Badge>
+              <Badge variant="default">
+                {warningCount} warnings
+              </Badge>
+            </div>
+
+            {violations.map((violation, index) => (
+              <div key={`${violation.ruleId}-${violation.entityId}-${index}`} className="flex items-start justify-between p-3 border rounded-lg">
+                <div className="flex items-start gap-3">
+                  {getSeverityIcon(violation.severity)}
+                  <div>
+                    <p className="font-medium">{violation.message}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Rule: {violation.ruleId} | Entity: {violation.entity}
+                    </p>
+                    {violation.suggestedFix && (
+                      <p className="text-sm text-blue-600 mt-1">
+                        Suggested fix: {violation.suggestedFix}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-sm">{issue.description}</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => fixIssue(issue)}
-                  className="ml-3"
-                >
-                  Fix
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Badge variant={getSeverityColor(violation.severity) as any}>
+                    {violation.severity}
+                  </Badge>
+                </div>
               </div>
             ))}
           </div>
+        )}
+
+        {isRunning && (
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+            <span>Checking data consistency...</span>
+          </div>
+        )}
+
+        {!report && !isRunning && (
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Run a data integrity check to monitor your system's health.
+            </AlertDescription>
+          </Alert>
         )}
       </CardContent>
     </Card>

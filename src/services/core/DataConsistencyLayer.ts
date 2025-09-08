@@ -161,8 +161,8 @@ class DataConsistencyLayer {
     // Emit report event
     await eventBus.emit({
       type: 'consistency:report',
-      module: 'inventory',
-      operation: 'create',
+      module: 'consistency',
+      operation: 'check',
       entityId: report.id,
       data: report
     });
@@ -198,9 +198,25 @@ class DataConsistencyLayer {
 
     for (const entity of rule.entities) {
       try {
-        const { data: entityData } = await supabase
-          .from(entity)
-          .select('*');
+        let entityData;
+        if (entity === 'products') {
+          const { data } = await supabase.from('products').select('*');
+          entityData = data;
+        } else if (entity === 'product_units') {
+          const { data } = await supabase.from('product_units').select('*');
+          entityData = data;
+        } else if (entity === 'sales') {
+          const { data } = await supabase.from('sales').select('*');
+          entityData = data;
+        } else if (entity === 'sale_items') {
+          const { data } = await supabase.from('sale_items').select('*');
+          entityData = data;
+        } else if (entity === 'clients') {
+          const { data } = await supabase.from('clients').select('*');
+          entityData = data;
+        } else {
+          entityData = [];
+        }
         
         data[entity] = entityData || [];
       } catch (error) {
@@ -415,8 +431,8 @@ class DataConsistencyLayer {
     // Emit to UI for display
     await eventBus.emit({
       type: 'ui:notification',
-      module: 'data_consistency',
-      operation: 'violation',
+      module: 'ui',
+      operation: 'notification',
       entityId: violation.entityId,
       data: {
         type: violation.severity === 'critical' ? 'error' : 'warning',

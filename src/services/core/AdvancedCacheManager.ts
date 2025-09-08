@@ -930,6 +930,26 @@ export class AdvancedCacheManager {
     
     logger.info('AdvancedCacheManager: All cache cleared');
   }
+
+  /**
+   * Invalidate queries by pattern
+   */
+  async invalidateByPattern(patterns: string[]): Promise<void> {
+    for (const pattern of patterns) {
+      await this.invalidatePattern(pattern);
+    }
+  }
+
+  private async invalidatePattern(pattern: string): Promise<void> {
+    const keys = Array.from(this.queryClient?.getQueryCache().getAll() || [])
+      .filter(query => {
+        const queryKey = Array.isArray(query.queryKey) ? query.queryKey.join('/') : String(query.queryKey);
+        return queryKey.includes(pattern);
+      })
+      .map(query => query.queryKey);
+
+    await Promise.all(keys.map(key => this.queryClient?.invalidateQueries({ queryKey: key })));
+  }
 }
 
 // Export singleton instance
