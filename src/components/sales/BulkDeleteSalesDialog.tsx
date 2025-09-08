@@ -58,11 +58,12 @@ export function BulkDeleteSalesDialog({
               <ul className="space-y-1 list-disc list-inside mb-3">
                 <li>Remove all selected sales records</li>
                 <li>Delete associated sale items</li>
-                <li>Restore inventory stock for sold items</li>
+                <li>Restore inventory stock for sold items (returned to available)</li>
+                <li>Update product unit status from 'sold' to 'available'</li>
                 <li>Remove financial records worth €{totalAmount.toFixed(2)}</li>
               </ul>
               <p className="text-xs text-destructive font-medium">
-                ⚠️ This action affects financial records and inventory
+                ⚠️ Inventory will be automatically restored for all deleted sales
               </p>
             </div>
           </div>

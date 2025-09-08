@@ -10,6 +10,7 @@ import { BulkSalesActionsToolbar } from "./BulkSalesActionsToolbar";
 import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface SalesListProps {
   sales: Sale[];
@@ -20,6 +21,7 @@ interface SalesListProps {
 
 export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListProps) {
   const { userRole } = useAuth();
+  const { toast } = useToast();
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Sale>();
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const deleteSaleMutation = useDeleteSale();
@@ -50,15 +52,51 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
   };
 
   const handleBulkDelete = async () => {
-    const promises = Array.from(selectedSales).map(saleId => 
-      deleteSaleMutation.mutateAsync(saleId)
-    );
+    if (selectedSales.size === 0) return;
+    
+    const deletedCount = selectedSales.size;
+    const selectedIds = Array.from(selectedSales);
     
     try {
+      toast({
+        title: "Deleting sales...",
+        description: `Deleting ${deletedCount} sales and restoring inventory...`,
+      });
+
+      // Delete sales one by one (each deletion will restore inventory via database triggers)
+      const promises = selectedIds.map(async (saleId) => {
+        try {
+          await deleteSaleMutation.mutateAsync(saleId);
+          console.log(`Successfully deleted sale: ${saleId}`);
+        } catch (error) {
+          console.error(`Failed to delete sale ${saleId}:`, error);
+          throw error;
+        }
+      });
+      
+      // Wait for all deletions to complete
       await Promise.all(promises);
+      
+      // Clear selection after successful deletion
       setSelectedSales(new Set());
+      
+      toast({
+        title: "Sales deleted successfully",
+        description: `Successfully deleted ${deletedCount} sales. Inventory has been restored automatically.`,
+      });
+      
+      console.log(`Successfully bulk deleted ${deletedCount} sales`);
+      
     } catch (error) {
-      console.error('Error deleting sales:', error);
+      console.error('Error during bulk delete:', error);
+      
+      toast({
+        title: "Error deleting sales",
+        description: "Some sales could not be deleted. Please try again.",
+        variant: "destructive",
+      });
+      
+      throw error; // Re-throw to show error in UI
     }
   };
 
