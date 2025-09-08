@@ -26,53 +26,62 @@ export function SaleReceiptDialog({
     return sale.client.type === "business" ? sale.client.company_name : `${sale.client.first_name} ${sale.client.last_name}`;
   }, [sale?.client]);
 
-  // QR code generation state
+  // QR code generation state with race condition protection
   const [qrCode, setQrCode] = React.useState<string>('');
   const [isQrCodeGenerating, setIsQrCodeGenerating] = React.useState<boolean>(false);
+  const qrGenerationTimeoutRef = useRef<number | null>(null);
 
-  // Generate QR code only when dialog is open to prevent premature requests
-  React.useEffect(() => {
-    if (!sale || !open) return;
+  // Debounced QR code generation to prevent race conditions
+  const generateQRCode = React.useCallback(async (saleId: string) => {
+    if (isQrCodeGenerating) return;
     
-    let isCancelled = false;
     setIsQrCodeGenerating(true);
     
-    const generateQRCode = async () => {
-      try {
-        // Create QR content with URL to PDF receipt
-        const receiptUrl = `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/generate-receipt-pdf?sale_id=${sale.id}`;
-        
-        // Generate QR code with minimal settings for speed
-        const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
-          width: 60,
-          margin: 0,
-          errorCorrectionLevel: 'L',
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        });
-        
-        if (!isCancelled) {
-          setQrCode(qrDataUrl);
-          setIsQrCodeGenerating(false);
+    try {
+      // Create QR content with URL to PDF receipt
+      const receiptUrl = `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/generate-receipt-pdf?sale_id=${saleId}`;
+      
+      // Generate QR code with minimal settings for speed
+      const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
+        width: 60,
+        margin: 0,
+        errorCorrectionLevel: 'L',
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
         }
-      } catch (error) {
-        console.error('QR code generation failed:', error);
-        if (!isCancelled) {
-          // Create fallback QR code
-          setQrCode('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSIzMCIgeT0iMzAiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+UVI8L3RleHQ+Cjwvc3ZnPgo=');
-          setIsQrCodeGenerating(false);
-        }
-      }
-    };
+      });
+      
+      setQrCode(qrDataUrl);
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+      // Create fallback QR code
+      setQrCode('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIvPgo8dGV4dCB4PSIzMCIgeT0iMzAiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+UVI8L3RleHQ+Cjwvc3ZnPgo=');
+    } finally {
+      setIsQrCodeGenerating(false);
+    }
+  }, [isQrCodeGenerating]);
 
-    generateQRCode();
+  // Generate QR code only when dialog is open with debouncing
+  useEffect(() => {
+    if (!sale?.id || !open || qrCode) return;
+    
+    // Clear any existing timeout
+    if (qrGenerationTimeoutRef.current) {
+      clearTimeout(qrGenerationTimeoutRef.current);
+    }
+    
+    // Debounce QR generation to prevent race conditions
+    qrGenerationTimeoutRef.current = window.setTimeout(() => {
+      generateQRCode(sale.id);
+    }, 300);
     
     return () => {
-      isCancelled = true;
+      if (qrGenerationTimeoutRef.current) {
+        clearTimeout(qrGenerationTimeoutRef.current);
+      }
     };
-  }, [sale?.id, open]);
+  }, [sale?.id, open, qrCode, generateQRCode]);
 
   const handlePrint = async () => {
     const receiptId = `receipt-content-${sale.id}`;

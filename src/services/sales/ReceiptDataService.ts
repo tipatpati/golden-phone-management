@@ -104,6 +104,27 @@ export class ReceiptDataService {
     };
   }
 
+  static formatLegalTermsForPDF(): string[] {
+    return [
+      'TUTTE LE VENDITE SONO',
+      'DEFINITIVE E NON RIMBORSABILI,',
+      'A MENO CHE IL',
+      'PRODOTTO NON SIA DIFETTOSO O',
+      'DANNEGGIATO.',
+      'IL NEGOZIO NON SI',
+      'ASSUME RESPONSABILITÀ PER',
+      'EVENTUALI DANNI DERIVANTI',
+      'DALL\'USO IMPROPRIO DEI',
+      'PRODOTTI ACQUISTATI.',
+      'IL NEGOZIO SI RISERVA',
+      'IL DIRITTO DI RIFIUTARE',
+      'LA RESTITUZIONE DI',
+      'ARTICOLI DANNEGGIATI O',
+      'UTILIZZATI IN MODO NON',
+      'APPROPRIATO.'
+    ];
+  }
+
   private static getPaymentBreakdown(sale: Sale) {
     const cash = Number(sale.cash_amount) || 0;
     const card = Number(sale.card_amount) || 0;
