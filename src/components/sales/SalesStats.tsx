@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp } from "lucide-react";
+import { Euro, TrendingUp } from "lucide-react";
 import type { Sale } from "@/services/sales";
 
 interface SalesStatsProps {
@@ -12,7 +12,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
   const totalSales = sales.length;
   const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
-  const currency = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" });
+  const currency = new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" });
   const numberFmt = new Intl.NumberFormat();
 
   return (
@@ -20,7 +20,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          <DollarSign className="h-5 w-5 text-muted-foreground" aria-hidden />
+          <Euro className="h-5 w-5 text-muted-foreground" aria-hidden />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-semibold tracking-tight">{currency.format(totalRevenue)}</div>
@@ -42,7 +42,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Avg. Sale Value</CardTitle>
-          <DollarSign className="h-5 w-5 text-muted-foreground" aria-hidden />
+          <Euro className="h-5 w-5 text-muted-foreground" aria-hidden />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-semibold tracking-tight">{currency.format(avgSaleValue)}</div>

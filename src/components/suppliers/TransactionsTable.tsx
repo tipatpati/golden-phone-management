@@ -113,7 +113,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
-                    <div className="font-medium">${transaction.total_amount.toFixed(2)}</div>
+                    <div className="font-medium">€{transaction.total_amount.toFixed(2)}</div>
                     <div className="text-xs text-muted-foreground lg:hidden">
                       {format(new Date(transaction.transaction_date), "MMM dd, yyyy")}
                     </div>
