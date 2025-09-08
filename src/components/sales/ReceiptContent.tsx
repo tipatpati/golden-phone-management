@@ -191,8 +191,8 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         fontSize: '9px',
         lineHeight: '2.24',
         marginBottom: '8px',
-        textAlign: 'center',
-        width:'40%',
+        textAlign: 'justify',
+        width: '40%',
         paddingLeft: '16px',
         paddingRight: '16px',
         fontWeight: 'bold'
