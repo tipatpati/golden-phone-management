@@ -11,10 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign, Printer } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign, Printer, CheckCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Sale } from '@/services/sales';
 import { SaleReceiptDialog } from './SaleReceiptDialog';
+import { ReceiptValidationDisplay } from './ReceiptValidationDisplay';
 import { SalesDataService } from '@/services/sales/SalesDataService';
 
 interface SaleDetailsDialogProps {
@@ -250,6 +251,12 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Receipt Validation */}
+        <ReceiptValidationDisplay 
+          sale={sale} 
+          showDetails={true}
+        />
       </DialogContent>
       
       {/* Receipt Print Dialog */}

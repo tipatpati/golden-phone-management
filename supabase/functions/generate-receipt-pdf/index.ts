@@ -123,21 +123,43 @@ Deno.serve(async (req) => {
     doc.line(5, y, pageWidth - 5, y);
     y += 4;
 
-    if (sale.sale_items && sale.sale_items.length > 0) {
-      sale.sale_items.forEach((item: any) => {
+    // Validate sale_items exist and log details
+    if (!sale.sale_items || sale.sale_items.length === 0) {
+      console.warn('No sale items found for sale:', sale.sale_number);
+      addCenteredText('Nessun articolo trovato', 9);
+    } else {
+      console.log(`Processing ${sale.sale_items.length} items for receipt`);
+      
+      sale.sale_items.forEach((item: any, index: number) => {
+        console.log(`Item ${index + 1}:`, {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
+          serial_number: item.serial_number,
+          product: item.products
+        });
+        
         // Build product name (Brand + Model)
         const nameParts: string[] = [];
         if (item.products?.brand) nameParts.push(item.products.brand);
         if (item.products?.model) nameParts.push(item.products.model);
-        const productName = (nameParts.join(' ') || 'Articolo');
+        const productName = (nameParts.join(' ') || `Articolo ${index + 1}`);
 
         // Wrap long names to fit receipt width
         addWrappedLeftText(productName, pageWidth - 10, 10);
 
-        // Quantity, unit price and line total
+        // Quantity, unit price and line total with validation
         const qty = Number(item.quantity) || 1;
         const unit = Number(item.unit_price) || 0;
         const lineTotal = Number(item.total_price) || (qty * unit);
+        
+        // Validate calculation
+        const calculatedTotal = qty * unit;
+        if (Math.abs(lineTotal - calculatedTotal) > 0.01) {
+          console.warn(`Price mismatch for item ${index + 1}: stored ${lineTotal}, calculated ${calculatedTotal}`);
+        }
+        
         addLRText(`x${qty} @ €${unit.toFixed(2)}`, `€${lineTotal.toFixed(2)}`);
 
         // Optional serial number line
@@ -150,8 +172,6 @@ Deno.serve(async (req) => {
 
         y += 2; // spacing between items
       });
-    } else {
-      addCenteredText('Nessun articolo', 9);
     }
 
     // Payment summary and totals

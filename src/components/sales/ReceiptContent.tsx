@@ -1,6 +1,7 @@
 import React from 'react';
 import { type Sale } from '@/services';
 import { format } from 'date-fns';
+import { ReceiptValidationService } from '@/services/sales/ReceiptValidationService';
 
 interface ReceiptContentProps {
   sale: Sale;
@@ -9,6 +10,15 @@ interface ReceiptContentProps {
 }
 
 export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps) {
+  // Validate receipt calculations
+  const receiptReport = ReceiptValidationService.generateReceiptReport(sale);
+  const { calculations } = receiptReport;
+  
+  // Log validation results for debugging
+  if (!receiptReport.overallValid) {
+    console.warn('Receipt validation failed:', receiptReport);
+  }
+
   // Unified payment logic - matches edge function exactly
   const getPaymentBreakdown = () => {
     const cash = Number(sale.cash_amount) || 0;
@@ -87,77 +97,124 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         }}>DOCUMENTO DI GARANZIA</div>
       </div>
 
-      {/* Product Info */}
+      {/* All Product Items */}
       <div style={{
         marginBottom: '8px',
-        fontSize: '11px'
+        fontSize: '10px'
       }}>
-        {sale.sale_items?.slice(0, 1).map((item, index) => (
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: '11px',
+          marginBottom: '4px',
+          borderBottom: '1px solid #000',
+          paddingBottom: '2px'
+        }}>ARTICOLI VENDUTI:</div>
+        
+        {sale.sale_items?.map((item, index) => (
           <div key={index} style={{
-            marginBottom: '4px'
+            marginBottom: '6px',
+            paddingBottom: '4px',
+            borderBottom: index < (sale.sale_items?.length || 0) - 1 ? '1px dashed #ccc' : 'none'
           }}>
             <div style={{
               fontWeight: 'bold',
-              marginBottom: '2px',
-              fontSize: '13px'
+              marginBottom: '1px',
+              fontSize: '12px'
             }}>
-              {item.product?.brand || "Smartphone"}
+              {item.product?.brand || "Prodotto"} {item.product?.model || ""}
             </div>
+            {item.serial_number && (
+              <div style={{
+                marginBottom: '1px',
+                fontSize: '9px'
+              }}>
+                SN: {item.serial_number}
+              </div>
+            )}
             <div style={{
-              marginBottom: '1px'
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '9px'
             }}>
-              {item.product?.model || "iPhone 13 Pro Max"}
-            </div>
-            <div style={{
-              marginBottom: '1px'
-            }}>
-              SN: {item.serial_number || "359357621574578"}
-            </div>
-            <div style={{
-              fontSize: '10px'
-            }}>
-              Garanzia: 1 anno
+              <span>Qta: {item.quantity}</span>
+              <span>€{item.unit_price.toFixed(2)} x {item.quantity}</span>
+              <span style={{ fontWeight: 'bold' }}>€{(item.quantity * item.unit_price).toFixed(2)}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Payment Details - Unified Logic */}
+      {/* Totals Section - Using Validated Calculations */}
       <div style={{
         marginBottom: '8px',
-        fontSize: '10px'
+        fontSize: '10px',
+        borderTop: '1px solid #000',
+        paddingTop: '4px'
       }}>
-        {payments.map((payment, index) => (
-          <div key={index} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2px'
-          }}>
-            <span>{payment.label}</span>
-            <span>{formatAmount(payment.amount)}</span>
-          </div>
-        ))}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           marginBottom: '2px'
         }}>
-          <span>Sconto:</span>
-          <span>{formatAmount(Number(sale.discount_amount) || 0)}</span>
+          <span>Subtotale (esclusa IVA):</span>
+          <span>{formatAmount(calculations.subtotalWithoutVAT)}</span>
         </div>
+        {calculations.discountAmount > 0 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '2px',
+            color: '#666'
+          }}>
+            <span>Sconto:</span>
+            <span>-{formatAmount(calculations.discountAmount)}</span>
+          </div>
+        )}
+        {calculations.discountAmount > 0 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '2px'
+          }}>
+            <span>Subtotale scontato:</span>
+            <span>{formatAmount(calculations.finalSubtotal)}</span>
+          </div>
+        )}
         <div style={{
-          borderTop: '1px solid #000',
-          paddingTop: '2px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: '2px'
+        }}>
+          <span>IVA (22%):</span>
+          <span>{formatAmount(calculations.vatAmount)}</span>
+        </div>
+        
+        {/* Payment Methods */}
+        {payments.map((payment, index) => (
+          <div key={index} style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '2px',
+            fontStyle: 'italic'
+          }}>
+            <span>{payment.label}</span>
+            <span>{formatAmount(payment.amount)}</span>
+          </div>
+        ))}
+        
+        <div style={{
+          borderTop: '2px solid #000',
+          paddingTop: '4px',
           marginTop: '4px'
         }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             fontWeight: 'bold',
-            fontSize: '12px'
+            fontSize: '14px'
           }}>
-            <span>Totale:</span>
-            <span>{formatAmount(Number(sale.total_amount) || 0)}</span>
+            <span>TOTALE:</span>
+            <span>{formatAmount(calculations.finalTotal)}</span>
           </div>
         </div>
       </div>
