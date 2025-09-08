@@ -191,7 +191,8 @@ export class ThermalLabelDataService {
         price: product.max_price ?? product.price ?? 0,
         category: product.category?.name,
         storage: product.storage || 128,
-        ram: product.ram || 6
+        ram: product.ram || 6,
+        batteryLevel: undefined // Generic labels don't have specific battery info
       };
       
       labels.push(label);

@@ -14,6 +14,7 @@ export interface FormattedLabelElements {
   barcode: string | null;
   storage: string | null;
   ram: string | null;
+  batteryLevel: string | null;
 }
 
 /**
@@ -38,18 +39,22 @@ export function formatLabelElements(
     category: options.includeCategory && label.category?.trim() ? label.category : null,
     barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,
     storage: label.storage && label.storage > 0 ? `${label.storage}GB` : null,
-    ram: label.ram && label.ram > 0 ? `${label.ram}GB RAM` : null
+    ram: label.ram && label.ram > 0 ? `${label.ram}GB RAM` : null,
+    batteryLevel: label.batteryLevel && label.batteryLevel > 0 ? `${label.batteryLevel}%` : null
   };
   
   // Debug log to see what data we're outputting
   console.log('🏷️ formatLabelElements output:', formatted);
-  console.log('🏷️ Storage/RAM debug:', {
+  console.log('🏷️ Storage/RAM/Battery debug:', {
     originalStorage: label.storage,
     originalRam: label.ram,
+    originalBatteryLevel: label.batteryLevel,
     formattedStorage: formatted.storage,
     formattedRam: formatted.ram,
+    formattedBatteryLevel: formatted.batteryLevel,
     storageCondition: label.storage && label.storage > 0,
-    ramCondition: label.ram && label.ram > 0
+    ramCondition: label.ram && label.ram > 0,
+    batteryCondition: label.batteryLevel && label.batteryLevel > 0
   });
   
   return formatted;

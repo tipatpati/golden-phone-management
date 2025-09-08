@@ -162,7 +162,7 @@ export function ThermalLabelPreview({
         textAlign: 'center'
       }}>
           {formattedLabel.productName}
-          {(formattedLabel.storage || formattedLabel.ram) && (
+          {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
             <div style={{
               fontSize: '14px',
               fontWeight: '600',
@@ -170,8 +170,10 @@ export function ThermalLabelPreview({
               color: '#333'
             }}>
               {formattedLabel.storage}
-              {formattedLabel.storage && formattedLabel.ram && ' • '}
+              {formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) && ' • '}
               {formattedLabel.ram}
+              {formattedLabel.ram && formattedLabel.batteryLevel && ' • '}
+              {formattedLabel.batteryLevel}
             </div>
           )}
         </div>
