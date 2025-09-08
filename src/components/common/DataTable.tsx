@@ -99,8 +99,12 @@ export function DataTable<T>({
                         size="sm"
                         className={`h-8 w-8 p-0 ${action.className || ''}`}
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
-                          action.onClick(item);
+                          console.log('Button clicked:', action.label, item);
+                          if (typeof action.onClick === 'function') {
+                            action.onClick(item);
+                          }
                         }}
                         title={action.label}
                       >
