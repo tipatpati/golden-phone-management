@@ -64,7 +64,7 @@ export function BarcodePreview({
     loadExistingBarcodes();
   }, [productId]);
 
-  // Generate preview barcodes for new products
+  // Generate preview barcodes for new products using real GPMS format
   useEffect(() => {
     const generatePreviewBarcodes = async () => {
       if (productId || !hasSerial || unitEntries.length === 0) return;
@@ -74,8 +74,9 @@ export function BarcodePreview({
         for (const [index, entry] of unitEntries.entries()) {
           if (!entry.serial?.trim()) continue;
 
-          // Generate a preview barcode (simulated)
-          const mockBarcode = `GPMS${String(Date.now() + index).slice(-8)}`;
+          // Generate proper GPMS format for units: GPMSU + 6 digits
+          const counter = String(100000 + index).slice(1); // Ensures 6 digits starting from 100000
+          const mockBarcode = `GPMSU${counter}`;
           const validation = Code128GeneratorService.validateCode128(mockBarcode);
           previewBarcodes.push({
             serial: entry.serial,

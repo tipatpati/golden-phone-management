@@ -3,6 +3,7 @@ import type { ProductUnit } from "@/services/inventory/types";
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 import { LabelDataValidator } from "./LabelDataValidator";
 import { ProductForLabels, ThermalLabelData, LabelDataResult } from "./types";
+import { Code128GeneratorService } from "@/services/barcodes/Code128GeneratorService";
 
 export class ThermalLabelDataService {
   /**
@@ -54,7 +55,7 @@ export class ThermalLabelDataService {
         
       } else {
         // Product without serial numbers - generate generic labels
-        const productLabels = this.processProductWithoutUnits(
+        const productLabels = await this.processProductWithoutUnits(
           product, 
           cleanBrand, 
           cleanModel
@@ -112,19 +113,29 @@ export class ThermalLabelDataService {
       const units = await ProductUnitsService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units`);
 
-      // Process each unit
+      // Process each unit, generating missing barcodes
       for (const unit of units) {
-        if (unit.barcode) {
-          const label = this.createUnitLabel(unit, product, cleanBrand, cleanModel);
-          if (label) {
-            labels.push(label);
-            unitsWithBarcodes++;
-            console.log(`✅ Label created: ${unit.serial_number} → ${unit.barcode}`);
+        let unitBarcode = unit.barcode;
+        
+        // Auto-generate unit barcode if missing
+        if (!unitBarcode) {
+          try {
+            console.log(`🔨 Generating missing unit barcode for ${unit.serial_number}...`);
+            unitBarcode = await Code128GeneratorService.generateUnitBarcode(unit.id);
+            console.log(`✅ Generated unit barcode: ${unitBarcode}`);
+          } catch (error) {
+            console.error(`❌ Failed to generate unit barcode for ${unit.serial_number}:`, error);
+            unitsMissingBarcodes++;
+            warnings.push(`Failed to generate barcode for unit ${unit.serial_number}`);
+            continue;
           }
-        } else {
-          unitsMissingBarcodes++;
-          warnings.push(`Unit ${unit.serial_number} missing barcode - use "Fix Missing Barcodes" button`);
-          console.warn(`⚠️ Unit ${unit.serial_number} has no barcode`);
+        }
+
+        const label = this.createUnitLabel({...unit, barcode: unitBarcode}, product, cleanBrand, cleanModel);
+        if (label) {
+          labels.push(label);
+          unitsWithBarcodes++;
+          console.log(`✅ Label created: ${unit.serial_number} → ${unitBarcode}`);
         }
       }
 
@@ -152,11 +163,11 @@ export class ThermalLabelDataService {
   /**
    * Process a product without individual units (bulk inventory)
    */
-  private static processProductWithoutUnits(
+  private static async processProductWithoutUnits(
     product: ProductForLabels,
     cleanBrand: string,
     cleanModel: string
-  ): LabelDataResult {
+  ): Promise<LabelDataResult> {
     console.log(`📦 Processing bulk product: ${product.id}`);
     
     const labels: ThermalLabelData[] = [];
@@ -166,28 +177,35 @@ export class ThermalLabelDataService {
       model: cleanModel 
     });
 
-    // Only create labels if product has existing barcode - no generation
-    if (!product.barcode) {
-      console.warn(`⚠️ Bulk product ${product.id} has no barcode - cannot create labels`);
-      return {
-        success: false,
-        labels: [],
-        errors: [`Product ${cleanBrand} ${cleanModel} has no barcode`],
-        warnings: [],
-        stats: {
-          totalProducts: 1,
-          totalLabels: 0,
-          unitsWithBarcodes: 0,
-          unitsMissingBarcodes: 0,
-          genericLabels: 0
-        }
-      };
+    // Auto-generate product barcode if missing
+    let productBarcode = product.barcode;
+    if (!productBarcode) {
+      try {
+        console.log(`🔨 Generating missing product barcode for ${product.id}...`);
+        productBarcode = await Code128GeneratorService.generateProductBarcode(product.id);
+        console.log(`✅ Generated product barcode: ${productBarcode}`);
+      } catch (error) {
+        console.error(`❌ Failed to generate product barcode for ${product.id}:`, error);
+        return {
+          success: false,
+          labels: [],
+          errors: [`Failed to generate barcode for product ${cleanBrand} ${cleanModel}`],
+          warnings: [],
+          stats: {
+            totalProducts: 1,
+            totalLabels: 0,
+            unitsWithBarcodes: 0,
+            unitsMissingBarcodes: 0,
+            genericLabels: 0
+          }
+        };
+      }
     }
 
     for (let i = 0; i < quantity; i++) {
       const label: ThermalLabelData = {
         productName,
-        barcode: product.barcode, // ONLY use existing product barcode
+        barcode: productBarcode, // Use existing or generated product barcode
         price: product.max_price ?? product.price ?? 0,
         category: product.category?.name,
         storage: product.storage || 128,
@@ -196,7 +214,7 @@ export class ThermalLabelDataService {
       };
       
       labels.push(label);
-      console.log(`✅ Created generic label ${i + 1}/${quantity} using existing barcode`);
+      console.log(`✅ Created generic label ${i + 1}/${quantity} using barcode: ${productBarcode}`);
     }
 
     return {

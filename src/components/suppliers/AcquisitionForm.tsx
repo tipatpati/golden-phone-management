@@ -20,6 +20,7 @@ import { BarcodeManager } from '@/components/inventory/forms/BarcodeManager';
 import { useProductForm } from '@/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm } from '@/services/inventory/types';
+import { Code128GeneratorService } from '@/services/barcodes';
 
 const acquisitionSchema = z.object({
   supplierId: z.string().min(1, 'Supplier is required'),
@@ -37,6 +38,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productBarcodes, setProductBarcodes] = useState<Record<number, string>>({});
+  const [unitBarcodes, setUnitBarcodes] = useState<Record<number, Record<string, string>>>({});
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -65,7 +67,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     }
   });
 
-  const addNewProductItem = useCallback(() => {
+  const addNewProductItem = useCallback(async () => {
     const newItem: AcquisitionItem = {
       createsNewProduct: true,
       productData: {
@@ -87,8 +89,19 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       unitCost: 0,
       unitEntries: []
     };
+    
+    const newIndex = items.length;
     setItems(prev => [...prev, newItem]);
-  }, []);
+    
+    // Generate product barcode immediately for new product
+    try {
+      const tempProductId = `temp_${Date.now()}_${newIndex}`;
+      const productBarcode = await Code128GeneratorService.generateProductBarcode(tempProductId);
+      setProductBarcodes(prev => ({ ...prev, [newIndex]: productBarcode }));
+    } catch (error) {
+      console.error('Failed to generate product barcode:', error);
+    }
+  }, [items.length]);
 
   const addExistingProductItem = useCallback(() => {
     const newItem: AcquisitionItem = {
@@ -118,10 +131,25 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     ));
   }, []);
 
-  const updateUnitEntries = useCallback((index: number, unitEntries: UnitEntryForm[]) => {
+  const updateUnitEntries = useCallback(async (index: number, unitEntries: UnitEntryForm[]) => {
     setItems(prev => prev.map((item, i) => 
       i === index ? { ...item, unitEntries, quantity: unitEntries.length } : item
     ));
+    
+    // Generate unit barcodes immediately when entries change
+    try {
+      const barcodeMap: Record<string, string> = {};
+      for (const entry of unitEntries) {
+        if (entry.serial?.trim()) {
+          const tempUnitId = `temp_unit_${Date.now()}_${entry.serial}`;
+          const unitBarcode = await Code128GeneratorService.generateUnitBarcode(tempUnitId);
+          barcodeMap[entry.serial] = unitBarcode;
+        }
+      }
+      setUnitBarcodes(prev => ({ ...prev, [index]: barcodeMap }));
+    } catch (error) {
+      console.error('Failed to generate unit barcodes:', error);
+    }
   }, []);
 
   const handleBarcodeGenerated = useCallback((index: number, barcode: string) => {
