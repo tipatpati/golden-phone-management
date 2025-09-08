@@ -147,17 +147,63 @@ export class ThermalLabelService {
   }
 
   /**
-   * Opens print dialog with generated labels following best practices
+   * Opens print dialog with generated labels using single-source approach
    */
   public static async printLabels(
     labels: ThermalLabelData[],
     options: ThermalLabelOptions & { companyName?: string }
   ): Promise<{ success: boolean; message: string; totalLabels: number }> {
     try {
+      // Generate the exact same HTML content as preview
       const htmlContent = this.generateThermalLabels(labels, options);
       const totalLabels = labels.length * options.copies;
       
-      // Create dedicated print window with optimal dimensions
+      // Use the unified capture-and-convert approach for consistent output
+      try {
+        const response = await fetch(`https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/capture-and-convert`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            html: htmlContent,
+            type: 'html', // Keep as HTML for direct printing
+            filename: `thermal-labels-${Date.now()}`
+          })
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          
+          // Create print window with the processed content
+          const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=no,resizable=no');
+          
+          if (!printWindow) {
+            throw new Error('Print popup was blocked. Please allow popups and try again.');
+          }
+
+          printWindow.location.href = url;
+          
+          // Wait for content to load then print
+          printWindow.addEventListener('load', () => {
+            setTimeout(() => {
+              printWindow.print();
+              window.URL.revokeObjectURL(url);
+            }, 1000);
+          });
+
+          return {
+            success: true,
+            message: `Successfully prepared ${totalLabels} thermal labels for printing`,
+            totalLabels
+          };
+        }
+      } catch (serviceError) {
+        console.warn('Unified service failed, falling back to direct printing:', serviceError);
+      }
+
+      // Fallback to direct printing if service fails
       const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=no,resizable=no');
       
       if (!printWindow) {

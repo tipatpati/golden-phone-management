@@ -140,7 +140,43 @@ export function SaleReceiptDialog({
 
   const handleDownloadPDF = async () => {
     try {
-      const response = await fetch(`https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/generate-receipt-pdf?sale_id=${sale.id}`);
+      // Get the exact HTML content from the preview
+      const receiptId = `receipt-content-${sale.id}`;
+      const receiptContent = document.getElementById(receiptId);
+      if (!receiptContent) {
+        console.error('Receipt content not found');
+        return;
+      }
+
+      // Capture the exact HTML with inline styles preserved
+      const html = `
+        <div style="
+          font-family: 'Courier New', monospace;
+          font-size: 11px;
+          line-height: 1.2;
+          background: white;
+          color: black;
+          padding: 8px;
+          width: 300px;
+          margin: 0 auto;
+        ">
+          ${receiptContent.innerHTML}
+        </div>
+      `;
+
+      // Use the new capture-and-convert service
+      const response = await fetch(`https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/capture-and-convert`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          html,
+          type: 'pdf',
+          filename: `ricevuta-${sale.sale_number}`,
+          sale_id: sale.id
+        })
+      });
       
       if (!response.ok) {
         throw new Error('Failed to generate PDF');
