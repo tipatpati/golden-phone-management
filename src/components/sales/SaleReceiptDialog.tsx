@@ -91,7 +91,7 @@ export function SaleReceiptDialog({
       return;
     }
 
-    // Create print window with exact same content as preview
+    // Create print window with exact same content and styles as preview
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       console.error('Could not open print window - popup blocked?');
@@ -106,32 +106,20 @@ export function SaleReceiptDialog({
           <style>
             @page {
               margin: 0;
-              padding: 0;
-            }
-            * {
-              box-sizing: border-box;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
             }
             body {
+              margin: 0;
+              padding: 8px;
               font-family: 'Courier New', monospace;
               font-size: 11px;
               line-height: 1.2;
-              margin: 0;
-              padding: 2mm;
-              color: #000;
               background: white;
-            }
-            .receipt-container {
-              width: 100%;
-              max-width: none;
+              color: black;
             }
           </style>
         </head>
         <body>
-          <div class="receipt-container">
-            ${receiptContent.innerHTML}
-          </div>
+          ${receiptContent.innerHTML}
         </body>
       </html>
       `;
