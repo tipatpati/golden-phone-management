@@ -1,6 +1,8 @@
 import { BaseReactQueryService } from '../core/BaseReactQueryService';
 import { SalesApiService } from './SalesApiService';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { eventBus, EVENT_TYPES } from '../core/EventBus';
+import { SalesInventoryIntegration } from '../core/IntegrationServices';
 import type { Sale, CreateSaleData } from './types';
 
 class SalesReactQueryServiceClass extends BaseReactQueryService<Sale, CreateSaleData> {
@@ -48,8 +50,28 @@ export const useCreateSale = () => {
   const salesApiService = new SalesApiService();
   
   return useMutation({
-    mutationFn: (saleData: CreateSaleData) => salesApiService.create(saleData),
-    onSuccess: () => {
+    mutationFn: async (saleData: CreateSaleData) => {
+      // Pre-validate with orchestration
+      await SalesInventoryIntegration.validateAndCreateSale(saleData);
+      
+      // Create the sale
+      const result = await salesApiService.create(saleData);
+      
+      // Process inventory impact through orchestration
+      await SalesInventoryIntegration.processInventoryImpact(result.id, saleData);
+      
+      return result;
+    },
+    onSuccess: (result, saleData) => {
+      // Emit sale created event
+      eventBus.emit({
+        type: EVENT_TYPES.SALE_CREATED,
+        module: 'sales',
+        operation: 'create',
+        entityId: result.id,
+        data: saleData
+      });
+      
       // Force immediate refresh for sales operations
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.refetchQueries({ queryKey: ['sales'] });
@@ -64,9 +86,27 @@ export const useUpdateSale = () => {
   const salesApiService = new SalesApiService();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateSaleData> }) => 
-      salesApiService.update(id, data),
-    onSuccess: (result, { id }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateSaleData> }) => {
+      // Get original sale for validation
+      const originalSale = queryClient.getQueryData(['sales', id]);
+      
+      // Validate inventory impact of changes
+      if (originalSale && data.sale_items) {
+        await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSale, data);
+      }
+      
+      return salesApiService.update(id, data);
+    },
+    onSuccess: (result, { id, data }) => {
+      // Emit sale updated event
+      eventBus.emit({
+        type: EVENT_TYPES.SALE_UPDATED,
+        module: 'sales',
+        operation: 'update',
+        entityId: id,
+        data: data
+      });
+      
       // Force immediate refresh for sales operations
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.invalidateQueries({ queryKey: ['sales', id] });
@@ -83,7 +123,16 @@ export const useDeleteSale = () => {
   
   return useMutation({
     mutationFn: (id: string) => salesApiService.delete(id),
-    onSuccess: () => {
+    onSuccess: (result, id) => {
+      // Emit sale deleted event
+      eventBus.emit({
+        type: EVENT_TYPES.SALE_DELETED,
+        module: 'sales',
+        operation: 'delete',
+        entityId: id,
+        data: { deletedSale: result }
+      });
+      
       // Force immediate refresh for sales operations
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.refetchQueries({ queryKey: ['sales'] });

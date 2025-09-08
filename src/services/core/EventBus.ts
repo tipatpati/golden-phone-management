@@ -1,0 +1,230 @@
+import { logger } from '@/utils/logger';
+
+// Event types for cross-module communication
+export interface ModuleEvent {
+  type: string;
+  module: 'sales' | 'inventory' | 'clients';
+  operation: 'create' | 'update' | 'delete';
+  entityId: string;
+  data?: any;
+  metadata?: {
+    userId?: string;
+    timestamp: number;
+    correlationId?: string;
+  };
+}
+
+// Event listener function type
+export type EventListener = (event: ModuleEvent) => void | Promise<void>;
+
+// Event subscription type
+export interface EventSubscription {
+  id: string;
+  eventType: string;
+  listener: EventListener;
+  priority: number; // Lower number = higher priority
+}
+
+/**
+ * Central event bus for cross-module communication
+ * Enables decoupled synchronization between sales, inventory, and clients
+ */
+export class EventBus {
+  private static instance: EventBus;
+  private subscriptions = new Map<string, EventSubscription[]>();
+  private processingQueue: ModuleEvent[] = [];
+  private isProcessing = false;
+
+  private constructor() {}
+
+  static getInstance(): EventBus {
+    if (!EventBus.instance) {
+      EventBus.instance = new EventBus();
+    }
+    return EventBus.instance;
+  }
+
+  /**
+   * Subscribe to events of a specific type
+   */
+  subscribe(eventType: string, listener: EventListener, priority: number = 100): string {
+    const subscriptionId = `${eventType}_${Date.now()}_${Math.random()}`;
+    
+    if (!this.subscriptions.has(eventType)) {
+      this.subscriptions.set(eventType, []);
+    }
+
+    const subscription: EventSubscription = {
+      id: subscriptionId,
+      eventType,
+      listener,
+      priority
+    };
+
+    const eventSubscriptions = this.subscriptions.get(eventType)!;
+    eventSubscriptions.push(subscription);
+    
+    // Sort by priority (lower number = higher priority)
+    eventSubscriptions.sort((a, b) => a.priority - b.priority);
+
+    logger.debug(`EventBus: Subscribed to ${eventType}`, { subscriptionId, priority });
+    return subscriptionId;
+  }
+
+  /**
+   * Unsubscribe from events
+   */
+  unsubscribe(subscriptionId: string): void {
+    for (const [eventType, subscriptions] of this.subscriptions.entries()) {
+      const index = subscriptions.findIndex(sub => sub.id === subscriptionId);
+      if (index >= 0) {
+        subscriptions.splice(index, 1);
+        logger.debug(`EventBus: Unsubscribed from ${eventType}`, { subscriptionId });
+        return;
+      }
+    }
+  }
+
+  /**
+   * Emit an event to all subscribers
+   */
+  async emit(event: ModuleEvent): Promise<void> {
+    // Add metadata if not present
+    if (!event.metadata) {
+      event.metadata = {
+        timestamp: Date.now(),
+        correlationId: `${event.module}_${event.operation}_${Date.now()}`
+      };
+    }
+
+    logger.info(`EventBus: Emitting event ${event.type}`, {
+      module: event.module,
+      operation: event.operation,
+      entityId: event.entityId,
+      correlationId: event.metadata.correlationId
+    });
+
+    // Add to processing queue
+    this.processingQueue.push(event);
+    
+    // Process queue if not already processing
+    if (!this.isProcessing) {
+      await this.processQueue();
+    }
+  }
+
+  /**
+   * Process events in queue sequentially to maintain order
+   */
+  private async processQueue(): Promise<void> {
+    if (this.isProcessing) return;
+    
+    this.isProcessing = true;
+
+    try {
+      while (this.processingQueue.length > 0) {
+        const event = this.processingQueue.shift()!;
+        await this.processEvent(event);
+      }
+    } catch (error) {
+      logger.error('EventBus: Error processing queue', error);
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  /**
+   * Process a single event
+   */
+  private async processEvent(event: ModuleEvent): Promise<void> {
+    const subscriptions = this.subscriptions.get(event.type) || [];
+    const errors: Array<{ subscriptionId: string; error: any }> = [];
+
+    // Execute all listeners (already sorted by priority)
+    for (const subscription of subscriptions) {
+      try {
+        await subscription.listener(event);
+      } catch (error) {
+        logger.error(`EventBus: Error in listener ${subscription.id}`, error);
+        errors.push({ subscriptionId: subscription.id, error });
+      }
+    }
+
+    // Log completion
+    logger.debug(`EventBus: Processed event ${event.type}`, {
+      listenersExecuted: subscriptions.length,
+      errors: errors.length,
+      correlationId: event.metadata?.correlationId
+    });
+
+    // If there were errors, emit an error event
+    if (errors.length > 0) {
+      const errorEvent: ModuleEvent = {
+        type: 'system.event_processing_error',
+        module: event.module,
+        operation: 'update',
+        entityId: event.entityId,
+        data: { originalEvent: event, errors },
+        metadata: {
+          timestamp: Date.now(),
+          correlationId: event.metadata?.correlationId
+        }
+      };
+      
+      // Don't await this to prevent infinite recursion
+      setTimeout(() => this.emit(errorEvent), 0);
+    }
+  }
+
+  /**
+   * Get all active subscriptions (for debugging)
+   */
+  getSubscriptions(): Map<string, EventSubscription[]> {
+    return new Map(this.subscriptions);
+  }
+
+  /**
+   * Clear all subscriptions (for testing)
+   */
+  clearAll(): void {
+    this.subscriptions.clear();
+    this.processingQueue = [];
+    this.isProcessing = false;
+    logger.debug('EventBus: Cleared all subscriptions');
+  }
+}
+
+// Export singleton instance
+export const eventBus = EventBus.getInstance();
+
+// Event type constants
+export const EVENT_TYPES = {
+  // Sales events
+  SALE_CREATED: 'sales.created',
+  SALE_UPDATED: 'sales.updated',
+  SALE_DELETED: 'sales.deleted',
+  SALE_ITEM_ADDED: 'sales.item_added',
+  SALE_ITEM_REMOVED: 'sales.item_removed',
+  
+  // Inventory events
+  PRODUCT_CREATED: 'inventory.product_created',
+  PRODUCT_UPDATED: 'inventory.product_updated',
+  PRODUCT_DELETED: 'inventory.product_deleted',
+  STOCK_CHANGED: 'inventory.stock_changed',
+  UNIT_STATUS_CHANGED: 'inventory.unit_status_changed',
+  UNIT_CREATED: 'inventory.unit_created',
+  UNIT_UPDATED: 'inventory.unit_updated',
+  UNIT_DELETED: 'inventory.unit_deleted',
+  
+  // Client events
+  CLIENT_CREATED: 'clients.created',
+  CLIENT_UPDATED: 'clients.updated',
+  CLIENT_DELETED: 'clients.deleted',
+  
+  // System events
+  SYSTEM_ERROR: 'system.error',
+  CACHE_INVALIDATED: 'system.cache_invalidated',
+  DATA_VALIDATION_ERROR: 'system.validation_error'
+} as const;
+
+export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];

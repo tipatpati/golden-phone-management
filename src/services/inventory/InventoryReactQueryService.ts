@@ -3,6 +3,7 @@ import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { eventBus, EVENT_TYPES } from '../core/EventBus';
 import type { Product, CreateProductData, ProductFormData } from './types';
 
 // Direct hook implementations for inventory management
@@ -29,7 +30,16 @@ export const useCreateProduct = () => {
   return useMutation({
     mutationFn: (productData: CreateProductData) => 
       InventoryManagementService.createProduct(productData as any),
-    onSuccess: () => {
+    onSuccess: (result, productData) => {
+      // Emit product created event
+      eventBus.emit({
+        type: EVENT_TYPES.PRODUCT_CREATED,
+        module: 'inventory',
+        operation: 'create',
+        entityId: (result as any).id || 'unknown',
+        data: productData
+      });
+      
       // Invalidate all product-related queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.refetchQueries({ queryKey: ['products', 'list'] });
@@ -43,7 +53,27 @@ export const useUpdateProduct = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateProductData> }) => 
       InventoryManagementService.updateProduct(id, data),
-    onSuccess: (result, { id }) => {
+    onSuccess: (result, { id, data }) => {
+      // Emit product updated event
+      eventBus.emit({
+        type: EVENT_TYPES.PRODUCT_UPDATED,
+        module: 'inventory',
+        operation: 'update',
+        entityId: id,
+        data: data
+      });
+      
+      // Check if stock changed
+      if (data.stock !== undefined) {
+        eventBus.emit({
+          type: EVENT_TYPES.STOCK_CHANGED,
+          module: 'inventory',
+          operation: 'update',
+          entityId: id,
+          data: { newStock: data.stock, reason: 'product_updated' }
+        });
+      }
+      
       // Invalidate all product-related queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['products', 'detail', id] });
@@ -57,7 +87,16 @@ export const useDeleteProduct = () => {
   
   return useMutation({
     mutationFn: (id: string) => InventoryManagementService.deleteProduct(id),
-    onSuccess: () => {
+    onSuccess: (result, id) => {
+      // Emit product deleted event
+      eventBus.emit({
+        type: EVENT_TYPES.PRODUCT_DELETED,
+        module: 'inventory',
+        operation: 'delete',
+        entityId: id,
+        data: { deletedProduct: result }
+      });
+      
       // Invalidate and refetch all product queries for immediate refresh
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.refetchQueries({ queryKey: ['products', 'list'] });
