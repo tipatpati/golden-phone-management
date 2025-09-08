@@ -3,6 +3,7 @@ import { transactionCoordinator } from '../core/TransactionCoordinator';
 import { eventBus } from '../core/EventBus';
 import { logger } from '@/utils/logger';
 import { dataConsistencyLayer } from '../core/DataConsistencyLayer';
+import { Code128GeneratorService } from '@/services/barcodes/Code128GeneratorService';
 import type { ProductFormData, UnitEntryForm } from '../inventory/types';
 import type { Supplier } from './types';
 
@@ -251,8 +252,9 @@ class SupplierAcquisitionService {
         const unitIds: string[] = [];
 
         if (item.unitEntries && item.unitEntries.length > 0) {
-          // Create serialized units
+          // Create serialized units with barcodes
           for (const unitEntry of item.unitEntries) {
+            // Create the product unit first
             const { data, error } = await supabase
               .from('product_units')
               .insert({
@@ -277,7 +279,26 @@ class SupplierAcquisitionService {
               throw new Error(`Failed to create product unit: ${error.message}`);
             }
 
-            unitIds.push(data.id);
+            const unitId = data.id;
+            unitIds.push(unitId);
+
+            // Generate barcode for the unit using the same system as inventory
+            try {
+              const { Code128GeneratorService } = await import('@/services/barcodes');
+              const barcode = await Code128GeneratorService.generateUnitBarcode(unitId);
+              
+              // Update the unit with the generated barcode
+              const { error: barcodeUpdateError } = await supabase
+                .from('product_units')
+                .update({ barcode })
+                .eq('id', unitId);
+
+              if (barcodeUpdateError) {
+                console.warn(`Failed to update barcode for unit ${unitId}:`, barcodeUpdateError);
+              }
+            } catch (barcodeError) {
+              console.warn(`Failed to generate barcode for unit ${unitId}:`, barcodeError);
+            }
           }
         } else if (item.quantity > 0) {
           // Create units for non-serialized products (for tracking purposes)

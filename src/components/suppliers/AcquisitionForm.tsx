@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,11 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Package, PackagePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
-import { AcquisitionProductForm } from './AcquisitionProductForm';
+import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
+import { SerialNumberManager } from '@/components/inventory/forms/SerialNumberManager';
+import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
+import { useProductForm } from '@/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm } from '@/services/inventory/types';
 
@@ -33,8 +37,24 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: suppliers } = useSuppliers();
-  const { data: products } = useProducts();
+  const { data: products = [] } = useProducts();
   const categories = [{ id: 1, name: 'Electronics' }, { id: 2, name: 'Accessories' }];
+
+  // Extract unique brands and models for autocomplete
+  const { uniqueBrands, uniqueModels } = useMemo(() => {
+    const brands = new Set<string>();
+    const models = new Set<string>();
+    
+    products.forEach(product => {
+      if (product.brand) brands.add(product.brand);
+      if (product.model) models.add(product.model);
+    });
+    
+    return {
+      uniqueBrands: Array.from(brands),
+      uniqueModels: Array.from(models)
+    };
+  }, [products]);
 
   const form = useForm<AcquisitionFormData>({
     resolver: zodResolver(acquisitionSchema),
@@ -227,13 +247,73 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {item.createsNewProduct ? (
-                      <AcquisitionProductForm
-                        productData={item.productData!}
-                        onUpdate={(field, value) => updateProductData(index, { [field]: value })}
-                        unitEntries={item.unitEntries}
-                        onUpdateUnits={(entries) => updateUnitEntries(index, entries)}
-                        categories={categories}
-                      />
+                      <div className="space-y-6">
+                        {/* Product Form Fields */}
+                        <ProductFormFields
+                          formData={item.productData!}
+                          onFieldChange={(field, value) => updateProductData(index, { [field]: value })}
+                          getFieldError={() => undefined}
+                          uniqueBrands={uniqueBrands}
+                          uniqueModels={uniqueModels}
+                        />
+
+                        {/* Serial Number Toggle */}
+                        <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
+                          <Switch
+                            id={`has_serial_${index}`}
+                            checked={item.productData?.has_serial || false}
+                            onCheckedChange={(checked) => updateProductData(index, { has_serial: checked })}
+                          />
+                          <Label htmlFor={`has_serial_${index}`} className="text-sm font-medium">
+                            Product has serial numbers / IMEI
+                          </Label>
+                        </div>
+
+                        {/* Serial Number Management */}
+                        {item.productData?.has_serial && (
+                          <div className="space-y-4">
+                            <SerialNumberManager
+                              unitEntries={item.unitEntries}
+                              onUnitEntriesChange={(entries) => updateUnitEntries(index, entries)}
+                              onStockChange={(stock) => updateProductData(index, { stock })}
+                              hasSerial={item.productData.has_serial}
+                            />
+                            
+                            {/* Barcode Preview for Units */}
+                            <BarcodePreview
+                              unitEntries={item.unitEntries}
+                              hasSerial={item.productData.has_serial}
+                            />
+                          </div>
+                        )}
+
+                        {/* Unit Cost for Acquisition */}
+                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Unit Cost (€)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.unitCost}
+                                onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Total Cost (€)</Label>
+                              <Input
+                                type="number"
+                                value={(item.unitCost * item.quantity).toFixed(2)}
+                                readOnly
+                                className="bg-muted"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <div className="space-y-4">
                         <div className="space-y-2">
