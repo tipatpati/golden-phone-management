@@ -32,8 +32,8 @@ const Garentille = () => {
     error
   } = useDebouncedSalesSearch();
   
-  // Check if user has admin-level permissions to see analytics
-  const canViewAnalytics = userRole && roleUtils.hasPermissionLevel(userRole, 'admin');
+  // Check if user is super admin to see analytics
+  const canViewAnalytics = userRole === 'super_admin';
   
   // Filter sales based on active filters
   const filteredGarentille = React.useMemo(() => {
