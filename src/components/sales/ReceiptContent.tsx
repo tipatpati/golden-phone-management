@@ -1,7 +1,6 @@
 import React from 'react';
 import { type Sale } from '@/services';
-import { format } from 'date-fns';
-import { ReceiptValidationService } from '@/services/sales/ReceiptValidationService';
+import { ReceiptDataService } from '@/services/sales/ReceiptDataService';
 
 interface ReceiptContentProps {
   sale: Sale;
@@ -10,51 +9,8 @@ interface ReceiptContentProps {
 }
 
 export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps) {
-  // Validate receipt calculations
-  const receiptReport = ReceiptValidationService.generateReceiptReport(sale);
-  const { calculations } = receiptReport;
-  
-  // Log validation results for debugging
-  if (!receiptReport.overallValid) {
-    console.warn('Receipt validation failed:', receiptReport);
-  }
-
-  // Unified payment logic - matches edge function exactly
-  const getPaymentBreakdown = () => {
-    const cash = Number(sale.cash_amount) || 0;
-    const card = Number(sale.card_amount) || 0;
-    const bank = Number(sale.bank_transfer_amount) || 0;
-
-    type PaymentLine = { label: string; amount: number };
-    const payments: PaymentLine[] = [];
-
-    if ((sale.payment_type === 'single' || !sale.payment_type) && cash === 0 && card === 0 && bank === 0) {
-      // Fallback to single payment_method when split amounts are not provided
-      switch (String(sale.payment_method)) {
-        case 'cash':
-          payments.push({ label: 'Pagato in Contanti:', amount: Number(sale.total_amount) || 0 });
-          break;
-        case 'card':
-          payments.push({ label: 'Pagato con Carta:', amount: Number(sale.total_amount) || 0 });
-          break;
-        case 'bank_transfer':
-          payments.push({ label: 'Pagato con Bonifico:', amount: Number(sale.total_amount) || 0 });
-          break;
-        default:
-          // Unknown method: skip explicit line
-          break;
-      }
-    } else {
-      if (cash > 0) payments.push({ label: 'Pagato in Contanti:', amount: cash });
-      if (card > 0) payments.push({ label: 'Pagato con Carta:', amount: card });
-      if (bank > 0) payments.push({ label: 'Pagato con Bonifico:', amount: bank });
-    }
-
-    return payments;
-  };
-
-  const formatAmount = (amount: number) => `${amount.toFixed(2)} €`;
-  const payments = getPaymentBreakdown();
+  // Generate unified receipt data
+  const receiptData = ReceiptDataService.generateReceiptData(sale, clientName);
 
   return (
     <>
@@ -71,16 +27,21 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
           marginBottom: '2px',
           letterSpacing: '0.5px'
         }}>
-          GOLDEN TRADE Q&A SRL
+          {receiptData.companyInfo.name}
         </div>
         <div style={{
           fontSize: '11px',
           lineHeight: '1.3'
         }}>
-          Corso Buenos Aires, 90,<br />
-          20124 Milano - MI<br />
-          P. IVA: 12345678901<br />
-          Tel: +39 351 565 6095
+          {receiptData.companyInfo.address.map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index < receiptData.companyInfo.address.length - 1 && <br />}
+            </React.Fragment>
+          ))}
+          <br />
+          P. IVA: {receiptData.companyInfo.vatNumber}<br />
+          Tel: {receiptData.companyInfo.phone}
         </div>
       </div>
 
@@ -94,7 +55,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
           fontWeight: 'bold',
           fontSize: '10.4px',
           marginBottom: '2px'
-        }}>DOCUMENTO DI GARANZIA</div>
+        }}>{receiptData.documentType}</div>
       </div>
 
       {/* All Product Items */}
@@ -110,25 +71,25 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
           paddingBottom: '2px'
         }}>ARTICOLI VENDUTI:</div>
         
-        {sale.sale_items?.map((item, index) => (
+        {receiptData.items.map((item, index) => (
           <div key={index} style={{
             marginBottom: '6px',
             paddingBottom: '4px',
-            borderBottom: index < (sale.sale_items?.length || 0) - 1 ? '1px dashed #ccc' : 'none'
+            borderBottom: index < receiptData.items.length - 1 ? '1px dashed #ccc' : 'none'
           }}>
             <div style={{
               fontWeight: 'bold',
               marginBottom: '1px',
               fontSize: '12px'
             }}>
-              {item.product?.brand || "Prodotto"} {item.product?.model || ""}
+              {item.productName}
             </div>
-            {item.serial_number && (
+            {item.serialNumber && (
               <div style={{
                 marginBottom: '1px',
                 fontSize: '9px'
               }}>
-                SN: {item.serial_number}
+                SN: {item.serialNumber}
               </div>
             )}
             <div style={{
@@ -137,14 +98,14 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
               fontSize: '9px'
             }}>
               <span>Qta: {item.quantity}</span>
-              <span>€{item.unit_price.toFixed(2)} x {item.quantity}</span>
-              <span style={{ fontWeight: 'bold' }}>€{(item.quantity * item.unit_price).toFixed(2)}</span>
+              <span>€{item.unitPrice.toFixed(2)} x {item.quantity}</span>
+              <span style={{ fontWeight: 'bold' }}>€{item.lineTotal.toFixed(2)}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Totals Section - Using Validated Calculations */}
+      {/* Totals Section */}
       <div style={{
         marginBottom: '8px',
         fontSize: '10px',
@@ -157,9 +118,9 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
           marginBottom: '2px'
         }}>
           <span>Subtotale (esclusa IVA):</span>
-          <span>{formatAmount(calculations.subtotalWithoutVAT)}</span>
+          <span>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT)}</span>
         </div>
-        {calculations.discountAmount > 0 && (
+        {receiptData.totals.discountAmount > 0 && (
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -167,17 +128,17 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
             color: '#666'
           }}>
             <span>Sconto:</span>
-            <span>-{formatAmount(calculations.discountAmount)}</span>
+            <span>-{ReceiptDataService.formatAmount(receiptData.totals.discountAmount)}</span>
           </div>
         )}
-        {calculations.discountAmount > 0 && (
+        {receiptData.totals.discountAmount > 0 && (
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             marginBottom: '2px'
           }}>
             <span>Subtotale scontato:</span>
-            <span>{formatAmount(calculations.finalSubtotal)}</span>
+            <span>{ReceiptDataService.formatAmount(receiptData.totals.finalSubtotal)}</span>
           </div>
         )}
         <div style={{
@@ -186,11 +147,11 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
           marginBottom: '2px'
         }}>
           <span>IVA (22%):</span>
-          <span>{formatAmount(calculations.vatAmount)}</span>
+          <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
         </div>
         
         {/* Payment Methods */}
-        {payments.map((payment, index) => (
+        {receiptData.payments.map((payment, index) => (
           <div key={index} style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -198,7 +159,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
             fontStyle: 'italic'
           }}>
             <span>{payment.label}</span>
-            <span>{formatAmount(payment.amount)}</span>
+            <span>{ReceiptDataService.formatAmount(payment.amount)}</span>
           </div>
         ))}
         
@@ -214,7 +175,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
             fontSize: '14px'
           }}>
             <span>TOTALE:</span>
-            <span>{formatAmount(calculations.finalTotal)}</span>
+            <span>{ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}</span>
           </div>
         </div>
       </div>
@@ -240,7 +201,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         marginBottom: '8px',
         fontSize: '10px'
       }}>
-        <div>{format(new Date(sale.sale_date), "yyyy-MM-dd HH:mm:ss")}</div>
+        <div>{receiptData.saleInfo.saleDate}</div>
       </div>
 
       {/* Legal Terms */}
@@ -255,26 +216,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         width: '50%',
         margin: '0 auto'
       }}>
-        <p>TUTTE LE VENDITE SONO
-        DEFINITIVE E NON
-        RIMBORSABILI, A MENO
-        CHE IL PRODOTTO NON SIA
-        DIFETTOSO O
-        DANNEGGIATO.
-        IL NEGOZIO NON SI
-        ASSUME RESPONSABILITÀ
-        PER EVENTUALI DANNI
-        DERIVANTI DALL'USO
-        IMPROPRIO DEI PRODOTTI
-        ACQUISTATI.
-        IL NEGOZIO SI RISERVA
-        IL DIRITTO DI RIFIUTARE
-        LA RESTITUZIONE DI
-        ARTICOLI DANNEGGIATI O
-        UTILIZZATI IN MODO NON
-        APPROPRIATO.
-        Questo documento non è
-        un documento fiscale.</p>
+        <p>{receiptData.legalTerms.termsText}</p>
       </div>
 
       {/* Final Footer */}
@@ -282,8 +224,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         textAlign: 'center',
         fontSize: '9px'
       }}>
-        Questo documento non è<br />
-        un documento fiscale.
+        {receiptData.legalTerms.fiscalDisclaimer}
       </div>
     </>
   );

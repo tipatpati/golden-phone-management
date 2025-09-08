@@ -6,6 +6,103 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Import shared receipt data logic (simplified for edge function)
+class ReceiptDataService {
+  static generateReceiptData(sale: any, clientName?: string) {
+    // Basic VAT calculation (22% inclusive pricing)
+    const itemsTotal = (sale.sale_items || []).reduce((sum: number, item: any) => 
+      sum + (item.quantity * item.unit_price), 0);
+    
+    const subtotalWithoutVAT = itemsTotal / 1.22;
+    const discountAmount = Number(sale.discount_amount) || 0;
+    const finalSubtotal = subtotalWithoutVAT - discountAmount;
+    const vatAmount = finalSubtotal * 0.22;
+    const finalTotal = finalSubtotal + vatAmount;
+
+    // Process items
+    const items = (sale.sale_items || []).map((item: any, index: number) => {
+      const productName = item.products?.brand && item.products?.model 
+        ? `${item.products.brand} ${item.products.model}`
+        : `Prodotto ${index + 1}`;
+
+      return {
+        productName,
+        serialNumber: item.serial_number || undefined,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+        lineTotal: item.quantity * item.unit_price
+      };
+    });
+
+    // Process payments - unified logic
+    const payments = this.getPaymentBreakdown(sale);
+
+    return {
+      companyInfo: {
+        name: 'GOLDEN TRADE Q&A SRL',
+        address: ['Corso Buenos Aires, 90,', '20124 Milano - MI'],
+        phone: '+39 351 565 6095',
+        vatNumber: '12345678901'
+      },
+      documentType: 'DOCUMENTO DI GARANZIA',
+      saleInfo: {
+        saleNumber: sale.sale_number,
+        saleDate: new Date(sale.sale_date).toISOString().slice(0, 19).replace('T', ' '),
+        clientName
+      },
+      items,
+      totals: {
+        subtotalWithoutVAT,
+        discountAmount,
+        finalSubtotal,
+        vatAmount,
+        finalTotal
+      },
+      payments,
+      legalTerms: {
+        termsText: 'TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DIFETTOSO O DANNEGGIATO. IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DALL\'USO IMPROPRIO DEI PRODOTTI ACQUISTATI. IL NEGOZIO SI RISERVA IL DIRITTO DI RIFIUTARE LA RESTITUZIONE DI ARTICOLI DANNEGGIATI O UTILIZZATI IN MODO NON APPROPRIATO.',
+        fiscalDisclaimer: 'Questo documento non è un documento fiscale.'
+      }
+    };
+  }
+
+  private static getPaymentBreakdown(sale: any) {
+    const cash = Number(sale.cash_amount) || 0;
+    const card = Number(sale.card_amount) || 0;
+    const bank = Number(sale.bank_transfer_amount) || 0;
+
+    const payments: Array<{ label: string; amount: number }> = [];
+
+    if ((sale.payment_type === 'single' || !sale.payment_type) && cash === 0 && card === 0 && bank === 0) {
+      // Fallback to single payment_method when split amounts are not provided
+      switch (String(sale.payment_method)) {
+        case 'cash':
+          payments.push({ label: 'Pagato in Contanti:', amount: Number(sale.total_amount) || 0 });
+          break;
+        case 'card':
+          payments.push({ label: 'Pagato con Carta:', amount: Number(sale.total_amount) || 0 });
+          break;
+        case 'bank_transfer':
+          payments.push({ label: 'Pagato con Bonifico:', amount: Number(sale.total_amount) || 0 });
+          break;
+        default:
+          // Unknown method: skip explicit line
+          break;
+      }
+    } else {
+      if (cash > 0) payments.push({ label: 'Pagato in Contanti:', amount: cash });
+      if (card > 0) payments.push({ label: 'Pagato con Carta:', amount: card });
+      if (bank > 0) payments.push({ label: 'Pagato con Bonifico:', amount: bank });
+    }
+
+    return payments;
+  }
+
+  static formatAmount(amount: number): string {
+    return `${amount.toFixed(2)} €`;
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -53,6 +150,9 @@ Deno.serve(async (req) => {
 
     console.log('Generating PDF for sale:', sale.sale_number);
 
+    // Generate unified receipt data using shared service
+    const receiptData = ReceiptDataService.generateReceiptData(sale);
+
     // Create PDF document
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -69,8 +169,6 @@ Deno.serve(async (req) => {
     const pageWidth = 80;
 
     // Helper utilities
-    const formatAmount = (amount: number) => `${amount.toFixed(2)} €`;
-
     const addCenteredText = (text: string, fontSize = 10) => {
       doc.setFontSize(fontSize);
       const textWidth = doc.getTextWidth(text);
@@ -101,12 +199,12 @@ Deno.serve(async (req) => {
         y += lineHeight;
       });
     };
-    // Company header
-    addCenteredText('GOLDEN TRADE Q&A SRL', 14);
-    addCenteredText('Corso Buenos Aires, 90,');
-    addCenteredText('20124 Milano - MI');
-    addCenteredText('P. IVA: 12345678901');
-    addCenteredText('Tel: +39 351 565 6095');
+
+    // Company header using unified data
+    addCenteredText(receiptData.companyInfo.name, 14);
+    receiptData.companyInfo.address.forEach(line => addCenteredText(line));
+    addCenteredText(`P. IVA: ${receiptData.companyInfo.vatNumber}`);
+    addCenteredText(`Tel: ${receiptData.companyInfo.phone}`);
     
     // Add line
     y += 2;
@@ -114,58 +212,34 @@ Deno.serve(async (req) => {
     y += 4;
 
     // Document type
-    addCenteredText('DOCUMENTO DI GARANZIA', 11);
+    addCenteredText(receiptData.documentType, 11);
     y += 2;
 
     // Items summary
-    addCenteredText('Articoli', 11);
+    addCenteredText('ARTICOLI VENDUTI', 11);
     y += 2;
     doc.line(5, y, pageWidth - 5, y);
     y += 4;
 
-    // Validate sale_items exist and log details
-    if (!sale.sale_items || sale.sale_items.length === 0) {
+    // Validate items exist and log details
+    if (!receiptData.items || receiptData.items.length === 0) {
       console.warn('No sale items found for sale:', sale.sale_number);
       addCenteredText('Nessun articolo trovato', 9);
     } else {
-      console.log(`Processing ${sale.sale_items.length} items for receipt`);
+      console.log(`Processing ${receiptData.items.length} items for receipt`);
       
-      sale.sale_items.forEach((item: any, index: number) => {
-        console.log(`Item ${index + 1}:`, {
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_price: item.total_price,
-          serial_number: item.serial_number,
-          product: item.products
-        });
+      receiptData.items.forEach((item, index) => {
+        console.log(`Item ${index + 1}:`, item);
         
-        // Build product name (Brand + Model)
-        const nameParts: string[] = [];
-        if (item.products?.brand) nameParts.push(item.products.brand);
-        if (item.products?.model) nameParts.push(item.products.model);
-        const productName = (nameParts.join(' ') || `Articolo ${index + 1}`);
-
         // Wrap long names to fit receipt width
-        addWrappedLeftText(productName, pageWidth - 10, 10);
-
-        // Quantity, unit price and line total with validation
-        const qty = Number(item.quantity) || 1;
-        const unit = Number(item.unit_price) || 0;
-        const lineTotal = Number(item.total_price) || (qty * unit);
+        addWrappedLeftText(item.productName, pageWidth - 10, 10);
         
-        // Validate calculation
-        const calculatedTotal = qty * unit;
-        if (Math.abs(lineTotal - calculatedTotal) > 0.01) {
-          console.warn(`Price mismatch for item ${index + 1}: stored ${lineTotal}, calculated ${calculatedTotal}`);
-        }
-        
-        addLRText(`x${qty} @ €${unit.toFixed(2)}`, `€${lineTotal.toFixed(2)}`);
+        addLRText(`x${item.quantity} @ €${item.unitPrice.toFixed(2)}`, `€${item.lineTotal.toFixed(2)}`);
 
         // Optional serial number line
-        if (item.serial_number) {
+        if (item.serialNumber) {
           doc.setFontSize(8);
-          doc.text(`SN: ${item.serial_number}`, 5, y);
+          doc.text(`SN: ${item.serialNumber}`, 5, y);
           y += lineHeight;
           doc.setFontSize(10);
         }
@@ -174,79 +248,56 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Payment summary and totals
-    const cash = Number(sale.cash_amount) || 0;
-    const card = Number(sale.card_amount) || 0;
-    const bank = Number(sale.bank_transfer_amount) || 0;
-
-    type PaymentLine = { label: string; amount: number };
-    const payments: PaymentLine[] = [];
-
-    if ((sale.payment_type === 'single' || !sale.payment_type) && cash === 0 && card === 0 && bank === 0) {
-      // Fallback to single payment_method when split amounts are not provided
-      switch (String(sale.payment_method)) {
-        case 'cash':
-          payments.push({ label: 'Pagato in Contanti:', amount: Number(sale.total_amount) || 0 });
-          break;
-        case 'card':
-          payments.push({ label: 'Pagato con Carta:', amount: Number(sale.total_amount) || 0 });
-          break;
-        case 'bank_transfer':
-          payments.push({ label: 'Pagato con Bonifico:', amount: Number(sale.total_amount) || 0 });
-          break;
-        default:
-          // Unknown method: skip explicit line
-          break;
-      }
-    } else {
-      if (cash > 0) payments.push({ label: 'Pagato in Contanti:', amount: cash });
-      if (card > 0) payments.push({ label: 'Pagato con Carta:', amount: card });
-      if (bank > 0) payments.push({ label: 'Pagato con Bonifico:', amount: bank });
+    // Totals section using unified calculations
+    addLRText('Subtotale (esclusa IVA):', ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT));
+    
+    if (receiptData.totals.discountAmount > 0) {
+      addLRText('Sconto:', `-${ReceiptDataService.formatAmount(receiptData.totals.discountAmount)}`);
+      addLRText('Subtotale scontato:', ReceiptDataService.formatAmount(receiptData.totals.finalSubtotal));
     }
+    
+    addLRText('IVA (22%):', ReceiptDataService.formatAmount(receiptData.totals.vatAmount));
 
-    console.log('Receipt payments breakdown:', payments);
-    console.log('Items count:', sale.sale_items?.length || 0);
-    console.log('Totals:', { subtotal: sale.subtotal, tax: sale.tax_amount, discount: sale.discount_amount, total: sale.total_amount });
-
-    payments.forEach(p => addLRText(p.label, formatAmount(p.amount)));
-    addLRText('Sconto:', formatAmount(Number(sale.discount_amount) || 0));
+    // Payment methods using unified logic
+    receiptData.payments.forEach(p => addLRText(p.label, ReceiptDataService.formatAmount(p.amount)));
 
     // Divider and total
     addDivider();
     doc.setFontSize(11);
-    addLRText('Totale:', formatAmount(Number(sale.total_amount) || 0));
+    addLRText('TOTALE:', ReceiptDataService.formatAmount(receiptData.totals.finalTotal));
     y += 4;
 
     // Date and time
-    const saleDate = new Date(sale.sale_date);
-    addCenteredText(saleDate.toISOString().slice(0, 19).replace('T', ' '));
+    addCenteredText(receiptData.saleInfo.saleDate);
     y += 4;
 
-    // Legal terms
+    // Legal terms using unified text
     doc.setFontSize(8);
-    const legalText = [
+    const legalTermsLines = [
       'TUTTE LE VENDITE SONO',
       'DEFINITIVE E NON RIMBORSABILI,',
       'A MENO CHE IL',
-      'PRODOTTO NON SIA DANNEGGIATO.',
-      'IL NEGOZIO NON',
-      'SI ASSUME RESPONSABILITÀ PER',
-      'EVENTUALI DANNI DERIVANTI DA',
-      'USO IMPROPRIO DEI PRODOTTI',
-      'ACQUISTATI. IL NEGOZIO HA',
+      'PRODOTTO NON SIA DIFETTOSO O',
+      'DANNEGGIATO.',
+      'IL NEGOZIO NON SI',
+      'ASSUME RESPONSABILITÀ PER',
+      'EVENTUALI DANNI DERIVANTI',
+      'DALL\'USO IMPROPRIO DEI',
+      'PRODOTTI ACQUISTATI.',
+      'IL NEGOZIO SI RISERVA',
       'IL DIRITTO DI RIFIUTARE',
-      'QUALSIASI DANNEGGIAMENTO ARTICOLI',
-      'DANNEGGIATO E UTILIZZATI IN',
-      'MODO NON APPROPRIATO.'
+      'LA RESTITUZIONE DI',
+      'ARTICOLI DANNEGGIATI O',
+      'UTILIZZATI IN MODO NON',
+      'APPROPRIATO.'
     ];
 
-    legalText.forEach(line => {
+    legalTermsLines.forEach(line => {
       addCenteredText(line, 8);
     });
 
     y += 4;
-    addCenteredText('Questo documento non è', 8);
-    addCenteredText('un documento fiscale.', 8);
+    addCenteredText(receiptData.legalTerms.fiscalDisclaimer, 8);
 
     // Generate PDF as ArrayBuffer
     const pdfOutput = doc.output('arraybuffer');
