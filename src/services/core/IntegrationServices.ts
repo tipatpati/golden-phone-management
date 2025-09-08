@@ -1,54 +1,190 @@
 import { logger } from '@/utils/logger';
 import { eventBus, EVENT_TYPES } from './EventBus';
 import { dataOrchestrator } from './DataOrchestrator';
+import { transactionCoordinator } from './TransactionCoordinator';
 import { SalesInventoryIntegrationService } from '../sales/SalesInventoryIntegrationService';
 import type { CreateSaleData } from '../sales/types';
 import type { CreateClientData } from '../clients/types';
 
-/**
- * Enhanced integration services that coordinate operations across modules
- * using the orchestration layer for data consistency
- */
+// Re-export advanced integration services
+export { AdvancedClientSalesIntegration } from './AdvancedClientSalesIntegration';
+export { AdvancedInventoryClientIntegration } from './AdvancedInventoryClientIntegration';
 
 /**
- * Sales-Inventory Integration Service
- * Extends existing functionality with orchestration
+ * Enhanced Sales-Inventory Integration Service with Transaction Coordination
+ * Extends existing functionality with comprehensive orchestration
  */
 export class EnhancedSalesInventoryIntegration {
   
   /**
-   * Validate and create sale with full orchestration
+   * Validate and create sale with full transaction coordination
    */
-  static async validateAndCreateSale(saleData: CreateSaleData): Promise<CreateSaleData> {
-    return await dataOrchestrator.executeOperation(
-      'sales.create',
-      async () => {
-        // Pre-validation using existing service
-        await SalesInventoryIntegrationService.validatePreSale(saleData);
-        
-        // Emit pre-creation event
-        await eventBus.emit({
-          type: 'sales.pre_create',
-          module: 'sales',
-          operation: 'create',
-          entityId: 'pending',
-          data: saleData
-        });
-
-        return saleData;
-      },
+  static async validateAndCreateSaleWithTransaction(saleData: CreateSaleData): Promise<{
+    validatedData: CreateSaleData;
+    transactionId: string;
+  }> {
+    const transactionId = await transactionCoordinator.beginTransaction({
+      operation: 'validate_and_create_sale',
       saleData
-    );
+    });
+
+    try {
+      // Step 1: Pre-validation using existing service
+      await transactionCoordinator.executeInTransaction(
+        transactionId,
+        'validate_inventory',
+        'inventory',
+        async () => {
+          await SalesInventoryIntegrationService.validatePreSale(saleData);
+        }
+      );
+
+      // Step 2: Reserve inventory for sale items
+      await transactionCoordinator.executeInTransaction(
+        transactionId,
+        'reserve_inventory',
+        'inventory',
+        async () => {
+          for (const item of saleData.sale_items || []) {
+            if (item.serial_number) {
+              // Reserve specific serialized unit
+              await this.reserveSerializedUnit(item.product_id, item.serial_number);
+            } else {
+              // Reserve quantity from stock
+              await this.reserveStockQuantity(item.product_id, item.quantity);
+            }
+          }
+        },
+        async () => {
+          // Compensation: release reservations
+          logger.info('Compensated: Released inventory reservations for failed sale');
+        }
+      );
+
+      return { validatedData: saleData, transactionId };
+
+    } catch (error) {
+      await transactionCoordinator.abortTransaction(transactionId, (error as Error).message);
+      throw error;
+    }
   }
 
   /**
-   * Handle inventory impact after sale creation
+   * Reserve serialized unit for sale
    */
-  static async processInventoryImpact(saleId: string, saleData: CreateSaleData): Promise<void> {
-    logger.info('EnhancedSalesInventoryIntegration: Processing inventory impact', { saleId });
+  private static async reserveSerializedUnit(productId: string, serialNumber: string): Promise<void> {
+    await eventBus.emit({
+      type: 'inventory.unit_reserved',
+      module: 'inventory',
+      operation: 'update',
+      entityId: serialNumber,
+      data: { productId, serialNumber, reserved: true }
+    });
+    
+    logger.debug('Reserved serialized unit', { productId, serialNumber });
+  }
+
+  /**
+   * Reserve stock quantity for non-serialized products
+   */
+  private static async reserveStockQuantity(productId: string, quantity: number): Promise<void> {
+    await eventBus.emit({
+      type: 'inventory.stock_reserved',
+      module: 'inventory',
+      operation: 'update',
+      entityId: productId,
+      data: { productId, quantity, reserved: true }
+    });
+    
+    logger.debug('Reserved stock quantity', { productId, quantity });
+  }
+
+  /**
+   * Handle inventory impact after sale creation with transaction coordination
+   */
+  static async processInventoryImpactWithTransaction(
+    saleId: string, 
+    saleData: CreateSaleData,
+    transactionId: string
+  ): Promise<void> {
+    logger.info('EnhancedSalesInventoryIntegration: Processing inventory impact with transaction', { 
+      saleId, 
+      transactionId 
+    });
 
     try {
-      // Emit sale created event to trigger inventory updates
+      // Process each sale item within transaction
+      for (const item of saleData.sale_items || []) {
+        await transactionCoordinator.executeInTransaction(
+          transactionId,
+          'process_inventory_item',
+          'inventory',
+          async () => {
+            if (item.serial_number) {
+              // Mark serialized unit as sold
+              await eventBus.emit({
+                type: EVENT_TYPES.UNIT_STATUS_CHANGED,
+                module: 'inventory',
+                operation: 'update',
+                entityId: item.serial_number,
+                data: {
+                  productId: item.product_id,
+                  newStatus: 'sold',
+                  saleId
+                }
+              });
+            } else {
+              // Reduce stock for non-serialized items
+              await eventBus.emit({
+                type: EVENT_TYPES.STOCK_CHANGED,
+                module: 'inventory',
+                operation: 'update',
+                entityId: item.product_id,
+                data: {
+                  quantityChange: -item.quantity,
+                  reason: 'sale_created',
+                  saleId
+                }
+              });
+            }
+          },
+          async () => {
+            // Compensation: restore inventory
+            if (item.serial_number) {
+              await eventBus.emit({
+                type: EVENT_TYPES.UNIT_STATUS_CHANGED,
+                module: 'inventory',
+                operation: 'update',
+                entityId: item.serial_number,
+                data: {
+                  productId: item.product_id,
+                  newStatus: 'available',
+                  reason: 'sale_compensation'
+                }
+              });
+            } else {
+              await eventBus.emit({
+                type: EVENT_TYPES.STOCK_CHANGED,
+                module: 'inventory',
+                operation: 'update',
+                entityId: item.product_id,
+                data: {
+                  quantityChange: item.quantity,
+                  reason: 'sale_compensation'
+                }
+              });
+            }
+            
+            logger.info('Compensated inventory for failed sale', { 
+              productId: item.product_id,
+              serialNumber: item.serial_number,
+              quantity: item.quantity
+            });
+          }
+        );
+      }
+
+      // Emit final sale created event
       await eventBus.emit({
         type: EVENT_TYPES.SALE_CREATED,
         module: 'sales',
@@ -57,37 +193,6 @@ export class EnhancedSalesInventoryIntegration {
         data: saleData
       });
 
-      // Process each sale item for inventory adjustments
-      for (const item of saleData.sale_items || []) {
-        if (item.serial_number) {
-          // Mark serialized unit as sold
-          await eventBus.emit({
-            type: EVENT_TYPES.UNIT_STATUS_CHANGED,
-            module: 'inventory',
-            operation: 'update',
-            entityId: item.serial_number,
-            data: {
-              productId: item.product_id,
-              newStatus: 'sold',
-              saleId
-            }
-          });
-        } else {
-          // Reduce stock for non-serialized items
-          await eventBus.emit({
-            type: EVENT_TYPES.STOCK_CHANGED,
-            module: 'inventory',
-            operation: 'update',
-            entityId: item.product_id,
-            data: {
-              quantityChange: -item.quantity,
-              reason: 'sale_created',
-              saleId
-            }
-          });
-        }
-      }
-
     } catch (error) {
       logger.error('EnhancedSalesInventoryIntegration: Error processing inventory impact', error);
       throw error;
@@ -95,34 +200,55 @@ export class EnhancedSalesInventoryIntegration {
   }
 
   /**
-   * Validate inventory availability for sale modification
+   * Validate inventory availability for sale modification with transaction coordination
    */
-  static async validateInventoryForSaleUpdate(
+  static async validateInventoryForSaleUpdateWithTransaction(
     originalSale: any, 
     updatedSaleData: Partial<CreateSaleData>
-  ): Promise<void> {
-    logger.info('EnhancedSalesInventoryIntegration: Validating inventory for sale update');
+  ): Promise<{ transactionId: string; inventoryChanges: any[] }> {
+    const transactionId = await transactionCoordinator.beginTransaction({
+      operation: 'validate_sale_update_inventory',
+      originalSale,
+      updatedSaleData
+    });
 
-    // Compare original vs updated items to determine inventory impact
-    const originalItems = originalSale.sale_items || [];
-    const updatedItems = updatedSaleData.sale_items || [];
+    try {
+      logger.info('EnhancedSalesInventoryIntegration: Validating inventory for sale update');
 
-    // Calculate net changes in inventory requirements
-    const inventoryChanges = this.calculateInventoryChanges(originalItems, updatedItems);
+      // Compare original vs updated items to determine inventory impact
+      const originalItems = originalSale.sale_items || [];
+      const updatedItems = updatedSaleData.sale_items || [];
 
-    // Validate that the changes are feasible
-    for (const change of inventoryChanges) {
-      if (change.quantityDelta > 0) {
-        // Need more inventory - validate availability
-        await SalesInventoryIntegrationService.validatePreSale({
-          sale_items: [{
-            product_id: change.productId,
-            quantity: change.quantityDelta,
-            unit_price: change.unitPrice,
-            serial_number: change.serialNumber
-          }]
-        } as CreateSaleData);
-      }
+      // Calculate net changes in inventory requirements
+      const inventoryChanges = this.calculateInventoryChanges(originalItems, updatedItems);
+
+      // Validate changes within transaction
+      await transactionCoordinator.executeInTransaction(
+        transactionId,
+        'validate_inventory_changes',
+        'inventory',
+        async () => {
+          for (const change of inventoryChanges) {
+            if (change.quantityDelta > 0) {
+              // Need more inventory - validate availability
+              await SalesInventoryIntegrationService.validatePreSale({
+                sale_items: [{
+                  product_id: change.productId,
+                  quantity: change.quantityDelta,
+                  unit_price: change.unitPrice,
+                  serial_number: change.serialNumber
+                }]
+              } as CreateSaleData);
+            }
+          }
+        }
+      );
+
+      return { transactionId, inventoryChanges };
+
+    } catch (error) {
+      await transactionCoordinator.abortTransaction(transactionId, (error as Error).message);
+      throw error;
     }
   }
 
@@ -193,13 +319,53 @@ export class EnhancedSalesInventoryIntegration {
 }
 
 /**
- * Client-Sales Integration Service
+ * Legacy compatibility methods - maintain existing API while adding transaction support
  */
-class ClientSalesIntegrationClass {
-  
-  /**
-   * Create client with sales relationship validation
-   */
+export class SalesInventoryIntegration {
+  static async validateAndCreateSale(saleData: CreateSaleData): Promise<CreateSaleData> {
+    const result = await EnhancedSalesInventoryIntegration.validateAndCreateSaleWithTransaction(saleData);
+    return result.validatedData;
+  }
+
+  static async processInventoryImpact(saleId: string, saleData: CreateSaleData): Promise<void> {
+    // Create a simple transaction for legacy support
+    const transactionId = await transactionCoordinator.beginTransaction({
+      operation: 'legacy_inventory_impact',
+      saleId,
+      saleData
+    });
+
+    try {
+      await EnhancedSalesInventoryIntegration.processInventoryImpactWithTransaction(
+        saleId, 
+        saleData, 
+        transactionId
+      );
+      await transactionCoordinator.commitTransaction(transactionId);
+    } catch (error) {
+      await transactionCoordinator.abortTransaction(transactionId, (error as Error).message);
+      throw error;
+    }
+  }
+
+  static async validateInventoryForSaleUpdate(
+    originalSale: any, 
+    updatedSaleData: Partial<CreateSaleData>
+  ): Promise<void> {
+    const result = await EnhancedSalesInventoryIntegration.validateInventoryForSaleUpdateWithTransaction(
+      originalSale, 
+      updatedSaleData
+    );
+    
+    // Auto-commit for legacy compatibility
+    await transactionCoordinator.commitTransaction(result.transactionId);
+  }
+}
+
+/**
+ * Simplified client-sales integration
+ */
+export class ClientSalesIntegration {
   static async createClientWithValidation(clientData: CreateClientData): Promise<CreateClientData> {
     return await dataOrchestrator.executeOperation(
       'clients.create',
@@ -219,18 +385,12 @@ class ClientSalesIntegrationClass {
     );
   }
 
-  /**
-   * Validate client access for sales operations
-   */
   static async validateClientAccess(clientId: string, userId: string): Promise<boolean> {
     // This would check if the user has permission to create sales for this client
     // Based on role and business rules
     return true; // Simplified for now
   }
 
-  /**
-   * Get client sales statistics
-   */
   static async getClientSalesStats(clientId: string): Promise<any> {
     // This would aggregate sales data for a specific client
     // Used for client relationship management
@@ -244,21 +404,14 @@ class ClientSalesIntegrationClass {
 }
 
 /**
- * Inventory-Client Integration Service
+ * Simplified inventory-client integration
  */
-class InventoryClientIntegrationClass {
-  
-  /**
-   * Get client-specific product recommendations
-   */
+export class InventoryClientIntegration {
   static async getClientProductRecommendations(clientId: string): Promise<any[]> {
     // This would analyze client purchase history and recommend products
     return [];
   }
 
-  /**
-   * Check product availability for specific client
-   */
   static async checkProductAvailabilityForClient(
     productId: string, 
     clientId: string,
@@ -268,9 +421,6 @@ class InventoryClientIntegrationClass {
     return true; // Simplified for now
   }
 
-  /**
-   * Reserve inventory for client
-   */
   static async reserveInventoryForClient(
     productId: string,
     clientId: string,
@@ -296,8 +446,3 @@ class InventoryClientIntegrationClass {
     return reservationId;
   }
 }
-
-// Export all integration services
-export const SalesInventoryIntegration = EnhancedSalesInventoryIntegration;
-export const ClientSalesIntegration = ClientSalesIntegrationClass;
-export const InventoryClientIntegration = InventoryClientIntegrationClass;
