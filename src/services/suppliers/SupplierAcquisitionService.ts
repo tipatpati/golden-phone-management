@@ -95,11 +95,19 @@ class SupplierAcquisitionService {
       result.transactionId = supplierTransactionId;
 
       // Emit events for cache invalidation and UI updates
-      eventBus.emit('supplier:acquisition_completed', {
-        supplierId: data.supplierId,
-        productIds: result.productIds,
-        unitIds: result.unitIds,
-        transactionId: supplierTransactionId
+      eventBus.emit({
+        type: 'supplier_acquisition_completed',
+        module: 'inventory',
+        operation: 'create',
+        entityId: supplierTransactionId,
+        data: {
+          supplierId: data.supplierId,
+          productIds: result.productIds,
+          unitIds: result.unitIds
+        },
+        metadata: {
+          timestamp: Date.now()
+        }
       });
 
       logger.info('Supplier acquisition completed successfully', {

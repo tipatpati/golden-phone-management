@@ -32,8 +32,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: suppliers = [] } = useSuppliers();
-  const { data: products = [] } = useProducts();
+  const { data: suppliers } = useSuppliers();
+  const { data: products } = useProducts();
   const categories = [{ id: 1, name: 'Electronics' }, { id: 2, name: 'Accessories' }];
 
   const form = useForm<AcquisitionFormData>({
@@ -53,7 +53,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         min_price: 0,
         max_price: 0,
         description: '',
-        category_id: null,
+        category_id: 1,
         year: null,
         supplier: '',
         threshold: 0,
@@ -151,7 +151,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {suppliers.map((supplier) => (
+                    {suppliers && Array.isArray(suppliers) && suppliers.map((supplier) => (
                       <SelectItem key={supplier.id} value={supplier.id}>
                         {supplier.name}
                       </SelectItem>
@@ -227,21 +227,13 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {item.createsNewProduct ? (
-                      <div className="space-y-4">
-                        <ProductFormFields
-                          formData={item.productData!}
-                          onFieldChange={(field, value) => updateProductData(index, { [field]: value })}
-                          getFieldError={() => undefined}
-                        />
-                        
-                        {item.productData?.has_serial && (
-                          <SerialNumbersInput
-                            entries={item.unitEntries}
-                            setEntries={(entries) => updateUnitEntries(index, entries)}
-                            setStock={() => {}} // Stock managed automatically
-                          />
-                        )}
-                      </div>
+                      <AcquisitionProductForm
+                        productData={item.productData!}
+                        onUpdate={(field, value) => updateProductData(index, { [field]: value })}
+                        unitEntries={item.unitEntries}
+                        onUpdateUnits={(entries) => updateUnitEntries(index, entries)}
+                        categories={categories}
+                      />
                     ) : (
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -253,7 +245,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                               <SelectValue placeholder="Select product" />
                             </SelectTrigger>
                             <SelectContent>
-                              {(products || []).map((product) => (
+                              {Array.isArray(products) && products.map((product) => (
                                 <SelectItem key={product.id} value={product.id}>
                                   {product.brand} {product.model}
                                 </SelectItem>
