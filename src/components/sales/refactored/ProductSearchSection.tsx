@@ -14,6 +14,7 @@ import {
 import { SalesProductService } from '@/services/sales/SalesProductService';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useToast } from '@/hooks/use-toast';
+import { getProductPricingInfoSync } from '@/utils/unitPricingUtils';
 import type { Product } from '@/services/inventory/types';
 
 export function ProductSearchSection() {
@@ -74,6 +75,35 @@ export function ProductSearchSection() {
       return;
     }
 
+    // Get pricing information using the utility
+    const pricingInfo = getProductPricingInfoSync({
+      price: product.price || 0,
+      has_serial: product.has_serial || false,
+      min_price: product.min_price,
+      max_price: product.max_price
+    });
+    let unitPrice = 0;
+
+    // Determine the best price to use
+    if (pricingInfo.priceRange) {
+      // Use the minimum price from range as starting point
+      unitPrice = pricingInfo.priceRange.min;
+    } else if (product.price > 0) {
+      unitPrice = product.price;
+    } else if (product.max_price && product.max_price > 0) {
+      unitPrice = product.max_price;
+    }
+
+    // Validate price
+    if (unitPrice <= 0) {
+      toast({ 
+        title: 'Prezzo non disponibile', 
+        description: 'Il prodotto selezionato non ha un prezzo valido',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     // Add non-serialized product
     const saleItem = {
       product_id: product.id,
@@ -82,7 +112,7 @@ export function ProductSearchSection() {
       model: product.model,
       year: product.year,
       quantity: 1,
-      unit_price: product.max_price || product.price || 0,
+      unit_price: unitPrice,
       min_price: product.min_price,
       max_price: product.max_price,
       has_serial: product.has_serial || false,
@@ -97,6 +127,27 @@ export function ProductSearchSection() {
 
   // Handle unit selection for serialized products
   const handleUnitSelect = (product: Product, unit: any) => {
+    // Use the specific unit's price if available, otherwise fall back to product pricing
+    let unitPrice = 0;
+
+    if (unit.price && unit.price > 0) {
+      unitPrice = unit.price;
+    } else if (product.max_price && product.max_price > 0) {
+      unitPrice = product.max_price;
+    } else if (product.price > 0) {
+      unitPrice = product.price;
+    }
+
+    // Validate price
+    if (unitPrice <= 0) {
+      toast({ 
+        title: 'Prezzo non disponibile', 
+        description: 'L\'unità selezionata non ha un prezzo valido',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     const saleItem = {
       product_id: product.id,
       product_unit_id: unit.id,
@@ -105,7 +156,7 @@ export function ProductSearchSection() {
       model: product.model,
       year: product.year,
       quantity: 1,
-      unit_price: product.max_price || product.price || 0,
+      unit_price: unitPrice,
       min_price: product.min_price,
       max_price: product.max_price,
       serial_number: unit.serial_number,
@@ -196,14 +247,19 @@ export function ProductSearchSection() {
                       </div>
 
                       <div className="text-right">
-                        <div className="font-semibold">
-                          €{product.max_price || product.price || 0}
-                        </div>
-                        {product.min_price && (
-                          <div className="text-xs text-muted-foreground">
-                            da €{product.min_price}
-                          </div>
-                        )}
+                        {(() => {
+                          const pricingInfo = getProductPricingInfoSync({
+                            price: product.price || 0,
+                            has_serial: product.has_serial || false,
+                            min_price: product.min_price,
+                            max_price: product.max_price
+                          });
+                          return (
+                            <div className="font-semibold">
+                              {pricingInfo.display}
+                            </div>
+                          );
+                        })()}
                         {!hasAvailableStock && (
                           <div className="text-xs text-destructive mt-1">
                             Non disponibile
@@ -233,9 +289,16 @@ export function ProductSearchSection() {
                                 </Badge>
                               )}
                             </div>
-                            <Button size="sm" variant="ghost" className="h-6 text-xs">
-                              Seleziona
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              {unit.price && unit.price > 0 && (
+                                <span className="text-xs font-semibold">
+                                  €{unit.price.toFixed(2)}
+                                </span>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-6 text-xs">
+                                Seleziona
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
