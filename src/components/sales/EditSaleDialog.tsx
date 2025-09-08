@@ -7,17 +7,20 @@ import { FormField } from "@/components/common/FormField";
 import { Edit } from "lucide-react";
 import { useUpdateSale, type Sale } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EditSaleDialogProps {
   sale: Sale;
+  onSuccess?: () => void;
 }
 
-export function EditSaleDialog({ sale }: EditSaleDialogProps) {
+export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
   const { userRole } = useAuth();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(sale.status);
   const [paymentMethod, setPaymentMethod] = useState(sale.payment_method);
   const [notes, setNotes] = useState(sale.notes || "");
+  const queryClient = useQueryClient();
 
   const updateSale = useUpdateSale();
 
@@ -36,7 +39,17 @@ export function EditSaleDialog({ sale }: EditSaleDialogProps) {
           notes
         }
       });
+      
+      // Force immediate refresh
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.refetchQueries({ queryKey: ['sales'] });
+      
       setOpen(false);
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error updating sale:', error);
     }

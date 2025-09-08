@@ -6,16 +6,32 @@ import { Plus } from "lucide-react";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { SaleFormContainer } from "./refactored/SaleFormContainer";
 import { SalesPermissionGuard } from './SalesPermissionGuard';
+import { useQueryClient } from '@tanstack/react-query';
 
-export function NewSaleDialog() {
+interface NewSaleDialogProps {
+  onSuccess?: () => void;
+}
+
+export function NewSaleDialog({ onSuccess }: NewSaleDialogProps = {}) {
   const [open, setOpen] = useState(false);
   const [createdSale, setCreatedSale] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleSaleComplete = (sale: any) => {
     setCreatedSale(sale);
     setShowReceipt(true);
     setOpen(false);
+    
+    // Force immediate refresh
+    queryClient.invalidateQueries({ queryKey: ['sales'] });
+    queryClient.refetchQueries({ queryKey: ['sales'] });
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    
+    // Call onSuccess callback if provided
+    if (onSuccess) {
+      onSuccess();
+    }
   };
 
 

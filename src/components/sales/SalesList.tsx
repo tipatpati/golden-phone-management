@@ -11,6 +11,7 @@ import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SalesListProps {
   sales: Sale[];
@@ -22,6 +23,7 @@ interface SalesListProps {
 export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListProps) {
   const { userRole } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Sale>();
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const deleteSaleMutation = useDeleteSale();
@@ -79,6 +81,11 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       
       // Clear selection after successful deletion
       setSelectedSales(new Set());
+      
+      // Force immediate refresh
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.refetchQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       
       toast({
         title: "Sales deleted successfully",
