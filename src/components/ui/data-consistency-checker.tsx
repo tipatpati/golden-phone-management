@@ -6,19 +6,9 @@ import { AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface DataIssue {
-  id: string;
-  type: 'category_mismatch' | 'missing_serial_numbers' | 'invalid_price_range' | 'orphaned_records';
-  table: string;
-  description: string;
-  recordId: string;
-  severity: 'low' | 'medium' | 'high';
-}
-
 export function DataConsistencyChecker() {
-  const [issues, setIssues] = useState<DataIssue[]>([]);
-  const [isChecking, setIsChecking] = useState(false);
-  const [lastCheck, setLastCheck] = useState<Date | null>(null);
+  const { report, isRunning, runCheck, hasViolations, status } = useConsistencyReport();
+  const { violations, criticalCount, errorCount, warningCount } = useConsistencyViolations();
 
   const checkDataConsistency = async () => {
     setIsChecking(true);

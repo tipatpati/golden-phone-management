@@ -1,7 +1,9 @@
 import { QueryClient } from "@tanstack/react-query";
+import { isInventoryError, handleInventoryError } from '@/services/inventory/errors';
+import { conflictResolution } from './ConflictResolution';
 
 /**
- * Global error handler for all API operations
+ * Enhanced global error handler with conflict detection and inventory error integration
  * Provides consistent error handling across the application
  */
 export class GlobalErrorHandler {
@@ -24,12 +26,19 @@ export class GlobalErrorHandler {
   handleError(error: any, context?: string) {
     console.error(`Error in ${context || 'API call'}:`, error);
     
+    // Handle inventory-specific errors
+    if (isInventoryError(error)) {
+      const processedError = handleInventoryError(error);
+      return processedError.message;
+    }
+    
     // Handle different types of errors
     if (error?.code === 'PGRST116') {
       return 'Database connection error. Please try again.';
     }
     
     if (error?.message?.includes('duplicate key')) {
+      this.handleDuplicateKeyError(error, context);
       return 'This item already exists. Please use a different identifier.';
     }
     
@@ -44,9 +53,43 @@ export class GlobalErrorHandler {
     if (error?.status === 401) {
       return 'Please log in to continue.';
     }
+
+    // Check for data conflicts
+    this.detectAndHandleConflicts(error, context);
     
     // Generic error message
     return error?.message || 'An unexpected error occurred. Please try again.';
+  }
+
+  private async handleDuplicateKeyError(error: any, context?: string) {
+    // Extract entity information from error for conflict detection
+    const errorDetails = error?.details || error?.message || '';
+    
+    // This could indicate a data conflict scenario
+    if (errorDetails.includes('serial_number') || errorDetails.includes('barcode')) {
+      console.warn('Potential inventory conflict detected:', errorDetails);
+    }
+  }
+
+  private async detectAndHandleConflicts(error: any, context?: string) {
+    // Check if this error might indicate a data conflict
+    const conflictIndicators = [
+      'version',
+      'concurrent',
+      'modified',
+      'constraint',
+      'unique'
+    ];
+
+    const errorMessage = (error?.message || '').toLowerCase();
+    const hasConflictIndicator = conflictIndicators.some(indicator => 
+      errorMessage.includes(indicator)
+    );
+
+    if (hasConflictIndicator && context) {
+      console.info('Potential data conflict detected, context:', context);
+      // In a real scenario, you might trigger conflict detection here
+    }
   }
 
   handleQueryError(error: any, queryKey: string[]) {

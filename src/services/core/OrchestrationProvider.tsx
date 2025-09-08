@@ -4,6 +4,8 @@ import { dataOrchestrator } from './DataOrchestrator';
 import { eventBus } from './EventBus';
 import { cacheManager } from './CacheManager';
 import { advancedCacheManager } from './AdvancedCacheManager';
+import { dataConsistencyLayer } from './DataConsistencyLayer';
+import { conflictResolution } from './ConflictResolution';
 import { logger } from '@/utils/logger';
 
 interface OrchestrationContextType {
@@ -12,6 +14,8 @@ interface OrchestrationContextType {
   eventBus: typeof eventBus;
   cacheManager: typeof cacheManager;
   advancedCacheManager: typeof advancedCacheManager;
+  dataConsistencyLayer: typeof dataConsistencyLayer;
+  conflictResolution: typeof conflictResolution;
 }
 
 const OrchestrationContext = createContext<OrchestrationContextType | null>(null);
@@ -43,6 +47,12 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
           enableOptimisticUpdates: true,
           enableBackgroundRefresh: true
         });
+
+        // Initialize data consistency layer
+        await dataConsistencyLayer.initialize(queryClient);
+        
+        // Initialize conflict resolution
+        await conflictResolution.initialize(queryClient);
         
         setIsInitialized(true);
         
@@ -60,7 +70,9 @@ export function OrchestrationProvider({ children }: { children: React.ReactNode 
     orchestrator: dataOrchestrator,
     eventBus,
     cacheManager,
-    advancedCacheManager
+    advancedCacheManager,
+    dataConsistencyLayer,
+    conflictResolution
   };
 
   return (
