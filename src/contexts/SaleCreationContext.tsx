@@ -36,6 +36,7 @@ export interface SaleFormData {
 interface SaleCreationState {
   items: SaleItem[];
   formData: SaleFormData;
+  selectedClient: any | null;
   stockCache: Map<string, number>;
   isLoading: boolean;
   validationErrors: string[];
@@ -52,6 +53,7 @@ type SaleCreationAction =
   | { type: 'UPDATE_ITEM'; payload: { product_id: string; updates: Partial<SaleItem> } }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_FORM_DATA'; payload: Partial<SaleFormData> }
+  | { type: 'SET_SELECTED_CLIENT'; payload: any | null }
   | { type: 'UPDATE_STOCK'; payload: Map<string, number> }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_VALIDATION_ERRORS'; payload: string[] }
@@ -71,6 +73,7 @@ const initialState: SaleCreationState = {
     discount_value: 0,
     notes: ''
   },
+  selectedClient: null,
   stockCache: new Map(),
   isLoading: false,
   validationErrors: [],
@@ -189,6 +192,12 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       return calculateTotals(newState);
     }
 
+    case 'SET_SELECTED_CLIENT': {
+      const newFormData = { ...state.formData, client_id: action.payload?.id };
+      const newState = { ...state, selectedClient: action.payload, formData: newFormData };
+      return calculateTotals(newState);
+    }
+
     case 'UPDATE_STOCK': {
       const newStockCache = new Map([...state.stockCache, ...action.payload]);
       const newItems = state.items.map(item => ({
@@ -222,6 +231,7 @@ interface SaleCreationContextValue {
   updateItem: (productId: string, updates: Partial<SaleItem>) => void;
   removeItem: (productId: string) => void;
   updateFormData: (data: Partial<SaleFormData>) => void;
+  setSelectedClient: (client: any | null) => void;
   refreshStock: (productIds: string[]) => Promise<void>;
   resetSale: () => void;
   validateSale: () => Promise<boolean>;
@@ -308,6 +318,11 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
     dispatch({ type: 'UPDATE_FORM_DATA', payload: data });
   }, []);
 
+  const setSelectedClient = useCallback((client: any | null) => {
+    console.log('👤 Setting selected client:', client);
+    dispatch({ type: 'SET_SELECTED_CLIENT', payload: client });
+  }, []);
+
   const refreshStock = useCallback(async (productIds: string[]) => {
     if (productIds.length === 0) return;
     
@@ -348,6 +363,7 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
     updateItem,
     removeItem,
     updateFormData,
+    setSelectedClient,
     refreshStock,
     resetSale,
     validateSale

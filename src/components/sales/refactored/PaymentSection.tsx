@@ -2,13 +2,14 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, User } from 'lucide-react';
 import { HybridPaymentManager } from '../HybridPaymentManager';
+import { ClientSelector } from '../ClientSelector';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 
 export function PaymentSection() {
-  const { state, updateFormData } = useSaleCreation();
-  const { formData, totalAmount } = state;
+  const { state, updateFormData, setSelectedClient } = useSaleCreation();
+  const { formData, totalAmount, selectedClient } = state;
 
   const handlePaymentMethodChange = (method: string) => {
     const updates: any = { 
@@ -36,15 +37,42 @@ export function PaymentSection() {
     }
   };
 
+  const handleClientSelect = (client: any) => {
+    setSelectedClient(client);
+  };
+
+  const handleClientClear = () => {
+    setSelectedClient(null);
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          Pagamento
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-6">
+      {/* Client Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Cliente
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ClientSelector
+            selectedClient={selectedClient}
+            onClientSelect={handleClientSelect}
+            onClientClear={handleClientClear}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Payment Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Pagamento
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Metodo</Label>
           <Select 
@@ -87,7 +115,8 @@ export function PaymentSection() {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
