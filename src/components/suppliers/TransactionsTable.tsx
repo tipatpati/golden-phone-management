@@ -16,11 +16,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSupplierTransactions } from "@/services/useSupplierTransactions";
+import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
-import { EditTransactionDialog } from "./EditTransactionDialog";
+import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
 
 interface TransactionsTableProps {
@@ -187,7 +187,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         onOpenChange={setDetailsOpen}
       />
 
-      <EditTransactionDialog
+      <EditTransactionDialogV2
         transaction={selectedTransaction}
         open={editOpen}
         onOpenChange={setEditOpen}

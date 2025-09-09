@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TransactionForm } from "./TransactionForm";
+import { TransactionFormV2 } from "./TransactionFormV2";
 
 interface NewTransactionDialogProps {
   open: boolean;
@@ -19,7 +19,7 @@ export function NewTransactionDialog({ open, onOpenChange }: NewTransactionDialo
         <DialogHeader>
           <DialogTitle>New Supplier Transaction</DialogTitle>
         </DialogHeader>
-        <TransactionForm onSuccess={() => onOpenChange(false)} />
+        <TransactionFormV2 onSuccess={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );
