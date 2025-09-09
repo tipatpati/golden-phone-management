@@ -1,4 +1,4 @@
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 
 /**
  * Utility to migrate existing product units by re-parsing their serial numbers
@@ -8,7 +8,7 @@ export async function migrateExistingProductUnits(): Promise<void> {
   console.log('Starting product units migration...');
   
   try {
-    const result = await ProductUnitsService.updateExistingUnitsWithParsedData();
+    const result = await ProductUnitManagementService.backfillMissingBarcodes();
     
     if (result.updated > 0) {
       console.log(`✅ Migration successful: Updated ${result.updated} product units`);

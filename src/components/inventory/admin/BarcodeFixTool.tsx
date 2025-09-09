@@ -31,13 +31,11 @@ export function BarcodeFixTool({ onFixed }: BarcodeFixToolProps) {
     try {
       // Step 1: Fix missing barcodes
       setProgress(25);
-      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
-      const backfillResult = { updated: 0, errors: 0 };
+      const backfillResult = await ProductUnitManagementService.backfillMissingBarcodes();
       
       // Step 2: Validate all barcodes
       setProgress(75);
-      // TODO: Implement validateUnitBarcodes in ProductUnitManagementService
-      const validationResult = { valid: 0, invalid: [], missing: [] };
+      const validationResult = await ProductUnitManagementService.validateUnitBarcodes();
       
       setProgress(100);
       

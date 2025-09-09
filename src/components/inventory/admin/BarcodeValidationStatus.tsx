@@ -19,8 +19,7 @@ export function BarcodeValidationStatus() {
   const runValidation = async () => {
     setIsValidating(true);
     try {
-      // TODO: Implement validateUnitBarcodes in ProductUnitManagementService
-      const result = { valid: 0, invalid: [], missing: [] };
+      const result = await ProductUnitManagementService.validateUnitBarcodes();
       const total = result.valid + result.invalid.length + result.missing.length;
       setValidationResult({ ...result, total });
     } catch (error) {

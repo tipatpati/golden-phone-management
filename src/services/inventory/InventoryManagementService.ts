@@ -6,7 +6,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Code128GeneratorService } from "@/services/barcodes";
 import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
-import { ProductUnitsService } from "./ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import type {
   Product,
   ProductUnit,
@@ -225,15 +225,15 @@ export class InventoryManagementService {
         };
 
         try {
-          const units = await ProductUnitsService.createUnitsForProduct(
-            product.id,
-            formData.unit_entries,
+          const unitResult = await ProductUnitManagementService.createUnitsForProduct({
+            productId: product.id,
+            unitEntries: formData.unit_entries,
             defaultPricing
-          );
+          });
           
-          result.data.units = units;
-          result.data.unitCount = units.length;
-          console.log(`✅ Created ${units.length} units for product`);
+          result.data.units = unitResult.units;
+          result.data.unitCount = unitResult.units.length;
+          console.log(`✅ Created ${unitResult.units.length} units for product`);
         } catch (unitsError) {
           console.error('❌ Failed to create some units:', unitsError);
           result.warnings.push(`Some units failed to create: ${unitsError.message}`);
@@ -375,8 +375,12 @@ export class InventoryManagementService {
     };
 
     try {
-      const units = await ProductUnitsService.createUnitsForProduct(productId, unitEntries, defaultPricing);
-      result.data = units;
+      const unitResult = await ProductUnitManagementService.createUnitsForProduct({
+        productId,
+        unitEntries,
+        defaultPricing
+      });
+      result.data = unitResult.units;
       result.success = true;
     } catch (error) {
       const inventoryError = handleInventoryError(error);
@@ -399,14 +403,14 @@ export class InventoryManagementService {
 
     try {
       // Get existing units
-      const existingUnits = await ProductUnitsService.getUnitsForProduct(productId);
+      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
       
       // Delete units not in the new entries
       const newSerials = unitEntries.map(e => e.serial);
       const unitsToDelete = existingUnits.filter(unit => !newSerials.includes(unit.serial_number));
       
       for (const unit of unitsToDelete) {
-        await ProductUnitsService.deleteUnit(unit.id);
+        await ProductUnitManagementService.updateUnitStatus(unit.id, 'damaged'); // Mark as deleted
       }
 
       // Create new units
@@ -414,7 +418,10 @@ export class InventoryManagementService {
       const newEntries = unitEntries.filter(e => !existingSerials.includes(e.serial));
       
       if (newEntries.length > 0) {
-        await ProductUnitsService.createUnitsForProduct(productId, newEntries);
+        await ProductUnitManagementService.createUnitsForProduct({
+          productId,
+          unitEntries: newEntries
+        });
       }
 
       result.success = true;

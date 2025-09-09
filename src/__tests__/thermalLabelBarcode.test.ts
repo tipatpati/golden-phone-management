@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useThermalLabels } from '@/components/inventory/labels/hooks/useThermalLabels';
-import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
+import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 
-// Mock the ProductUnitsService
-vi.mock('@/services/inventory/ProductUnitsService', () => ({
-  ProductUnitsService: {
+// Mock the ProductUnitManagementService
+vi.mock('@/services/shared/ProductUnitManagementService', () => ({
+  ProductUnitManagementService: {
     getUnitsForProduct: vi.fn()
   }
 }));
@@ -70,7 +70,7 @@ describe('Thermal Label Barcode Uniqueness', () => {
   ];
 
   it('should use unique unit barcodes by default', async () => {
-    (ProductUnitsService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
+    (ProductUnitManagementService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
 
     const { result, rerender } = renderHook(
       ({ products, useMasterBarcode }) => useThermalLabels(products, useMasterBarcode),
@@ -99,7 +99,7 @@ describe('Thermal Label Barcode Uniqueness', () => {
   });
 
   it('should use master barcode when useMasterBarcode is true', async () => {
-    (ProductUnitsService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
+    (ProductUnitManagementService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
 
     const { result, rerender } = renderHook(
       ({ products, useMasterBarcode }) => useThermalLabels(products, useMasterBarcode),
@@ -125,7 +125,7 @@ describe('Thermal Label Barcode Uniqueness', () => {
 
   it('should generate unique barcodes when units have no barcode', async () => {
     const unitsWithoutBarcodes = mockUnits.map(unit => ({ ...unit, barcode: null }));
-    (ProductUnitsService.getUnitsForProduct as any).mockResolvedValue(unitsWithoutBarcodes);
+    (ProductUnitManagementService.getUnitsForProduct as any).mockResolvedValue(unitsWithoutBarcodes);
 
     const { result, rerender } = renderHook(
       ({ products, useMasterBarcode }) => useThermalLabels(products, useMasterBarcode),
@@ -155,7 +155,7 @@ describe('Thermal Label Barcode Uniqueness', () => {
 
   it('should handle products without master barcode', async () => {
     const productWithoutBarcode = { ...mockProduct, barcode: undefined };
-    (ProductUnitsService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
+    (ProductUnitManagementService.getUnitsForProduct as any).mockResolvedValue(mockUnits);
 
     const { result, rerender } = renderHook(
       ({ products, useMasterBarcode }) => useThermalLabels(products, useMasterBarcode),

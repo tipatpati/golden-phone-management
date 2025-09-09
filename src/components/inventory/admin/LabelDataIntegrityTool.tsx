@@ -69,8 +69,7 @@ export function LabelDataIntegrityTool() {
   const triggerBarcodeBackfill = async () => {
     try {
       console.log('🔧 Triggering barcode backfill...');
-      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
-      const result = { updated: 0, errors: 0 };
+      const result = await ProductUnitManagementService.backfillMissingBarcodes();
       console.log('✅ Backfill completed:', result);
       
       // Re-run integrity check

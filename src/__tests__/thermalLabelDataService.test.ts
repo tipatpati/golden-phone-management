@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThermalLabelDataService } from '@/services/labels/ThermalLabelDataService';
-import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
+import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import { ProductForLabels } from '@/services/labels/types';
 
 // Mock the dependencies
-vi.mock('@/services/inventory/ProductUnitsService', () => ({
-  ProductUnitsService: {
+vi.mock('@/services/shared/ProductUnitManagementService', () => ({
+  ProductUnitManagementService: {
     getUnitsForProduct: vi.fn()
   }
 }));
@@ -68,7 +68,7 @@ describe('ThermalLabelDataService', () => {
 
   it('should generate labels for products with units successfully', async () => {
     // Mock the service to return units
-    vi.mocked(ProductUnitsService.getUnitsForProduct).mockResolvedValue(mockUnits);
+    vi.mocked(ProductUnitManagementService.getUnitsForProduct).mockResolvedValue(mockUnits);
 
     const result = await ThermalLabelDataService.generateLabelsForProducts([mockProduct]);
 
@@ -93,7 +93,7 @@ describe('ThermalLabelDataService', () => {
       mockUnits[1]
     ];
 
-    vi.mocked(ProductUnitsService.getUnitsForProduct).mockResolvedValue(unitsWithoutBarcodes);
+    vi.mocked(ProductUnitManagementService.getUnitsForProduct).mockResolvedValue(unitsWithoutBarcodes);
 
     const result = await ThermalLabelDataService.generateLabelsForProducts([mockProduct]);
 
@@ -134,7 +134,7 @@ describe('ThermalLabelDataService', () => {
       ram: undefined
     };
 
-    vi.mocked(ProductUnitsService.getUnitsForProduct).mockResolvedValue([unitWithoutSpecs]);
+    vi.mocked(ProductUnitManagementService.getUnitsForProduct).mockResolvedValue([unitWithoutSpecs]);
 
     const result = await ThermalLabelDataService.generateLabelsForProducts([mockProduct]);
 
@@ -145,7 +145,7 @@ describe('ThermalLabelDataService', () => {
   });
 
   it('should handle service errors gracefully', async () => {
-    vi.mocked(ProductUnitsService.getUnitsForProduct).mockRejectedValue(new Error('Database error'));
+    vi.mocked(ProductUnitManagementService.getUnitsForProduct).mockRejectedValue(new Error('Database error'));
 
     const result = await ThermalLabelDataService.generateLabelsForProducts([mockProduct]);
 

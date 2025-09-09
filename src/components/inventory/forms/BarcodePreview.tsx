@@ -100,8 +100,7 @@ export function BarcodePreview({
     if (!productId) return;
     setIsLoading(true);
     try {
-      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
-      // await ProductUnitManagementService.backfillMissingBarcodes();
+      await ProductUnitManagementService.backfillMissingBarcodes();
       toast({
         title: "Barcodes Updated",
         description: "Missing barcodes have been generated successfully."

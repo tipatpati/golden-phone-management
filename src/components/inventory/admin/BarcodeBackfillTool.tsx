@@ -20,8 +20,7 @@ export function BarcodeBackfillTool() {
     
     try {
       console.log('🔄 Starting barcode backfill...');
-      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
-      const backfillResult = { updated: 0, errors: 0 };
+      const backfillResult = await ProductUnitManagementService.backfillMissingBarcodes();
       
       setResult(backfillResult);
       

@@ -1,5 +1,5 @@
 // Unit pricing utility functions
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 
 export interface PricingInfo {
   display: string;
@@ -40,7 +40,7 @@ export async function getProductPricingInfo(
 
   // For products with serial tracking, check if they have units
   try {
-    const units = await ProductUnitsService.getUnitsForProduct(product.id);
+    const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
     
     if (units.length === 0) {
       // No units available

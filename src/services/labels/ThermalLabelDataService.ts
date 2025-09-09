@@ -1,4 +1,4 @@
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import type { ProductUnit } from "@/services/inventory/types";
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 import { LabelDataValidator } from "./LabelDataValidator";
@@ -110,7 +110,7 @@ export class ThermalLabelDataService {
     try {
       // Fetch units for the product
       console.log(`📦 Fetching units for product ${product.id}...`);
-      const units = await ProductUnitsService.getUnitsForProduct(product.id);
+      const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units`);
 
       // Process each unit, generating missing barcodes

@@ -4,6 +4,7 @@
 // Central exports for the unified inventory management system
 
 export { InventoryManagementService } from './InventoryManagementService';
+// ProductUnitsService - DEPRECATED: Use ProductUnitManagementService from shared instead
 export { ProductUnitsService } from './ProductUnitsService';
 export { StockCalculationService } from './StockCalculationService';
 export { InventoryError, handleInventoryError, ERROR_CODES } from './errors';
