@@ -1,22 +1,15 @@
-import React, { useState, useMemo } from "react";
-import { DataTable, DataCard } from "@/components/common";
+import React, { useState } from "react";
+import { DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Edit, Trash2, Calendar } from "lucide-react";
+import { Calendar, Eye, Edit, Trash2 } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
 import { AdvancedTransactionFilters } from "./AdvancedTransactionFilters";
 import { TransactionSummaryStats } from "./TransactionSummaryStats";
-import { BulkTransactionActions } from "./BulkTransactionActions";
 import type { TransactionSearchFilters, SupplierTransaction } from "@/services/suppliers/types";
 
 interface TransactionsTableProps {
@@ -29,7 +22,6 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
-  // Update filters when searchTerm prop changes
   React.useEffect(() => {
     setFilters(prev => ({ ...prev, searchTerm }));
   }, [searchTerm]);
@@ -50,126 +42,97 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     setSelectedIds([]);
   };
 
-  const columns: any[] = [
+  const columns = [
     {
-      key: "select",
-      id: "select",
-      header: ({ table }: any) => (
+      key: "select" as keyof SupplierTransaction,
+      header: "Select",
+      render: (value: any, transaction: SupplierTransaction) => (
         <Checkbox
-          checked={selectedIds.length === (transactions?.length || 0) && (transactions?.length || 0) > 0}
+          checked={selectedIds.includes(transaction.id)}
           onCheckedChange={(checked) => {
             if (checked) {
-              setSelectedIds(transactions?.map(t => t.id) || []);
+              setSelectedIds(prev => [...prev, transaction.id]);
             } else {
-              setSelectedIds([]);
-            }
-          }}
-        />
-      ),
-      cell: ({ row }: any) => (
-        <Checkbox
-          checked={selectedIds.includes(row.original.id)}
-          onCheckedChange={(checked) => {
-            if (checked) {
-              setSelectedIds(prev => [...prev, row.original.id]);
-            } else {
-              setSelectedIds(prev => prev.filter(id => id !== row.original.id));
+              setSelectedIds(prev => prev.filter(id => id !== transaction.id));
             }
           }}
         />
       ),
     },
     {
-      key: "transaction_number",
-      accessor: "transaction_number",
+      key: "transaction_number" as keyof SupplierTransaction,
       header: "Transaction #",
-      cell: ({ row }: any) => (
-        <div className="font-medium">{row.original.transaction_number}</div>
-      ),
+      render: (value: string) => <div className="font-medium">{value}</div>,
     },
     {
-      accessor: "suppliers.name",
+      key: "suppliers" as keyof SupplierTransaction,
       header: "Supplier",
-      cell: ({ row }: any) => (
-        <div className="font-medium">{row.original.suppliers?.name || 'Unknown'}</div>
+      render: (value: any, transaction: SupplierTransaction) => (
+        <div className="font-medium">{transaction.suppliers?.name || 'Unknown'}</div>
       ),
     },
     {
-      accessor: "type",
+      key: "type" as keyof SupplierTransaction,
       header: "Type",
-      cell: ({ row }: any) => (
-        <Badge variant={getTypeColor(row.original.type)}>
-          {row.original.type}
+      render: (value: string) => (
+        <Badge variant={getTypeColor(value)}>
+          {value}
         </Badge>
       ),
     },
     {
-      accessor: "total_amount",
+      key: "total_amount" as keyof SupplierTransaction,
       header: "Amount",
-      cell: ({ row }: any) => (
-        <div className="font-medium">€{row.original.total_amount.toFixed(2)}</div>
+      render: (value: number) => (
+        <div className="font-medium">€{value.toFixed(2)}</div>
       ),
     },
     {
-      accessor: "transaction_date",
+      key: "transaction_date" as keyof SupplierTransaction,
       header: "Date",
-      cell: ({ row }: any) => (
+      render: (value: string) => (
         <div className="flex items-center space-x-1">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>{new Date(row.original.transaction_date).toLocaleDateString()}</span>
+          <span>{new Date(value).toLocaleDateString()}</span>
         </div>
       ),
     },
     {
-      accessor: "status",
+      key: "status" as keyof SupplierTransaction,
       header: "Status",
-      cell: ({ row }: any) => (
-        <Badge variant={getStatusColor(row.original.status)}>
-          {row.original.status}
+      render: (value: string) => (
+        <Badge variant={getStatusColor(value)}>
+          {value}
         </Badge>
       ),
     },
+  ];
+
+  const actions = [
     {
-      accessor: "actions",
-      header: "",
-      cell: ({ row }: any) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => {
-                setSelectedTransaction(row.original);
-                setShowDetailsDialog(true);
-              }}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                setSelectedTransaction(row.original);
-                setShowEditDialog(true);
-              }}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                setSelectedTransaction(row.original);
-                setShowDeleteDialog(true);
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      icon: <Eye className="h-4 w-4" />,
+      label: "View Details",
+      onClick: (transaction: SupplierTransaction) => {
+        setSelectedTransaction(transaction);
+        setShowDetailsDialog(true);
+      },
+    },
+    {
+      icon: <Edit className="h-4 w-4" />,
+      label: "Edit",
+      onClick: (transaction: SupplierTransaction) => {
+        setSelectedTransaction(transaction);
+        setShowEditDialog(true);
+      },
+    },
+    {
+      icon: <Trash2 className="h-4 w-4" />,
+      label: "Delete",
+      onClick: (transaction: SupplierTransaction) => {
+        setSelectedTransaction(transaction);
+        setShowDeleteDialog(true);
+      },
+      variant: "destructive" as const,
     },
   ];
 
@@ -216,14 +179,38 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         onReset={resetFilters}
       />
 
-      {/* Bulk Actions */}
+      {/* Bulk Selection */}
       {transactions && transactions.length > 0 && (
-        <BulkTransactionActions
-          transactions={transactions}
-          selectedIds={selectedIds}
-          onSelectionChange={setSelectedIds}
-          onActionComplete={handleActionComplete}
-        />
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              checked={selectedIds.length === transactions.length && transactions.length > 0}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  setSelectedIds(transactions.map(t => t.id));
+                } else {
+                  setSelectedIds([]);
+                }
+              }}
+            />
+            <span className="text-sm font-medium">
+              {selectedIds.length > 0 
+                ? `${selectedIds.length} of ${transactions.length} selected`
+                : `Select transactions (${transactions.length} total)`
+              }
+            </span>
+          </div>
+          {selectedIds.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline">
+                {selectedIds.length} selected
+              </Badge>
+              <Button size="sm" variant="outline">
+                Bulk Actions
+              </Button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Data Table */}
@@ -231,8 +218,8 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         <DataTable
           data={transactions || []}
           columns={columns}
-          searchable={false} // We handle search via filters now
-          actions={[]}
+          actions={actions}
+          getRowKey={(transaction) => transaction.id}
         />
       </div>
 
