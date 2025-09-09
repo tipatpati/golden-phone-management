@@ -1410,6 +1410,14 @@ export type Database = {
         }
         Returns: Json
       }
+      fix_product_consistency_issues: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          details: string
+          fixed_count: number
+          fixed_type: string
+        }[]
+      }
       generate_and_register_barcode: {
         Args: {
           p_barcode_type: string
@@ -1481,6 +1489,15 @@ export type Database = {
       sanitize_and_validate_input: {
         Args: { input_text: string; input_type: string; max_length?: number }
         Returns: Json
+      }
+      validate_product_consistency: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          description: string
+          issue_type: string
+          product_id: string
+          severity: string
+        }[]
       }
       validate_product_stock: {
         Args: { product_items: Json }
