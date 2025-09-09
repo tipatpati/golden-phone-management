@@ -175,184 +175,133 @@ export class InventoryManagementService {
   // ============================================
 
   /**
-   * Create a new product with optional units
+   * Create a new product with optional units using unified service
    */
   static async createProduct(formData: ProductFormData): Promise<InventoryOperationResult> {
-    console.log('🎯 InventoryManagementService: Creating product:', formData.brand, formData.model);
+    console.log('🎯 InventoryManagementService: Delegating to unified service:', formData.brand, formData.model);
     
-    const result: InventoryOperationResult = {
-      success: false,
-      data: null,
-      errors: [],
-      warnings: []
-    };
-
     try {
-      // Validate form data
-      const validation = this.validateProductForm(formData);
-      if (!validation.isValid) {
-        result.errors = validation.errors;
-        return result;
+      // Use unified product creation service
+      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      
+      const unifiedResult = await unifiedProductCreationService.createProduct(formData, {
+        source: 'inventory'
+      });
+
+      // Transform unified result to inventory operation result
+      const result: InventoryOperationResult = {
+        success: unifiedResult.success,
+        data: unifiedResult.product ? {
+          ...unifiedResult.product,
+          units: unifiedResult.units,
+          unitCount: unifiedResult.createdUnitCount
+        } : null,
+        errors: unifiedResult.errors,
+        warnings: unifiedResult.warnings
+      };
+
+      if (unifiedResult.success) {
+        console.log('✅ Product created via unified service:', result.data?.id);
+      } else {
+        console.error('❌ Unified product creation failed:', result.errors);
       }
 
-      // Transform form data to database format
-      const productData = this.transformFormToProductData(formData);
-
-      // Create the product
-      const { data: product, error } = await supabase
-        .from('products')
-        .insert(productData as any)
-        .select(`
-          *,
-          category:categories(id, name)
-        `)
-        .single();
-
-      if (error) {
-        throw InventoryError.createDatabaseError('createProduct', error);
-      }
-
-      result.data = this.transformProduct(product);
-
-      // Create units if product has serial numbers
-      if (formData.has_serial && formData.unit_entries && formData.unit_entries.length > 0) {
-        console.log('📦 Creating product units:', formData.unit_entries.length);
-        
-        const defaultPricing = {
-          price: formData.price,
-          min_price: formData.min_price,
-          max_price: formData.max_price
-        };
-
-        try {
-          const unitResult = await ProductUnitManagementService.createUnitsForProduct({
-            productId: product.id,
-            unitEntries: formData.unit_entries,
-            defaultPricing
-          });
-          
-          result.data.units = unitResult.units;
-          result.data.unitCount = unitResult.units.length;
-          console.log(`✅ Created ${unitResult.units.length} units for product`);
-        } catch (unitsError) {
-          console.error('❌ Failed to create some units:', unitsError);
-          result.warnings.push(`Some units failed to create: ${unitsError.message}`);
-        }
-      }
-
-      result.success = true;
-      console.log('✅ Product created successfully:', result.data.id);
+      return result;
       
     } catch (error) {
       const inventoryError = handleInventoryError(error);
-      result.errors.push(inventoryError.message);
-      console.error('❌ Failed to create product:', inventoryError);
+      return {
+        success: false,
+        data: null,
+        errors: [inventoryError.message],
+        warnings: []
+      };
     }
-
-    return result;
   }
 
   /**
-   * Update an existing product
+   * Update an existing product using unified service
    */
   static async updateProduct(productId: string, formData: Partial<ProductFormData>): Promise<InventoryOperationResult> {
-    console.log('🔄 InventoryManagementService: Updating product:', productId);
+    console.log('🔄 InventoryManagementService: Delegating update to unified service:', productId);
     
-    const result: InventoryOperationResult = {
-      success: false,
-      data: null,
-      errors: [],
-      warnings: []
-    };
-
     try {
-      // Transform form data to database format
-      const productData = this.transformFormToProductData(formData);
+      // Use unified product creation service
+      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      
+      const unifiedResult = await unifiedProductCreationService.updateProduct(productId, formData, {
+        source: 'inventory'
+      });
 
-      // Update the product
-      const { data: product, error } = await supabase
-        .from('products')
-        .update(productData as any)
-        .eq('id', productId)
-        .select(`
-          *,
-          category:categories(id, name)
-        `)
-        .single();
+      // Transform unified result to inventory operation result
+      const result: InventoryOperationResult = {
+        success: unifiedResult.success,
+        data: unifiedResult.product ? {
+          ...unifiedResult.product,
+          units: unifiedResult.units,
+          unitCount: unifiedResult.createdUnitCount
+        } : null,
+        errors: unifiedResult.errors,
+        warnings: unifiedResult.warnings
+      };
 
-      if (error) {
-        throw InventoryError.createDatabaseError('updateProduct', error, { productId });
+      if (unifiedResult.success) {
+        console.log('✅ Product updated via unified service:', productId);
+      } else {
+        console.error('❌ Unified product update failed:', result.errors);
       }
 
-      result.data = this.transformProduct(product);
-
-      // Update units if provided
-      if (formData.unit_entries) {
-        try {
-          await this.updateProductUnits(productId, formData.unit_entries);
-          console.log('✅ Updated product units');
-        } catch (unitsError) {
-          console.error('❌ Failed to update some units:', unitsError);
-          result.warnings.push(`Some units failed to update: ${unitsError.message}`);
-        }
-      }
-
-      result.success = true;
-      console.log('✅ Product updated successfully:', productId);
+      return result;
       
     } catch (error) {
       const inventoryError = handleInventoryError(error);
-      result.errors.push(inventoryError.message);
-      console.error('❌ Failed to update product:', inventoryError);
+      return {
+        success: false,
+        data: null,
+        errors: [inventoryError.message],
+        warnings: []
+      };
     }
-
-    return result;
   }
 
   /**
-   * Delete a product and all its units
+   * Delete a product and all its units using unified service
    */
   static async deleteProduct(productId: string): Promise<InventoryOperationResult> {
-    console.log('🗑️ InventoryManagementService: Deleting product:', productId);
+    console.log('🗑️ InventoryManagementService: Delegating deletion to unified service:', productId);
     
-    const result: InventoryOperationResult = {
-      success: false,
-      data: null,
-      errors: [],
-      warnings: []
-    };
-
     try {
-      // First delete all units
-      const { error: unitsError } = await supabase
-        .from('product_units')
-        .delete()
-        .eq('product_id', productId);
+      // Use unified product creation service
+      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      
+      const deleteResult = await unifiedProductCreationService.deleteProduct(productId, {
+        source: 'inventory'
+      });
 
-      if (unitsError) {
-        throw InventoryError.createDatabaseError('deleteProductUnits', unitsError, { productId });
+      const result: InventoryOperationResult = {
+        success: deleteResult.success,
+        data: null,
+        errors: deleteResult.errors,
+        warnings: []
+      };
+
+      if (deleteResult.success) {
+        console.log('✅ Product deleted via unified service:', productId);
+      } else {
+        console.error('❌ Unified product deletion failed:', result.errors);
       }
 
-      // Then delete the product
-      const { error: productError } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-
-      if (productError) {
-        throw InventoryError.createDatabaseError('deleteProduct', productError, { productId });
-      }
-
-      result.success = true;
-      console.log('✅ Product deleted successfully:', productId);
+      return result;
       
     } catch (error) {
       const inventoryError = handleInventoryError(error);
-      result.errors.push(inventoryError.message);
-      console.error('❌ Failed to delete product:', inventoryError);
+      return {
+        success: false,
+        data: null,
+        errors: [inventoryError.message],
+        warnings: []
+      };
     }
-
-    return result;
   }
 
   // ============================================

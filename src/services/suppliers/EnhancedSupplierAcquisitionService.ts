@@ -86,7 +86,7 @@ class SupplierAcquisitionServiceClass {
   }
 
   /**
-   * Process individual acquisition item with unified product coordination
+   * Process individual acquisition item using unified product creation service
    */
   private async processAcquisitionItem(
     transactionId: string,
@@ -96,104 +96,60 @@ class SupplierAcquisitionServiceClass {
   ): Promise<void> {
     console.log(`📦 Processing acquisition item: ${item.productData.brand} ${item.productData.model}`);
 
-    // PHASE 3: Use unified product resolution
-    const { product, isExisting } = await UnifiedProductCoordinator.resolveProduct(
-      item.productData.brand,
-      item.productData.model,
-      {
-        ...item.productData,
-        price: item.unitCost, // Use acquisition cost as base price
-        has_serial: item.unitEntries.length > 0
-      }
-    );
-
-    if (!isExisting) {
-      createdProducts.push(product.id);
-      console.log(`✅ Created new product: ${product.id}`);
-    } else {
-      console.log(`🔄 Using existing product: ${product.id}`);
-    }
-
-    // PHASE 4: Notify about supplier product action
-    UnifiedProductCoordinator.notifyEvent({
-      type: isExisting ? 'product_updated' : 'product_created',
-      source: 'supplier',
-      entityId: product.id,
-      metadata: {
-        brand: item.productData.brand,
-        model: item.productData.model,
-        acquisition: true,
+    try {
+      // Use unified product creation service
+      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      
+      const result = await unifiedProductCreationService.createProduct(item.productData, {
+        source: 'supplier',
         transactionId,
-        unitCost: item.unitCost
-      }
-    });
-
-    // Create transaction item record
-    const productUnitIds: string[] = [];
-    
-    // Process individual units if product has serial numbers
-    if (item.unitEntries.length > 0) {
-      for (const unitEntry of item.unitEntries) {
-        const { unit, isExisting: unitExists } = await UnifiedProductCoordinator.resolveProductUnit(
-          product.id,
-          unitEntry.serial,
-          {
-            price: unitEntry.price || item.unitCost,
-            min_price: unitEntry.min_price,
-            max_price: unitEntry.max_price,
-            battery_level: unitEntry.battery_level,
-            color: unitEntry.color,
-            storage: unitEntry.storage,
-            ram: unitEntry.ram,
-            purchase_price: item.unitCost,
-            supplier_id: undefined, // Will be inferred from transaction
-            status: 'available'
-          }
-        );
-
-        if (!unitExists) {
-          createdUnits.push(unit.id);
-          productUnitIds.push(unit.id);
-          console.log(`✅ Created new unit: ${unit.serial_number} (${unit.id})`);
-        } else {
-          productUnitIds.push(unit.id);
-          console.log(`🔄 Using existing unit: ${unit.serial_number} (${unit.id})`);
+        unitCost: item.unitCost,
+        supplierId: undefined, // Will be inferred from transaction
+        metadata: {
+          acquisition: true,
+          totalCost: item.totalCost,
+          quantity: item.quantity
         }
-
-        // PHASE 4: Notify about supplier unit action
-        UnifiedProductCoordinator.notifyEvent({
-          type: unitExists ? 'unit_updated' : 'unit_created',
-          source: 'supplier',
-          entityId: unit.id,
-          metadata: {
-            productId: product.id,
-            serialNumber: unitEntry.serial,
-            acquisition: true,
-            transactionId,
-            unitCost: item.unitCost
-          }
-        });
-      }
-    }
-
-    // Create supplier transaction item record
-    await supabase
-      .from('supplier_transaction_items')
-      .insert({
-        transaction_id: transactionId,
-        product_id: product.id,
-        quantity: item.quantity,
-        unit_cost: item.unitCost,
-        total_cost: item.totalCost,
-        creates_new_product: !isExisting,
-        product_unit_ids: productUnitIds as any,
-        unit_details: {
-          unitEntries: item.unitEntries,
-          createdUnits: productUnitIds
-        } as any
       });
 
-    console.log(`✅ Acquisition item processed: ${product.id}`);
+      if (!result.success) {
+        throw new Error(`Failed to create/resolve product: ${result.errors.join(', ')}`);
+      }
+
+      // Track created products and units
+      if (!result.isExistingProduct) {
+        createdProducts.push(result.product!.id);
+        console.log(`✅ Created new product: ${result.product!.id}`);
+      } else {
+        console.log(`🔄 Using existing product: ${result.product!.id}`);
+      }
+
+      createdUnits.push(...result.units.map(u => u.id));
+      console.log(`✅ Created ${result.createdUnitCount} units for product`);
+
+      // Create supplier transaction item record
+      await supabase
+        .from('supplier_transaction_items')
+        .insert({
+          transaction_id: transactionId,
+          product_id: result.product!.id,
+          quantity: item.quantity,
+          unit_cost: item.unitCost,
+          total_cost: item.totalCost,
+          creates_new_product: !result.isExistingProduct,
+          product_unit_ids: result.units.map(u => u.id) as any,
+          unit_details: {
+            unitEntries: item.unitEntries,
+            createdUnits: result.units.map(u => u.id)
+          } as any
+        });
+
+      console.log(`✅ Acquisition item processed: ${result.product!.id}`);
+      
+    } catch (error) {
+      console.error(`❌ Failed to process acquisition item:`, error);
+      throw error;
+    }
   }
 
   /**
