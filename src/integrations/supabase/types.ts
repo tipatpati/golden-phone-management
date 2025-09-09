@@ -1410,6 +1410,15 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_and_register_barcode: {
+        Args: {
+          p_barcode_type: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
       generate_repair_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1460,6 +1469,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_barcode_counter: {
+        Args: { counter_type: string }
+        Returns: number
       }
       is_ip_blocked: {
         Args: { client_ip: unknown }
