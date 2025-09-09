@@ -3,7 +3,7 @@ import { transactionCoordinator } from '../core/TransactionCoordinator';
 import { eventBus } from '../core/EventBus';
 import { logger } from '@/utils/logger';
 import { dataConsistencyLayer } from '../core/DataConsistencyLayer';
-import { Code128GeneratorService } from '@/services/barcodes/Code128GeneratorService';
+import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import type { ProductFormData, UnitEntryForm } from '../inventory/types';
 import type { Supplier } from './types';
 
@@ -257,56 +257,26 @@ class SupplierAcquisitionService {
         const unitIds: string[] = [];
 
         if (item.unitEntries && item.unitEntries.length > 0) {
-          // Create serialized units with barcodes
-          for (const unitEntry of item.unitEntries) {
-            // Create the product unit first
-            const { data, error } = await supabase
-              .from('product_units')
-              .insert({
-                product_id: productId,
-                supplier_id: supplierId,
-                purchase_price: item.unitCost,
-                purchase_date: new Date().toISOString(),
-                serial_number: unitEntry.serial || '',
-                color: unitEntry.color || null,
-                storage: unitEntry.storage ? parseInt(unitEntry.storage.toString()) : null,
-                ram: unitEntry.ram ? parseInt(unitEntry.ram.toString()) : null,
-                battery_level: unitEntry.battery_level,
-                price: unitEntry.price || item.unitCost,
-                min_price: unitEntry.min_price,
-                max_price: unitEntry.max_price,
-                status: 'available'
-              })
-              .select('id')
-              .single();
-
-            if (error) {
-              throw new Error(`Failed to create product unit: ${error.message}`);
+          // Use unified service for unit creation with integrated barcode generation
+          const unitsResult = await ProductUnitManagementService.createUnitsForProduct({
+            productId,
+            unitEntries: item.unitEntries,
+            defaultPricing: {
+              price: item.unitCost,
+              min_price: item.unitCost * 1.2,
+              max_price: item.unitCost * 1.5
+            },
+            metadata: {
+              supplierId: supplierId,
+              transactionId,
+              acquisitionDate: new Date()
             }
+          });
 
-            const unitId = data.id;
-            unitIds.push(unitId);
-
-            // Generate barcode for the unit using the centralized barcode system
-            try {
-              const barcode = await Code128GeneratorService.generateUnitBarcode(unitId);
-              
-              // Update the unit with the generated barcode
-              const { error: barcodeUpdateError } = await supabase
-                .from('product_units')
-                .update({ barcode })
-                .eq('id', unitId);
-
-              if (barcodeUpdateError) {
-                throw new Error(`Failed to update barcode for unit ${unitId}: ${barcodeUpdateError.message}`);
-              }
-
-              logger.info(`Generated barcode ${barcode} for unit ${unitId}`);
-            } catch (barcodeError) {
-              // Barcode generation failure should not fail the entire acquisition
-              logger.error(`Failed to generate barcode for unit ${unitId}:`, barcodeError);
-              throw new Error(`Barcode generation failed for unit ${unitId}: ${barcodeError}`);
-            }
+          unitIds.push(...unitsResult.units.map(u => u.id));
+          
+          if (unitsResult.errors.length > 0) {
+            logger.warn('Some units had issues during creation:', unitsResult.errors);
           }
         } else if (item.quantity > 0) {
           // Create units for non-serialized products (for tracking purposes)

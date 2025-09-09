@@ -1,16 +1,18 @@
 // ============================================
-// PRODUCT UNITS SERVICE - MIGRATED TO INVENTORY MODULE
+// PRODUCT UNITS SERVICE - MIGRATED TO SHARED SERVICE
 // ============================================
-// This service handles all product unit operations with proper error handling
+// This service now delegates to the unified ProductUnitManagementService
 
 import { supabase } from "@/integrations/supabase/client";
 import { Code128GeneratorService } from '@/services/barcodes';
-import type { ProductUnit, CreateProductUnitData, UnitEntryForm } from './types';
+import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
+import type { ProductUnit, UnitEntryForm } from './types';
 import { InventoryError, handleInventoryError } from './errors';
 
 export class ProductUnitsService {
   /**
-   * Create multiple product units with professional CODE128 barcodes
+   * Create multiple product units - delegates to unified service
+   * @deprecated Use ProductUnitManagementService.createUnitsForProduct instead
    */
   static async createUnitsForProduct(
     productId: string, 
@@ -21,125 +23,38 @@ export class ProductUnitsService {
       max_price?: number;
     }
   ): Promise<ProductUnit[]> {
-    console.log('🏭 Creating product units with professional barcodes:', { productId, count: unitEntries.length });
-
-    const results: ProductUnit[] = [];
-    const errors: string[] = [];
-
-    for (const entry of unitEntries) {
-      try {
-        // First create the unit without barcode
-        const unitData: CreateProductUnitData = {
-          product_id: productId,
-          serial_number: entry.serial,
-          battery_level: entry.battery_level,
-          color: entry.color,
-          storage: entry.storage,
-          ram: entry.ram,
-          price: entry.price ?? defaultPricing?.price,
-          min_price: entry.min_price ?? defaultPricing?.min_price,
-          max_price: entry.max_price ?? defaultPricing?.max_price,
-          status: 'available'
-        };
-
-        const { data: unit, error } = await supabase
-          .from('product_units')
-          .insert(unitData)
-          .select()
-          .single();
-
-        if (error) {
-          throw InventoryError.createDatabaseError('createUnit', error, { serial: entry.serial });
-        }
-
-        // Generate professional CODE128 barcode
-        const barcode = await Code128GeneratorService.generateUnitBarcode(unit.id, {
-          metadata: {
-            serial: entry.serial,
-            product_id: productId,
-            battery_level: entry.battery_level,
-            color: entry.color,
-            storage: entry.storage,
-            ram: entry.ram
-          }
-        });
-
-        // Update unit with barcode
-        const { data: updatedUnit, error: updateError } = await supabase
-          .from('product_units')
-          .update({ barcode })
-          .eq('id', unit.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Failed to update unit with barcode:', updateError);
-          // Continue with unit without barcode rather than failing
-          results.push(unit as ProductUnit);
-        } else {
-          results.push(updatedUnit as ProductUnit);
-        }
-
-        console.log(`✅ Created unit with barcode:`, { serial: entry.serial, barcode });
-
-      } catch (error) {
-        console.error(`Failed to create unit for serial ${entry.serial}:`, error);
-        errors.push(`${entry.serial}: ${error}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      console.warn('Some units failed to create:', errors);
-    }
-
-    console.log('🎯 Product units creation completed:', { created: results.length, errors: errors.length });
-    return results;
-  }
-
-  /**
-   * Get all units for a product
-   */
-  static async getUnitsForProduct(productId: string): Promise<ProductUnit[]> {
     try {
-      const { data, error } = await supabase
-        .from('product_units')
-        .select('*')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+      const result = await ProductUnitManagementService.createUnitsForProduct({
+        productId,
+        unitEntries,
+        defaultPricing
+      });
 
-      if (error) {
-        throw InventoryError.createDatabaseError('getUnitsForProduct', error, { productId });
+      if (result.errors.length > 0) {
+        console.warn('Some units failed to create:', result.errors);
       }
 
-      return (data || []) as ProductUnit[];
+      return result.units;
     } catch (error) {
       throw handleInventoryError(error);
     }
   }
 
   /**
-   * Update unit status
+   * Get all units for a product - delegates to unified service
+   */
+  static async getUnitsForProduct(productId: string): Promise<ProductUnit[]> {
+    return ProductUnitManagementService.getUnitsForProduct(productId);
+  }
+
+  /**
+   * Update unit status - delegates to unified service
    */
   static async updateUnitStatus(
     unitId: string, 
     status: 'available' | 'sold' | 'reserved' | 'damaged'
   ): Promise<ProductUnit> {
-    try {
-      const { data, error } = await supabase
-        .from('product_units')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', unitId)
-        .select()
-        .single();
-
-      if (error) {
-        throw InventoryError.createDatabaseError('updateUnitStatus', error, { unitId, status });
-      }
-
-      return data as ProductUnit;
-    } catch (error) {
-      throw handleInventoryError(error);
-    }
+    return ProductUnitManagementService.updateUnitStatus(unitId, status);
   }
 
   /**

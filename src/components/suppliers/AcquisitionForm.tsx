@@ -14,12 +14,12 @@ import { toast } from 'sonner';
 import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
 import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
-import { SerialNumberManager } from '@/components/inventory/forms/SerialNumberManager';
+import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
+import { UnitBarcodeManager } from '@/components/shared/forms/UnitBarcodeManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
-import { BarcodeManager } from '@/components/inventory/forms/BarcodeManager';
 import { useProductForm } from '@/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
-import type { ProductFormData, UnitEntryForm } from '@/services/inventory/types';
+import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 import { Code128GeneratorService } from '@/services/barcodes';
 
 const acquisitionSchema = z.object({
@@ -125,7 +125,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     ));
   }, []);
 
-  const updateUnitEntries = useCallback(async (index: number, unitEntries: UnitEntryForm[]) => {
+  const updateUnitEntries = useCallback(async (index: number, unitEntries: UnitEntryFormType[]) => {
     setItems(prev => prev.map((item, i) => 
       i === index ? { ...item, unitEntries, quantity: unitEntries.length } : item
     ));
@@ -288,11 +288,12 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                         {/* Serial Number Management */}
                         {item.productData?.has_serial && (
                           <div className="space-y-4">
-                            <SerialNumberManager
-                              unitEntries={item.unitEntries}
-                              onUnitEntriesChange={(entries) => updateUnitEntries(index, entries)}
+                            <UnitEntryForm
+                              entries={item.unitEntries}
+                              setEntries={(entries) => updateUnitEntries(index, entries)}
                               onStockChange={(stock) => updateProductData(index, { stock })}
-                              hasSerial={item.productData.has_serial}
+                              title="Unit Details (IMEI/SN + pricing)"
+                              showPricing={true}
                             />
                             
                             {/* Barcode Preview for Units */}
@@ -302,12 +303,17 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                               productBarcode={productBarcodes[index]}
                             />
                             
-                            {/* Barcode Manager for Product and Units */}
-                            <BarcodeManager
-                              serialNumbers={item.unitEntries.map(u => u.serial).join(',')}
-                              hasSerial={item.productData.has_serial}
-                              productId={undefined} // New product, no ID yet
-                              onBarcodeGenerated={(barcode) => handleBarcodeGenerated(index, barcode)}
+                            {/* Unified Barcode Manager for Units */}
+                            <UnitBarcodeManager
+                              units={item.unitEntries}
+                              existingUnitBarcodes={unitBarcodes[index] || {}}
+                              onBarcodeGenerated={(serial, barcode) => {
+                                setUnitBarcodes(prev => ({
+                                  ...prev,
+                                  [index]: { ...prev[index], [serial]: barcode }
+                                }));
+                              }}
+                              showPrintButton={true}
                             />
                           </div>
                         )}

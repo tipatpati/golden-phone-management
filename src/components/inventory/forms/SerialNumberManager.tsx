@@ -1,6 +1,7 @@
 import React from "react";
 import type { SerialNumberManagerProps } from "@/services/inventory/types";
-import { SerialNumbersInput } from "../SerialNumbersInput";
+import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
+import { UnitBarcodeManager } from "@/components/shared/forms/UnitBarcodeManager";
 
 export function SerialNumberManager({
   serialNumbers, // optional legacy
@@ -16,15 +17,18 @@ export function SerialNumberManager({
 
   return (
     <div className="space-y-4">
-      <SerialNumbersInput
+      <UnitEntryForm
         entries={unitEntries}
         setEntries={onUnitEntriesChange}
-        setStock={(value: string) => {
-          const stock = Array.isArray(unitEntries)
-            ? unitEntries.filter(e => e.serial?.trim()).length
-            : 0;
-          onStockChange(stock);
-        }}
+        onStockChange={onStockChange}
+        title="Product Units (IMEI/SN + attributes)"
+        showPricing={true}
+      />
+      
+      <UnitBarcodeManager
+        units={unitEntries}
+        productId={productId}
+        showPrintButton={true}
       />
       
       <p className="text-xs text-muted-foreground">
