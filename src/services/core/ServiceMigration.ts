@@ -12,9 +12,42 @@ import { PrintService } from '../shared/PrintService';
  * Provides static access to new injectable services
  */
 export class Code128GeneratorService {
-  static async validateCode128(barcode: string) {
-    const service = await Services.getBarcodeService();
-    return service.validateBarcode(barcode);
+  static validateCode128(barcode: string) {
+    if (process.env.NODE_ENV === 'development') {
+      ServiceMigrationTracker.logUsage('Code128GeneratorService', 'validateCode128');
+    }
+    
+    // Synchronous validation to match legacy interface
+    const errors: string[] = [];
+    
+    if (!barcode || typeof barcode !== 'string') {
+      errors.push('Barcode must be a non-empty string');
+      return { isValid: false, format: 'INVALID', errors };
+    }
+
+    if (barcode.length < 4 || barcode.length > 25) {
+      errors.push('Barcode length must be between 4 and 25 characters');
+    }
+
+    const invalidChars = barcode.split('').filter(char => {
+      const code = char.charCodeAt(0);
+      return code < 32 || code > 126;
+    });
+
+    if (invalidChars.length > 0) {
+      errors.push(`Invalid characters found: ${invalidChars.join(', ')}`);
+    }
+
+    const hasGPMSFormat = /^GPMS[UP]\d{6}$/.test(barcode);
+    if (!hasGPMSFormat && !errors.length) {
+      errors.push('Barcode does not follow GPMS format (GPMS[U|P]NNNNNN)');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      format: 'CODE128',
+      errors
+    };
   }
 
   static async generateUnitBarcode(unitId: string, options?: any) {
@@ -39,13 +72,31 @@ export class Code128GeneratorService {
     );
   }
 
-  static async parseBarcodeInfo(barcode: string) {
-    const service = await Services.getBarcodeService();
-    const validation = service.validateBarcode(barcode);
+  static parseBarcodeInfo(barcode: string) {
+    if (process.env.NODE_ENV === 'development') {
+      ServiceMigrationTracker.logUsage('Code128GeneratorService', 'parseBarcodeInfo');
+    }
     
+    // Synchronous parsing to match legacy interface
+    const match = barcode.match(/^(GPMS)([UP])(\d{6})$/);
+    if (!match) {
+      return {
+        prefix: '',
+        type: 'unknown' as const,
+        counter: 0,
+        isValid: false
+      };
+    }
+
+    const [, prefix, typeChar, counterStr] = match;
+    const type = typeChar === 'U' ? 'unit' : typeChar === 'P' ? 'product' : 'unknown';
+    const counter = parseInt(counterStr, 10);
+
     return {
-      ...validation.parsedData,
-      isValid: validation.isValid
+      prefix,
+      type: type as 'unit' | 'product' | 'unknown',
+      counter,
+      isValid: true
     };
   }
 }
@@ -96,13 +147,25 @@ export class BarcodeRegistryService {
 
 export class ThermalLabelService {
   static async generateThermalLabels(labels: any[], options: any) {
-    const service = await Services.getPrintService();
-    return service.generateLabelHTML(labels, options);
+    if (process.env.NODE_ENV === 'development') {
+      ServiceMigrationTracker.logUsage('ThermalLabelService', 'generateThermalLabels');
+    }
+    
+    // Import adapter dynamically to avoid circular dependencies
+    const { PrintServiceAdapter } = await import('../shared/PrintServiceAdapter');
+    const adapter = new PrintServiceAdapter();
+    return adapter.generateLabelHTML(labels, options);
   }
 
   static async printLabels(labels: any[], options: any) {
-    const service = await Services.getPrintService();
-    return service.printLabels(labels, options);
+    if (process.env.NODE_ENV === 'development') {
+      ServiceMigrationTracker.logUsage('ThermalLabelService', 'printLabels');
+    }
+    
+    // Import adapter dynamically to avoid circular dependencies
+    const { PrintServiceAdapter } = await import('../shared/PrintServiceAdapter');
+    const adapter = new PrintServiceAdapter();
+    return adapter.printLabels(labels, options);
   }
 }
 

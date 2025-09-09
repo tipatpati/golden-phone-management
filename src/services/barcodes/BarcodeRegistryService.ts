@@ -54,17 +54,16 @@ export class BarcodeRegistryService {
   }
 
   private static async incrementCounter(type: 'unit' | 'product'): Promise<number> {
-    // Get current config
-    const config = await this.getBarcodeConfig();
-    
-    // Increment counter
-    const newValue = config.counters[type] + 1;
-    config.counters[type] = newValue;
-    
-    // Save back to database
-    await this.updateBarcodeConfig(config);
-    
-    return newValue;
+    // Use atomic database function for thread-safe counter increment
+    const { data, error } = await supabase.rpc('increment_barcode_counter', {
+      counter_type: type
+    });
+
+    if (error) {
+      throw new Error(`Failed to increment barcode counter: ${error.message}`);
+    }
+
+    return data as number;
   }
 
   static async generateUniqueBarcode(
@@ -72,19 +71,19 @@ export class BarcodeRegistryService {
     entityId: string,
     barcodeType: 'unit' | 'product' = 'unit'
   ): Promise<string> {
-    const config = await this.getBarcodeConfig();
-    const counter = await this.incrementCounter(barcodeType);
-    
-    // Generate deterministic CODE128 barcode
-    // Format: PREFIX + TYPE + COUNTER
-    const typeCode = barcodeType === 'unit' ? 'U' : 'P';
-    const paddedCounter = counter.toString().padStart(6, '0');
-    const barcode = `${config.prefix}${typeCode}${paddedCounter}`;
-    
-    // Register barcode
-    await this.registerBarcode(barcode, barcodeType, entityType, entityId);
-    
-    return barcode;
+    // Use atomic database function for thread-safe generation and registration
+    const { data, error } = await supabase.rpc('generate_and_register_barcode', {
+      p_entity_type: entityType,
+      p_entity_id: entityId,
+      p_barcode_type: barcodeType,
+      p_metadata: {}
+    });
+
+    if (error) {
+      throw new Error(`Failed to generate unique barcode: ${error.message}`);
+    }
+
+    return data as string;
   }
 
   static async registerBarcode(

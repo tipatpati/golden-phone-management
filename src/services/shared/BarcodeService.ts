@@ -23,47 +23,51 @@ export class BarcodeService implements IBarcodeService {
   }
 
   /**
-   * Generate barcode for product unit
+   * Generate barcode for product unit using atomic database operations
    */
   async generateUnitBarcode(unitId: string, options?: BarcodeGenerationOptions): Promise<string> {
-    const config = await this.getConfig();
-    const counter = await this.incrementCounter('unit');
-    
-    const prefix = options?.prefix || config.prefix;
-    const barcode = `${prefix}U${counter.toString().padStart(6, '0')}`;
-    
-    // Validate barcode
-    const validation = this.validateBarcode(barcode);
-    if (!validation.isValid) {
-      throw new Error(`Generated invalid barcode: ${validation.errors?.join(', ')}`);
+    try {
+      // Use atomic database function to ensure uniqueness
+      const { data, error } = await supabase.rpc('generate_and_register_barcode', {
+        p_entity_type: 'product_unit',
+        p_entity_id: unitId,
+        p_barcode_type: 'unit',
+        p_metadata: options?.metadata || {}
+      });
+
+      if (error) {
+        throw new Error(`Failed to generate unit barcode: ${error.message}`);
+      }
+
+      return data as string;
+    } catch (error) {
+      console.error('Unit barcode generation failed:', error);
+      throw error;
     }
-    
-    // Register barcode
-    await this.registerBarcode(barcode, 'unit', 'product_unit', unitId, options?.metadata);
-    
-    return barcode;
   }
 
   /**
-   * Generate barcode for product
+   * Generate barcode for product using atomic database operations
    */
   async generateProductBarcode(productId: string, options?: BarcodeGenerationOptions): Promise<string> {
-    const config = await this.getConfig();
-    const counter = await this.incrementCounter('product');
-    
-    const prefix = options?.prefix || config.prefix;
-    const barcode = `${prefix}P${counter.toString().padStart(6, '0')}`;
-    
-    // Validate barcode
-    const validation = this.validateBarcode(barcode);
-    if (!validation.isValid) {
-      throw new Error(`Generated invalid barcode: ${validation.errors?.join(', ')}`);
+    try {
+      // Use atomic database function to ensure uniqueness
+      const { data, error } = await supabase.rpc('generate_and_register_barcode', {
+        p_entity_type: 'product',
+        p_entity_id: productId,
+        p_barcode_type: 'product',
+        p_metadata: options?.metadata || {}
+      });
+
+      if (error) {
+        throw new Error(`Failed to generate product barcode: ${error.message}`);
+      }
+
+      return data as string;
+    } catch (error) {
+      console.error('Product barcode generation failed:', error);
+      throw error;
     }
-    
-    // Register barcode
-    await this.registerBarcode(barcode, 'product', 'product', productId, options?.metadata);
-    
-    return barcode;
   }
 
   /**
@@ -364,10 +368,18 @@ export class BarcodeService implements IBarcodeService {
   }
 
   private async incrementCounter(type: 'unit' | 'product'): Promise<number> {
-    const config = await this.getConfig();
-    config.counters[type]++;
+    // Use atomic database function for thread-safe counter increment
+    const { data, error } = await supabase.rpc('increment_barcode_counter', {
+      counter_type: type
+    });
+
+    if (error) {
+      throw new Error(`Failed to increment barcode counter: ${error.message}`);
+    }
+
+    // Clear cache to force reload
+    this.configCache = null;
     
-    await this.updateConfig(config);
-    return config.counters[type];
+    return data as number;
   }
 }

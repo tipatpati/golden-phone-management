@@ -43,6 +43,10 @@ export {
   ServiceMigrationTracker 
 } from './ServiceMigration';
 
+// Service health management
+export { ServiceHealthManager, serviceHealthManager } from './ServiceHealthManager';
+export type { ServiceHealthReport, SystemHealthReport } from './ServiceHealthManager';
+
 /**
  * Migration utilities for transitioning from old to new system
  */
