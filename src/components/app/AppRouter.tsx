@@ -24,6 +24,7 @@ const Profile = React.lazy(() => import("@/pages/Profile"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
 const Tests = React.lazy(() => import("@/pages/Tests"));
+const ServiceMonitoring = React.lazy(() => import("@/components/admin/ServiceMonitoringDashboard"));
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -202,6 +203,19 @@ export function AppRouter() {
                     </div>
                   </TabletLayout>
                 </ProtectedRoute>
+              } />
+              <Route path="/admin/services" element={
+                effectiveRole === 'super_admin' ? (
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <ServiceMonitoring />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                ) : (
+                  <Navigate to="/" replace />
+                )
               } />
             </>
           ) : (

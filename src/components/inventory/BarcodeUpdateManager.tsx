@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BarcodeGenerator } from "./BarcodeGenerator";
-import { Code128GeneratorService } from "@/services/barcodes";
+import { Services } from '@/services/core';
 import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -72,7 +72,8 @@ export function BarcodeUpdateManager({
     setIsLoading(true);
     try {
       // Validate barcode format
-      const validation = Code128GeneratorService.validateCode128(productBarcode);
+      const barcodeService = await Services.getBarcodeService();
+      const validation = await barcodeService.validateBarcode(productBarcode);
       if (!validation.isValid) {
         toast.error('Invalid barcode format: ' + validation.errors.join(', '));
         return;
@@ -105,7 +106,8 @@ export function BarcodeUpdateManager({
     setIsLoading(true);
     try {
       // Validate barcode format
-      const validation = Code128GeneratorService.validateCode128(newBarcode);
+      const barcodeService = await Services.getBarcodeService();
+      const validation = await barcodeService.validateBarcode(newBarcode);
       if (!validation.isValid) {
         toast.error('Invalid barcode format: ' + validation.errors.join(', '));
         return;
@@ -137,7 +139,8 @@ export function BarcodeUpdateManager({
     setIsLoading(true);
     try {
       // Generate new barcode using the barcode service
-      const newBarcode = await Code128GeneratorService.generateUnitBarcode(unitId);
+      const barcodeService = await Services.getBarcodeService();
+      const newBarcode = await barcodeService.generateUnitBarcode(unitId);
       
       // Update unit barcode
       const { error } = await supabase

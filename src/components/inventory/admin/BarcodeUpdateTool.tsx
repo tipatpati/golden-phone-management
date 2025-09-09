@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarcodeUpdateManager } from "../BarcodeUpdateManager";
+import { Services } from '@/services/core';
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import type { Product } from "@/services/inventory/types";

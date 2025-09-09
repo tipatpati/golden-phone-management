@@ -316,3 +316,5 @@ export function ServiceMonitoringDashboard() {
     </div>
   );
 }
+
+export default ServiceMonitoringDashboard;

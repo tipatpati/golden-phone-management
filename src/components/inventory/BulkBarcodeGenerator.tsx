@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useUpdateProduct } from '@/services/inventory/InventoryReactQueryService';
-import { Code128GeneratorService } from '@/services/barcodes';
+import { Services } from '@/services/core';
 
 import { toast } from '@/components/ui/sonner';
 import { Barcode, RefreshCw, Check, X } from 'lucide-react';
@@ -40,7 +40,8 @@ export function BulkBarcodeGenerator() {
       
       try {
         // Generate professional CODE128 barcode for this product
-        const newBarcode = await Code128GeneratorService.generateProductBarcode(product.id, {
+        const barcodeService = await Services.getBarcodeService();
+        const newBarcode = await barcodeService.generateProductBarcode(product.id, {
           metadata: {
             brand: product.brand,
             model: product.model,
