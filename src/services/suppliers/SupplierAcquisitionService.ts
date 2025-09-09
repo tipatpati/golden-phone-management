@@ -282,9 +282,8 @@ class SupplierAcquisitionService {
             const unitId = data.id;
             unitIds.push(unitId);
 
-            // Generate barcode for the unit using the same system as inventory
+            // Generate barcode for the unit using the centralized barcode system
             try {
-              const { Code128GeneratorService } = await import('@/services/barcodes');
               const barcode = await Code128GeneratorService.generateUnitBarcode(unitId);
               
               // Update the unit with the generated barcode
@@ -294,10 +293,14 @@ class SupplierAcquisitionService {
                 .eq('id', unitId);
 
               if (barcodeUpdateError) {
-                console.warn(`Failed to update barcode for unit ${unitId}:`, barcodeUpdateError);
+                throw new Error(`Failed to update barcode for unit ${unitId}: ${barcodeUpdateError.message}`);
               }
+
+              logger.info(`Generated barcode ${barcode} for unit ${unitId}`);
             } catch (barcodeError) {
-              console.warn(`Failed to generate barcode for unit ${unitId}:`, barcodeError);
+              // Barcode generation failure should not fail the entire acquisition
+              logger.error(`Failed to generate barcode for unit ${unitId}:`, barcodeError);
+              throw new Error(`Barcode generation failed for unit ${unitId}: ${barcodeError}`);
             }
           }
         } else if (item.quantity > 0) {
