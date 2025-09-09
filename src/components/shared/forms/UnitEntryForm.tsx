@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { Plus, Trash2 } from "lucide-react";
 import type { UnitEntryForm } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
+import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 
 interface UnitEntryFormProps {
   entries: UnitEntryForm[];
@@ -29,6 +31,7 @@ export function UnitEntryForm({
   title = "Product Units",
   className = ""
 }: UnitEntryFormProps) {
+  const { colorSuggestions } = useFilteredColorSuggestions();
   
   const addEntry = () => {
     const newEntry: UnitEntryForm = {
@@ -101,11 +104,14 @@ export function UnitEntryForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs font-medium mb-1 block">Color</Label>
-                  <Input
+                  <AutocompleteInput
                     value={entry.color || ''}
-                    onChange={(e) => updateEntry(index, 'color', e.target.value)}
+                    onChange={(value) => updateEntry(index, 'color', value)}
+                    suggestions={colorSuggestions}
                     placeholder="Black / White / Gold..."
                     className="text-sm h-10"
+                    maxSuggestions={8}
+                    minQueryLength={0}
                   />
                 </div>
 
