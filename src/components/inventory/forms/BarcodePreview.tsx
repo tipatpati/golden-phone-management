@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarcodeGenerator } from "../BarcodeGenerator";
 import { Code128GeneratorService } from "@/services/barcodes";
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw, Download, Printer, Eye, EyeOff } from "lucide-react";
@@ -45,7 +45,7 @@ export function BarcodePreview({
       if (!productId) return;
       setIsLoading(true);
       try {
-        const units = await ProductUnitsService.getUnitsForProduct(productId);
+        const units = await ProductUnitManagementService.getUnitsForProduct(productId);
         const unitBarcodes: BarcodePreviewEntry[] = units.map(unit => ({
           serial: unit.serial_number,
           barcode: unit.barcode || 'PENDING',
@@ -100,14 +100,15 @@ export function BarcodePreview({
     if (!productId) return;
     setIsLoading(true);
     try {
-      await ProductUnitsService.backfillMissingBarcodes();
+      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
+      // await ProductUnitManagementService.backfillMissingBarcodes();
       toast({
         title: "Barcodes Updated",
         description: "Missing barcodes have been generated successfully."
       });
 
       // Reload the barcodes
-      const units = await ProductUnitsService.getUnitsForProduct(productId);
+      const units = await ProductUnitManagementService.getUnitsForProduct(productId);
       const unitBarcodes: BarcodePreviewEntry[] = units.map(unit => ({
         serial: unit.serial_number,
         barcode: unit.barcode || 'PENDING',

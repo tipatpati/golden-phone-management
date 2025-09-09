@@ -25,7 +25,8 @@ import {
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProductUnitsService, type ProductUnit } from "@/services/inventory";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
+import type { ProductUnit } from "@/services/inventory/types";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 import { ProductHistoryView } from "./ProductHistoryView";
 
@@ -76,7 +77,7 @@ export function ProductDetailsDialog({
       
       setIsLoadingUnits(true);
       try {
-        const units = await ProductUnitsService.getUnitsForProduct(product.id);
+        const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
         setProductUnits(units);
       } catch (error) {
         console.error('Error fetching product units:', error);
@@ -91,7 +92,7 @@ export function ProductDetailsDialog({
   const handleUnitPricingSuccess = () => {
     // Refresh units after pricing update
     if (product) {
-      ProductUnitsService.getUnitsForProduct(product.id)
+      ProductUnitManagementService.getUnitsForProduct(product.id)
         .then(setProductUnits)
         .catch(console.error);
     }

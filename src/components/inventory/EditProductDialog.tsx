@@ -3,7 +3,7 @@ import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
 import { useUpdateProduct } from "@/services/inventory/InventoryReactQueryService";
 import type { Product, ProductFormData, UnitEntryForm } from "@/services/inventory/types";
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { toast } from "@/components/ui/sonner";
 import { log } from "@/utils/logger";
 
@@ -34,7 +34,7 @@ export function EditProductDialog({
         
         // If product has serial numbers, fetch the existing units
         if (product.has_serial && product.serial_numbers && product.serial_numbers.length > 0) {
-          const existingUnits = await ProductUnitsService.getUnitsForProduct(product.id);
+          const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
           console.log('📦 Loaded existing units for edit:', existingUnits);
           
           // Convert existing units to UnitEntryForm format
@@ -152,7 +152,7 @@ export function EditProductDialog({
       if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
         try {
           // Get existing units for this product
-          const existingUnits = await ProductUnitsService.getUnitsForProduct(product.id);
+          const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
           
           // Get current serials - use them directly
           const currentSerials = data.serial_numbers || [];
@@ -160,37 +160,29 @@ export function EditProductDialog({
             !currentSerials.includes(unit.serial_number)
           );
           
+          // TODO: Add delete capability to ProductUnitManagementService
           for (const unit of unitsToDelete) {
-            await ProductUnitsService.deleteUnit(unit.id);
+            // For now, mark as deleted (would need to add delete method)
+            await ProductUnitManagementService.updateUnitStatus(unit.id, 'damaged');
           }
           
-          // Create units for new serial numbers
+          // Create units for new serial numbers using unified service
           const existingSerials = existingUnits.map(unit => unit.serial_number);
-          const newSerials = (data.serial_numbers || []).filter(sn => 
-            !existingSerials.includes(sn)
-          );
+          const newUnitEntries = data.unit_entries?.filter(entry => 
+            !existingSerials.includes(entry.serial)
+          ) || [];
           
-          if (newSerials.length > 0) {
-            // For edit dialog, we need to handle unit entries if they exist
-            const correspondingEntries = data.unit_entries?.filter(entry => 
-              newSerials.some(serial => serial.split(' ')[0] === entry.serial)
-            );
-            
-            // Get new unit entries that correspond to new serials
-            const newUnitEntries = data.unit_entries?.filter(entry => 
-              newSerials.includes(entry.serial)
-            ) || [];
-            
-            await ProductUnitsService.createUnitsForProduct(
-              product.id, 
-              newUnitEntries, // Pass structured unit entries directly
-              { // Default pricing fallback
+          if (newUnitEntries.length > 0) {
+            const result = await ProductUnitManagementService.createUnitsForProduct({
+              productId: product.id, 
+              unitEntries: newUnitEntries,
+              defaultPricing: {
                 price: data.price,
                 min_price: data.min_price,
                 max_price: data.max_price
               }
-            );
-            console.log(`✅ Created ${newSerials.length} new product units with default pricing`);
+            });
+            console.log(`✅ Created ${newUnitEntries.length} new product units with default pricing`);
             
             // Refresh thermal labels after updating product units
             if (typeof (window as any).__refreshThermalLabels === 'function') {

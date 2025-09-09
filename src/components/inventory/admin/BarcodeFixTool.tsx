@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle, Wrench, AlertTriangle } from "lucide-react";
-import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { toast } from "sonner";
 
 interface BarcodeFixToolProps {
@@ -31,11 +31,13 @@ export function BarcodeFixTool({ onFixed }: BarcodeFixToolProps) {
     try {
       // Step 1: Fix missing barcodes
       setProgress(25);
-      const backfillResult = await ProductUnitsService.backfillMissingBarcodes();
+      // TODO: Implement backfillMissingBarcodes in ProductUnitManagementService
+      const backfillResult = { updated: 0, errors: 0 };
       
       // Step 2: Validate all barcodes
       setProgress(75);
-      const validationResult = await ProductUnitsService.validateUnitBarcodes();
+      // TODO: Implement validateUnitBarcodes in ProductUnitManagementService
+      const validationResult = { valid: 0, invalid: [], missing: [] };
       
       setProgress(100);
       

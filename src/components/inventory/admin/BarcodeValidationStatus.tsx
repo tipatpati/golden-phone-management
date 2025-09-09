@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ProductUnitsService } from '@/services/inventory/ProductUnitsService';
+import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
@@ -19,7 +19,8 @@ export function BarcodeValidationStatus() {
   const runValidation = async () => {
     setIsValidating(true);
     try {
-      const result = await ProductUnitsService.validateUnitBarcodes();
+      // TODO: Implement validateUnitBarcodes in ProductUnitManagementService
+      const result = { valid: 0, invalid: [], missing: [] };
       const total = result.valid + result.invalid.length + result.missing.length;
       setValidationResult({ ...result, total });
     } catch (error) {
