@@ -125,6 +125,7 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         />
         <FormField
           label="Contact Person"
+          required
           value={formData.contact_person}
           onChange={(value) => handleChange("contact_person", value)}
         />
