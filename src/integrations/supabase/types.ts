@@ -50,6 +50,38 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_aliases: {
+        Row: {
+          alias: string
+          brand_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          alias: string
+          brand_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          alias?: string
+          brand_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_aliases_brand_fk"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brands: {
         Row: {
           category_id: number | null
@@ -57,6 +89,8 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          search_vector: unknown | null
+          slug: string | null
           updated_at: string
         }
         Insert: {
@@ -65,6 +99,8 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          search_vector?: unknown | null
+          slug?: string | null
           updated_at?: string
         }
         Update: {
@@ -73,9 +109,18 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          search_vector?: unknown | null
+          slug?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "brands_category_fk"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "brands_category_id_fkey"
             columns: ["category_id"]
@@ -335,6 +380,48 @@ export type Database = {
           },
         ]
       }
+      model_aliases: {
+        Row: {
+          alias: string
+          brand_id: string
+          created_at: string
+          id: string
+          model_id: string
+          updated_at: string
+        }
+        Insert: {
+          alias: string
+          brand_id: string
+          created_at?: string
+          id?: string
+          model_id: string
+          updated_at?: string
+        }
+        Update: {
+          alias?: string
+          brand_id?: string
+          created_at?: string
+          id?: string
+          model_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_aliases_brand_fk"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_aliases_model_fk"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       models: {
         Row: {
           brand_id: string
@@ -344,6 +431,8 @@ export type Database = {
           id: string
           name: string
           release_year: number | null
+          search_vector: unknown | null
+          slug: string | null
           storage_variants: string[] | null
           updated_at: string
         }
@@ -355,6 +444,8 @@ export type Database = {
           id?: string
           name: string
           release_year?: number | null
+          search_vector?: unknown | null
+          slug?: string | null
           storage_variants?: string[] | null
           updated_at?: string
         }
@@ -366,15 +457,31 @@ export type Database = {
           id?: string
           name?: string
           release_year?: number | null
+          search_vector?: unknown | null
+          slug?: string | null
           storage_variants?: string[] | null
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "models_brand_fk"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "models_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
             referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "models_category_fk"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
           {
@@ -1471,6 +1578,26 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1489,6 +1616,48 @@ export type Database = {
       sanitize_and_validate_input: {
         Args: { input_text: string; input_type: string; max_length?: number }
         Returns: Json
+      }
+      search_brands: {
+        Args: { max_results?: number; search_term: string }
+        Returns: {
+          category_id: number
+          id: string
+          logo_url: string
+          name: string
+          score: number
+          slug: string
+        }[]
+      }
+      search_models: {
+        Args: { brand_name?: string; max_results?: number; search_term: string }
+        Returns: {
+          brand_id: string
+          brand_name: string
+          category_id: number
+          color_variants: string[]
+          id: string
+          name: string
+          release_year: number
+          score: number
+          slug: string
+          storage_variants: string[]
+        }[]
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
+      slugify: {
+        Args: { input: string }
+        Returns: string
       }
       validate_product_consistency: {
         Args: Record<PropertyKey, never>
