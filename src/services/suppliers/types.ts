@@ -101,17 +101,6 @@ export interface TransactionSearchFilters {
   dateTo?: string;
 }
 
-// ============= ANALYTICS TYPES =============
-export interface SupplierAnalytics {
-  supplier_id: string;
-  supplier_name: string;
-  total_purchases: number;
-  total_amount: number;
-  average_order_value: number;
-  last_transaction_date?: string;
-  transaction_count: number;
-  status: 'active' | 'inactive';
-}
 
 export interface TransactionSummary {
   total_transactions: number;

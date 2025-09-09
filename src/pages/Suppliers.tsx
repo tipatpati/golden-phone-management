@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
-import { SupplierAnalytics } from "@/components/suppliers/SupplierAnalytics";
-import { SupplierInsights } from "@/components/suppliers/SupplierInsights";
 import { NotificationCenter } from "@/components/suppliers/NotificationCenter";
 import { PerformanceMonitor } from "@/components/suppliers/PerformanceMonitor";
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
@@ -82,8 +80,6 @@ const Suppliers = () => {
         </TabsList>
 
         <TabsContent value="suppliers" className="space-y-4 sm:space-y-6">
-          <SupplierInsights />
-          <SupplierAnalytics />
           <Card>
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
