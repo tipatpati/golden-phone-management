@@ -59,9 +59,9 @@ export function useOptimizedSearch(
   }), [filters, maxResults]);
 
   // Search function
-  const search = useCallback(async (searchQuery?: string, searchFilters?: SearchFilters) => {
+  const search = useCallback(async (searchQuery?: string, customFilters?: SearchFilters) => {
     const queryToSearch = searchQuery ?? query;
-    const filtersToUse = searchFilters ?? searchFilters;
+    const filtersToUse = customFilters ?? searchFilters;
 
     if (!queryToSearch.trim() || queryToSearch.length < minQueryLength) {
       setResults([]);
