@@ -19,6 +19,9 @@ import {
 import { useSupplierTransactions } from "@/services/useSupplierTransactions";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
+import { EditTransactionDialog } from "./EditTransactionDialog";
+import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
 
 interface TransactionsTableProps {
   searchTerm: string;
@@ -26,6 +29,10 @@ interface TransactionsTableProps {
 
 export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   const { data: transactions, isLoading } = useSupplierTransactions();
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const filteredTransactions = transactions?.filter((transaction) =>
     transaction.transaction_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -135,15 +142,33 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setDetailsOpen(true);
+                        }}
+                      >
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setEditOpen(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                      <DropdownMenuItem 
+                        className="cursor-pointer text-red-600 focus:text-red-600"
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setDeleteOpen(true);
+                        }}
+                      >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -155,6 +180,24 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
           )}
         </TableBody>
       </Table>
+
+      <TransactionDetailsDialog
+        transaction={selectedTransaction}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
+
+      <EditTransactionDialog
+        transaction={selectedTransaction}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+
+      <DeleteTransactionDialog
+        transaction={selectedTransaction}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </div>
   );
 }
