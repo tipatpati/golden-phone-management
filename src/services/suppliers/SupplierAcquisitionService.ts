@@ -171,8 +171,13 @@ class SupplierAcquisitionService {
     );
     unitIds.push(...createdUnits);
 
-    // Update product stock for non-serialized products
-    if (!item.productData?.has_serial && item.quantity > 0) {
+    // Determine if product is serialized
+    const hasSerial = item.createsNewProduct
+      ? (item.productData?.has_serial ?? false)
+      : await this.getProductHasSerial(productId);
+
+    // Update product stock only for non-serialized products
+    if (!hasSerial && item.quantity > 0) {
       await this.updateProductStock(transactionId, productId, item.quantity);
     }
 
@@ -191,7 +196,7 @@ class SupplierAcquisitionService {
         createsNewProduct: item.createsNewProduct,
         unitDetails: {
           entries: item.unitEntries,
-          hasSerial: item.productData?.has_serial || false
+          hasSerial: hasSerial
         }
       }
     };
@@ -333,6 +338,19 @@ class SupplierAcquisitionService {
         logger.warn('Product units creation compensation triggered');
       }
     );
+  }
+
+  private async getProductHasSerial(productId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('products')
+      .select('has_serial')
+      .eq('id', productId)
+      .single();
+    if (error || !data) {
+      logger.warn('Failed to fetch has_serial for product, defaulting to false', { productId, error });
+      return false;
+    }
+    return Boolean(data.has_serial);
   }
 
   private async updateProductStock(
