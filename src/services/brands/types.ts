@@ -2,8 +2,10 @@ import type { BaseEntity } from '../core/BaseApiService';
 
 export interface Brand extends BaseEntity {
   name: string;
+  slug?: string;
   category_id?: number;
   logo_url?: string;
+  search_vector?: string;
   category?: {
     id: number;
     name: string;
@@ -13,13 +15,16 @@ export interface Brand extends BaseEntity {
 export interface Model extends BaseEntity {
   brand_id: string;
   name: string;
+  slug?: string;
   category_id?: number;
   storage_variants: string[];
   color_variants: string[];
   release_year?: number;
+  search_vector?: string;
   brand?: {
     id: string;
     name: string;
+    slug?: string;
   };
   category?: {
     id: number;

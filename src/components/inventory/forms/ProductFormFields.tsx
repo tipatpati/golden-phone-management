@@ -1,6 +1,6 @@
 import React from "react";
 import { FormField } from "@/components/common/FormField";
-import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { Label } from "@/components/ui/label";
 import type { ProductFormData } from "@/services/inventory/types";
 import { STORAGE_OPTIONS, CATEGORY_OPTIONS } from "@/services/inventory/types";
@@ -31,6 +31,7 @@ export function ProductFormFields({
           value={formData.brand || ''}
           onChange={(value) => onFieldChange('brand', value)}
           suggestions={uniqueBrands}
+          entityTypes={['brand']}
           placeholder="Enter product brand"
         />
         {getFieldError('brand') && (
@@ -47,6 +48,7 @@ export function ProductFormFields({
           value={formData.model || ''}
           onChange={(value) => onFieldChange('model', value)}
           suggestions={uniqueModels}
+          entityTypes={['model']}
           placeholder="Enter product model"
         />
         {getFieldError('model') && (
