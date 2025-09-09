@@ -17,6 +17,16 @@ export interface SupplierTransaction {
   };
 }
 
+export interface SupplierTransactionItem {
+  id: string;
+  transaction_id: string;
+  product_id: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  unit_details?: any;
+}
+
 export interface CreateTransactionData {
   supplier_id: string;
   type: "purchase" | "payment" | "return";
@@ -115,4 +125,84 @@ export function useSupplierTransactions() {
     error,
     createTransaction,
   };
+}
+
+export interface EditableTransactionItem {
+  id?: string;
+  product_id: string;
+  quantity: number;
+  unit_cost: number;
+  unit_barcodes?: string[];
+}
+
+export function useUpdateSupplierTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      id: string;
+      updates: Partial<Pick<SupplierTransaction, "status" | "notes" | "type" | "transaction_date" | "total_amount">>;
+    }) => {
+      const { id, updates } = payload;
+      const { error } = await (supabase as any)
+        .from("supplier_transactions")
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["supplier-transactions"] });
+    },
+  });
+}
+
+export function useReplaceSupplierTransactionItems() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { transaction_id: string; items: EditableTransactionItem[] }) => {
+      const { transaction_id, items } = payload;
+      // Replace all items for transaction in a simple way
+      const { error: delError } = await (supabase as any)
+        .from("supplier_transaction_items")
+        .delete()
+        .eq("transaction_id", transaction_id);
+      if (delError) throw delError;
+
+      if (!items.length) return true;
+
+      const toInsert = items.map((it) => ({
+        transaction_id,
+        product_id: it.product_id,
+        quantity: it.quantity,
+        unit_cost: it.unit_cost,
+        total_cost: it.quantity * it.unit_cost,
+        unit_details: it.unit_barcodes && it.unit_barcodes.length ? { barcodes: it.unit_barcodes } : {},
+      }));
+
+      const { error: insError } = await (supabase as any)
+        .from("supplier_transaction_items")
+        .insert(toInsert);
+      if (insError) throw insError;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["supplier-transactions"] });
+    },
+  });
+}
+
+export function useSupplierTransactionItems(transaction_id: string | null) {
+  return useQuery({
+    enabled: !!transaction_id,
+    queryKey: ["supplier-transaction-items", transaction_id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("supplier_transaction_items")
+        .select("id, transaction_id, product_id, quantity, unit_cost, total_cost, unit_details")
+        .eq("transaction_id", transaction_id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as SupplierTransactionItem[];
+    },
+  });
 }
