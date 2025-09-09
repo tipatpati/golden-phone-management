@@ -104,7 +104,14 @@ export function FormField({
             id={fieldId}
             type={props.inputType || "text"}
             value={props.value}
-            onChange={(e) => props.onChange(e.target.value)}
+            onChange={(e) => {
+              let value = e.target.value;
+              // Auto-sync with units/serial format for serial number fields
+              if (fieldId.includes('serial') || fieldId.includes('imei') || props.placeholder?.includes('serial')) {
+                value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+              }
+              props.onChange(value);
+            }}
             placeholder={props.placeholder}
             className={`
               w-full h-10 transition-colors
