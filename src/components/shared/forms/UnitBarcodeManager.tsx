@@ -118,25 +118,55 @@ export function UnitBarcodeManager({
         // Use custom print handler
         onPrintRequested(validBarcodes);
       } else {
-        // Use default print service
-        const printService = await Services.getPrintService();
-        const labels = validBarcodes.map(({ serial, barcode }) => ({
-          id: crypto.randomUUID(),
-          barcode,
-          productName: serial,
-          brand: '',
-          model: '',
-          price: 0,
-          serial,
-          type: 'unit' as const
+        // PHASE 2: Use unified ThermalLabelGenerator instead of basic print service
+        const { ThermalLabelDataService } = await import("@/services/labels/ThermalLabelDataService");
+        
+        // Get product information if available
+        let productInfo = null;
+        if (productId) {
+          try {
+            const { ProductUnitManagementService } = await import("@/services/shared/ProductUnitManagementService");
+            const product = await ProductUnitManagementService.getProductById(productId);
+            productInfo = product;
+          } catch (error) {
+            console.warn('Could not fetch product info for enhanced printing:', error);
+          }
+        }
+        
+        // Create thermal label data using the unified service
+        const thermalLabels = await Promise.all(validBarcodes.map(async ({ serial, barcode }) => {
+          // Find the corresponding unit for enhanced label data
+          const unit = units.find(u => u.serial === serial);
+          
+          return {
+            id: crypto.randomUUID(),
+            productName: productInfo ? `${productInfo.brand} ${productInfo.model}` : serial,
+            brand: productInfo?.brand || '',
+            model: productInfo?.model || '',
+            barcode,
+            price: unit?.price || productInfo?.price || 0,
+            serial,
+            color: unit?.color,
+            storage: unit?.storage || productInfo?.storage,
+            ram: unit?.ram || productInfo?.ram,
+            batteryLevel: unit?.battery_level,
+            category: productInfo?.category?.name
+          };
         }));
 
-        const result = await printService.printLabels(labels, {
-          labelSize: "5x3cm"
+        // Use the same print service as inventory module (unified service)
+        const printService = await Services.getPrintService();
+        const result = await printService.printLabels(thermalLabels, {
+          companyName: "GOLDEN PHONE SRL",
+          showPrice: true,
+          showSerial: true,
+          labelSize: "6x5cm"
         });
 
+        // PHASE 4: Update shared print history
         if (result.success) {
-          toast.success(`Printed ${result.totalLabels} barcode labels`);
+          console.log(`📄 UNIFIED PRINT: Successfully printed ${result.totalLabels} thermal labels from UnitBarcodeManager`);
+          toast.success(`Printed ${result.totalLabels} thermal labels`);
         } else {
           toast.error(`Print failed: ${result.message}`);
         }

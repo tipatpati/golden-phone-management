@@ -439,4 +439,21 @@ export class ProductUnitManagementService {
       throw handleInventoryError(error);
     }
   }
+
+  /**
+   * Get product by ID for cross-module integration
+   */
+  static async getProductById(productId: string): Promise<any> {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to fetch product: ${error.message}`);
+    }
+
+    return data;
+  }
 }

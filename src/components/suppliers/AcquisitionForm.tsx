@@ -303,15 +303,40 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                               productBarcode={productBarcodes[index]}
                             />
                             
-                            {/* Unified Barcode Manager for Units */}
+                            {/* PHASE 2: Unified Barcode Manager with ThermalLabelGenerator Integration */}
                             <UnitBarcodeManager
                               units={item.unitEntries}
+                              productId={undefined} // ProductFormData doesn't have id - will be handled gracefully
                               existingUnitBarcodes={unitBarcodes[index] || {}}
                               onBarcodeGenerated={(serial, barcode) => {
                                 setUnitBarcodes(prev => ({
                                   ...prev,
                                   [index]: { ...prev[index], [serial]: barcode }
                                 }));
+                                
+                                // PHASE 4: Notify coordination system
+                                import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
+                                  UnifiedBarcodeCoordinator.notifyEvent({
+                                    type: 'barcode_generated',
+                                    source: 'supplier',
+                                    entityId: `supplier-product-${index}`, // Use index as identifier for supplier products
+                                    metadata: { serial, barcode, module: 'supplier_acquisition' }
+                                  });
+                                });
+                              }}
+                              onPrintRequested={(barcodes) => {
+                                // PHASE 4: Notify about print request
+                                import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
+                                  UnifiedBarcodeCoordinator.notifyEvent({
+                                    type: 'print_requested',
+                                    source: 'supplier',
+                                    entityId: `supplier-product-${index}`, // Use index as identifier for supplier products
+                                    metadata: { 
+                                      barcodeCount: barcodes.length,
+                                      module: 'supplier_acquisition'
+                                    }
+                                  });
+                                });
                               }}
                               showPrintButton={true}
                             />

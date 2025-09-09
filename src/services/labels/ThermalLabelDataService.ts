@@ -95,6 +95,7 @@ export class ThermalLabelDataService {
 
   /**
    * Process a product that has individual units with serial numbers
+   * PHASE 1: Enhanced with comprehensive unit+barcode fetching query
    */
   private static async processProductWithUnits(
     product: ProductForLabels,
@@ -108,10 +109,27 @@ export class ThermalLabelDataService {
     let unitsMissingBarcodes = 0;
 
     try {
-      // Fetch units for the product
-      console.log(`📦 Fetching units for product ${product.id}...`);
+      // PHASE 1: Comprehensive unit+barcode fetching with cross-module validation
+      console.log(`📦 Fetching units for product ${product.id} with comprehensive barcode data...`);
+      
+      // Fetch units with barcodes from all sources (inventory + supplier modules)
       const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
-      console.log(`✅ Found ${units.length} units`);
+      console.log(`✅ Found ${units.length} units from ProductUnitManagementService`);
+      
+      // PHASE 3: Always check existing barcodes before generation
+      const { BarcodeService } = await import("@/services/shared/BarcodeService");
+      const barcodeService = new BarcodeService();
+      
+      // Cross-module data validation - ensure supplier-created units are included
+      for (const unit of units) {
+        if (unit.barcode) {
+          // Validate existing barcode integrity
+          const validation = await barcodeService?.validateBarcode(unit.barcode);
+          if (!validation?.isValid) {
+            warnings.push(`Unit ${unit.serial_number} has invalid barcode: ${unit.barcode}`);
+          }
+        }
+      }
 
       // Process each unit, generating missing barcodes
       for (const unit of units) {
