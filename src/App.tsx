@@ -3,12 +3,15 @@ import { AppProviders } from "@/components/app/AppProviders";
 import { AppRouter } from "@/components/app/AppRouter";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { logger } from "@/utils/logger";
+import { bootstrapServices } from "@/services/core";
 
 export default function App() {
   console.log('🚀 App component starting...');
   
   React.useEffect(() => {
     console.log('🎯 App mounted successfully');
+    // Initialize enhanced service management system
+    bootstrapServices().catch(console.error);
     return () => console.log('🔴 App unmounting');
   }, []);
   
