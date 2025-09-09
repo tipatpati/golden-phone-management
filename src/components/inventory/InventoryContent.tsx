@@ -7,7 +7,7 @@ import { AddProductDialog } from "./AddProductDialog";
 import { EditProductDialog } from "./EditProductDialog";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
 import { BarcodeUpdateTool } from "./admin/BarcodeUpdateTool";
-import { useProducts, useDeleteProduct } from "@/services/inventory/InventoryReactQueryService";
+import { useProducts, useDeleteProduct } from "@/services/inventory/LightweightInventoryService";
 import { useBulkActions } from "./hooks/useBulkActions";
 import { toast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -175,6 +175,8 @@ export function InventoryContent({
       />
       
       <InventoryTable
+        products={products || []}
+        isLoading={isLoading}
         searchTerm={searchTerm}
         viewMode={viewMode}
         selectedItems={selectedItems}

@@ -23,7 +23,7 @@ import {
   Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useProducts } from "@/services/inventory/InventoryReactQueryService";
+import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { ThermalLabelGenerator } from "./labels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 
@@ -48,6 +48,8 @@ interface Product {
 }
 
 interface InventoryTableProps {
+  products: Product[];
+  isLoading: boolean;
   searchTerm?: string;
   viewMode?: "list" | "grid";
   selectedItems: string[];
@@ -60,6 +62,8 @@ interface InventoryTableProps {
 }
 
 export function InventoryTable({ 
+  products,
+  isLoading,
   searchTerm = "",
   viewMode = "list",
   selectedItems,
@@ -75,10 +79,7 @@ export function InventoryTable({
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   
-  // Import the actual products data
-  const { data: products = [], isLoading } = useProducts(searchTerm);
-  
-  // Ensure products is always an array
+  // Use products passed from parent - no double data fetching
   const productList = Array.isArray(products) ? products : [];
 
   const handlePrintLabels = (product: Product) => {
