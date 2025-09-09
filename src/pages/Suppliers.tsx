@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
 import { SupplierAnalytics } from "@/components/suppliers/SupplierAnalytics";
+import { SupplierInsights } from "@/components/suppliers/SupplierInsights";
+import { NotificationCenter } from "@/components/suppliers/NotificationCenter";
+import { PerformanceMonitor } from "@/components/suppliers/PerformanceMonitor";
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
@@ -14,6 +17,7 @@ import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,6 +25,9 @@ const Suppliers = () => {
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
   const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
+
+  // Enable real-time updates
+  useRealtimeTransactions();
 
   const handleContactAllSuppliers = async () => {
     setIsContactingSuppliers(true);
@@ -53,6 +60,9 @@ const Suppliers = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Suppliers</h1>
           <p className="text-muted-foreground text-sm sm:text-base">Manage suppliers and track transactions</p>
         </div>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+        </div>
       </div>
 
       <ModuleNavCards currentModule="suppliers" />
@@ -72,6 +82,7 @@ const Suppliers = () => {
         </TabsList>
 
         <TabsContent value="suppliers" className="space-y-4 sm:space-y-6">
+          <SupplierInsights />
           <SupplierAnalytics />
           <Card>
             <CardHeader>
@@ -201,6 +212,9 @@ const Suppliers = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Performance Monitor */}
+      <PerformanceMonitor />
     </div>
   );
 };
