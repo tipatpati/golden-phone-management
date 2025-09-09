@@ -97,11 +97,14 @@ export function BarcodeManager({
     return (
       <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
         <div className="flex items-center justify-between">
-          <h4 className="font-medium">Real-Time Barcode Generation</h4>
+          <h4 className="font-medium flex items-center gap-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Barcodes Generated
+          </h4>
         </div>
         <div className="text-sm text-muted-foreground space-y-2">
-          <p>✨ Real barcodes are being generated for immediate use.</p>
-          <p>Each unit will receive a unique CODE128 barcode with GPMS prefix that will be saved with the product.</p>
+          <p>✅ Product and unit barcodes have been generated successfully.</p>
+          <p>All barcodes use the professional CODE128 format with GPMS prefix and will be saved automatically.</p>
         </div>
       </div>
     );

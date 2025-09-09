@@ -75,7 +75,7 @@ export function BarcodePreview({
           if (!entry.serial?.trim()) continue;
 
           // Generate proper GPMS format for units: GPMSU + 6 digits
-          const counter = String(100000 + index).slice(1); // Ensures 6 digits starting from 100000
+          const counter = String(100000 + index).slice(-6); // Ensures exactly 6 digits
           const mockBarcode = `GPMSU${counter}`;
           const validation = Code128GeneratorService.validateCode128(mockBarcode);
           previewBarcodes.push({
