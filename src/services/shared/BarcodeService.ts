@@ -93,41 +93,39 @@ export class BarcodeService implements IBarcodeService {
   }
 
   /**
-   * Validate barcode format and content
+   * Validate CODE128 format
    */
   validateBarcode(barcode: string): BarcodeValidationResult {
     const errors: string[] = [];
     
-    // Basic length check
-    if (!barcode || barcode.length < 8 || barcode.length > 20) {
-      errors.push('Barcode length must be between 8 and 20 characters');
+    if (!barcode || typeof barcode !== 'string') {
+      errors.push('Barcode must be a non-empty string');
+      return { isValid: false, format: 'INVALID', errors };
     }
-    
-    // Character set validation for CODE128
-    const code128Pattern = /^[A-Za-z0-9\-_.+%$\/\s]*$/;
-    if (!code128Pattern.test(barcode)) {
-      errors.push('Barcode contains invalid characters for CODE128 format');
+
+    if (barcode.length < 4 || barcode.length > 25) {
+      errors.push('Barcode length must be between 4 and 25 characters');
     }
-    
-    // GPMS format validation
-    const gpmsPattern = /^([A-Z]+)([UP])(\d{6,})$/;
-    const match = barcode.match(gpmsPattern);
-    
-    if (!match) {
-      errors.push('Barcode does not match GPMS format (PREFIX[U|P]NNNNNN)');
+
+    const invalidChars = barcode.split('').filter(char => {
+      const code = char.charCodeAt(0);
+      return code < 32 || code > 126;
+    });
+
+    if (invalidChars.length > 0) {
+      errors.push(`Invalid characters found: ${invalidChars.join(', ')}`);
     }
-    
-    const parsedData = match ? {
-      prefix: match[1],
-      type: (match[2] === 'U' ? 'unit' : match[2] === 'P' ? 'product' : 'unknown') as 'unit' | 'product' | 'unknown',
-      counter: parseInt(match[3], 10)
-    } : undefined;
-    
+
+    const hasGPMSFormat = /^GPMS[UP]\d{6}$/.test(barcode);
+    if (!hasGPMSFormat && !errors.length) {
+      errors.push('Barcode does not follow GPMS format (GPMS[U|P]NNNNNN)');
+    }
+
     return {
       isValid: errors.length === 0,
-      format: 'CODE128',
-      errors: errors.length > 0 ? errors : undefined,
-      parsedData
+      format: hasGPMSFormat ? 'CODE128' : 'INVALID',
+      errors,
+      parsedData: hasGPMSFormat ? this.parseBarcode(barcode) : undefined
     };
   }
 
@@ -135,8 +133,24 @@ export class BarcodeService implements IBarcodeService {
    * Parse barcode information
    */
   parseBarcode(barcode: string): BarcodeValidationResult['parsedData'] {
-    const validation = this.validateBarcode(barcode);
-    return validation.parsedData;
+    const match = barcode.match(/^(GPMS)([UP])(\d{6})$/);
+    if (!match) {
+      return {
+        prefix: '',
+        type: 'unknown',
+        counter: 0
+      };
+    }
+
+    const [, prefix, typeChar, counterStr] = match;
+    const type = typeChar === 'U' ? 'unit' : typeChar === 'P' ? 'product' : 'unknown';
+    const counter = parseInt(counterStr, 10);
+
+    return {
+      prefix,
+      type: type as 'unit' | 'product',
+      counter
+    };
   }
 
   /**

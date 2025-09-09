@@ -35,6 +35,14 @@ export type { IPrintService, IThermalLabelService, IDocumentPrintService } from 
 // Legacy compatibility - keep existing ServiceRegistry for backwards compatibility
 export { serviceRegistry, serviceLoaders, getService, preloadCriticalServices } from './ServiceRegistry';
 
+// Service migration utilities
+export { 
+  Code128GeneratorService, 
+  BarcodeRegistryService, 
+  ThermalLabelService,
+  ServiceMigrationTracker 
+} from './ServiceMigration';
+
 /**
  * Migration utilities for transitioning from old to new system
  */

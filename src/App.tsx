@@ -4,6 +4,7 @@ import { AppRouter } from "@/components/app/AppRouter";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { logger } from "@/utils/logger";
 import { bootstrapServices } from "@/services/core";
+import { ServiceHealthDashboard } from "@/components/admin";
 
 export default function App() {
   console.log('🚀 App component starting...');
