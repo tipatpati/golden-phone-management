@@ -210,7 +210,7 @@ class UniversalProductServiceClass {
 
     // Create new units
     if (newEntries.length > 0) {
-      console.log(`🔨 Creating ${newEntries.length} new units`);
+      console.log(`🔨 [Unit Creation] Creating ${newEntries.length} new units for product ${productId}`);
       
       for (const unitEntry of newEntries) {
         try {
@@ -232,7 +232,12 @@ class UniversalProductServiceClass {
           );
 
           allUnits.push(unit);
-          if (!isExisting) createdCount++;
+          if (!isExisting) {
+            createdCount++;
+            console.log(`✅ [Unit Created] Successfully created unit ${unitEntry.serial} (ID: ${unit.id}) for product ${productId}`);
+          } else {
+            console.log(`♻️ [Unit Exists] Unit ${unitEntry.serial} already exists for product ${productId}`);
+          }
 
           // Notify about unit creation
           UnifiedProductCoordinator.notifyEvent({
@@ -250,7 +255,7 @@ class UniversalProductServiceClass {
           });
 
         } catch (error) {
-          console.error(`❌ Failed to create unit ${unitEntry.serial}:`, error);
+          console.error(`❌ [Unit Creation Failed] Failed to create unit ${unitEntry.serial} for product ${productId}:`, error);
           throw error;
         }
       }
@@ -258,7 +263,7 @@ class UniversalProductServiceClass {
 
     // Update existing units if needed
     if (existingEntries.length > 0) {
-      console.log(`🔄 Updating ${existingEntries.length} existing units`);
+      console.log(`🔄 [Unit Update] Updating ${existingEntries.length} existing units for product ${productId}`);
       
       for (const unitEntry of existingEntries) {
         try {
@@ -289,6 +294,7 @@ class UniversalProductServiceClass {
 
             allUnits.push(updatedUnit);
             updatedCount++;
+            console.log(`✅ [Unit Updated] Successfully updated unit ${unitEntry.serial} (ID: ${updatedUnit.id}) for product ${productId}`);
 
             // Notify about unit update
             UnifiedProductCoordinator.notifyEvent({
@@ -306,7 +312,7 @@ class UniversalProductServiceClass {
             });
           }
         } catch (error) {
-          console.error(`❌ Failed to update unit ${unitEntry.serial}:`, error);
+          console.error(`❌ [Unit Update Failed] Failed to update unit ${unitEntry.serial} for product ${productId}:`, error);
           // Don't throw here, just log the error
         }
       }
@@ -522,7 +528,7 @@ class UniversalProductServiceClass {
    * Update product stock count to match actual units
    */
   private async updateProductStock(productId: string, newStock: number): Promise<void> {
-    console.log(`📊 UNIVERSAL: Updating product ${productId} stock to ${newStock}`);
+    console.log(`📊 [Stock Database] Updating product ${productId} stock in database to ${newStock}`);
     
     const { error } = await supabase
       .from('products')
@@ -533,11 +539,11 @@ class UniversalProductServiceClass {
       .eq('id', productId);
 
     if (error) {
-      console.error('❌ Failed to update product stock:', error);
+      console.error('❌ [Stock Database] Failed to update product stock:', error);
       throw new Error(`Failed to update product stock: ${error.message}`);
     }
 
-    console.log(`✅ Product ${productId} stock updated to ${newStock}`);
+    console.log(`✅ [Stock Database] Product ${productId} stock successfully updated to ${newStock}`);
   }
 }
 
