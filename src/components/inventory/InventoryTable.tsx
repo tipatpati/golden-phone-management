@@ -46,6 +46,19 @@ interface Product {
   barcode?: string;
   has_serial: boolean;
   serial_numbers?: string[];
+  units?: Array<{
+    id: string;
+    serial_number: string;
+    barcode?: string;
+    color?: string;
+    storage?: number;
+    ram?: number;
+    battery_level?: number;
+    status: string;
+    price?: number;
+    min_price?: number;
+    max_price?: number;
+  }>;
 }
 
 interface InventoryTableProps {
@@ -93,12 +106,16 @@ export function InventoryTable({
 
       if (error) {
         console.error('Failed to fetch latest units:', error);
+        setSelectedProduct(product);
       } else {
-        // Update product with latest units data
+        // Update product with latest units data and convert to expected format
+        const latestSerialNumbers = units?.map(unit => unit.serial_number) || [];
         const updatedProduct = {
           ...product,
-          units: units || []
+          units: units || [],
+          serial_numbers: latestSerialNumbers
         };
+        console.log(`🖨️ Print button: Found ${units?.length || 0} units with barcodes for ${product.brand} ${product.model}`);
         setSelectedProduct(updatedProduct);
       }
     } catch (error) {
@@ -394,9 +411,9 @@ export function InventoryTable({
         open={printDialogOpen}
         onOpenChange={setPrintDialogOpen}
         labels={[]} // Start with empty labels when using unit selection
-        allowUnitSelection={selectedProduct.serial_numbers && selectedProduct.serial_numbers.length > 0}
+        allowUnitSelection={selectedProduct.units && selectedProduct.units.length > 0}
         productId={selectedProduct.id} // Pass productId for real data fetching
-        productSerialNumbers={selectedProduct.serial_numbers || []}
+        productSerialNumbers={selectedProduct.units?.map(unit => unit.serial_number) || selectedProduct.serial_numbers || []}
         productName={(() => {
           const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
           const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
