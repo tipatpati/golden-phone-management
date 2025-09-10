@@ -84,6 +84,8 @@ export function UniversalBarcodeManager({
         throw new Error('Unit not found');
       }
 
+      console.log(`🎯 Generating barcode for unit: ${serial}`);
+      
       const result = await productUnitCoordinator.generateBarcodesForUnits(
         productId,
         [{ 
@@ -101,6 +103,7 @@ export function UniversalBarcodeManager({
 
       if (result.success && result.barcodes.length > 0) {
         const barcode = result.barcodes[0].barcode;
+        console.log(`✅ Generated barcode for ${serial}: ${barcode}`);
         
         setUnitStatuses(prev => prev.map(status =>
           status.serial === serial
@@ -111,7 +114,9 @@ export function UniversalBarcodeManager({
         onBarcodeGenerated?.(serial, barcode);
         toast.success(`Barcode generated for ${serial}`);
       } else {
-        throw new Error(result.errors.join(', ') || 'Failed to generate barcode');
+        const errorMsg = result.errors.join(', ') || 'Failed to generate barcode';
+        console.error(`❌ Failed to generate barcode for ${serial}:`, errorMsg);
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error('Failed to generate barcode:', error);

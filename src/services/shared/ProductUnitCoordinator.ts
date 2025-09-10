@@ -240,7 +240,7 @@ class ProductUnitCoordinatorClass {
 
   /**
    * GENERATE BARCODES FOR UNITS
-   * Simplified approach using Code128GeneratorService directly
+   * Generates barcodes for existing units in the database
    */
   async generateBarcodesForUnits(
     productId: string,
@@ -253,6 +253,9 @@ class ProductUnitCoordinatorClass {
       const barcodes: Array<{ serial: string; barcode: string }> = [];
       const errors: string[] = [];
 
+      // Get all existing units for this product
+      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
+      
       for (const unit of units) {
         if (!unit.serial?.trim()) {
           errors.push('Unit missing serial number');
@@ -260,10 +263,36 @@ class ProductUnitCoordinatorClass {
         }
 
         try {
-          // Generate barcode directly using Code128GeneratorService
-          const barcode = await Code128GeneratorService.generateUnitBarcode(`${productId}_${unit.serial}`);
+          // Find the existing unit
+          const unitRecord = existingUnits.find(u => u.serial_number === unit.serial);
+          
+          if (!unitRecord) {
+            errors.push(`Unit ${unit.serial} not found in database. Please save the product first.`);
+            continue;
+          }
+
+          // Check if unit already has a barcode
+          if (unitRecord.barcode) {
+            barcodes.push({ serial: unit.serial, barcode: unitRecord.barcode });
+            console.log(`✅ Using existing barcode for ${unit.serial}: ${unitRecord.barcode}`);
+            continue;
+          }
+
+          // Generate new barcode using the unit's UUID
+          const barcode = await Code128GeneratorService.generateUnitBarcode(unitRecord.id);
+          
+          // Update the unit with the new barcode
+          const { error: updateError } = await supabase
+            .from('product_units')
+            .update({ barcode })
+            .eq('id', unitRecord.id);
+
+          if (updateError) {
+            throw new Error(`Failed to update unit with barcode: ${updateError.message}`);
+          }
+          
           barcodes.push({ serial: unit.serial, barcode });
-          console.log(`✅ Generated barcode for ${unit.serial}: ${barcode}`);
+          console.log(`✅ Generated and saved barcode for ${unit.serial}: ${barcode}`);
         } catch (error) {
           console.error(`❌ Failed to generate barcode for ${unit.serial}:`, error);
           errors.push(`Failed to generate barcode for ${unit.serial}: ${error.message}`);
