@@ -7,6 +7,7 @@ import {
   validateProductUnitsData, 
   logDataTransformation 
 } from "@/utils/crossModuleDataSync";
+import { logger } from '@/utils/logger';
 
 interface UseProductFormOptions {
   initialData?: Partial<ProductFormData>;
@@ -43,25 +44,25 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   // Update form data when initial data changes
   useEffect(() => {
     if (initialData) {
-      console.log('🔍 useProductForm: Processing initialData:', {
+      logger.debug('Processing initialData', {
         hasUnits: !!(initialData as any).units,
         hasProductUnits: !!(initialData as any).product_units,
         hasUnitEntries: !!initialData.unit_entries,
         hasSerialNumbers: !!initialData.serial_numbers,
         hasSerial: initialData.has_serial
-      });
+      }, 'useProductForm');
 
       // Validate unit data structure
       const validation = validateProductUnitsData(initialData);
       if (!validation.isValid) {
-        console.warn('⚠️ Unit data validation failed:', validation.errors);
+        logger.warn('Unit data validation failed', { errors: validation.errors }, 'useProductForm');
       }
 
       setFormData(prev => ({ ...prev, ...initialData }));
       
       // Priority order for unit data sources with unified transformation
       if (initialData.unit_entries && Array.isArray(initialData.unit_entries)) {
-        console.log('📝 Using unit_entries from form:', initialData.unit_entries.length);
+        logger.debug('Using unit_entries from form', { count: initialData.unit_entries.length }, 'useProductForm');
         logDataTransformation({
           source: 'form_unit_entries',
           target: 'useProductForm',
@@ -73,17 +74,17 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
         setUnitEntries(initialData.unit_entries);
       } else if ((initialData as any).units && Array.isArray((initialData as any).units)) {
         // Use unified transformer for database units
-        console.log('🔄 Transforming database units to unit entries:', (initialData as any).units.length);
+        logger.debug('Transforming database units to unit entries', { count: (initialData as any).units.length }, 'useProductForm');
         const entries = transformUnitsToEntries((initialData as any).units);
         setUnitEntries(entries);
       } else if ((initialData as any).product_units && Array.isArray((initialData as any).product_units)) {
         // Use unified transformer for product_units
-        console.log('🔄 Transforming product_units to unit entries:', (initialData as any).product_units.length);
+        logger.debug('Transforming product_units to unit entries', { count: (initialData as any).product_units.length }, 'useProductForm');
         const entries = transformUnitsToEntries((initialData as any).product_units);
         setUnitEntries(entries);
       } else if (initialData.serial_numbers && Array.isArray(initialData.serial_numbers)) {
         // Legacy conversion - only extract serial numbers
-        console.log('📜 Using legacy serial_numbers:', initialData.serial_numbers.length);
+        logger.debug('Using legacy serial_numbers', { count: initialData.serial_numbers.length }, 'useProductForm');
         const entries = initialData.serial_numbers.map(serial => ({
           serial,
           battery_level: 0,
@@ -99,14 +100,14 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
         setUnitEntries(entries);
       } else if (initialData.has_serial) {
         // For serialized products without unit data, show empty form
-        console.log('📋 Serialized product without unit data, showing empty form');
+        logger.debug('Serialized product without unit data, showing empty form', {}, 'useProductForm');
         setUnitEntries([]);
       }
     }
   }, [initialData]);
 
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
-    console.log(`🔄 updateField: ${String(field)} = ${value}`);
+    logger.debug('Field updated', { field: String(field), value }, 'useProductForm');
     setFormData(prev => ({ ...prev, [field]: value }));
     clearErrors();
   }, [clearErrors]);
@@ -124,11 +125,11 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   }, [formData.has_serial, clearErrors]);
 
   const handleSubmit = useCallback(async () => {
-    console.log('🔄 useProductForm handleSubmit called with formData:', formData);
+    logger.debug('Form submit called', { formData }, 'useProductForm');
     const errors = validateForm(formData, unitEntries);
     
     if (errors.length > 0) {
-      console.log('❌ Form validation errors:', errors);
+      logger.warn('Form validation errors', { errors }, 'useProductForm');
       toast({
         title: "Validation Error",
         description: "Please fix the form errors before submitting",

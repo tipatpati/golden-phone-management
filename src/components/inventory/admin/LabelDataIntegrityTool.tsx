@@ -7,6 +7,7 @@ import { AlertCircle, CheckCircle, RefreshCw, Database } from 'lucide-react';
 import { ThermalLabelDataService } from '@/services/labels/ThermalLabelDataService';
 import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import { LabelDataValidator } from '@/services/labels/LabelDataValidator';
+import { logger } from '@/utils/logger';
 
 interface ValidationReport {
   totalProducts: number;
@@ -31,7 +32,7 @@ export function LabelDataIntegrityTool() {
   const runIntegrityCheck = async () => {
     setIsRunning(true);
     try {
-      console.log('🔍 Starting label data integrity check...');
+      logger.info('Starting label data integrity check', {}, 'LabelDataIntegrityTool');
       
       // This would need to be implemented to check all products
       // For now, we'll show how this tool would work
@@ -50,7 +51,7 @@ export function LabelDataIntegrityTool() {
       setLastRun(new Date());
       
     } catch (error) {
-      console.error('Label integrity check failed:', error);
+      logger.error('Label integrity check failed', { error }, 'LabelDataIntegrityTool');
       setReport({
         totalProducts: 0,
         totalUnits: 0,
@@ -68,14 +69,14 @@ export function LabelDataIntegrityTool() {
 
   const triggerBarcodeBackfill = async () => {
     try {
-      console.log('🔧 Triggering barcode backfill...');
+      logger.info('Triggering barcode backfill', {}, 'LabelDataIntegrityTool');
       const result = await ProductUnitManagementService.backfillMissingBarcodes();
-      console.log('✅ Backfill completed:', result);
+      logger.info('Backfill completed', { result }, 'LabelDataIntegrityTool');
       
       // Re-run integrity check
       await runIntegrityCheck();
     } catch (error) {
-      console.error('Barcode backfill failed:', error);
+      logger.error('Barcode backfill failed', { error }, 'LabelDataIntegrityTool');
     }
   };
 

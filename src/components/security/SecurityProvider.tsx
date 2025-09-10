@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { SecurityHeaders } from './SecurityHeaders';
 import { logSecurityEvent } from '@/utils/securityAudit';
+import { logger } from '@/utils/logger';
 
 interface SecurityContextType {
   securityLevel: 'low' | 'medium' | 'high';
@@ -23,7 +24,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
                             isInIframe;
     
     if (isLovablePreview) {
-      console.log('SecurityProvider: Preview environment detected, skipping security initialization');
+      logger.info('Preview environment detected, skipping security initialization', {}, 'SecurityProvider');
       setSecurityLevel('medium');
       setIsSecure(true);
       return;
@@ -48,7 +49,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
         setupSecurityMonitoring();
       } catch (error) {
         // Don't let security logging errors break the app
-        console.warn('Security initialization failed:', error);
+        logger.warn('Security initialization failed', { error }, 'SecurityProvider');
         
         // Still initialize basic security features
         checkSecurityFeatures();
@@ -101,7 +102,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
                      window !== window.top;
     
     if (isPreview) {
-      console.log('Security monitoring disabled in preview environment');
+      logger.info('Security monitoring disabled in preview environment', {}, 'SecurityProvider');
       return;
     }
     
@@ -117,7 +118,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
         logSecurityEvent({
           event_type: 'suspicious_console_activity',
           event_data: { count: suspiciousActivityCount }
-        }).catch(err => console.warn('Security logging failed:', err));
+        }).catch(err => logger.warn('Security logging failed', { err }, 'SecurityProvider'));
         suspiciousActivityCount = 0; // Reset counter
       }
       originalConsoleLog.apply(console, args);
@@ -132,7 +133,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
           target: e.target instanceof Element ? e.target.tagName : 'unknown',
           timestamp: new Date().toISOString()
         }
-      }).catch(err => console.warn('Security logging failed:', err));
+      }).catch(err => logger.warn('Security logging failed', { err }, 'SecurityProvider'));
     });
 
     // Monitor for F12 key press (developer tools)
@@ -148,7 +149,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
             shift: e.shiftKey,
             timestamp: new Date().toISOString()
           }
-        }).catch(err => console.warn('Security logging failed:', err));
+        }).catch(err => logger.warn('Security logging failed', { err }, 'SecurityProvider'));
       }
     });
 
@@ -158,7 +159,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
         logSecurityEvent({
           event_type: 'tab_hidden',
           event_data: { timestamp: new Date().toISOString() }
-        }).catch(err => console.warn('Security logging failed:', err));
+        }).catch(err => logger.warn('Security logging failed', { err }, 'SecurityProvider'));
       }
     });
 
@@ -167,7 +168,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
       logSecurityEvent({
         event_type: 'page_unload',
         event_data: { timestamp: new Date().toISOString() }
-      }).catch(err => console.warn('Security logging failed:', err));
+      }).catch(err => logger.warn('Security logging failed', { err }, 'SecurityProvider'));
     });
   };
 

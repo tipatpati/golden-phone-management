@@ -102,6 +102,12 @@ export function initializeProduction(): void {
   // Initialize error tracking
   errorTracking.addBreadcrumb('Application started in production', 'system');
 
+  // Initialize security
+  const securityInitialized = initializeSecurity();
+  if (!securityInitialized) {
+    logger.error('Security initialization failed', {}, 'Production');
+  }
+
   // Log production status
   const status = checkProductionReadiness();
   
@@ -115,9 +121,13 @@ export function initializeProduction(): void {
 
   logger.info('Production initialization complete', {
     checksPass: Object.values(status.checks).every(Boolean),
-    environment: status.environment
+    environment: status.environment,
+    securityInitialized
   }, 'Production');
 }
+
+// Import security initialization
+import { initializeSecurity } from './securityConfig';
 
 /**
  * Production metrics and monitoring

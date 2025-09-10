@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
 import type { ProductFormData, ProductFormValidationError, UnitEntryForm } from "@/services/inventory/types";
 import { validateSerialWithBattery } from "@/utils/serialNumberUtils";
+import { logger } from '@/utils/logger';
 
 export function useProductValidation() {
   const [errors, setErrors] = useState<ProductFormValidationError[]>([]);
 
   const validateForm = useCallback((data: Partial<ProductFormData>, unitEntries?: UnitEntryForm[]): ProductFormValidationError[] => {
     const newErrors: ProductFormValidationError[] = [];
-    console.log('🔍 VALIDATION START - Validating form data:', { 
+    logger.debug('Validating form data', { 
       data,
       unitEntries,
       brand: data.brand,
@@ -18,7 +19,7 @@ export function useProductValidation() {
       max_price: data.max_price,
       threshold: data.threshold,
       has_serial: data.has_serial
-    });
+    }, 'useProductValidation');
 
     // Required field validations
     if (!data.brand?.trim()) {
@@ -157,7 +158,7 @@ export function useProductValidation() {
       }
     }
 
-    console.log('📋 Validation completed:', { totalErrors: newErrors.length, errors: newErrors });
+    logger.debug('Validation completed', { totalErrors: newErrors.length, errors: newErrors }, 'useProductValidation');
     setErrors(newErrors);
     return newErrors;
   }, []);

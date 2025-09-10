@@ -2,6 +2,7 @@ import React from "react";
 import type { SerialNumberManagerProps } from "@/services/inventory/types";
 import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
 import { UniversalBarcodeManager } from "@/components/shared/UniversalBarcodeManager";
+import { logger } from '@/utils/logger';
 
 export function SerialNumberManager({
   serialNumbers, // optional legacy
@@ -46,14 +47,14 @@ export function SerialNumberManager({
         source="inventory"
         showPrintButton={true}
         onBarcodeGenerated={(serial, barcode) => {
-          console.log(`✅ Generated barcode for unit ${serial}: ${barcode}`);
+          logger.info('Generated barcode for unit', { serial, barcode }, 'SerialNumberManager');
           // Update the first unit's barcode for product-level barcode field
           if (unitEntries.length > 0 && onBarcodeGenerated) {
             onBarcodeGenerated(barcode);
           }
         }}
         onPrintCompleted={(printedUnits) => {
-          console.log(`✅ Printed labels for inventory units: ${printedUnits.join(', ')}`);
+          logger.info('Printed labels for inventory units', { printedUnits }, 'SerialNumberManager');
         }}
       />
       
