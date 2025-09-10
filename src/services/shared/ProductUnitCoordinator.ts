@@ -7,7 +7,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ProductUnitManagementService } from "./ProductUnitManagementService";
 import { UnifiedProductCoordinator } from "./UnifiedProductCoordinator";
-import { universalBarcodeService } from "./UniversalBarcodeService";
+import { Code128GeneratorService } from "@/services/barcodes/Code128GeneratorService";
 import type { 
   BaseUnit, 
   UnitFormData, 
@@ -240,24 +240,40 @@ class ProductUnitCoordinatorClass {
 
   /**
    * GENERATE BARCODES FOR UNITS
-   * Unified barcode generation across all modules
+   * Simplified approach using Code128GeneratorService directly
    */
   async generateBarcodesForUnits(
     productId: string,
     units: UnitFormData[],
-    options: UnitOperationOptions
+    source: string
   ): Promise<BarcodeGenerationResult> {
     try {
-      const result = await universalBarcodeService.generateBarcodesForUnits(
-        productId,
-        units,
-        options.source
-      );
+      console.log(`🎯 UNIT COORDINATOR: Generating barcodes for ${units.length} units from ${source}`);
+      
+      const barcodes: Array<{ serial: string; barcode: string }> = [];
+      const errors: string[] = [];
+
+      for (const unit of units) {
+        if (!unit.serial?.trim()) {
+          errors.push('Unit missing serial number');
+          continue;
+        }
+
+        try {
+          // Generate barcode directly using Code128GeneratorService
+          const barcode = await Code128GeneratorService.generateUnitBarcode(`${productId}_${unit.serial}`);
+          barcodes.push({ serial: unit.serial, barcode });
+          console.log(`✅ Generated barcode for ${unit.serial}: ${barcode}`);
+        } catch (error) {
+          console.error(`❌ Failed to generate barcode for ${unit.serial}:`, error);
+          errors.push(`Failed to generate barcode for ${unit.serial}: ${error.message}`);
+        }
+      }
 
       return {
-        success: result.success,
-        barcodes: result.barcodes,
-        errors: result.errors
+        success: barcodes.length > 0,
+        barcodes,
+        errors
       };
     } catch (error) {
       console.error('❌ UNIT COORDINATOR: Failed to generate barcodes:', error);

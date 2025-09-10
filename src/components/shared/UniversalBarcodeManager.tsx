@@ -96,7 +96,7 @@ export function UniversalBarcodeManager({
           min_price: unit.min_price,
           max_price: unit.max_price
         }],
-        { source }
+        source
       );
 
       if (result.success && result.barcodes.length > 0) {
@@ -151,7 +151,7 @@ export function UniversalBarcodeManager({
       const result = await productUnitCoordinator.generateBarcodesForUnits(
         productId,
         validUnits,
-        { source }
+        source
       );
 
       if (result.success) {
@@ -272,7 +272,7 @@ export function UniversalBarcodeManager({
       const barcodeResult = await productUnitCoordinator.generateBarcodesForUnits(
         productId,
         validUnits,
-        { source }
+        source
       );
 
       if (!barcodeResult.success) {

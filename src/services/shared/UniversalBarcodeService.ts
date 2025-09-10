@@ -4,7 +4,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { Services } from "@/services/core";
+import { Code128GeneratorService } from "@/services/barcodes/Code128GeneratorService";
 import type { UnitEntryForm } from "@/services/inventory/types";
 
 export interface UniversalLabelData {
@@ -58,11 +58,7 @@ class UniversalBarcodeServiceClass {
     };
 
     try {
-      const barcodeService = await Services.getBarcodeService();
-      if (!barcodeService) {
-        throw new Error('Barcode service not available');
-      }
-
+      // Use Code128GeneratorService directly for reliable barcode generation
       for (const unit of unitEntries) {
         if (!unit.serial?.trim()) {
           result.errors.push(`Skipping unit without serial number`);
@@ -70,8 +66,8 @@ class UniversalBarcodeServiceClass {
         }
 
         try {
-          // Generate barcode using the core service
-          const barcode = await barcodeService.generateUnitBarcode(`${productId}_${unit.serial}`, {
+          // Generate barcode using the direct service
+          const barcode = await Code128GeneratorService.generateUnitBarcode(`${productId}_${unit.serial}`, {
             metadata: {
               serial: unit.serial,
               color: unit.color,
@@ -148,32 +144,30 @@ class UniversalBarcodeServiceClass {
     };
 
     try {
-      // Get the thermal label service
-      const thermalService = await Services.getPrintService();
-      if (!thermalService) {
-        throw new Error('Thermal label service not available');
-      }
-
-      // Prepare label data in the thermal service format
+      // Use ThermalLabelService directly for more reliable printing
+      const { ThermalLabelService } = await import('@/components/inventory/labels/services/ThermalLabelService');
+      
+      // Prepare thermal labels
       const thermalLabels = labelData.units.map(unit => ({
-        id: `${labelData.productId}_${unit.serial}`,
         productName: `${labelData.productBrand} ${labelData.productModel}`,
-        brand: labelData.productBrand,
-        model: labelData.productModel,
-        price: unit.price || 0,
+        serialNumber: unit.serial,
         barcode: unit.barcode,
-        serial: unit.serial,
+        price: unit.price || 0,
+        maxPrice: unit.price || 0,
         color: unit.color,
-        storage: unit.storage ? `${unit.storage}GB` : undefined,
-        ram: unit.ram ? `${unit.ram}GB` : undefined
+        storage: unit.storage,
+        ram: unit.ram
       }));
 
       // Use thermal label printing method
-      const printResult = await thermalService.printLabels(thermalLabels, {
-        showPrice: true,
-        showSerial: true,
-        labelSize: '6x5cm' as const,
-        companyName: 'Your Company'
+      const printResult = await ThermalLabelService.printLabels(thermalLabels, {
+        copies: 1,
+        includePrice: true,
+        includeBarcode: true,
+        includeCompany: true,
+        includeCategory: true,
+        format: "standard" as const,
+        companyName: "GOLDEN PHONE SRL"
       });
 
       if (printResult.success) {
