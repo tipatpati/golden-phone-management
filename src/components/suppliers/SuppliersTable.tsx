@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Building, Mail, Phone, Edit2, Trash2, MessageCircle } from "lucide-react";
+import { Building, Mail, Phone, Edit2, Trash2, MessageCircle, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState } from "@/components/common";
 import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
 import { ContactSupplierDialog } from "./ContactSupplierDialog";
+import { SupplierDetailsDialog } from "./SupplierDetailsDialog";
 import { useSuppliers } from "@/services";
 
 interface SuppliersTableProps {
@@ -15,8 +16,9 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [deletingSupplier, setDeletingSupplier] = useState<any>(null);
   const [contactingSupplier, setContactingSupplier] = useState<any>(null);
+  const [viewingSupplier, setViewingSupplier] = useState<any>(null);
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog();
-  const { data: suppliers, isLoading } = useSuppliers();
+  const { data: suppliers, isLoading, refetch } = useSuppliers();
 
   // Type cast the data array
   const suppliersArray = (suppliers as any[]) || [];
@@ -98,6 +100,11 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   // Define actions
   const actions = [
     {
+      icon: <Eye className="h-4 w-4" />,
+      label: "View Details",
+      onClick: (supplier: any) => setViewingSupplier(supplier)
+    },
+    {
       icon: <MessageCircle className="h-4 w-4" />,
       label: "Contact",
       onClick: (supplier: any) => setContactingSupplier(supplier)
@@ -114,6 +121,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
       variant: "destructive" as const
     }
   ];
+
+  const handleSuccess = () => {
+    refetch();
+    setViewingSupplier(null);
+    setEditingSupplier(null);
+    setDeletingSupplier(null);
+    setContactingSupplier(null);
+  };
 
   return (
     <>
@@ -161,6 +176,11 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
             ]}
             actions={[
               {
+                icon: <Eye className="h-3 w-3 mr-1" />,
+                label: "View",
+                onClick: () => setViewingSupplier(supplier)
+              },
+              {
                 icon: <MessageCircle className="h-3 w-3 mr-1" />,
                 label: "Contact",
                 onClick: () => setContactingSupplier(supplier)
@@ -193,16 +213,33 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
         confirmText="Delete"
       />
 
+      <SupplierDetailsDialog
+        supplier={viewingSupplier}
+        open={!!viewingSupplier}
+        onOpenChange={(open) => !open && setViewingSupplier(null)}
+        onToggleStatus={handleSuccess}
+      />
+
       <EditSupplierDialog
         supplier={editingSupplier}
         open={!!editingSupplier}
-        onOpenChange={(open) => !open && setEditingSupplier(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingSupplier(null);
+            refetch();
+          }
+        }}
       />
 
       <DeleteSupplierDialog
         supplier={deletingSupplier}
         open={!!deletingSupplier}
-        onOpenChange={(open) => !open && setDeletingSupplier(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingSupplier(null);
+            refetch();
+          }
+        }}
       />
 
       <ContactSupplierDialog

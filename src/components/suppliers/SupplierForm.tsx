@@ -38,48 +38,66 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
     status: supplier?.status || "active",
   });
 
+  const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field as keyof FormData]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {};
+
+    // Required field validation
     if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Supplier name is required",
-        variant: "destructive",
-      });
-      return false;
+      newErrors.name = "Supplier name is required";
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return false;
+    // Email validation
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
-    return true;
+    // Phone validation (basic check for digits and common characters)
+    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    // Credit limit validation
+    const creditLimit = parseFloat(formData.credit_limit);
+    if (isNaN(creditLimit) || creditLimit < 0) {
+      newErrors.credit_limit = "Credit limit must be a positive number";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const submissionData = {
-        name: formData.name,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        tax_id: formData.tax_id || null,
-        payment_terms: formData.payment_terms || null,
+        name: formData.name.trim(),
+        email: formData.email.trim() || null,
+        phone: formData.phone.trim() || null,
+        address: formData.address.trim() || null,
+        tax_id: formData.tax_id.trim() || null,
+        payment_terms: formData.payment_terms.trim() || null,
         credit_limit: parseFloat(formData.credit_limit) || 0,
-        notes: formData.notes || null,
+        notes: formData.notes.trim() || null,
         status: formData.status as "active" | "inactive",
       };
 
@@ -100,16 +118,25 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         });
       }
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Supplier operation failed:', error);
       toast({
         title: "Error",
-        description: "Failed to save supplier",
+        description: error.message || "Failed to save supplier",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const getFieldError = (field: keyof FormData) => errors[field];
+
+  const isFormValid = formData.name.trim() && 
+    (!formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
+    (!formData.phone || /^[\d\s\-\+\(\)]+$/.test(formData.phone)) &&
+    !isNaN(parseFloat(formData.credit_limit)) &&
+    parseFloat(formData.credit_limit) >= 0;
 
   return (
     <div className="space-y-4">
@@ -118,20 +145,26 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         required
         value={formData.name}
         onChange={(value) => handleChange("name", value)}
+        error={getFieldError("name")}
+        placeholder="Enter supplier name"
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           label="Email"
           inputType="email"
           value={formData.email}
           onChange={(value) => handleChange("email", value)}
+          error={getFieldError("email")}
+          placeholder="supplier@company.com"
         />
         <FormField
           label="Phone"
           inputType="tel"
           value={formData.phone}
           onChange={(value) => handleChange("phone", value)}
+          error={getFieldError("phone")}
+          placeholder="+1 (555) 123-4567"
         />
       </div>
 
@@ -141,19 +174,23 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         value={formData.address}
         onChange={(value) => handleChange("address", value)}
         rows={2}
+        placeholder="Enter supplier address"
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           label="Tax ID"
           value={formData.tax_id}
           onChange={(value) => handleChange("tax_id", value)}
+          placeholder="Tax identification number"
         />
         <FormField
           label="Credit Limit"
           inputType="number"
           value={formData.credit_limit}
           onChange={(value) => handleChange("credit_limit", value)}
+          error={getFieldError("credit_limit")}
+          placeholder="0.00"
         />
       </div>
 
@@ -162,6 +199,7 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         value={formData.payment_terms}
         onChange={(value) => handleChange("payment_terms", value)}
         description="e.g., Net 30, 2/10 Net 30"
+        placeholder="Net 30"
       />
 
       <FormField
@@ -181,14 +219,23 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         value={formData.notes}
         onChange={(value) => handleChange("notes", value)}
         rows={3}
+        placeholder="Additional notes about the supplier"
       />
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || !isFormValid}
+          className="min-w-[120px]"
         >
-          {isLoading ? "Saving..." : supplier ? "Update Supplier" : "Create Supplier"}
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              Saving...
+            </>
+          ) : (
+            supplier ? "Update Supplier" : "Create Supplier"
+          )}
         </Button>
       </div>
     </div>
