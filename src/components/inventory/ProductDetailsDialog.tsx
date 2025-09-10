@@ -295,71 +295,155 @@ export function ProductDetailsDialog({
               </CardContent>
             </Card>
 
-            {/* Serial Numbers */}
-            {product.has_serial && product.serial_numbers && product.serial_numbers.length > 0 && (
+            {/* Product Units - Enhanced Details */}
+            {product.has_serial && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium">
-                    Serial Numbers ({product.serial_numbers.length} units)
+                    Product Units {productUnits.length > 0 && `(${productUnits.length} units)`}
                   </CardTitle>
+                  {isLoadingUnits && (
+                    <CardDescription>Loading unit details...</CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {product.serial_numbers.map((serial, index) => {
-                      const parsed = parseSerialString(serial);
-                      const unit = productUnits.find(u => u.serial_number === parsed.serial);
-                      
-                      return (
+                  {productUnits.length > 0 ? (
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {productUnits.map((unit) => (
                         <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-muted/50 rounded text-sm border"
+                          key={unit.id}
+                          className="flex items-start justify-between p-4 bg-muted/30 rounded-lg border border-border/50"
                         >
-                          <div className="flex-1">
-                            <div className="font-mono font-medium">{parsed.serial}</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {parsed.color && <span className="mr-3">Color: {parsed.color}</span>}
-                              {parsed.storage && <span className="mr-3">{parsed.storage}GB</span>}
-                              {parsed.batteryLevel !== undefined && <span className="mr-3">Battery: {parsed.batteryLevel}%</span>}
-                              {unit?.status && (
-                                <Badge 
-                                  variant={unit.status === 'available' ? 'default' : 'outline'}
-                                  className="text-xs"
-                                >
-                                  {unit.status}
-                                </Badge>
+                          <div className="flex-1 space-y-2">
+                            {/* Serial Number & Barcode */}
+                            <div className="space-y-1">
+                              <div className="font-mono font-semibold text-sm">{unit.serial_number}</div>
+                              {unit.barcode && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Barcode className="h-3 w-3" />
+                                  {unit.barcode}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Unit Specifications */}
+                            <div className="flex flex-wrap gap-3 text-xs">
+                              {unit.color && (
+                                <span className="bg-primary/10 text-primary px-2 py-1 rounded">
+                                  {unit.color}
+                                </span>
+                              )}
+                              {unit.storage && (
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {unit.storage}GB
+                                </span>
+                              )}
+                              {unit.ram && (
+                                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                  {unit.ram}GB RAM
+                                </span>
+                              )}
+                              {unit.battery_level !== null && unit.battery_level !== undefined && (
+                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                                  Battery: {unit.battery_level}%
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Additional Unit Info */}
+                            <div className="text-xs text-muted-foreground pt-2 border-t border-border/30">
+                              <div>Unit ID: {unit.id}</div>
+                              <div>Created: {new Date(unit.created_at || '').toLocaleDateString()}</div>
+                              {unit.updated_at && (
+                                <div>Updated: {new Date(unit.updated_at).toLocaleDateString()}</div>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="text-right">
-                              {unit?.price && (
-                                <div className="text-sm font-medium">{formatCurrency(unit.price)}</div>
-                              )}
-                              {unit?.min_price && unit?.max_price && (
-                                <div className="text-xs text-muted-foreground">
-                                  {formatCurrency(unit.min_price)} - {formatCurrency(unit.max_price)}
+                          
+                          {/* Status & Pricing */}
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge 
+                              variant={unit.status === 'available' ? 'default' : 
+                                     unit.status === 'sold' ? 'destructive' :
+                                     unit.status === 'reserved' ? 'secondary' : 'outline'}
+                              className="text-xs"
+                            >
+                              {unit.status}
+                            </Badge>
+                            
+                            {/* Pricing Info */}
+                            <div className="text-right space-y-1">
+                              {unit.price && (
+                                <div className="text-sm font-medium">
+                                  Base: {formatCurrency(unit.price)}
                                 </div>
                               )}
-                              {!unit?.price && !unit?.min_price && (
+                              {unit.min_price && (
+                                <div className="text-xs text-muted-foreground">
+                                  Min: {formatCurrency(unit.min_price)}
+                                </div>
+                              )}
+                              {unit.max_price && (
+                                <div className="text-xs font-medium text-primary">
+                                  Max: {formatCurrency(unit.max_price)}
+                                </div>
+                              )}
+                              {!unit.price && !unit.min_price && !unit.max_price && (
                                 <div className="text-xs text-muted-foreground">No pricing set</div>
                               )}
                             </div>
+                            
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                setSelectedUnit(unit || null);
+                                setSelectedUnit(unit);
                                 setUnitPricingOpen(true);
                               }}
                               disabled={isLoadingUnits}
+                              className="h-7 w-7 p-0"
                             >
                               <Euro className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  ) : product.serial_numbers && product.serial_numbers.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Found {product.serial_numbers.length} serial numbers but no detailed unit records:
+                      </div>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {product.serial_numbers.map((serial, index) => {
+                          const parsed = parseSerialString(serial);
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 bg-amber-50 rounded text-sm border border-amber-200"
+                            >
+                              <div className="flex-1">
+                                <div className="font-mono font-medium">{parsed.serial}</div>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {parsed.color && <span className="mr-3">Color: {parsed.color}</span>}
+                                  {parsed.storage && <span className="mr-3">{parsed.storage}GB</span>}
+                                  {parsed.batteryLevel !== undefined && <span className="mr-3">Battery: {parsed.batteryLevel}%</span>}
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                Legacy
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No units found for this product</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
