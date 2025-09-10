@@ -194,47 +194,54 @@ class SupplierAcquisitionService {
       productId = item.productId;
       
       if (item.unitEntries && item.unitEntries.length > 0) {
-        // Use Universal Product Service to add units to existing product
-        const { universalProductService } = await import('@/services/shared/UniversalProductService');
+        // Use ProductUnitCoordinator for all unit operations
+        const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
         
-        // Get existing product data
-        const productData = await universalProductService.getProductWithUnits(productId);
+        // Get existing product data to merge with new units
+        const productData = await productUnitCoordinator.getProductWithUnits(productId);
         
         if (!productData.product) {
           throw new Error(`Product ${productId} not found`);
         }
         
-        // Create form data for universal service by merging existing product with new units
         // CRITICAL: Merge existing units with new units to prevent data loss
         const existingUnits = productData.unitEntries || [];
-        const newUnits = item.unitEntries || [];
+        const newUnits = item.unitEntries.map(entry => ({
+          serial: entry.serial,
+          battery_level: entry.battery_level,
+          color: entry.color,
+          storage: entry.storage,
+          ram: entry.ram,
+          price: entry.price,
+          min_price: entry.min_price,
+          max_price: entry.max_price
+        }));
+        
         const allUnits = [...existingUnits, ...newUnits];
         
-        const formData = {
-          ...productData.product,
-          unit_entries: allUnits,
-          has_serial: true, // Products with unit entries are serialized
-          stock: 0 // Will be calculated based on actual units
-        };
-        
-        const result = await universalProductService.processProduct(formData, {
-          source: 'supplier',
-          transactionId,
-          unitCost: item.unitCost,
-          supplierId: supplierId,
-          metadata: {
-            acquisition: true,
-            existingProduct: true,
-            quantity: item.quantity
+        // Process units through coordinator
+        const result = await productUnitCoordinator.processUnits(
+          productId,
+          allUnits,
+          {
+            price: item.unitCost,
+            min_price: undefined,
+            max_price: undefined
+          },
+          {
+            source: 'supplier',
+            transactionId,
+            supplierId: supplierId,
+            unitCost: item.unitCost,
+            metadata: {
+              acquisitionItem: item.productId || productId,
+              originalQuantity: item.quantity
+            }
           }
-        });
-
-        if (!result.success) {
-          throw new Error(`Failed to add units to existing product: ${result.errors.join(', ')}`);
-        }
-
+        );
+        
         unitIds.push(...result.units.map(u => u.id));
-        console.log(`✅ Added ${result.createdUnitCount} new units, updated ${result.updatedUnitCount} units for existing product: ${productId}`);
+        console.log(`✅ Processed ${result.createdCount} new units, ${result.updatedCount} updated units for existing product: ${productId}`);
       } else {
         // For non-serialized existing products, use traditional stock update
         console.log(`📦 Updating stock for non-serialized product: ${productId}`);

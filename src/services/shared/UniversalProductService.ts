@@ -185,7 +185,7 @@ class UniversalProductServiceClass {
 
   /**
    * UNIVERSAL UNIT PROCESSING
-   * Ensures units are created/updated consistently regardless of source
+   * Delegates to ProductUnitCoordinator for all unit operations
    */
   private async processProductUnits(
     productId: string,
@@ -193,143 +193,51 @@ class UniversalProductServiceClass {
     defaultPricing: { price?: number; min_price?: number; max_price?: number },
     options: UniversalProductOptions
   ): Promise<{ units: any[]; createdCount: number; updatedCount: number }> {
-    console.log(`📦 UNIVERSAL: Processing ${unitEntries.length} units for product ${productId}`);
+    console.log(`📦 UNIVERSAL: Delegating ${unitEntries.length} units to ProductUnitCoordinator for product ${productId}`);
 
-    // Get existing units
-    const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
-    const existingSerials = new Set(existingUnits.map(u => u.serial_number));
+    // Import coordinator to avoid circular dependencies
+    const { productUnitCoordinator } = await import('./ProductUnitCoordinator');
     
-    const newEntries = unitEntries.filter(e => e.serial?.trim() && !existingSerials.has(e.serial));
-    const existingEntries = unitEntries.filter(e => e.serial?.trim() && existingSerials.has(e.serial));
+    // Convert UnitEntryForm to UnitFormData format
+    const unitFormData = unitEntries.map(entry => ({
+      serial: entry.serial,
+      battery_level: entry.battery_level,
+      color: entry.color,
+      storage: entry.storage,
+      ram: entry.ram,
+      price: entry.price || defaultPricing.price,
+      min_price: entry.min_price || defaultPricing.min_price,
+      max_price: entry.max_price || defaultPricing.max_price
+    }));
 
-    const allUnits: any[] = [];
-    let createdCount = 0;
-    let updatedCount = 0;
-
-    // Create new units
-    if (newEntries.length > 0) {
-      console.log(`🔨 [Unit Creation] Creating ${newEntries.length} new units for product ${productId}`);
-      
-      for (const unitEntry of newEntries) {
-        try {
-          const { unit, isExisting } = await UnifiedProductCoordinator.resolveProductUnit(
-            productId,
-            unitEntry.serial,
-            {
-              price: unitEntry.price || defaultPricing.price,
-              min_price: unitEntry.min_price || defaultPricing.min_price,
-              max_price: unitEntry.max_price || defaultPricing.max_price,
-              battery_level: unitEntry.battery_level,
-              color: unitEntry.color,
-              storage: unitEntry.storage,
-              ram: unitEntry.ram,
-              purchase_price: options.unitCost,
-              supplier_id: options.supplierId,
-              status: 'available'
-            }
-          );
-
-          allUnits.push(unit);
-          if (!isExisting) {
-            createdCount++;
-            console.log(`✅ [Unit Created] Successfully created unit ${unitEntry.serial} (ID: ${unit.id}) for product ${productId}`);
-          } else {
-            console.log(`♻️ [Unit Exists] Unit ${unitEntry.serial} already exists for product ${productId}`);
-          }
-
-          // Notify about unit creation
-          UnifiedProductCoordinator.notifyEvent({
-            type: isExisting ? 'unit_updated' : 'unit_created',
-            source: options.source,
-            entityId: unit.id,
-            metadata: {
-              productId,
-              serialNumber: unitEntry.serial,
-              source: options.source,
-              transactionId: options.transactionId,
-              unitCost: options.unitCost,
-              ...options.metadata
-            }
-          });
-
-        } catch (error) {
-          console.error(`❌ [Unit Creation Failed] Failed to create unit ${unitEntry.serial} for product ${productId}:`, error);
-          throw error;
-        }
+    const result = await productUnitCoordinator.processUnits(
+      productId,
+      unitFormData,
+      defaultPricing,
+      {
+        source: options.source,
+        transactionId: options.transactionId,
+        supplierId: options.supplierId,
+        unitCost: options.unitCost,
+        metadata: options.metadata
       }
-    }
-
-    // Update existing units if needed
-    if (existingEntries.length > 0) {
-      console.log(`🔄 [Unit Update] Updating ${existingEntries.length} existing units for product ${productId}`);
-      
-      for (const unitEntry of existingEntries) {
-        try {
-          const existingUnit = existingUnits.find(u => u.serial_number === unitEntry.serial);
-          if (existingUnit) {
-            // Update unit with new data
-            const { data: updatedUnit, error } = await supabase
-              .from('product_units')
-              .update({
-                price: unitEntry.price || defaultPricing.price,
-                min_price: unitEntry.min_price || defaultPricing.min_price,
-                max_price: unitEntry.max_price || defaultPricing.max_price,
-                battery_level: unitEntry.battery_level,
-                color: unitEntry.color,
-                storage: unitEntry.storage,
-                ram: unitEntry.ram,
-                purchase_price: options.unitCost,
-                supplier_id: options.supplierId,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', existingUnit.id)
-              .select()
-              .single();
-
-            if (error) {
-              throw new Error(`Failed to update unit: ${error.message}`);
-            }
-
-            allUnits.push(updatedUnit);
-            updatedCount++;
-            console.log(`✅ [Unit Updated] Successfully updated unit ${unitEntry.serial} (ID: ${updatedUnit.id}) for product ${productId}`);
-
-            // Notify about unit update
-            UnifiedProductCoordinator.notifyEvent({
-              type: 'unit_updated',
-              source: options.source,
-              entityId: updatedUnit.id,
-              metadata: {
-                productId,
-                serialNumber: unitEntry.serial,
-                source: options.source,
-                transactionId: options.transactionId,
-                unitCost: options.unitCost,
-                ...options.metadata
-              }
-            });
-          }
-        } catch (error) {
-          console.error(`❌ [Unit Update Failed] Failed to update unit ${unitEntry.serial} for product ${productId}:`, error);
-          // Don't throw here, just log the error
-        }
-      }
-    }
-
-    // Add existing units that weren't in the update list
-    const unmodifiedUnits = existingUnits.filter(u => 
-      !unitEntries.some(e => e.serial === u.serial_number)
     );
-    allUnits.push(...unmodifiedUnits);
 
-    console.log(`✅ UNIVERSAL: Unit processing complete`, {
-      total: allUnits.length,
-      created: createdCount,
-      updated: updatedCount,
-      unmodified: unmodifiedUnits.length
+    if (!result.success) {
+      throw new Error(`Unit processing failed: ${result.errors.join(', ')}`);
+    }
+
+    console.log(`✅ UNIVERSAL: Unit processing delegated successfully`, {
+      total: result.units.length,
+      created: result.createdCount,
+      updated: result.updatedCount
     });
 
-    return { units: allUnits, createdCount, updatedCount };
+    return { 
+      units: result.units, 
+      createdCount: result.createdCount, 
+      updatedCount: result.updatedCount 
+    };
   }
 
   /**
@@ -469,7 +377,7 @@ class UniversalProductServiceClass {
 
   /**
    * GET PRODUCT WITH UNITS
-   * Consistent way to fetch product data across modules
+   * Delegates to ProductUnitCoordinator for consistent data fetching
    */
   async getProductWithUnits(productId: string): Promise<{
     product: Product | null;
@@ -477,39 +385,24 @@ class UniversalProductServiceClass {
     unitEntries: UnitEntryForm[];
   }> {
     try {
-      // Get product
-      const { data: product, error: productError } = await supabase
-        .from('products')
-        .select(`
-          *,
-          category:categories(id, name)
-        `)
-        .eq('id', productId)
-        .single();
-
-      if (productError) {
-        throw new Error(`Failed to fetch product: ${productError.message}`);
-      }
-
-      // Get units
-      const units = await ProductUnitManagementService.getUnitsForProduct(productId);
+      // Import coordinator to avoid circular dependencies
+      const { productUnitCoordinator } = await import('./ProductUnitCoordinator');
       
-      // Convert units to unit entries format
-      const unitEntries: UnitEntryForm[] = units.map(unit => ({
-        serial: unit.serial_number,
-        battery_level: unit.battery_level,
-        color: unit.color,
-        storage: unit.storage,
-        ram: unit.ram,
-        price: unit.price,
-        min_price: unit.min_price,
-        max_price: unit.max_price
-      }));
-
+      const result = await productUnitCoordinator.getProductWithUnits(productId);
+      
       return {
-        product: this.transformProduct(product),
-        units,
-        unitEntries
+        product: result.product ? this.transformProduct(result.product) : null,
+        units: result.units,
+        unitEntries: result.unitEntries.map(entry => ({
+          serial: entry.serial,
+          battery_level: entry.battery_level,
+          color: entry.color,
+          storage: entry.storage,
+          ram: entry.ram,
+          price: entry.price,
+          min_price: entry.min_price,
+          max_price: entry.max_price
+        }))
       };
 
     } catch (error) {

@@ -62,7 +62,7 @@ export function UniversalBarcodeManager({
     setUnitStatuses(statuses);
   }, [units]);
 
-  // Generate barcode for a single unit
+  // Generate barcode for a single unit using ProductUnitCoordinator
   const generateBarcodeForUnit = async (serial: string) => {
     if (!productId) {
       toast.error('Product ID required for barcode generation');
@@ -76,10 +76,27 @@ export function UniversalBarcodeManager({
     ));
 
     try {
-      const result = await universalBarcodeService.generateBarcodesForUnits(
+      // Use ProductUnitCoordinator for unified barcode generation
+      const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+      
+      const unit = units.find(u => u.serial === serial);
+      if (!unit) {
+        throw new Error('Unit not found');
+      }
+
+      const result = await productUnitCoordinator.generateBarcodesForUnits(
         productId,
-        [{ serial }],
-        source
+        [{ 
+          serial,
+          battery_level: unit.battery_level,
+          color: unit.color,
+          storage: unit.storage,
+          ram: unit.ram,
+          price: unit.price,
+          min_price: unit.min_price,
+          max_price: unit.max_price
+        }],
+        { source }
       );
 
       if (result.success && result.barcodes.length > 0) {
@@ -107,7 +124,7 @@ export function UniversalBarcodeManager({
     }
   };
 
-  // Generate barcodes for all units
+  // Generate barcodes for all units using ProductUnitCoordinator
   const generateAllBarcodes = async () => {
     if (!productId || units.length === 0) {
       toast.error('Product ID and units required for barcode generation');
@@ -117,12 +134,24 @@ export function UniversalBarcodeManager({
     setIsGeneratingAll(true);
     
     try {
-      const validUnits = units.filter(unit => unit.serial?.trim());
+      // Use ProductUnitCoordinator for unified barcode generation
+      const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
       
-      const result = await universalBarcodeService.generateBarcodesForUnits(
+      const validUnits = units.filter(unit => unit.serial?.trim()).map(unit => ({
+        serial: unit.serial,
+        battery_level: unit.battery_level,
+        color: unit.color,
+        storage: unit.storage,
+        ram: unit.ram,
+        price: unit.price,
+        min_price: unit.min_price,
+        max_price: unit.max_price
+      }));
+      
+      const result = await productUnitCoordinator.generateBarcodesForUnits(
         productId,
         validUnits,
-        source
+        { source }
       );
 
       if (result.success) {
@@ -153,7 +182,7 @@ export function UniversalBarcodeManager({
     }
   };
 
-  // Print labels for all units with barcodes
+  // Print labels for all units with barcodes using ProductUnitCoordinator
   const printLabels = async () => {
     const unitsWithBarcodes = unitStatuses.filter(status => status.hasBarcode && status.barcode);
     
@@ -165,6 +194,9 @@ export function UniversalBarcodeManager({
     setIsPrinting(true);
 
     try {
+      // Use ProductUnitCoordinator for unified label printing
+      const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+
       const unitsForPrinting = unitsWithBarcodes.map(status => {
         const unit = units.find(u => u.serial === status.serial);
         return {
@@ -177,17 +209,19 @@ export function UniversalBarcodeManager({
         };
       });
 
-      const result = await universalBarcodeService.printLabelsForUnits({
-        productId: productId || 'unknown',
+      const result = await productUnitCoordinator.printLabelsForUnits(
+        productId || 'unknown',
         productBrand,
         productModel,
-        units: unitsForPrinting,
-        source,
-        metadata: {
-          printedAt: new Date().toISOString(),
-          userInitiated: true
+        unitsForPrinting,
+        {
+          source,
+          metadata: {
+            printedAt: new Date().toISOString(),
+            userInitiated: true
+          }
         }
-      });
+      );
 
       if (result.success) {
         toast.success(`Successfully printed ${result.totalLabels} labels`);

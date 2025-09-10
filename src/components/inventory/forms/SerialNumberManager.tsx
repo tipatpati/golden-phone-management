@@ -10,7 +10,7 @@ export function SerialNumberManager({
   onStockChange,
   hasSerial,
   productId,
-  productBrand, // Add these props
+  productBrand,
   productModel
 }: SerialNumberManagerProps & { productBrand?: string; productModel?: string }) {
   if (!hasSerial) {
