@@ -50,7 +50,7 @@ export class InventoryManagementService {
         .select(`
           *,
           category:categories(id, name),
-          product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
+          units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
         `)
         .order('created_at', { ascending: false });
 
@@ -579,7 +579,8 @@ export class InventoryManagementService {
         .from('products')
         .select(`
           *,
-          category:categories(id, name)
+          category:categories(id, name),
+          units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
         `)
         .eq('id', productId)
         .single();
@@ -591,9 +592,16 @@ export class InventoryManagementService {
 
       const transformedProduct = this.transformProduct(product);
       
-      // Get units if product has serial numbers
-      if (product.has_serial) {
-        const units = await this.getProductUnits(productId);
+      // Process units data (already included in query via "units" alias)
+      if (product.has_serial && product.units) {
+        console.log('🔍 ProductWithUnits: Processing units from database:', product.units.length);
+        // Transform units to include missing product_id
+        const units = product.units.map((unit: any) => ({
+          ...unit,
+          product_id: productId,
+          status: unit.status as 'available' | 'sold' | 'reserved' | 'damaged'
+        })) as ProductUnit[];
+        
         return {
           ...transformedProduct,
           units,

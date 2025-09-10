@@ -2,6 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import type { ProductFormData, UnitEntryForm } from "@/services/inventory/types";
 import { useProductValidation } from "./useProductValidation";
 import { toast } from "@/hooks/use-toast";
+import { 
+  transformUnitsToEntries, 
+  validateProductUnitsData, 
+  logDataTransformation 
+} from "@/utils/crossModuleDataSync";
 
 interface UseProductFormOptions {
   initialData?: Partial<ProductFormData>;
@@ -38,35 +43,64 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   // Update form data when initial data changes
   useEffect(() => {
     if (initialData) {
+      console.log('🔍 useProductForm: Processing initialData:', {
+        hasUnits: !!(initialData as any).units,
+        hasProductUnits: !!(initialData as any).product_units,
+        hasUnitEntries: !!initialData.unit_entries,
+        hasSerialNumbers: !!initialData.serial_numbers,
+        hasSerial: initialData.has_serial
+      });
+
+      // Validate unit data structure
+      const validation = validateProductUnitsData(initialData);
+      if (!validation.isValid) {
+        console.warn('⚠️ Unit data validation failed:', validation.errors);
+      }
+
       setFormData(prev => ({ ...prev, ...initialData }));
       
-      // Priority order for unit data sources:
-      // 1. unit_entries (from form submission)
-      // 2. units (from database via getProductWithUnits)
-      // 3. serial_numbers (legacy format)
-      if (initialData.unit_entries) {
+      // Priority order for unit data sources with unified transformation
+      if (initialData.unit_entries && Array.isArray(initialData.unit_entries)) {
+        console.log('📝 Using unit_entries from form:', initialData.unit_entries.length);
+        logDataTransformation({
+          source: 'form_unit_entries',
+          target: 'useProductForm',
+          input: initialData.unit_entries,
+          output: initialData.unit_entries,
+          timestamp: new Date(),
+          success: true
+        });
         setUnitEntries(initialData.unit_entries);
       } else if ((initialData as any).units && Array.isArray((initialData as any).units)) {
-        // Transform product_units from database to UnitEntryForm format
-        console.log('🔄 Transforming database units to unit entries:', (initialData as any).units);
-        const entries = (initialData as any).units.map((unit: any) => ({
-          serial: unit.serial_number,
-          battery_level: unit.battery_level || 0,
-          color: unit.color,
-          storage: unit.storage,
-          ram: unit.ram,
-          price: unit.price,
-          min_price: unit.min_price,
-          max_price: unit.max_price,
-        } as UnitEntryForm));
-        setUnitEntries(entries.length > 0 ? entries : [{ serial: '', battery_level: 0 }]);
-      } else if (initialData.serial_numbers) {
-        // Simple conversion - only extract serial numbers
+        // Use unified transformer for database units
+        console.log('🔄 Transforming database units to unit entries:', (initialData as any).units.length);
+        const entries = transformUnitsToEntries((initialData as any).units);
+        setUnitEntries(entries);
+      } else if ((initialData as any).product_units && Array.isArray((initialData as any).product_units)) {
+        // Use unified transformer for product_units
+        console.log('🔄 Transforming product_units to unit entries:', (initialData as any).product_units.length);
+        const entries = transformUnitsToEntries((initialData as any).product_units);
+        setUnitEntries(entries);
+      } else if (initialData.serial_numbers && Array.isArray(initialData.serial_numbers)) {
+        // Legacy conversion - only extract serial numbers
+        console.log('📜 Using legacy serial_numbers:', initialData.serial_numbers.length);
         const entries = initialData.serial_numbers.map(serial => ({
           serial,
           battery_level: 0,
         } as UnitEntryForm));
-        setUnitEntries(entries.length > 0 ? entries : [{ serial: '', battery_level: 0 }]);
+        logDataTransformation({
+          source: 'legacy_serial_numbers',
+          target: 'useProductForm',
+          input: initialData.serial_numbers,
+          output: entries,
+          timestamp: new Date(),
+          success: true
+        });
+        setUnitEntries(entries);
+      } else if (initialData.has_serial) {
+        // For serialized products without unit data, show empty form
+        console.log('📋 Serialized product without unit data, showing empty form');
+        setUnitEntries([]);
       }
     }
   }, [initialData]);
