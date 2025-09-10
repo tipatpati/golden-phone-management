@@ -7,6 +7,7 @@ import { AddProductDialog } from "./AddProductDialog";
 import { EditProductDialog } from "./EditProductDialog";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
 import { BarcodeUpdateTool } from "./admin/BarcodeUpdateTool";
+import { CrossModuleSyncButton } from "@/components/shared/CrossModuleSyncButton";
 import { useProducts, useDeleteProduct } from "@/services/inventory/LightweightInventoryService";
 import { useBulkActions } from "./hooks/useBulkActions";
 import { toast } from "@/hooks/use-toast";
@@ -151,8 +152,12 @@ export function InventoryContent({
     <>
       {/* Barcode Update Tool - Only for authorized roles */}
       <RoleGuard requiredRoles={['super_admin' as UserRole, 'admin' as UserRole, 'inventory_manager' as UserRole]}>
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <BarcodeUpdateTool />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Cross-module sync:</span>
+            <CrossModuleSyncButton source="inventory" />
+          </div>
         </div>
       </RoleGuard>
 

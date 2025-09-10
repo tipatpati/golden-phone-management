@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { UnifiedProductCoordinator } from "@/services/shared/UnifiedProductCoordinator";
 import type { 
   SupplierTransaction, 
   SupplierTransactionItem,
@@ -218,6 +220,19 @@ export const supplierTransactionApi = {
 
 // ============= REACT QUERY HOOKS =============
 export function useSupplierTransactions(filters: TransactionSearchFilters = {}) {
+  const queryClient = useQueryClient();
+  
+  // Listen for cross-module events
+  useEffect(() => {
+    const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
+      if (event.source === 'inventory') {
+        console.log('💨 SupplierTransactionService: Invalidating due to inventory change');
+        queryClient.invalidateQueries({ queryKey: SUPPLIER_TRANSACTION_KEYS.all });
+      }
+    });
+    return unsubscribe;
+  }, [queryClient]);
+  
   return useQuery({
     queryKey: SUPPLIER_TRANSACTION_KEYS.list(filters),
     queryFn: () => supplierTransactionApi.getAll(filters),

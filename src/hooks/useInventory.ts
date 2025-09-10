@@ -5,7 +5,9 @@
 // consistent interface for components to interact with inventory data.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { InventoryManagementService } from '@/services/inventory/InventoryManagementService';
+import { UnifiedProductCoordinator } from '@/services/shared/UnifiedProductCoordinator';
 import { toast } from '@/components/ui/sonner';
 import type { 
   Product, 
@@ -28,6 +30,45 @@ const INVENTORY_KEYS = {
 
 export function useInventory() {
   const queryClient = useQueryClient();
+
+  // ============================================
+  // CROSS-MODULE SYNC
+  // ============================================
+  
+  useEffect(() => {
+    // Listen for product/unit changes from supplier module
+    const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
+      console.log('🔄 Inventory: Received coordination event:', event.type, 'from', event.source);
+      
+      if (event.source === 'supplier') {
+        // Invalidate relevant queries when supplier creates/updates products/units
+        switch (event.type) {
+          case 'product_created':
+          case 'product_updated':
+            console.log('💨 Inventory: Invalidating product caches due to supplier change');
+            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
+            break;
+            
+          case 'unit_created':
+          case 'unit_updated':
+            console.log('💨 Inventory: Invalidating unit caches due to supplier change');
+            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
+            if (event.metadata?.productId) {
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.metadata.productId) });
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.productUnits(event.metadata.productId) });
+            }
+            break;
+            
+          case 'sync_requested':
+            console.log('💨 Inventory: Full sync requested from supplier');
+            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.all });
+            break;
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [queryClient]);
 
   // ============================================
   // PRODUCT QUERIES

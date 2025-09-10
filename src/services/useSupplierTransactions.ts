@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { UnifiedProductCoordinator } from "@/services/shared/UnifiedProductCoordinator";
 
 export interface SupplierTransaction {
   id: string;
@@ -43,6 +45,39 @@ export interface CreateTransactionData {
 
 export function useSupplierTransactions() {
   const queryClient = useQueryClient();
+
+  // ============================================
+  // CROSS-MODULE SYNC
+  // ============================================
+  
+  useEffect(() => {
+    // Listen for product/unit changes from inventory module
+    const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
+      console.log('🔄 Supplier: Received coordination event:', event.type, 'from', event.source);
+      
+      if (event.source === 'inventory') {
+        // Invalidate relevant queries when inventory creates/updates products/units
+        switch (event.type) {
+          case 'product_created':
+          case 'product_updated':
+          case 'unit_created':
+          case 'unit_updated':
+            console.log('💨 Supplier: Invalidating caches due to inventory change');
+            queryClient.invalidateQueries({ queryKey: ["supplier-transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["supplier-transaction-items"] });
+            break;
+            
+          case 'sync_requested':
+            console.log('💨 Supplier: Full sync requested from inventory');
+            queryClient.invalidateQueries({ queryKey: ["supplier-transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["supplier-transaction-items"] });
+            break;
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [queryClient]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["supplier-transactions"],
