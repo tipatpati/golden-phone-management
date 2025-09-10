@@ -57,12 +57,30 @@ export function ThermalLabelGenerator({
   const [showBarcodeFixTool, setShowBarcodeFixTool] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>(labels);
 
-  // Update selected labels when props change
+  // Update selected labels when props change OR generate default labels for bulk products
   React.useEffect(() => {
     if (!allowUnitSelection) {
-      setSelectedLabels(labels);
+      if (labels.length > 0) {
+        setSelectedLabels(labels);
+      } else if (productName && productPrice >= 0) {
+        // Generate default labels for bulk products (products without serial numbers)
+        const defaultLabels: ThermalLabelData[] = Array(1).fill(null).map((_, index) => ({
+          productName,
+          barcode: productBarcode || '', 
+          price: productPrice,
+          maxPrice: productMaxPrice,
+          category: productCategory,
+          serialNumber: undefined, // No serial for bulk products
+          batteryLevel: undefined,
+          color: undefined,
+          storage: undefined,
+          ram: undefined
+        }));
+        setSelectedLabels(defaultLabels);
+        console.log('🏷️ Generated default thermal labels for bulk product:', productName);
+      }
     }
-  }, [labels, allowUnitSelection]);
+  }, [labels, allowUnitSelection, productName, productPrice, productBarcode, productMaxPrice, productCategory]);
 
   const { printState, printLabels } = useThermalLabelPrint();
 
@@ -99,7 +117,8 @@ export function ThermalLabelGenerator({
     setOptions(prev => ({ ...prev, [key]: value }));
   };
 
-  if (labels.length === 0 && !allowUnitSelection) {
+  // Only show error dialog if we truly have no data to work with
+  if (currentLabels.length === 0 && !allowUnitSelection && (!productName || productPrice < 0)) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
