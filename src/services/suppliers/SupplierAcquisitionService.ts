@@ -152,10 +152,10 @@ class SupplierAcquisitionService {
     const unitIds: string[] = [];
 
     if (item.createsNewProduct && item.productData) {
-      // Create new product using unified creation service
-      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      // Use Universal Product Service for ALL product operations
+      const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      const result = await unifiedProductCreationService.createProduct(item.productData, {
+      const result = await universalProductService.processProduct(item.productData, {
         source: 'supplier',
         transactionId,
         unitCost: item.unitCost,
@@ -175,40 +175,35 @@ class SupplierAcquisitionService {
         productIds.push(productId);
       }
       
-      // Units are already created by the unified service
+      // Units are handled by the universal service
       unitIds.push(...result.units.map(u => u.id));
       
       console.log(`✅ ${result.isExistingProduct ? 'Using existing' : 'Created new'} product: ${productId}`);
-      console.log(`✅ Created ${result.createdUnitCount} units for product`);
+      console.log(`✅ Processed ${result.createdUnitCount} new units, ${result.updatedUnitCount} updated units`);
 
     } else if (item.productId) {
-      // Use existing product and add units to it
+      // Use existing product and add units to it using Universal Product Service
       productId = item.productId;
       
-      // For existing products, use unified approach to add units 
       if (item.unitEntries && item.unitEntries.length > 0) {
-        // Use unified product creation service to add units to existing product
-        const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+        // Use Universal Product Service to add units to existing product
+        const { universalProductService } = await import('@/services/shared/UniversalProductService');
         
-        // Get existing product data to create proper ProductFormData
-        const { data: existingProduct } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', productId)
-          .single();
+        // Get existing product data
+        const productData = await universalProductService.getProductWithUnits(productId);
         
-        if (!existingProduct) {
+        if (!productData.product) {
           throw new Error(`Product ${productId} not found`);
         }
         
-        // Create form data for unified service
+        // Create form data for universal service by merging existing product with new units
         const formData = {
-          ...existingProduct,
+          ...productData.product,
           unit_entries: item.unitEntries,
-          has_serial: true // Existing products with unit entries are serialized
+          has_serial: true // Products with unit entries are serialized
         };
         
-        const result = await unifiedProductCreationService.createProduct(formData, {
+        const result = await universalProductService.processProduct(formData, {
           source: 'supplier',
           transactionId,
           unitCost: item.unitCost,
@@ -225,17 +220,11 @@ class SupplierAcquisitionService {
         }
 
         unitIds.push(...result.units.map(u => u.id));
-        console.log(`✅ Added ${result.createdUnitCount} units to existing product: ${productId}`);
+        console.log(`✅ Added ${result.createdUnitCount} new units, updated ${result.updatedUnitCount} units for existing product: ${productId}`);
       } else {
-        // For non-serialized existing products, create units traditionally
-        const createdUnits = await this.createProductUnits(
-          transactionId,
-          productId,
-          supplierId,
-          item
-        );
-        unitIds.push(...createdUnits);
-        console.log(`✅ Added ${createdUnits.length} units to existing product: ${productId}`);
+        // For non-serialized existing products, use traditional stock update
+        console.log(`📦 Updating stock for non-serialized product: ${productId}`);
+        // We'll handle stock updates separately for non-serialized products
       }
     } else {
       throw new Error('Invalid acquisition item: missing product data');

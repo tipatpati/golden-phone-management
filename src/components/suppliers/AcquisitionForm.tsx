@@ -15,7 +15,7 @@ import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
 import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
 import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
-import { UnitBarcodeManager } from '@/components/shared/forms/UnitBarcodeManager';
+import { UniversalBarcodeManager } from '@/components/shared/UniversalBarcodeManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
 import { useProductForm } from '@/components/inventory/forms/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
@@ -303,16 +303,14 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                               productBarcode={productBarcodes[index]}
                             />
                             
-                            {/* PHASE 2: Unified Barcode Manager with ThermalLabelGenerator Integration */}
-                            <UnitBarcodeManager
+                            
+                            {/* UNIVERSAL: Unified Barcode Manager */}
+                            <UniversalBarcodeManager
+                              productBrand={item.productData?.brand || 'Unknown'}
+                              productModel={item.productData?.model || 'Unknown'}
                               units={item.unitEntries}
-                              productId={undefined} // ProductFormData doesn't have id - will be handled gracefully
-                              existingUnitBarcodes={unitBarcodes[index] || {}}
-                              onBarcodeGenerated={(serial, barcode) => {
-                                setUnitBarcodes(prev => ({
-                                  ...prev,
-                                  [index]: { ...prev[index], [serial]: barcode }
-                                }));
+                              source="supplier"
+                              showPrintButton={true}
                                 
                                 // PHASE 4: Notify coordination system
                                 import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
