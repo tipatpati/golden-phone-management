@@ -205,9 +205,14 @@ class SupplierAcquisitionService {
         }
         
         // Create form data for universal service by merging existing product with new units
+        // CRITICAL: Merge existing units with new units to prevent data loss
+        const existingUnits = productData.unitEntries || [];
+        const newUnits = item.unitEntries || [];
+        const allUnits = [...existingUnits, ...newUnits];
+        
         const formData = {
           ...productData.product,
-          unit_entries: item.unitEntries,
+          unit_entries: allUnits,
           has_serial: true, // Products with unit entries are serialized
           stock: 0 // Will be calculated based on actual units
         };
