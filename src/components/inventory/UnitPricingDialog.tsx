@@ -68,17 +68,39 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
     try {
       const updateData: Record<string, any> = {};
       
-      if (formData.price) updateData.price = parseFloat(formData.price);
-      if (formData.min_price) updateData.min_price = parseFloat(formData.min_price);
-      if (formData.max_price) updateData.max_price = parseFloat(formData.max_price);
+      // Convert empty strings to null for proper database storage
+      if (formData.price) {
+        updateData.price = parseFloat(formData.price);
+      } else {
+        updateData.price = null;
+      }
+      
+      if (formData.min_price) {
+        updateData.min_price = parseFloat(formData.min_price);
+      } else {
+        updateData.min_price = null;
+      }
+      
+      if (formData.max_price) {
+        updateData.max_price = parseFloat(formData.max_price);
+      } else {
+        updateData.max_price = null;
+      }
 
-      const { error } = await supabase
+      console.log('Updating unit pricing:', { unitId: unit.id, updateData });
+
+      const { data, error } = await supabase
         .from('product_units')
         .update(updateData)
-        .eq('id', unit.id);
+        .eq('id', unit.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
+      console.log('Update successful:', data);
       toast.success('Unit pricing updated successfully');
       onSuccess();
       onClose();
