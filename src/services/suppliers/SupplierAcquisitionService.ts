@@ -257,26 +257,38 @@ class SupplierAcquisitionService {
         const unitIds: string[] = [];
 
         if (item.unitEntries && item.unitEntries.length > 0) {
-          // Use unified service for unit creation with integrated barcode generation
-          const unitsResult = await ProductUnitManagementService.createUnitsForProduct({
-            productId,
-            unitEntries: item.unitEntries,
-            defaultPricing: {
-              price: item.unitCost,
-              min_price: item.unitCost * 1.2,
-              max_price: item.unitCost * 1.5
-            },
-            metadata: {
-              supplierId: supplierId,
-              transactionId,
-              acquisitionDate: new Date()
-            }
-          });
-
-          unitIds.push(...unitsResult.units.map(u => u.id));
+          // Check if units already exist to prevent duplication
+          const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
+          const existingSerials = new Set(existingUnits.map(u => u.serial_number));
+          const newEntries = item.unitEntries.filter(e => !existingSerials.has(e.serial));
           
-          if (unitsResult.errors.length > 0) {
-            logger.warn('Some units had issues during creation:', unitsResult.errors);
+          if (newEntries.length > 0) {
+            // Use unified service for unit creation with integrated barcode generation
+            const unitsResult = await ProductUnitManagementService.createUnitsForProduct({
+              productId,
+              unitEntries: newEntries,
+              defaultPricing: {
+                price: item.unitCost,
+                min_price: item.unitCost * 1.2,
+                max_price: item.unitCost * 1.5
+              },
+              metadata: {
+                supplierId: supplierId,
+                transactionId,
+                acquisitionDate: new Date()
+              }
+            });
+
+            unitIds.push(...unitsResult.units.map(u => u.id));
+            
+            if (unitsResult.errors.length > 0) {
+              logger.warn('Some units had issues during creation:', unitsResult.errors);
+            }
+            
+            console.log(`✅ Created ${newEntries.length} new units (${existingUnits.length} already existed)`);
+          } else {
+            console.log(`✅ All ${item.unitEntries.length} units already exist, skipping creation`);
+            unitIds.push(...existingUnits.map(u => u.id));
           }
         } else if (item.quantity > 0) {
           // Create units for non-serialized products (for tracking purposes)

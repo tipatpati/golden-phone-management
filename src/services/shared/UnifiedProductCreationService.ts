@@ -89,31 +89,43 @@ class UnifiedProductCreationServiceClass {
         }
       });
 
-      // Step 4: Create units if product has serial numbers
+      // Step 4: Create units if product has serial numbers and no units exist yet
       if (formData.has_serial && formData.unit_entries && formData.unit_entries.length > 0) {
-        console.log('📦 Creating product units:', formData.unit_entries.length);
+        // Check if units already exist for this product to avoid duplication
+        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        const existingSerials = new Set(existingUnits.map(u => u.serial_number));
+        const newEntries = formData.unit_entries.filter(e => !existingSerials.has(e.serial));
         
-        const defaultPricing = {
-          price: options.unitCost || formData.price,
-          min_price: formData.min_price,
-          max_price: formData.max_price
-        };
+        if (newEntries.length > 0) {
+          console.log(`📦 Creating ${newEntries.length} new units (${existingUnits.length} already exist)`);
+          
+          const defaultPricing = {
+            price: options.unitCost || formData.price,
+            min_price: formData.min_price,
+            max_price: formData.max_price
+          };
 
-        try {
-          const unitResults = await this.createProductUnits(
-            product.id,
-            formData.unit_entries,
-            defaultPricing,
-            options
-          );
-          
-          result.units = unitResults.units;
-          result.createdUnitCount = unitResults.units.length;
-          
-          console.log(`✅ Created ${result.createdUnitCount} units for product`);
-        } catch (unitsError) {
-          console.error('❌ Failed to create some units:', unitsError);
-          result.warnings.push(`Some units failed to create: ${unitsError.message}`);
+          try {
+            const unitResults = await this.createProductUnits(
+              product.id,
+              newEntries,
+              defaultPricing,
+              options
+            );
+            
+            // Combine existing and new units
+            result.units = [...existingUnits, ...unitResults.units];
+            result.createdUnitCount = unitResults.units.length;
+            
+            console.log(`✅ Created ${result.createdUnitCount} new units, total: ${result.units.length}`);
+          } catch (unitsError) {
+            console.error('❌ Failed to create some units:', unitsError);
+            result.warnings.push(`Some units failed to create: ${unitsError.message}`);
+          }
+        } else {
+          console.log(`✅ All ${formData.unit_entries.length} units already exist, skipping creation`);
+          result.units = existingUnits;
+          result.createdUnitCount = 0;
         }
       }
 
