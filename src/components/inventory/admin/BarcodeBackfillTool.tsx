@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import { RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { logger } from "@/utils/logger";
 import { BarcodeValidationStatus } from './BarcodeValidationStatus';
 
 interface BarcodeBackfillResult {
@@ -19,7 +20,7 @@ export function BarcodeBackfillTool() {
     setResult(null);
     
     try {
-      console.log('🔄 Starting barcode backfill...');
+      logger.info('Starting barcode backfill', {}, 'BarcodeBackfillTool');
       const backfillResult = await ProductUnitManagementService.backfillMissingBarcodes();
       
       setResult(backfillResult);

@@ -4,6 +4,7 @@ import { Code128GeneratorService } from '@/services/barcodes';
 import { Badge } from '@/components/ui/badge';
 import { Copy, RefreshCw } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { logger } from "@/utils/logger";
 
 export function BarcodeTestTool() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -20,8 +21,8 @@ export function BarcodeTestTool() {
       setTestBarcodes(barcodes);
       toast.success(`Generated ${barcodes.length} test barcodes`);
       
-      // Log for debugging
-      console.log('🧪 Test barcodes generated:', barcodes);
+      // Generate test barcodes for verification
+      logger.info('Test barcodes generated', { count: barcodes.length }, 'BarcodeTestTool');
       
     } catch (error) {
       console.error('Failed to generate test barcodes:', error);

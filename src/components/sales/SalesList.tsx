@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { logger } from '@/utils/logger';
 
 interface SalesListProps {
   sales: Sale[];
@@ -69,9 +70,9 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       const promises = selectedIds.map(async (saleId) => {
         try {
           await deleteSaleMutation.mutateAsync(saleId);
-          console.log(`Successfully deleted sale: ${saleId}`);
+          logger.info('Successfully deleted sale', { saleId }, 'SalesList');
         } catch (error) {
-          console.error(`Failed to delete sale ${saleId}:`, error);
+          logger.error('Failed to delete sale', { saleId, error }, 'SalesList');
           throw error;
         }
       });
@@ -92,10 +93,10 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         description: `Successfully deleted ${deletedCount} sales. Inventory has been restored automatically.`,
       });
       
-      console.log(`Successfully bulk deleted ${deletedCount} sales`);
+      logger.info('Successfully bulk deleted sales', { count: deletedCount }, 'SalesList');
       
     } catch (error) {
-      console.error('Error during bulk delete:', error);
+      logger.error('Error during bulk delete', { error }, 'SalesList');
       
       toast({
         title: "Error deleting sales",

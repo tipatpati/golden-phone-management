@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import type { ProductUnit } from "@/services/inventory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { logger } from "@/utils/logger";
 
 interface UnitPricingDialogProps {
   unit: ProductUnit | null;
@@ -87,7 +88,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
         updateData.max_price = null;
       }
 
-      console.log('Updating unit pricing:', { unitId: unit.id, updateData });
+      logger.info('Updating unit pricing', { unitId: unit.id }, 'UnitPricingDialog');
 
       const { data, error } = await supabase
         .from('product_units')
@@ -100,7 +101,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
         throw error;
       }
 
-      console.log('Update successful:', data);
+      logger.info('Unit pricing update successful', { unitId: unit.id }, 'UnitPricingDialog');
       toast.success('Unit pricing updated successfully');
       onSuccess();
       onClose();

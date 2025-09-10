@@ -9,7 +9,9 @@ import { Services } from '@/services/core';
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import type { Product } from "@/services/inventory/types";
-import { UserRole } from "@/types/roles";
+import { toast } from "sonner";
+import { logger } from "@/utils/logger";
+import type { UserRole } from "@/types/roles";
 
 export function BarcodeUpdateTool() {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
@@ -51,7 +53,7 @@ export function BarcodeUpdateTool() {
               hasSerial={selectedProduct.has_serial || false}
               currentBarcode={selectedProduct.barcode || ''}
               onBarcodeUpdate={(newBarcode) => {
-                console.log('Barcode updated:', newBarcode);
+                logger.info('Barcode updated', { barcode: newBarcode }, 'BarcodeUpdateTool');
               }}
             />
           )}
