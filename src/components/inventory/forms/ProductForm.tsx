@@ -214,6 +214,7 @@ export function ProductForm({
           productId={productId}
           productBrand={formData.brand}
           productModel={formData.model}
+          onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
         />
       )}
 

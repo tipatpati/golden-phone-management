@@ -11,8 +11,13 @@ export function SerialNumberManager({
   hasSerial,
   productId,
   productBrand,
-  productModel
-}: SerialNumberManagerProps & { productBrand?: string; productModel?: string }) {
+  productModel,
+  onBarcodeGenerated
+}: SerialNumberManagerProps & { 
+  productBrand?: string; 
+  productModel?: string;
+  onBarcodeGenerated?: (barcode: string) => void;
+}) {
   if (!hasSerial) {
     return null;
   }
@@ -40,6 +45,13 @@ export function SerialNumberManager({
         units={unitEntries}
         source="inventory"
         showPrintButton={true}
+        onBarcodeGenerated={(serial, barcode) => {
+          console.log(`✅ Generated barcode for unit ${serial}: ${barcode}`);
+          // Update the first unit's barcode for product-level barcode field
+          if (unitEntries.length > 0 && onBarcodeGenerated) {
+            onBarcodeGenerated(barcode);
+          }
+        }}
         onPrintCompleted={(printedUnits) => {
           console.log(`✅ Printed labels for inventory units: ${printedUnits.join(', ')}`);
         }}
