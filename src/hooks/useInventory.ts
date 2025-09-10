@@ -103,7 +103,20 @@ export function useInventory() {
   const useProduct = (id: string) => {
     return useQuery({
       queryKey: INVENTORY_KEYS.product(id),
-      queryFn: () => InventoryManagementService.getProductWithUnits(id),
+      queryFn: async () => {
+        // Use ProductUnitCoordinator for unified data loading
+        const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+        const result = await productUnitCoordinator.getProductWithUnits(id);
+        
+        if (!result.product) return null;
+        
+        // Transform to match expected inventory format
+        return {
+          ...result.product,
+          units: result.units,
+          unit_entries: result.unitEntries
+        };
+      },
       enabled: !!id,
     });
   };

@@ -25,7 +25,20 @@ export const useProducts = (searchTerm: string = '') => {
 export const useProduct = (id: string) => {
   return useOptimizedQuery(
     ['products', 'detail', id],
-    () => InventoryManagementService.getProductWithUnits(id),
+    async () => {
+      // Use ProductUnitCoordinator for unified data loading
+      const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+      const result = await productUnitCoordinator.getProductWithUnits(id);
+      
+      if (!result.product) return null;
+      
+      // Transform to match expected inventory format
+      return {
+        ...result.product,
+        units: result.units,
+        unit_entries: result.unitEntries
+      };
+    },
     {
       priority: 'normal',
       enablePrefetching: false,

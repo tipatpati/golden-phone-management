@@ -30,62 +30,49 @@ export function EditProductDialog({
   useEffect(() => {
     const loadProductData = async () => {
       try {
-        let unitEntries: UnitEntryForm[] = [];
+        // Use ProductUnitCoordinator for unified data loading
+        const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+        const result = await productUnitCoordinator.getProductWithUnits(product.id);
         
-        // If product has serial numbers, fetch the existing units
-        if (product.has_serial && product.serial_numbers && product.serial_numbers.length > 0) {
-          const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
-          console.log('📦 Loaded existing units for edit:', existingUnits);
-          
-          // Convert existing units to UnitEntryForm format
-          unitEntries = existingUnits.map(unit => ({
-            serial: unit.serial_number,
-            price: unit.price,
-            min_price: unit.min_price,
-            max_price: unit.max_price,
-            battery_level: unit.battery_level,
-            color: unit.color,
-            storage: unit.storage,
-            ram: unit.ram,
-          }));
-          
-          // If no units exist but serial numbers do, create basic entries
-          if (unitEntries.length === 0 && product.serial_numbers) {
-            unitEntries = product.serial_numbers.map(serial => ({
-              serial,
-              battery_level: 0,
-            }));
-          }
+        if (!result.product) {
+          throw new Error('Product not found');
         }
         
+        console.log('📦 Loaded product data via coordinator for edit:', {
+          productId: product.id,
+          unitCount: result.units.length,
+          unitEntriesCount: result.unitEntries.length,
+          hasSerial: result.product.has_serial
+        });
+        
         const preparedData: Partial<ProductFormData> = {
-          brand: product.brand || "",
-          model: product.model || "",
-          year: product.year,
-          category_id: product.category_id,
-          price: product.price,
-          min_price: product.min_price,
-          max_price: product.max_price,
-          stock: product.stock,
-          threshold: product.threshold,
-          description: product.description || "",
-          supplier: product.supplier || "",
-          barcode: product.barcode || "",
-          has_serial: product.has_serial || false,
-          serial_numbers: product.serial_numbers || [],
-          unit_entries: unitEntries,
+          brand: result.product.brand || "",
+          model: result.product.model || "",
+          year: result.product.year,
+          category_id: result.product.category_id,
+          price: result.product.price,
+          min_price: result.product.min_price,
+          max_price: result.product.max_price,
+          stock: result.product.stock,
+          threshold: result.product.threshold,
+          description: result.product.description || "",
+          supplier: result.product.supplier || "",
+          barcode: result.product.barcode || "",
+          has_serial: result.product.has_serial || false,
+          serial_numbers: result.product.serial_numbers || [],
+          unit_entries: result.unitEntries,
         };
         
-        console.log('📝 Prepared initial data for edit:', {
+        console.log('📝 Prepared initial data for edit via coordinator:', {
           productId: product.id,
-          unitEntriesCount: unitEntries.length,
-          hasSerial: product.has_serial,
-          unitEntries: unitEntries
+          unitEntriesCount: result.unitEntries.length,
+          hasSerial: result.product.has_serial,
+          unitEntries: result.unitEntries
         });
         
         setInitialData(preparedData);
       } catch (error) {
-        console.error('Failed to load product units for edit:', error);
+        console.error('Failed to load product units for edit via coordinator:', error);
         // Fallback to basic data without units
         setInitialData({
           brand: product.brand || "",
