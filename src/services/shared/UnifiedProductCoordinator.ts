@@ -7,7 +7,7 @@ import { ProductUnitManagementService } from "./ProductUnitManagementService";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProductCoordinationEvent {
-  type: 'product_created' | 'product_updated' | 'unit_created' | 'unit_updated' | 'sync_requested';
+  type: 'product_created' | 'product_updated' | 'unit_created' | 'unit_updated' | 'stock_updated' | 'sync_requested';
   source: 'supplier' | 'inventory';
   entityId: string;
   metadata?: Record<string, any>;

@@ -108,7 +108,51 @@ class UniversalProductServiceClass {
         result.product.stock = formData.stock;
       }
 
-      // Step 4: Broadcast change for real-time sync
+      // Step 4: Update stock count to match actual units for immediate UI consistency
+      if (product.has_serial) {
+        // For serialized products, count should match actual units
+        console.log(`📊 Synchronizing stock count with actual units for product ${product.id}`);
+        const actualStock = result.createdUnitCount + result.updatedUnitCount;
+        await this.updateProductStock(product.id, result.units.length);
+        
+        // Update returned product object to show correct stock immediately
+        result.product!.stock = result.units.length;
+        console.log(`✅ Updated product stock to ${result.units.length} (${result.createdUnitCount} new + ${result.updatedUnitCount} updated units)`);
+        
+        // Force immediate UI refresh by invalidating caches
+        UnifiedProductCoordinator.notifyEvent({
+          type: 'stock_updated',
+          source: options.source,
+          entityId: product.id,
+          metadata: {
+            productId: product.id,
+            newStock: result.units.length,
+            unitCount: result.units.length
+          }
+        });
+      } else {
+        // For non-serialized products, update stock by the quantity being added
+        if (options.source === 'supplier' && formData.stock !== undefined) {
+          const newStock = (result.product!.stock || 0) + formData.stock;
+          await this.updateProductStock(product.id, newStock);
+          result.product!.stock = newStock;
+          console.log(`✅ Updated non-serialized product stock to ${newStock}`);
+          
+          // Force immediate UI refresh
+          UnifiedProductCoordinator.notifyEvent({
+            type: 'stock_updated',
+            source: options.source,
+            entityId: product.id,
+            metadata: {
+              productId: product.id,
+              newStock: newStock,
+              unitCount: newStock
+            }
+          });
+        }
+      }
+
+      // Step 5: Broadcast change for real-time sync
       UnifiedProductCoordinator.notifyEvent({
         type: isExisting ? 'product_updated' : 'product_created',
         source: options.source,
@@ -120,6 +164,7 @@ class UniversalProductServiceClass {
           transactionId: options.transactionId,
           unitCost: options.unitCost,
           unitsProcessed: result.units.length,
+          productId: product.id,
           ...options.metadata
         }
       });

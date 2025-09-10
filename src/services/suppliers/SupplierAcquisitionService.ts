@@ -155,7 +155,15 @@ class SupplierAcquisitionService {
       // Use Universal Product Service for ALL product operations
       const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      const result = await universalProductService.processProduct(item.productData, {
+      // Ensure unit_entries are set for product creation
+      const productDataWithUnits = {
+        ...item.productData,
+        unit_entries: item.unitEntries,
+        has_serial: item.unitEntries && item.unitEntries.length > 0,
+        stock: item.unitEntries && item.unitEntries.length > 0 ? 0 : item.quantity
+      };
+      
+      const result = await universalProductService.processProduct(productDataWithUnits, {
         source: 'supplier',
         transactionId,
         unitCost: item.unitCost,
@@ -200,7 +208,8 @@ class SupplierAcquisitionService {
         const formData = {
           ...productData.product,
           unit_entries: item.unitEntries,
-          has_serial: true // Products with unit entries are serialized
+          has_serial: true, // Products with unit entries are serialized
+          stock: 0 // Will be calculated based on actual units
         };
         
         const result = await universalProductService.processProduct(formData, {

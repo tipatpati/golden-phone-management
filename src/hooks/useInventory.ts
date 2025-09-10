@@ -36,22 +36,28 @@ export function useInventory() {
   // ============================================
   
   useEffect(() => {
-    // Listen for product/unit changes from supplier module
+    // Listen for product/unit changes from supplier module with aggressive cache invalidation
     const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
-      console.log('🔄 Inventory: Received coordination event:', event.type, 'from', event.source);
+      console.log('🔄 Inventory: Received coordination event:', event.type, 'from', event.source, event.metadata);
       
       if (event.source === 'supplier') {
-        // Invalidate relevant queries when supplier creates/updates products/units
+        // Aggressively invalidate relevant queries when supplier creates/updates products/units
         switch (event.type) {
           case 'product_created':
           case 'product_updated':
-            console.log('💨 Inventory: Invalidating product caches due to supplier change');
+          case 'stock_updated':
+            console.log('💨 Inventory: Aggressively invalidating product caches due to supplier change');
             queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
+            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.entityId) });
+            if (event.metadata?.productId) {
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.metadata.productId) });
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.productUnits(event.metadata.productId) });
+            }
             break;
             
           case 'unit_created':
           case 'unit_updated':
-            console.log('💨 Inventory: Invalidating unit caches due to supplier change');
+            console.log('💨 Inventory: Aggressively invalidating unit caches due to supplier change');
             queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
             if (event.metadata?.productId) {
               queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.metadata.productId) });

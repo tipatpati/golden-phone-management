@@ -53,18 +53,27 @@ export function useSupplierTransactions() {
   useEffect(() => {
     // Listen for product/unit changes from inventory module
     const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
-      console.log('🔄 Supplier: Received coordination event:', event.type, 'from', event.source);
+      console.log('🔄 Supplier: Received coordination event:', event.type, 'from', event.source, event.metadata);
       
       if (event.source === 'inventory') {
-        // Invalidate relevant queries when inventory creates/updates products/units
+        // Aggressively invalidate relevant queries when inventory creates/updates products/units
         switch (event.type) {
           case 'product_created':
           case 'product_updated':
           case 'unit_created':
           case 'unit_updated':
-            console.log('💨 Supplier: Invalidating caches due to inventory change');
+          case 'stock_updated':
+            console.log('💨 Supplier: Aggressively invalidating caches due to inventory change');
             queryClient.invalidateQueries({ queryKey: ["supplier-transactions"] });
             queryClient.invalidateQueries({ queryKey: ["supplier-transaction-items"] });
+            
+            // Force immediate refetch for critical operations
+            if (['product_created', 'unit_created', 'stock_updated'].includes(event.type)) {
+              setTimeout(() => {
+                queryClient.refetchQueries({ queryKey: ["supplier-transactions"] });
+                console.log('🚀 Forced supplier transaction refetch');
+              }, 100);
+            }
             break;
             
           case 'sync_requested':
