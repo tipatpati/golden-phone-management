@@ -192,7 +192,7 @@ export function ThermalLabelPreview({
       </div>
 
       {/* Price Section */}
-      {formattedLabel.maxPrice && <div style={{
+      {options.includePrice && <div style={{
       fontSize: '24px',
       fontWeight: '900',
       color: '#000',
@@ -203,7 +203,10 @@ export function ThermalLabelPreview({
       letterSpacing: '0.3px',
       lineHeight: '1.0'
     }}>
-          {formattedLabel.maxPrice}
+          €{(() => {
+            const displayPrice = label.maxPrice !== undefined && label.maxPrice !== null ? label.maxPrice : label.price;
+            return typeof displayPrice === 'number' ? displayPrice.toFixed(2) : '0.00';
+          })()}
         </div>}
 
       {/* Barcode Section */}

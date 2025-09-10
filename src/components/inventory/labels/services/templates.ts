@@ -40,7 +40,7 @@ export function generateSingleLabel(
   // Price section - Show max price if available, otherwise fall back to unit price
   let priceSection = '';
   if (options.includePrice) {
-    const displayPrice = label.maxPrice || label.price;
+    const displayPrice = label.maxPrice !== undefined && label.maxPrice !== null ? label.maxPrice : label.price;
     if (typeof displayPrice === 'number') {
       priceSection = `
         <div class="price-section">
@@ -122,7 +122,7 @@ export function generateSingleLabel(
       <!-- Price Section -->
       ${options.includePrice ? `
         <div class="price-section">
-          €${(label.maxPrice || label.price).toFixed(2)}
+          €${(label.maxPrice !== undefined && label.maxPrice !== null ? label.maxPrice : label.price).toFixed(2)}
         </div>
       ` : ''}
 
