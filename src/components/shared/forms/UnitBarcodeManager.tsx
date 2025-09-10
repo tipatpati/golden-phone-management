@@ -58,8 +58,29 @@ export function UnitBarcodeManager({
         };
       });
 
-    setUnitBarcodes(barcodeInfo);
-  }, [units, existingUnitBarcodes]);
+    // Only update if the structure has actually changed to prevent infinite loops
+    setUnitBarcodes(prevBarcodes => {
+      const currentSerials = prevBarcodes.map(b => b.serial).sort();
+      const newSerials = barcodeInfo.map(b => b.serial).sort();
+      
+      // Check if serials have changed
+      if (JSON.stringify(currentSerials) !== JSON.stringify(newSerials)) {
+        return barcodeInfo;
+      }
+      
+      // Check if existing barcodes have changed
+      const hasNewBarcodes = barcodeInfo.some(newInfo => {
+        const existing = prevBarcodes.find(prev => prev.serial === newInfo.serial);
+        return !existing || existing.barcode !== newInfo.barcode;
+      });
+      
+      if (hasNewBarcodes) {
+        return barcodeInfo;
+      }
+      
+      return prevBarcodes;
+    });
+  }, [units.length, units.map(u => u.serial).join(','), Object.keys(existingUnitBarcodes).length]);
 
   const generateBarcode = async (serial: string, unitId?: string) => {
     if (!barcodeService || !isReady) {

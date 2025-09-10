@@ -34,15 +34,14 @@ export function useProductValidation() {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 
-    // For products with serial numbers, unit entries must include structured pricing
+    // For products with serial numbers, validate unit entries if they exist
     if (data.has_serial) {
       const entries = (unitEntries || []).filter(e => (e.serial || '').trim() !== '');
 
-      if (entries.length === 0) {
-        newErrors.push({ field: 'serial_numbers', message: 'Please add at least one unit with its IMEI/Serial' });
-      }
-
-      // Validate each entry
+      // Only require units if we're validating for final submission
+      // Allow forms to be in intermediate states (e.g., during supplier acquisition)
+      if (entries.length > 0) {
+        // Validate each entry if present
       for (const [idx, entry] of entries.entries()) {
         // IMEI validation - must be exactly 15 digits
         const serialInput = entry.serial || '';
@@ -91,6 +90,15 @@ export function useProductValidation() {
           break;
         }
       }
+    }
+      // For products without serial numbers, require at least one default price
+      const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
+                              (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') ||
+                              (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '');
+      
+      if (!hasDefaultPrice) {
+        newErrors.push({ field: 'price', message: 'Products without serial numbers require at least one default price (base, min, or max)' });
+      }
     } else {
       // For products without serial numbers, require at least one default price
       const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
@@ -101,8 +109,6 @@ export function useProductValidation() {
         newErrors.push({ field: 'price', message: 'Products without serial numbers require at least one default price (base, min, or max)' });
       }
     }
-
-    // Price validations when default values are provided
     if (data.price !== undefined && data.price !== null && String(data.price) !== '') {
       const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
       if ((typeof price !== 'number') || isNaN(price) || price < 0) {
