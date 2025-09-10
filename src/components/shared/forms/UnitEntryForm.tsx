@@ -90,8 +90,8 @@ export function UnitEntryForm({
                 <Input
                   value={entry.serial || ''}
                   onChange={(e) => {
-                    // Only allow digits for IMEI
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    // Only allow digits for IMEI, max 15 digits
+                    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 15);
                     updateEntry(index, 'serial', value);
                   }}
                   placeholder="123456789012345"
