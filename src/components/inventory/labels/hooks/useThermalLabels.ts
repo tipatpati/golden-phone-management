@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { ThermalLabelData } from "../types";
 import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
 import { ProductForLabels } from "@/services/labels/types";
+import { mapProductsForLabels } from "@/utils/mapProductForLabels";
 
-export function useThermalLabels(products: ProductForLabels[], useMasterBarcode?: boolean): ThermalLabelData[] {
+export function useThermalLabels(products: any[], useMasterBarcode?: boolean): ThermalLabelData[] {
   const [labels, setLabels] = useState<ThermalLabelData[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   
@@ -32,9 +33,13 @@ export function useThermalLabels(products: ProductForLabels[], useMasterBarcode?
 
       console.log('🚀 THERMAL LABELS: Starting generation for', products.length, 'products');
       
+      // Ensure products are in standardized format before processing
+      const standardizedProducts = mapProductsForLabels(products);
+      console.log('📋 THERMAL LABELS: Standardized product data for processing');
+      
       try {
         const result = await ThermalLabelDataService.generateLabelsForProducts(
-          products,
+          standardizedProducts,
           { useMasterBarcode }
         );
 

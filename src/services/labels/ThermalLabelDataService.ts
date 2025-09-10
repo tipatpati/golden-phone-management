@@ -39,8 +39,10 @@ export class ThermalLabelDataService {
       const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
       const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
 
+      // Check if product has serialized units (primary check)
+      // Use serial_numbers as indicator of serialized product (extracted from units)
       if (product.serial_numbers && product.serial_numbers.length > 0) {
-        // Product has serial numbers - fetch and process units
+        // Product has serialized units - fetch and process them
         const productLabels = await this.processProductWithUnits(
           product, 
           cleanBrand, 
@@ -54,7 +56,7 @@ export class ThermalLabelDataService {
         unitsMissingBarcodes += productLabels.stats.unitsMissingBarcodes;
         
       } else {
-        // Product without serial numbers - generate generic labels
+        // Product without serialized units - generate generic labels
         const productLabels = await this.processProductWithoutUnits(
           product, 
           cleanBrand, 

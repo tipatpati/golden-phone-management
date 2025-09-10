@@ -263,6 +263,7 @@ class UnifiedProductCreationServiceClass {
       description: dbProduct.description,
       supplier: dbProduct.supplier,
       year: dbProduct.year,
+      // Maintain legacy field for compatibility
       serial_numbers: dbProduct.serial_numbers,
       created_at: dbProduct.created_at,
       updated_at: dbProduct.updated_at

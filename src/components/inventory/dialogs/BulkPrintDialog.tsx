@@ -1,6 +1,20 @@
 import React from "react";
 import { ThermalLabelGenerator, useThermalLabels } from "../labels";
-import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
+import { mapProductsForLabels } from "@/utils/mapProductForLabels";
+
+interface ProductUnit {
+  id: string;
+  serial_number: string;
+  barcode?: string;
+  price?: number;
+  min_price?: number;
+  max_price?: number;
+  storage?: number;
+  ram?: number;
+  color?: string;
+  battery_level?: number;
+  status?: string;
+}
 
 interface Product {
   id: string;
@@ -9,9 +23,15 @@ interface Product {
   price: number;
   stock?: number;
   barcode?: string;
-  serial_numbers?: string[];
   category?: { name: string };
   year?: number;
+  storage?: number;
+  ram?: number;
+  has_serial?: boolean;
+  // Primary data source for serialized products
+  units?: ProductUnit[];
+  // Legacy compatibility
+  serial_numbers?: string[];
 }
 
 interface BulkPrintDialogProps {
@@ -27,8 +47,11 @@ export function BulkPrintDialog({
   products,
   isLoading = false
 }: BulkPrintDialogProps) {
+  // Transform products to standardized format using units as primary source
+  const mappedProducts = mapProductsForLabels(products);
+  
   // Use the enhanced useThermalLabels hook for consistent barcode generation
-  const thermalLabels = useThermalLabels(products);
+  const thermalLabels = useThermalLabels(mappedProducts);
 
   return (
     <ThermalLabelGenerator

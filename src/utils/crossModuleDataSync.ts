@@ -197,7 +197,7 @@ export function validateProductUnitsData(data: any): {
       console.log(`✅ Found ${data.unit_entries.length} units in data.unit_entries`);
     }
     
-    // Check legacy serial_numbers
+    // Check legacy serial_numbers (extracted from units for compatibility)
     if (data.serial_numbers && Array.isArray(data.serial_numbers)) {
       result.hasUnits = true;
       result.unitCount = Math.max(result.unitCount, data.serial_numbers.length);
