@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/roles";
 import { EmployeeFormData } from "../forms/types";
+import { logger } from "@/utils/logger";
 
 import type { Employee } from "@/services/employees/types";
 
@@ -27,7 +28,7 @@ export function useEditEmployeeForm(employee: Employee) {
           .maybeSingle();
 
         if (checkError) {
-          console.error("Error checking existing email:", checkError);
+          logger.error("Error checking existing email", { error: checkError.message }, 'EditEmployeeForm');
           throw new Error("Failed to check email availability");
         }
 
@@ -41,7 +42,7 @@ export function useEditEmployeeForm(employee: Employee) {
         }
 
         // Update the auth user email if it changed
-        console.log("Updating auth user email...");
+        logger.info("Updating auth user email", {}, 'EditEmployeeForm');
         const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
           employee.id,
           {
@@ -55,10 +56,10 @@ export function useEditEmployeeForm(employee: Employee) {
         );
 
         if (authUpdateError) {
-          console.error("Auth user update error:", authUpdateError);
+          logger.error("Auth user update error", { error: authUpdateError.message }, 'EditEmployeeForm');
           throw new Error(`Failed to update user account: ${authUpdateError.message}`);
         }
-        console.log("Auth user updated successfully");
+        logger.info("Auth user updated successfully", {}, 'EditEmployeeForm');
       } else {
         // Update user metadata even if email didn't change
         const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
@@ -73,7 +74,7 @@ export function useEditEmployeeForm(employee: Employee) {
         );
 
         if (authUpdateError) {
-          console.error("Auth user metadata update error:", authUpdateError);
+          logger.error("Auth user metadata update error", { error: authUpdateError.message }, 'EditEmployeeForm');
         }
       }
 
@@ -89,7 +90,7 @@ export function useEditEmployeeForm(employee: Employee) {
         status: employeeData.status,
       };
 
-      console.log("Updating employee with data:", updateData);
+      logger.info("Updating employee with data", { employeeId: employee.id }, 'EditEmployeeForm');
 
       const { error: employeeError } = await supabase
         .from("employees")
@@ -97,25 +98,25 @@ export function useEditEmployeeForm(employee: Employee) {
         .eq("id", employee.id);
 
       if (employeeError) {
-        console.error("Employee update error:", employeeError);
+        logger.error("Employee update error", { error: employeeError.message }, 'EditEmployeeForm');
         throw employeeError;
       }
 
-      console.log("Employee updated successfully");
+      logger.info("Employee updated successfully", { employeeId: employee.id }, 'EditEmployeeForm');
 
       // Update the profile role
       if (employee.profile_id || employee.id) {
-        console.log("Updating profile role to:", employeeData.role);
+        logger.info("Updating profile role", { role: employeeData.role }, 'EditEmployeeForm');
         const { error: profileError } = await supabase
           .from("profiles")
           .update({ role: employeeData.role })
           .eq("id", employee.profile_id || employee.id);
 
         if (profileError) {
-          console.error("Profile update error:", profileError);
+          logger.error("Profile update error", { error: profileError.message }, 'EditEmployeeForm');
           throw profileError;
         }
-        console.log("Profile updated successfully");
+        logger.info("Profile updated successfully", {}, 'EditEmployeeForm');
       }
 
       toast({
@@ -125,7 +126,7 @@ export function useEditEmployeeForm(employee: Employee) {
 
       return true;
     } catch (error) {
-      console.error("Error updating employee:", error);
+      logger.error("Error updating employee", { error }, 'EditEmployeeForm');
       toast({
         title: "Errore",
         description: error instanceof Error ? error.message : "Impossibile aggiornare il dipendente",

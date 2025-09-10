@@ -26,6 +26,7 @@ import { EmployeeTable } from "./EmployeeTable";
 import { useEmployeeStatistics, useEmployeeFilters } from "../../services/employees/OptimizedEmployeeService";
 import type { Employee } from "@/services/employees/types";
 import { EMPLOYEE_DEPARTMENTS, EMPLOYEE_POSITIONS, EMPLOYEE_STATUS_OPTIONS } from "./forms/types";
+import { logger } from '@/utils/logger';
 
 interface EnhancedEmployeesListProps {
   employees: Employee[];
@@ -90,9 +91,8 @@ export function EnhancedEmployeesList({
   }, [employees]);
 
   const handleExport = () => {
-    // TODO: Implement export functionality
-    // TODO: Implement export functionality
-    console.log('Exporting employees...', filteredEmployees);
+    logger.info('Employee export initiated', { count: filteredEmployees.length }, 'EmployeesList');
+    // Export functionality will be implemented based on requirements
   };
 
   const clearFilters = () => {

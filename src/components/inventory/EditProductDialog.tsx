@@ -137,57 +137,49 @@ export function EditProductDialog({
       
       // If product has serial numbers, create/update product units with RAM and storage data
       if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
-        try {
-          // Get existing units for this product
-          const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
-          
-          // Get current serials - use them directly
-          const currentSerials = data.serial_numbers || [];
-          const unitsToDelete = existingUnits.filter(unit => 
-            !currentSerials.includes(unit.serial_number)
-          );
-          
-          // TODO: Add delete capability to ProductUnitManagementService
-          for (const unit of unitsToDelete) {
-            // For now, mark as deleted (would need to add delete method)
-            await ProductUnitManagementService.updateUnitStatus(unit.id, 'damaged');
-          }
-          
-          // Create units for new serial numbers using unified service
-          const existingSerials = existingUnits.map(unit => unit.serial_number);
-          const newUnitEntries = data.unit_entries?.filter(entry => 
-            !existingSerials.includes(entry.serial)
-          ) || [];
-          
-          if (newUnitEntries.length > 0) {
-            const result = await ProductUnitManagementService.createUnitsForProduct({
-              productId: product.id, 
-              unitEntries: newUnitEntries,
-              defaultPricing: {
-                price: data.price,
-                min_price: data.min_price,
-                max_price: data.max_price
-              }
-            });
-            logger.info(`Created ${newUnitEntries.length} new product units with default pricing`, {}, 'EditProductDialog');
-            
-            // Refresh thermal labels after updating product units
-            if (typeof (window as any).__refreshThermalLabels === 'function') {
-              console.log('🔄 Refreshing thermal labels after product unit update');
-              (window as any).__refreshThermalLabels();
+        // Get existing units for this product
+        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        
+        // Get current serials - use them directly
+        const currentSerials = data.serial_numbers || [];
+        const unitsToDelete = existingUnits.filter(unit => 
+          !currentSerials.includes(unit.serial_number)
+        );
+        
+        // Mark removed units as damaged (delete capability will be added later)
+        for (const unit of unitsToDelete) {
+          await ProductUnitManagementService.updateUnitStatus(unit.id, 'damaged');
+        }
+        
+        // Create units for new serial numbers using unified service
+        const existingSerials = existingUnits.map(unit => unit.serial_number);
+        const newUnitEntries = data.unit_entries?.filter(entry => 
+          !existingSerials.includes(entry.serial)
+        ) || [];
+        
+        if (newUnitEntries.length > 0) {
+          await ProductUnitManagementService.createUnitsForProduct({
+            productId: product.id, 
+            unitEntries: newUnitEntries,
+            defaultPricing: {
+              price: data.price,
+              min_price: data.min_price,
+              max_price: data.max_price
             }
-          }
+          });
+          logger.info(`Created ${newUnitEntries.length} new product units with default pricing`, {}, 'EditProductDialog');
           
-        } catch (unitsError) {
-          console.error('Error managing product units:', unitsError);
-          // Don't fail the whole update if units fail
-          toast.error("Product updated but there was an issue with unit data. Please check the inventory.");
+          // Refresh thermal labels after updating product units
+          if (typeof (window as any).__refreshThermalLabels === 'function') {
+            logger.info('Refreshing thermal labels after product unit update', {}, 'EditProductDialog');
+            (window as any).__refreshThermalLabels();
+          }
         }
       }
-      
-      // Invalidate thermal labels cache after successful update
+
+      // Refresh thermal labels after product update
       if (typeof (window as any).__refreshThermalLabels === 'function') {
-        console.log('🔄 Refreshing thermal labels after product update');
+        logger.info('Refreshing thermal labels after product update', {}, 'EditProductDialog');
         (window as any).__refreshThermalLabels();
       }
       

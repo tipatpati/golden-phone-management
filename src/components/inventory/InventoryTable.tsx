@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { ThermalLabelGenerator } from "./labels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { logger } from '@/utils/logger';
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -115,7 +116,10 @@ export function InventoryTable({
           units: units || [],
           serial_numbers: latestSerialNumbers
         };
-        console.log(`🖨️ Print button: Found ${units?.length || 0} units with barcodes for ${product.brand} ${product.model}`);
+        logger.info('Print button: Units found', { 
+          unitsCount: units?.length || 0, 
+          product: `${product.brand} ${product.model}` 
+        }, 'InventoryTable');
         setSelectedProduct(updatedProduct);
       }
     } catch (error) {
