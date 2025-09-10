@@ -17,7 +17,7 @@ import { ProductFormFields } from '@/components/inventory/forms/ProductFormField
 import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
 import { UnitBarcodeManager } from '@/components/shared/forms/UnitBarcodeManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
-import { useProductForm } from '@/hooks/useProductForm';
+import { useProductForm } from '@/components/inventory/forms/hooks/useProductForm';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 import { Code128GeneratorService } from '@/services/barcodes';
