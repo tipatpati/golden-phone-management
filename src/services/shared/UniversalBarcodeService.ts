@@ -144,36 +144,41 @@ class UniversalBarcodeServiceClass {
     };
 
     try {
-      // Use ThermalLabelService directly for more reliable printing
-      const { ThermalLabelService } = await import('@/components/inventory/labels/services/ThermalLabelService');
+      // Use the unified print service
+      const { Services } = await import('@/services/core');
       
-      // Prepare thermal labels
-      const thermalLabels = labelData.units.map(unit => ({
+      // Convert to service-compatible thermal labels
+      const serviceLabelData = labelData.units.map(unit => ({
+        id: unit.barcode || Math.random().toString(),
         productName: `${labelData.productBrand} ${labelData.productModel}`,
-        serialNumber: unit.serial,
-        barcode: unit.barcode,
+        brand: labelData.productBrand,
+        model: labelData.productModel,
         price: unit.price || 0,
-        maxPrice: unit.price || 0,
+        barcode: unit.barcode,
+        serial: unit.serial,
         color: unit.color,
-        storage: unit.storage,
-        ram: unit.ram
+        storage: unit.storage?.toString(),
+        ram: unit.ram?.toString()
       }));
 
-      // Use thermal label printing method
-      const printResult = await ThermalLabelService.printLabels(thermalLabels, {
+      // Use unified print service
+      const printService = await Services.getPrintService();
+      const result = await printService.printLabels(serviceLabelData, {
         copies: 1,
-        includePrice: true,
-        includeBarcode: true,
-        includeCompany: true,
-        includeCategory: true,
-        format: "standard" as const,
-        companyName: "GOLDEN PHONE SRL"
+        companyName: "GOLDEN PHONE SRL",
+        showPrice: true,
+        showSerial: true
       });
 
-      if (printResult.success) {
-        result.success = true;
-        result.totalLabels = printResult.totalLabels || thermalLabels.length;
-        result.printedUnits = labelData.units.map(u => u.serial);
+      if (result.success) {
+        // Create a custom result object for universal service
+        const customResult = {
+          success: true,
+          totalLabels: result.totalLabels || serviceLabelData.length,
+          printedUnits: labelData.units.map(u => u.serial),
+          errors: [] as string[]
+        };
+        Object.assign(result, customResult);
 
         // Log the successful print operation
         console.log(`✅ UNIVERSAL PRINT: Successfully printed ${result.totalLabels} thermal labels`);
@@ -205,12 +210,15 @@ class UniversalBarcodeServiceClass {
         }
 
       } else {
-        result.errors.push(printResult.message || 'Unknown print error');
+        // Create errors array if it doesn't exist
+        if (!(result as any).errors) (result as any).errors = [];
+        (result as any).errors.push(result.message || 'Unknown print error');
       }
 
     } catch (error) {
       console.error('❌ UNIVERSAL PRINT: Failed to print labels:', error);
-      result.errors.push(error.message);
+      if (!(result as any).errors) (result as any).errors = [];
+      (result as any).errors.push((error as Error).message);
     }
 
     return result;

@@ -103,11 +103,10 @@ export function ThermalLabelGenerator({
   }, [currentLabels, options.copies]);
 
   const handlePrint = async () => {
-    const success = await printLabels(currentLabels, { ...options, companyName });
-    if (success) {
+    await printLabels(currentLabels, { ...options, companyName });
+    // Close dialog after print attempt
+    setTimeout(() => onOpenChange(false), 1000);
       // Close dialog after successful print
-      setTimeout(() => onOpenChange(false), 1000);
-    }
   };
 
   const updateOption = <K extends keyof ThermalLabelOptions>(

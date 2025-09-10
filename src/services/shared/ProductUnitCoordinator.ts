@@ -373,15 +373,23 @@ class ProductUnitCoordinatorClass {
       // Use the unified print service
       const { Services } = await import('@/services/core');
       
-      // Use the high-quality thermal label printing system
-      const printResult = await ThermalLabelService.printLabels(labelResult.labels, {
+      const printService = await Services.getPrintService();
+      const printResult = await printService.printLabels(labelResult.labels.map(label => ({
+        id: label.barcode || Math.random().toString(),
+        productName: label.productName,
+        brand: "GPMS",
+        model: label.productName,
+        price: label.price,
+        barcode: label.barcode,
+        serial: label.serialNumber,
+        color: label.color,
+        storage: label.storage?.toString(),
+        ram: label.ram?.toString()
+      })), {
         copies: 1,
-        includePrice: true,
-        includeBarcode: true,
-        includeCompany: true,
-        includeCategory: true,
-        format: "standard" as const,
-        companyName: "GOLDEN PHONE SRL"
+        companyName: "GOLDEN PHONE SRL",
+        showPrice: true,
+        showSerial: true
       });
 
       console.log(`✅ UNIT COORDINATOR: Thermal label printing completed`, printResult);
