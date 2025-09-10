@@ -29,7 +29,8 @@ class LightweightInventoryService {
         category:categories!inner (
           id,
           name
-        )
+        ),
+        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
       `)
       .order('brand', { ascending: true })
       .order('model', { ascending: true });
@@ -76,7 +77,8 @@ class LightweightInventoryService {
         category:categories!inner (
           id,
           name
-        )
+        ),
+        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
       `)
       .single();
 
@@ -111,7 +113,8 @@ class LightweightInventoryService {
         category:categories!inner (
           id,
           name
-        )
+        ),
+        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
       `)
       .single();
 
