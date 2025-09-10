@@ -98,6 +98,14 @@ class UniversalProductServiceClass {
         result.units = unitResult.units;
         result.createdUnitCount = unitResult.createdCount;
         result.updatedUnitCount = unitResult.updatedCount;
+
+        // Step 3.5: CRITICAL - Update product stock to match actual units count
+        await this.updateProductStock(product.id, result.units.length);
+        result.product.stock = result.units.length;
+      } else if (!formData.has_serial && formData.stock) {
+        // For non-serialized products, use the provided stock value
+        await this.updateProductStock(product.id, formData.stock);
+        result.product.stock = formData.stock;
       }
 
       // Step 4: Broadcast change for real-time sync
@@ -463,6 +471,28 @@ class UniversalProductServiceClass {
         unitEntries: []
       };
     }
+  }
+
+  /**
+   * Update product stock count to match actual units
+   */
+  private async updateProductStock(productId: string, newStock: number): Promise<void> {
+    console.log(`📊 UNIVERSAL: Updating product ${productId} stock to ${newStock}`);
+    
+    const { error } = await supabase
+      .from('products')
+      .update({ 
+        stock: newStock,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productId);
+
+    if (error) {
+      console.error('❌ Failed to update product stock:', error);
+      throw new Error(`Failed to update product stock: ${error.message}`);
+    }
+
+    console.log(`✅ Product ${productId} stock updated to ${newStock}`);
   }
 }
 

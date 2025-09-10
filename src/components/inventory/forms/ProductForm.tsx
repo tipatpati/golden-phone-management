@@ -214,6 +214,8 @@ export function ProductForm({
           onStockChange={(stock) => updateField('stock', stock)}
           hasSerial={formData.has_serial}
           productId={productId}
+          productBrand={formData.brand}
+          productModel={formData.model}
         />
       )}
 
