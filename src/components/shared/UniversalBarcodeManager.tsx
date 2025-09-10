@@ -182,7 +182,7 @@ export function UniversalBarcodeManager({
     }
   };
 
-  // Print thermal labels using the sophisticated ThermalLabelGenerator
+  // Print thermal labels using ProductUnitCoordinator
   const printLabels = async () => {
     const unitsWithBarcodes = unitStatuses.filter(status => status.hasBarcode && status.barcode);
     
@@ -199,34 +199,6 @@ export function UniversalBarcodeManager({
     setIsPrinting(true);
 
     try {
-      // Use the sophisticated ThermalLabelGenerator system
-      const { ThermalLabelGenerator } = await import('@/components/inventory/labels/ThermalLabelGenerator');
-      const { useThermalLabels } = await import('@/components/inventory/labels/hooks/useThermalLabels');
-      
-      // Create product data for thermal label generation
-      const productsForLabels = [{
-        id: productId,
-        brand: productBrand,
-        model: productModel,
-        serial_numbers: unitsWithBarcodes.map(status => status.serial),
-        units: unitsWithBarcodes.map(status => {
-          const unit = units.find(u => u.serial === status.serial);
-          return {
-            id: `unit-${status.serial}`,
-            serial_number: status.serial,
-            barcode: status.barcode!,
-            color: unit?.color,
-            storage: unit?.storage,
-            ram: unit?.ram,
-            price: unit?.price,
-            status: 'available' as const,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            product_id: productId
-          };
-        })
-      }];
-
       // Use ProductUnitCoordinator for professional thermal label printing
       const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
 
@@ -238,7 +210,9 @@ export function UniversalBarcodeManager({
           color: unit?.color,
           storage: unit?.storage,
           ram: unit?.ram,
-          price: unit?.price
+          price: unit?.price,
+          min_price: unit?.min_price,
+          max_price: unit?.max_price
         };
       });
 
@@ -329,7 +303,9 @@ export function UniversalBarcodeManager({
           color: unit?.color,
           storage: unit?.storage,
           ram: unit?.ram,
-          price: unit?.price
+          price: unit?.price,
+          min_price: unit?.min_price,
+          max_price: unit?.max_price
         };
       });
 
