@@ -175,35 +175,35 @@ export class InventoryManagementService {
   // ============================================
 
   /**
-   * Create a new product with optional units using unified service
+   * Create a new product with optional units using UNIVERSAL service
    */
   static async createProduct(formData: ProductFormData): Promise<InventoryOperationResult> {
-    console.log('🎯 InventoryManagementService: Delegating to unified service:', formData.brand, formData.model);
+    console.log('🎯 InventoryManagementService: Delegating to UNIVERSAL service:', formData.brand, formData.model);
     
     try {
-      // Use unified product creation service
-      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      // Use UNIVERSAL Product Service for consistency
+      const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      const unifiedResult = await unifiedProductCreationService.createProduct(formData, {
+      const universalResult = await universalProductService.processProduct(formData, {
         source: 'inventory'
       });
 
-      // Transform unified result to inventory operation result
+      // Transform universal result to inventory operation result
       const result: InventoryOperationResult = {
-        success: unifiedResult.success,
-        data: unifiedResult.product ? {
-          ...unifiedResult.product,
-          units: unifiedResult.units,
-          unitCount: unifiedResult.createdUnitCount
+        success: universalResult.success,
+        data: universalResult.product ? {
+          ...universalResult.product,
+          units: universalResult.units,
+          unitCount: universalResult.createdUnitCount + universalResult.updatedUnitCount
         } : null,
-        errors: unifiedResult.errors,
-        warnings: unifiedResult.warnings
+        errors: universalResult.errors,
+        warnings: universalResult.warnings
       };
 
-      if (unifiedResult.success) {
-        console.log('✅ Product created via unified service:', result.data?.id);
+      if (universalResult.success) {
+        console.log('✅ Product created via UNIVERSAL service:', result.data?.id);
       } else {
-        console.error('❌ Unified product creation failed:', result.errors);
+        console.error('❌ Universal product creation failed:', result.errors);
       }
 
       return result;
@@ -220,35 +220,35 @@ export class InventoryManagementService {
   }
 
   /**
-   * Update an existing product using unified service
+   * Update an existing product using UNIVERSAL service
    */
   static async updateProduct(productId: string, formData: Partial<ProductFormData>): Promise<InventoryOperationResult> {
-    console.log('🔄 InventoryManagementService: Delegating update to unified service:', productId);
+    console.log('🔄 InventoryManagementService: Delegating update to UNIVERSAL service:', productId);
     
     try {
-      // Use unified product creation service
-      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      // Use UNIVERSAL Product Service for consistency
+      const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      const unifiedResult = await unifiedProductCreationService.updateProduct(productId, formData, {
+      const universalResult = await universalProductService.processProduct(formData as ProductFormData, {
         source: 'inventory'
       });
 
-      // Transform unified result to inventory operation result
+      // Transform universal result to inventory operation result
       const result: InventoryOperationResult = {
-        success: unifiedResult.success,
-        data: unifiedResult.product ? {
-          ...unifiedResult.product,
-          units: unifiedResult.units,
-          unitCount: unifiedResult.createdUnitCount
+        success: universalResult.success,
+        data: universalResult.product ? {
+          ...universalResult.product,
+          units: universalResult.units,
+          unitCount: universalResult.createdUnitCount + universalResult.updatedUnitCount
         } : null,
-        errors: unifiedResult.errors,
-        warnings: unifiedResult.warnings
+        errors: universalResult.errors,
+        warnings: universalResult.warnings
       };
 
-      if (unifiedResult.success) {
-        console.log('✅ Product updated via unified service:', productId);
+      if (universalResult.success) {
+        console.log('✅ Product updated via UNIVERSAL service:', productId);
       } else {
-        console.error('❌ Unified product update failed:', result.errors);
+        console.error('❌ Universal product update failed:', result.errors);
       }
 
       return result;
@@ -265,16 +265,16 @@ export class InventoryManagementService {
   }
 
   /**
-   * Delete a product and all its units using unified service
+   * Delete a product and all its units using UNIVERSAL service
    */
   static async deleteProduct(productId: string): Promise<InventoryOperationResult> {
-    console.log('🗑️ InventoryManagementService: Delegating deletion to unified service:', productId);
+    console.log('🗑️ InventoryManagementService: Delegating deletion to UNIVERSAL service:', productId);
     
     try {
-      // Use unified product creation service
-      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      // Use UNIVERSAL Product Service for consistency
+      const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      const deleteResult = await unifiedProductCreationService.deleteProduct(productId, {
+      const deleteResult = await universalProductService.deleteProduct(productId, {
         source: 'inventory'
       });
 
@@ -286,9 +286,9 @@ export class InventoryManagementService {
       };
 
       if (deleteResult.success) {
-        console.log('✅ Product deleted via unified service:', productId);
+        console.log('✅ Product deleted via UNIVERSAL service:', productId);
       } else {
-        console.error('❌ Unified product deletion failed:', result.errors);
+        console.error('❌ Universal product deletion failed:', result.errors);
       }
 
       return result;

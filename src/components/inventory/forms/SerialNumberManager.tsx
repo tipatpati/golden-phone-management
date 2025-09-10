@@ -9,22 +9,19 @@ export function SerialNumberManager({
   onUnitEntriesChange,
   onStockChange,
   hasSerial,
-  productId
-}: SerialNumberManagerProps) {
+  productId,
+  productBrand, // Add these props
+  productModel
+}: SerialNumberManagerProps & { productBrand?: string; productModel?: string }) {
   if (!hasSerial) {
     return null;
   }
 
-  // For inventory forms, try to extract product info for barcode manager
-  const getProductInfo = () => {
-    // This would need to be passed down or fetched, for now use defaults
-    return {
-      brand: 'Unknown',
-      model: 'Unknown'
-    };
+  // Use provided product info or fallback to defaults
+  const productInfo = {
+    brand: productBrand || 'Unknown',
+    model: productModel || 'Unknown'
   };
-
-  const productInfo = getProductInfo();
 
   return (
     <div className="space-y-4">
