@@ -111,28 +111,36 @@ export class UnifiedProductCoordinator {
   }
 
   /**
-   * Handle coordination events automatically
+   * OPTIMIZED: Handle coordination events with minimal overhead
    */
   private static async handleCoordinationEvent(event: ProductCoordinationEvent): Promise<void> {
+    console.log(`🎯 [Coordination] Handling ${event.type} event with optimized strategy`);
+    
     switch (event.type) {
       case 'product_created':
       case 'product_updated':
-        // Invalidate inventory caches when supplier creates/updates products
+        // Minimal coordination - database triggers handle consistency
         if (event.source === 'supplier') {
-          console.log('🔄 Invalidating inventory cache due to supplier product change');
-          // This would trigger inventory components to refresh their data
+          console.log('🎯 [Coordination] Supplier product change - database ensures consistency');
+          // No immediate cache invalidation here - let individual modules handle their own
         }
         break;
         
       case 'unit_created':
       case 'unit_updated':
-        // Ensure cross-module unit synchronization
-        console.log('📦 Product unit modified, ensuring cross-module synchronization');
-        await this.ensureUnitProductConsistency(event.entityId);
+        // Unit consistency is now handled by database triggers
+        console.log('🎯 [Coordination] Unit modified - database triggers ensure consistency');
+        // Removed ensureUnitProductConsistency call - triggers handle this
+        break;
+        
+      case 'stock_updated':
+        // Stock updates are fully managed by database triggers
+        console.log('🎯 [Coordination] Stock updated - managed by database trigger');
         break;
         
       case 'sync_requested':
-        // Perform full synchronization
+        // Keep full sync capability for manual operations
+        console.log('🎯 [Coordination] Full sync requested - performing comprehensive sync');
         await this.performFullSync();
         break;
     }

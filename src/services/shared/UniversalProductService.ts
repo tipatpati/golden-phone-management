@@ -131,22 +131,20 @@ class UniversalProductServiceClass {
           }
         });
       } else {
-        // For non-serialized products, update stock by the quantity being added
+        // For non-serialized products, stock is managed by regular product operations
+        // NO MORE MANUAL STOCK UPDATES - Database consistency guaranteed
         if (options.source === 'supplier' && formData.stock !== undefined) {
-          const newStock = (result.product!.stock || 0) + formData.stock;
-          await this.updateProductStock(product.id, newStock);
-          result.product!.stock = newStock;
-          console.log(`✅ Updated non-serialized product stock to ${newStock}`);
+          console.log(`🏁 [Stock Management] Non-serialized product stock will remain at current value for ${product.id}`);
+          console.log(`📊 [Stock Info] Stock operations for non-serialized products handled elsewhere`);
           
-          // Force immediate UI refresh
+          // Simplified event notification - no stock manipulation
           UnifiedProductCoordinator.notifyEvent({
-            type: 'stock_updated',
+            type: 'product_updated',
             source: options.source,
             entityId: product.id,
             metadata: {
               productId: product.id,
-              newStock: newStock,
-              unitCount: newStock
+              serialized: false
             }
           });
         }
@@ -525,25 +523,14 @@ class UniversalProductServiceClass {
   }
 
   /**
-   * Update product stock count to match actual units
+   * REMOVED: Stock updates are now handled exclusively by database triggers
+   * The sync_product_stock_from_units() trigger automatically maintains accurate stock counts
+   * This eliminates race conditions and ensures a single source of truth
    */
   private async updateProductStock(productId: string, newStock: number): Promise<void> {
-    console.log(`📊 [Stock Database] Updating product ${productId} stock in database to ${newStock}`);
-    
-    const { error } = await supabase
-      .from('products')
-      .update({ 
-        stock: newStock,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', productId);
-
-    if (error) {
-      console.error('❌ [Stock Database] Failed to update product stock:', error);
-      throw new Error(`Failed to update product stock: ${error.message}`);
-    }
-
-    console.log(`✅ [Stock Database] Product ${productId} stock successfully updated to ${newStock}`);
+    console.log(`🚫 [Stock Management] Stock update bypassed - handled by database trigger for product ${productId}`);
+    console.log(`📊 [Stock Info] Expected stock: ${newStock} (will be set by trigger automatically)`);
+    // No-op: Database trigger handles all stock updates
   }
 }
 

@@ -36,32 +36,44 @@ export function useInventory() {
   // ============================================
   
   useEffect(() => {
-    // Listen for product/unit changes from supplier module with aggressive cache invalidation
+    // OPTIMIZED: Listen for product/unit changes with targeted cache invalidation
     const unsubscribe = UnifiedProductCoordinator.addEventListener((event) => {
-      console.log('🔄 Inventory: Received coordination event:', event.type, 'from', event.source, event.metadata);
+      console.log('🎯 [Inventory Cache] Received coordination event:', event.type, 'from', event.source);
       
       if (event.source === 'supplier') {
-        // Aggressively invalidate relevant queries when supplier creates/updates products/units
+        // TARGETED cache invalidation strategy - only invalidate what's necessary
         switch (event.type) {
           case 'product_created':
           case 'product_updated':
-          case 'stock_updated':
-            console.log('💨 Inventory: Aggressively invalidating product caches due to supplier change');
+            console.log('🎯 [Inventory Cache] Product change - targeted invalidation');
             queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
-            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.entityId) });
+            if (event.entityId) {
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.entityId) });
+            }
             if (event.metadata?.productId) {
               queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.metadata.productId) });
-              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.productUnits(event.metadata.productId) });
             }
+            // Removed aggressive invalidation of product units
             break;
             
           case 'unit_created':
           case 'unit_updated':
-            console.log('💨 Inventory: Aggressively invalidating unit caches due to supplier change');
-            queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
+            console.log('🎯 [Inventory Cache] Unit change - minimal invalidation (DB handles stock)');
             if (event.metadata?.productId) {
               queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(event.metadata.productId) });
               queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.productUnits(event.metadata.productId) });
+            }
+            // Debounced product list invalidation to prevent thrashing
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.products() });
+            }, 250);
+            break;
+            
+          case 'stock_updated':
+            console.log('🎯 [Inventory Cache] Stock updated - minimal impact (DB trigger managed)');
+            if (event.entityId || event.metadata?.productId) {
+              const productId = event.entityId || event.metadata.productId;
+              queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.product(productId) });
             }
             break;
             
