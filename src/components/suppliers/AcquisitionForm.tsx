@@ -73,7 +73,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       productData: {
         brand: '',
         model: '',
-        price: 0,
+        price: 1, // Set default price > 0 to pass validation
         min_price: 0,
         max_price: 0,
         description: '',
@@ -86,7 +86,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         unit_entries: []
       },
       quantity: 1,
-      unitCost: 0,
+      unitCost: 1, // Set default unit cost > 0
       unitEntries: []
     };
     
@@ -343,32 +343,37 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                           </div>
                         )}
 
-                        {/* Unit Cost for Acquisition */}
-                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Unit Cost (€)</Label>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={item.unitCost}
-                                onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
-                                placeholder="0.00"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Total Cost (€)</Label>
-                              <Input
-                                type="number"
-                                value={(item.unitCost * item.quantity).toFixed(2)}
-                                readOnly
-                                className="bg-muted"
-                              />
+                          {/* Unit Cost for Acquisition */}
+                          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Unit Cost (€)</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  value={item.unitCost}
+                                  onChange={(e) => {
+                                    const unitCost = parseFloat(e.target.value) || 0;
+                                    updateItem(index, { unitCost });
+                                    // CRITICAL FIX: Set the product price to match unit cost for validation
+                                    updateProductData(index, { price: unitCost });
+                                  }}
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Total Cost (€)</Label>
+                                <Input
+                                  type="number"
+                                  value={(item.unitCost * item.quantity).toFixed(2)}
+                                  readOnly
+                                  className="bg-muted"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
