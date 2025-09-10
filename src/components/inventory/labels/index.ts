@@ -3,5 +3,5 @@ export { ThermalLabelGenerator } from './ThermalLabelGenerator';
 export { ThermalLabelPreview } from './ThermalLabelPreview';
 export { useThermalLabels } from './hooks/useThermalLabels';
 export { useThermalLabelPrint } from './hooks/useThermalLabelPrint';
-export { ThermalLabelService } from './services/ThermalLabelService';
+// ThermalLabelService is now consolidated into UnifiedPrintService
 export * from './types';

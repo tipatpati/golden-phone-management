@@ -4,21 +4,18 @@ import { AppRouter } from "@/components/app/AppRouter";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { logger } from "@/utils/logger";
 import { bootstrapServices } from "@/services/core";
-import { ServiceHealthDashboard, ServiceMonitoringDashboard } from "@/components/admin";
 
 export default function App() {
-  console.log('🚀 App component starting...');
-  
   React.useEffect(() => {
-    console.log('🎯 App mounted successfully');
+    logger.info('App mounted successfully', {}, 'App');
     // Initialize enhanced service management system
-    bootstrapServices().catch(console.error);
-    return () => console.log('🔴 App unmounting');
+    bootstrapServices().catch((error) => {
+      logger.error('Failed to bootstrap services', error, 'App');
+    });
+    return () => logger.info('App unmounting', {}, 'App');
   }, []);
   
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
-    console.error('💥 App Error Boundary triggered:', error);
-    console.error('📋 Error Info:', errorInfo);
     logger.error('Application error boundary triggered', {
       error: error.message,
       stack: error.stack,
@@ -35,7 +32,7 @@ export default function App() {
       </ErrorBoundary>
     );
   } catch (error) {
-    console.error('💥 App render error:', error);
+    logger.error('App render error', error, 'App');
     return <div>EMERGENCY FALLBACK: App failed to render</div>;
   }
 }

@@ -23,7 +23,6 @@ const EmployeeDashboard = React.lazy(() => import("@/pages/employee/EmployeeDash
 const Profile = React.lazy(() => import("@/pages/Profile"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
-const Tests = React.lazy(() => import("@/pages/Tests"));
 const ServiceMonitoring = React.lazy(() => import("@/components/admin/ServiceMonitoringDashboard"));
 // Loading fallback component
 const PageLoader = () => (
@@ -34,24 +33,10 @@ const PageLoader = () => (
 
 export function AppRouter() {
   const { isLoggedIn, user, isInitialized, userRole } = useAuth();
-  
-  console.log('🚀 AppRouter Debug:', {
-    isLoggedIn,
-    userId: user?.id,
-    isInitialized,
-    userRole,
-    userType: typeof userRole
-  });
-
-  // TEMPORARY FIX: Use the role from AuthContext instead of the problematic hook
   const effectiveRole = userRole || 'salesperson';
-  
-  console.log('✅ AppRouter proceeding with role from AuthContext:', effectiveRole);
-  console.log('🎯 Passing to EmployeeDashboard:', { userRole: effectiveRole, type: typeof effectiveRole });
 
   // Show loading only while auth is being initialized
   if (!isInitialized) {
-    console.log('⏳ AppRouter showing loading for auth initialization...');
     return <PageLoader />;
   }
 
@@ -89,15 +74,6 @@ export function AppRouter() {
       {/* Protected routes for authenticated users */}
       {isLoggedIn && (
         <>
-          <Route path="/tests" element={
-            <ProtectedRoute>
-              <TabletLayout userRole={effectiveRole}>
-                <Suspense fallback={<PageLoader />}>
-                  <Tests />
-                </Suspense>
-              </TabletLayout>
-            </ProtectedRoute>
-          } />
           {/* Super Admin and Admin users get full admin interface */}
           {roleUtils.hasPermissionLevel(effectiveRole, 'admin') ? (
             <>

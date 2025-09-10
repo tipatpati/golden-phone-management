@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
-import { ThermalLabelService } from "../services/ThermalLabelService";
+import { Services } from "@/services/core";
 import { ThermalLabelData, ThermalLabelOptions } from "../types";
 
 interface PrintState {
@@ -58,7 +58,8 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
     setPrintState(prev => ({ ...prev, isPrinting: true }));
 
     try {
-      const result = await ThermalLabelService.printLabels(labels, options);
+      const printService = await Services.getPrintService();
+      const result = await printService.printLabels(labels, options);
       
       if (result.success) {
         setPrintState(prev => ({ 
@@ -101,7 +102,8 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
     options: ThermalLabelOptions & { companyName?: string }
   ): Promise<string | null> => {
     try {
-      return ThermalLabelService.generateThermalLabels(labels, options);
+      const printService = await Services.getPrintService();
+      return printService.generateLabelHTML(labels, options);
     } catch (error) {
       console.error('Preview generation failed:', error);
       toast({

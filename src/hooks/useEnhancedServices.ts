@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Services } from '@/services/core';
 import type { BarcodeService } from '@/services/shared/BarcodeService';
-import type { PrintService } from '@/services/shared/PrintService';
+import type { UnifiedPrintService } from '@/services/core/UnifiedPrintService';
 import type { ServiceCategory } from '@/services/core/SharedServiceRegistry';
 
 interface ServiceState<T> {
@@ -166,7 +166,7 @@ export function useBarcodeService() {
  * Hook for print service
  */
 export function usePrintService() {
-  const [state, setState] = useState<ServiceState<PrintService>>({
+  const [state, setState] = useState<ServiceState<UnifiedPrintService>>({
     service: null,
     loading: true,
     error: null,

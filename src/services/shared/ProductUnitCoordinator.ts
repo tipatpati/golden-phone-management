@@ -370,8 +370,8 @@ class ProductUnitCoordinatorClass {
         throw new Error(`Failed to generate thermal labels: ${labelResult.errors.join(', ')}`);
       }
 
-      // Import the professional ThermalLabelService for printing
-      const { ThermalLabelService } = await import('@/components/inventory/labels/services/ThermalLabelService');
+      // Use the unified print service
+      const { Services } = await import('@/services/core');
       
       // Use the high-quality thermal label printing system
       const printResult = await ThermalLabelService.printLabels(labelResult.labels, {

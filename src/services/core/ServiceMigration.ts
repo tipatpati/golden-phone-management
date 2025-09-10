@@ -5,7 +5,7 @@
 
 import { Services } from './ServiceBootstrap';
 import { BarcodeService } from '../shared/BarcodeService';
-import { PrintService } from '../shared/PrintService';
+import { UnifiedPrintService } from './UnifiedPrintService';
 
 /**
  * Legacy service compatibility layer
@@ -14,7 +14,7 @@ import { PrintService } from '../shared/PrintService';
 export class Code128GeneratorService {
   static validateCode128(barcode: string) {
     if (process.env.NODE_ENV === 'development') {
-      ServiceMigrationTracker.logUsage('Code128GeneratorService', 'validateCode128');
+      // Legacy usage tracking removed for production
     }
     
     // Synchronous validation to match legacy interface
@@ -152,9 +152,9 @@ export class ThermalLabelService {
     }
     
     // Import adapter dynamically to avoid circular dependencies
-    const { PrintServiceAdapter } = await import('../shared/PrintServiceAdapter');
-    const adapter = new PrintServiceAdapter();
-    return adapter.generateLabelHTML(labels, options);
+    const { Services } = await import('./ServiceBootstrap');
+    const printService = await Services.getPrintService();
+    return printService.generateLabelHTML(labels, options);
   }
 
   static async printLabels(labels: any[], options: any) {
@@ -163,9 +163,9 @@ export class ThermalLabelService {
     }
     
     // Import adapter dynamically to avoid circular dependencies
-    const { PrintServiceAdapter } = await import('../shared/PrintServiceAdapter');
-    const adapter = new PrintServiceAdapter();
-    return adapter.printLabels(labels, options);
+    const { Services } = await import('./ServiceBootstrap');
+    const printService = await Services.getPrintService();
+    return printService.printLabels(labels, options);
   }
 }
 
@@ -174,8 +174,6 @@ export class ThermalLabelService {
  */
 export const ServiceMigrationTracker = {
   logUsage(serviceName: string, method: string) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`⚠️ Legacy service usage: ${serviceName}.${method} - Consider migrating to injectable services`);
-    }
+    // Production-ready: removed console logging
   }
 };

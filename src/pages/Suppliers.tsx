@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
 import { NotificationCenter } from "@/components/suppliers/NotificationCenter";
-import { PerformanceMonitor } from "@/components/suppliers/PerformanceMonitor";
+
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
@@ -209,8 +209,6 @@ const Suppliers = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Performance Monitor */}
-      <PerformanceMonitor />
     </div>
   );
 };

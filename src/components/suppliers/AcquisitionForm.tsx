@@ -18,6 +18,7 @@ import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
 import { UniversalBarcodeManager } from '@/components/shared/UniversalBarcodeManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
 import { useProductForm } from '@/components/inventory/forms/hooks/useProductForm';
+import { logger } from '@/utils/logger';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 import { Code128GeneratorService } from '@/services/barcodes';
@@ -318,7 +319,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                                 }));
                               }}
                               onPrintCompleted={(printedUnits) => {
-                                console.log(`✅ Printed labels for units: ${printedUnits.join(', ')}`);
+                                logger.info('Printed labels for units', { printedUnits }, 'AcquisitionForm');
                               }}
                             />
                           </div>
@@ -425,7 +426,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                                   }));
                                 }}
                                 onPrintCompleted={(printedUnits) => {
-                                  console.log(`✅ Printed labels for existing product units: ${printedUnits.join(', ')}`);
+                                  logger.info('Printed labels for existing product units', { printedUnits }, 'AcquisitionForm');
                                 }}
                               />
                             </div>

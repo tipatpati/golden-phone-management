@@ -1,6 +1,6 @@
 /**
- * Injectable Print Service Implementation
- * Handles thermal label printing and document printing with proper DI support
+ * Unified Print Service - Production Ready
+ * Consolidates all print functionality into a single, reliable service
  */
 
 import type { 
@@ -9,17 +9,16 @@ import type {
   ThermalLabelOptions, 
   PrintOptions, 
   PrintResult 
-} from './interfaces/IPrintService';
+} from '../shared/interfaces/IPrintService';
+import { logger } from '@/utils/logger';
 
-export class PrintService implements IPrintService {
+export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
-    /* Thermal Label Styles for 6cm x 5cm landscape at 203 DPI */
     @media print {
       @page {
         size: 6cm 5cm;
         margin: 0;
       }
-      
       body {
         margin: 0;
         padding: 0;
@@ -29,30 +28,42 @@ export class PrintService implements IPrintService {
     }
 
     .thermal-label {
-      width: 5.8cm;
-      height: 4.8cm;
-      padding: 1mm;
-      margin: 0;
-      box-sizing: border-box;
-      border: 1px solid #ddd;
+      width: 227px;
+      height: 189px;
+      border: 2px solid #000;
+      border-radius: 4px;
+      padding: 3px;
+      margin: 8px;
+      font-size: 8px;
       background: white;
-      page-break-after: always;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      position: relative;
+      text-align: center;
+      line-height: 1.1;
+      box-sizing: border-box;
+      overflow: hidden;
+      page-break-inside: avoid;
+      gap: 1px;
     }
 
     .label-header {
-      text-align: center;
+      min-height: 16px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 1px;
       margin-bottom: 2px;
+      overflow: hidden;
     }
 
     .company-name {
       font-size: 8px;
-      font-weight: bold;
-      margin: 0;
-      line-height: 1;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #000;
+      letter-spacing: 0.5px;
+      line-height: 1.0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .product-info {
@@ -60,52 +71,65 @@ export class PrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      text-align: center;
+      gap: 2px;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .product-name {
-      font-size: 9px;
-      font-weight: bold;
-      margin: 0 0 1px 0;
-      line-height: 1.1;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.0;
+      color: #000;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      max-height: 50px;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      text-align: center;
     }
 
     .product-details {
-      font-size: 7px;
-      margin: 0;
-      line-height: 1.1;
-      color: #666;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 1px;
+      color: #333;
+    }
+
+    .serial-number {
+      font-size: 10px;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+      margin-top: 2px;
+      letter-spacing: 0.1px;
     }
 
     .price {
-      font-size: 11px;
-      font-weight: bold;
-      margin: 2px 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: #000;
       text-align: center;
+      padding: 2px 0;
+      border-top: 2px solid #000;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+      line-height: 1.0;
     }
 
     .barcode-container {
-      text-align: center;
-      margin-top: 1px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 55px;
+      max-height: 55px;
+      background: #ffffff;
+      padding: 2px;
+      overflow: hidden;
     }
 
-    .barcode-placeholder {
-      background: #f0f0f0;
-      border: 1px dashed #999;
-      height: 20px;
-      line-height: 20px;
-      font-size: 8px;
-      color: #666;
-      margin: 0 auto;
-      width: 80%;
-    }
-
-    /* Remove last page break */
-    .thermal-label:last-child {
-      page-break-after: avoid;
+    .barcode-canvas {
+      max-width: 200px;
+      height: 50px;
     }
   `;
 
@@ -113,39 +137,57 @@ export class PrintService implements IPrintService {
    * Generate thermal label HTML
    */
   generateLabelHTML(labels: ThermalLabelData[], options: ThermalLabelOptions): string {
-    const labelsHTML = labels.map(label => this.generateSingleLabel(label, options)).join('\n');
-    
+    const validation = this.validateLabelData(labels);
+    if (!validation.isValid) {
+      throw new Error(`Invalid label data: ${validation.errors.join(', ')}`);
+    }
+
+    const labelsHTML = labels.flatMap(label => 
+      Array(options.copies || 1).fill(null).map(() => this.generateSingleLabel(label, options))
+    ).join('\n');
+
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
         <title>Thermal Labels</title>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
         <style>${this.THERMAL_LABEL_STYLES}</style>
-        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
       </head>
       <body>
-        ${labelsHTML}
+        <div class="label-container">${labelsHTML}</div>
         <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            try {
-              document.querySelectorAll('.barcode-canvas').forEach(function(canvas) {
-                const barcode = canvas.dataset.barcode;
-                if (barcode && window.JsBarcode) {
+          window.addEventListener('load', function() {
+            const canvases = document.querySelectorAll('.barcode-canvas');
+            canvases.forEach(canvas => {
+              const barcode = canvas.getAttribute('data-barcode');
+              if (barcode && window.JsBarcode) {
+                try {
                   JsBarcode(canvas, barcode, {
                     format: 'CODE128',
-                    width: 1.2,
-                    height: 20,
-                    displayValue: false,
-                    margin: 0,
+                    width: 1.8,
+                    height: 35,
+                    displayValue: true,
+                    fontSize: 10,
+                    fontOptions: 'bold',
+                    font: 'Arial',
+                    textAlign: 'center',
+                    textPosition: 'bottom',
+                    textMargin: 4,
+                    margin: 5,
                     background: '#ffffff',
-                    lineColor: '#000000'
+                    lineColor: '#000000',
+                    marginTop: 2,
+                    marginBottom: 2,
+                    marginLeft: 10,
+                    marginRight: 10
                   });
+                } catch (error) {
+                  console.error('Barcode generation failed:', error);
                 }
-              });
-            } catch (error) {
-              console.error('Failed to generate barcodes:', error);
-            }
+              }
+            });
           });
         </script>
       </body>
@@ -158,53 +200,40 @@ export class PrintService implements IPrintService {
    */
   async printLabels(labels: ThermalLabelData[], options: ThermalLabelOptions): Promise<PrintResult> {
     try {
-      // Validate label data first
-      const validation = this.validateLabelData(labels);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          message: `Invalid label data: ${validation.errors.join(', ')}`,
-          totalLabels: 0
-        };
-      }
+      logger.info('Starting thermal label print operation', { 
+        labelCount: labels.length, 
+        copies: options.copies 
+      }, 'UnifiedPrintService');
 
       const html = this.generateLabelHTML(labels, options);
+      const totalLabels = labels.length * (options.copies || 1);
       
-      // Create print window
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       if (!printWindow) {
-        throw new Error('Failed to open print window. Please allow popups.');
+        throw new Error('Print popup blocked. Please allow popups.');
       }
 
-      // Write HTML to print window
       printWindow.document.write(html);
       printWindow.document.close();
-
-      // Wait for resources to load
-      await new Promise<void>((resolve) => {
-        printWindow.addEventListener('load', () => {
-          setTimeout(resolve, 1000); // Wait for barcode generation
-        });
-      });
-
-      // Trigger print
-      printWindow.print();
-
-      // Close window after printing
+      printWindow.focus();
+      
+      // Wait for resources to load then print
       setTimeout(() => {
-        printWindow.close();
-      }, 1000);
+        printWindow.print();
+      }, 2000);
+
+      logger.info('Thermal labels prepared for printing successfully', { totalLabels }, 'UnifiedPrintService');
 
       return {
         success: true,
-        message: `Successfully printed ${labels.length} thermal labels`,
-        totalLabels: labels.length
+        message: `Successfully prepared ${totalLabels} thermal labels for printing`,
+        totalLabels
       };
     } catch (error) {
-      console.error('Print error:', error);
+      logger.error('Thermal label print operation failed', error, 'UnifiedPrintService');
       return {
         success: false,
-        message: `Print failed: ${(error as Error).message}`,
+        message: error instanceof Error ? error.message : 'Print operation failed',
         totalLabels: 0,
         error: error as Error
       };
@@ -216,30 +245,35 @@ export class PrintService implements IPrintService {
    */
   generateSingleLabel(label: ThermalLabelData, options: ThermalLabelOptions): string {
     const companyName = options.companyName || 'GPMS';
-    const showPrice = options.showPrice !== false;
-    const showSerial = options.showSerial !== false;
     
-    let productDetails = `${label.brand} ${label.model}`;
-    if (label.color) productDetails += ` ${label.color}`;
-    if (label.storage) productDetails += ` ${label.storage}GB`;
-    if (label.ram) productDetails += ` ${label.ram}GB RAM`;
-    if (showSerial && label.serial) productDetails += ` S/N: ${label.serial}`;
-
     return `
       <div class="thermal-label">
         <div class="label-header">
-          <div class="company-name">${companyName}</div>
+          <div class="company-name">${this.escapeHtml(companyName)}</div>
         </div>
         
         <div class="product-info">
-          <div class="product-name">${label.productName}</div>
-          <div class="product-details">${productDetails}</div>
-          ${showPrice ? `<div class="price">$${label.price.toFixed(2)}</div>` : ''}
+          <div class="product-name">${this.escapeHtml(label.productName)}</div>
+          ${(label.storage || label.ram) ? `
+            <div class="product-details">
+              ${label.storage || ''}${label.storage && label.ram ? ' • ' : ''}${label.ram || ''}
+            </div>
+          ` : ''}
+          
+          ${label.serial ? `
+            <div class="serial-number">${this.escapeHtml(label.serial)}</div>
+          ` : ''}
         </div>
-        
-        <div class="barcode-container">
-          <canvas class="barcode-canvas" data-barcode="${label.barcode}"></canvas>
-        </div>
+
+        ${label.price ? `
+          <div class="price">€${label.price.toFixed(2)}</div>
+        ` : ''}
+
+        ${label.barcode ? `
+          <div class="barcode-container">
+            <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(label.barcode)}"></canvas>
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -268,7 +302,7 @@ export class PrintService implements IPrintService {
       if (!label.barcode?.trim()) {
         errors.push(`Label ${index + 1}: Barcode is required`);
       }
-      if (typeof label.price !== 'number' || label.price < 0) {
+      if (label.price !== undefined && (typeof label.price !== 'number' || label.price < 0)) {
         errors.push(`Label ${index + 1}: Valid price is required`);
       }
     });
@@ -350,8 +384,6 @@ export class PrintService implements IPrintService {
    * Generate PDF from HTML
    */
   async generatePDF(html: string, options: PrintOptions): Promise<Blob> {
-    // For browser environments, we would use libraries like jsPDF or Puppeteer
-    // This is a placeholder implementation
     throw new Error('PDF generation not implemented in browser environment');
   }
 
@@ -359,7 +391,6 @@ export class PrintService implements IPrintService {
    * Preview document before printing
    */
   async preview(html: string): Promise<string> {
-    // Return the HTML with preview styles
     return `
       <div style="max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
         <div style="background: white; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
@@ -377,8 +408,6 @@ export class PrintService implements IPrintService {
     printers: string[];
     defaultPrinter?: string;
   }> {
-    // In browser environment, we can't directly access printer information
-    // This would require a native app or browser extension
     return {
       available: typeof window !== 'undefined' && 'print' in window,
       printers: ['Default Printer'],
@@ -417,5 +446,14 @@ export class PrintService implements IPrintService {
         details: { error: (error as Error).message }
       };
     }
+  }
+
+  /**
+   * Escape HTML special characters for security
+   */
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }

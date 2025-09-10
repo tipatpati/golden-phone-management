@@ -6,7 +6,7 @@
 import { sharedServiceRegistry } from './SharedServiceRegistry';
 import { serviceContainer } from './ServiceContainer';
 import { BarcodeService } from '../shared/BarcodeService';
-import { PrintService } from '../shared/PrintService';
+import { UnifiedPrintService } from './UnifiedPrintService';
 
 /**
  * Bootstrap all services in the application
@@ -49,7 +49,7 @@ function registerSharedServices(): void {
   // Print Service - Shared service
   sharedServiceRegistry.registerShared({
     name: 'printService',
-    factory: () => new PrintService(),
+    factory: () => new UnifiedPrintService(),
     scope: 'singleton',
     interfaces: ['IPrintService'],
     config: {
@@ -70,7 +70,7 @@ function registerSharedServices(): void {
   });
 
   serviceContainer.registerHealthCheck('printService', async () => {
-    const printService = await serviceContainer.get<PrintService>('printService');
+    const printService = await serviceContainer.get<UnifiedPrintService>('printService');
     const health = await printService.healthCheck();
     return {
       ...health,
@@ -215,8 +215,8 @@ export const Services = {
   /**
    * Get print service
    */
-  async getPrintService(): Promise<PrintService> {
-    const proxy = await sharedServiceRegistry.getShared<PrintService>('printService');
+  async getPrintService(): Promise<UnifiedPrintService> {
+    const proxy = await sharedServiceRegistry.getShared<UnifiedPrintService>('printService');
     return proxy.service;
   },
 

@@ -3,6 +3,7 @@ import { ThermalLabelData } from "../types";
 import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
 import { ProductForLabels } from "@/services/labels/types";
 import { mapProductsForLabels } from "@/utils/mapProductForLabels";
+import { logger } from "@/utils/logger";
 
 export function useThermalLabels(products: any[], useMasterBarcode?: boolean): ThermalLabelData[] {
   const [labels, setLabels] = useState<ThermalLabelData[]>([]);
@@ -10,7 +11,7 @@ export function useThermalLabels(products: any[], useMasterBarcode?: boolean): T
   
   // Global refresh function for external triggers
   const forceRefresh = useCallback(() => {
-    console.log('🔄 THERMAL LABELS: Force refreshing...');
+    logger.info('Force refreshing thermal labels', {}, 'useThermalLabels');
     setRefreshKey(prev => prev + 1);
   }, []);
   
@@ -26,16 +27,16 @@ export function useThermalLabels(products: any[], useMasterBarcode?: boolean): T
   useEffect(() => {
     const generateLabels = async () => {
       if (products.length === 0) {
-        console.log('⚠️ THERMAL LABELS: No products provided');
+        logger.warn('No products provided for thermal label generation', {}, 'useThermalLabels');
         setLabels([]);
         return;
       }
 
-      console.log('🚀 THERMAL LABELS: Starting generation for', products.length, 'products');
+      logger.info('Starting thermal label generation', { productCount: products.length }, 'useThermalLabels');
       
       // Ensure products are in standardized format before processing
       const standardizedProducts = mapProductsForLabels(products);
-      console.log('📋 THERMAL LABELS: Standardized product data for processing');
+      logger.info('Standardized product data for processing', {}, 'useThermalLabels');
       
       try {
         const result = await ThermalLabelDataService.generateLabelsForProducts(
@@ -44,20 +45,20 @@ export function useThermalLabels(products: any[], useMasterBarcode?: boolean): T
         );
 
         // Log results
-        console.log('📊 THERMAL LABELS: Generation results:', result.stats);
+        logger.info('Thermal label generation completed', result.stats, 'useThermalLabels');
         
         if (result.errors.length > 0) {
-          console.error('❌ THERMAL LABELS: Errors:', result.errors);
+          logger.error('Thermal label generation errors', { errors: result.errors }, 'useThermalLabels');
         }
         
         if (result.warnings.length > 0) {
-          console.warn('⚠️ THERMAL LABELS: Warnings:', result.warnings);
+          logger.warn('Thermal label generation warnings', { warnings: result.warnings }, 'useThermalLabels');
         }
 
         setLabels(result.labels);
         
       } catch (error) {
-        console.error('💥 THERMAL LABELS: Generation failed:', error);
+        logger.error('Thermal label generation failed', error, 'useThermalLabels');
         setLabels([]);
       }
     };

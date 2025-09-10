@@ -26,7 +26,7 @@ export type {
 
 // Shared service implementations
 export { BarcodeService } from '../shared/BarcodeService';
-export { PrintService } from '../shared/PrintService';
+export { UnifiedPrintService } from './UnifiedPrintService';
 
 // Service interfaces
 export type { IBarcodeService, IBarcodeGenerator, IBarcodeRegistry } from '../shared/interfaces/IBarcodeService';
@@ -55,13 +55,14 @@ export const ServiceMigration = {
    * Migrate from legacy service registry to enhanced system
    */
   async migrateLegacyServices(): Promise<void> {
-    console.log('🔄 Migrating legacy services to enhanced system...');
+    const { logger } = await import('@/utils/logger');
+    logger.info('Migrating legacy services to enhanced system', {}, 'ServiceMigration');
     
     // Initialize new system
     const { bootstrapServices } = await import('./ServiceBootstrap');
     await bootstrapServices();
     
-    console.log('✅ Legacy services migrated successfully');
+    logger.info('Legacy services migrated successfully', {}, 'ServiceMigration');
   },
 
   /**
