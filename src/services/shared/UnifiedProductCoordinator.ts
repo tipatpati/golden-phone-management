@@ -179,15 +179,25 @@ export class UnifiedProductCoordinator {
 
     // Create new product if not found
     console.log(`🔨 Creating new product: ${brand} ${model}`);
+    // Sanitize additionalData to include only valid product columns (prevent schema errors)
+    const allowedKeys = new Set([
+      'price','stock','threshold','has_serial','category_id','barcode','description','supplier','year','min_price','max_price','serial_numbers'
+    ]);
+    const sanitizedAdditional: Record<string, any> = {};
+    if (additionalData) {
+      for (const [k, v] of Object.entries(additionalData)) {
+        if (allowedKeys.has(k)) sanitizedAdditional[k] = v;
+      }
+    }
     const productData = {
       brand,
       model,
-      price: additionalData?.price || 0,
-      stock: additionalData?.stock || 0,
-      threshold: additionalData?.threshold || 0,
-      has_serial: additionalData?.has_serial || false,
-      category_id: additionalData?.category_id,
-      ...additionalData
+      price: sanitizedAdditional.price ?? 0,
+      stock: sanitizedAdditional.stock ?? 0,
+      threshold: sanitizedAdditional.threshold ?? 0,
+      has_serial: sanitizedAdditional.has_serial ?? false,
+      category_id: sanitizedAdditional.category_id,
+      ...sanitizedAdditional
     };
 
     const { data: newProduct, error } = await supabase
