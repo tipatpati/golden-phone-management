@@ -1,4 +1,5 @@
 import { ThermalLabelData, ThermalLabelOptions } from "../types";
+import { logger } from "@/utils/logger";
 
 /**
  * Centralized label data formatting to ensure consistency between preview and print
@@ -24,8 +25,7 @@ export function formatLabelElements(
   label: ThermalLabelData,
   options: ThermalLabelOptions & { companyName?: string }
 ): FormattedLabelElements {
-  // Debug log to see what data we're working with
-  console.log('🏷️ formatLabelElements input:', { label, options });
+  logger.debug('formatLabelElements input', { label, options }, 'labelDataFormatter');
   
   // Price logic: Use max price if available, otherwise fall back to unit price
   const displayPrice = label.maxPrice || label.price;
@@ -43,9 +43,9 @@ export function formatLabelElements(
     batteryLevel: label.batteryLevel && label.batteryLevel > 0 ? `${label.batteryLevel}%` : null
   };
   
-  // Debug log to see what data we're outputting
-  console.log('🏷️ formatLabelElements output:', formatted);
-  console.log('🏷️ Storage/RAM/Battery debug:', {
+  logger.debug('formatLabelElements output', {
+    formatted,
+    storageRAMBatteryDebug: {
     originalStorage: label.storage,
     originalRam: label.ram,
     originalBatteryLevel: label.batteryLevel,
@@ -55,7 +55,8 @@ export function formatLabelElements(
     storageCondition: label.storage && label.storage > 0,
     ramCondition: label.ram && label.ram > 0,
     batteryCondition: label.batteryLevel && label.batteryLevel > 0
-  });
+    }
+  }, 'labelDataFormatter');
   
   return formatted;
 }

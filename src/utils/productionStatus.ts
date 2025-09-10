@@ -5,6 +5,7 @@
 import { logger } from '@/utils/logger';
 import { env, config } from '@/config/environment';
 import { errorTracking } from '@/services/core/ErrorTracking';
+import { initializeProductionDeployment } from './finalProductionChecks';
 
 interface ProductionStatus {
   environment: 'production' | 'development' | 'test';
@@ -89,15 +90,16 @@ export function checkProductionReadiness(): ProductionStatus {
 }
 
 /**
- * Initialize production optimizations
+ * Initialize production optimizations (legacy - use finalProductionChecks instead)
+ * @deprecated Use initializeProductionDeployment from finalProductionChecks
  */
-export function initializeProduction(): void {
+export function initializeProductionLegacy(): void {
   if (!env.IS_PRODUCTION) {
     logger.info('Running in development mode', {}, 'Production');
     return;
   }
 
-  logger.info('Initializing production optimizations', {}, 'Production');
+  logger.info('Initializing production optimizations (legacy)', {}, 'Production');
 
   // Initialize error tracking
   errorTracking.addBreadcrumb('Application started in production', 'system');

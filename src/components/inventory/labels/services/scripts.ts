@@ -1,3 +1,5 @@
+import { logger } from "@/utils/logger";
+
 // Generate the inline script used in the print window
 export function generateBarcodeScript(config: any): string {
   return `
@@ -6,6 +8,7 @@ export function generateBarcodeScript(config: any): string {
     
     function initializeBarcodes() {
       barcodeInitAttempts++;
+      // Use console for print window context
       console.log('Barcode initialization attempt:', barcodeInitAttempts);
       
       if (typeof JsBarcode === 'undefined') {
@@ -137,7 +140,7 @@ export function generateBarcodeScript(config: any): string {
       }, 500);
     });
 
-    // Ensure the browser uses print styles without hacks
+    // Ensure the browser uses print styles
     window.addEventListener('beforeprint', function() {
       console.log('Before print: ensuring print styles are applied');
       document.documentElement.classList.add('printing');

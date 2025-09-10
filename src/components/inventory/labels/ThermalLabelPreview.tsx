@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import JsBarcode from "jsbarcode";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 import { formatLabelElements, getBarcodeConfig } from "./services/labelDataFormatter";
+import { logger } from "@/utils/logger";
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
@@ -19,7 +20,7 @@ export function ThermalLabelPreview({
   useEffect(() => {
     if (canvasRef.current && options.includeBarcode && label.barcode) {
       try {
-        console.log('🏷️ Generating barcode for:', label.barcode);
+        logger.debug('Generating barcode for thermal label', { barcode: label.barcode }, 'ThermalLabelPreview');
         
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -61,9 +62,9 @@ export function ThermalLabelPreview({
           marginRight: 10
         });
         
-        console.log('✅ Barcode generated successfully for:', label.barcode);
+        logger.debug('Barcode generated successfully', { barcode: label.barcode }, 'ThermalLabelPreview');
       } catch (error) {
-        console.error('❌ Barcode generation failed for', label.barcode, ':', error);
+        logger.error('Barcode generation failed', { barcode: label.barcode, error }, 'ThermalLabelPreview');
         
         // Fallback: Draw error message on canvas
         const canvas = canvasRef.current;
@@ -80,11 +81,11 @@ export function ThermalLabelPreview({
         }
       }
     } else {
-      console.log('🏷️ Barcode not rendered:', {
+      logger.debug('Barcode not rendered', {
         hasCanvas: !!canvasRef.current,
         includeBarcode: options.includeBarcode,
         barcode: label.barcode
-      });
+      }, 'ThermalLabelPreview');
     }
   }, [label.barcode, options.includeBarcode]);
 
