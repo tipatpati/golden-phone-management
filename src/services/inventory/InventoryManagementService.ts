@@ -645,12 +645,49 @@ export class InventoryManagementService {
   }
 
   /**
-   * Transform raw product data from database
+   * Transform raw product data from database with enhanced unit handling
    */
-  private static transformProduct(product: any): Product {
-    return {
+  private static transformProduct(product: any): ProductWithUnits {
+    // Enhanced units extraction from various sources
+    const unitsFromDB = product.units || product.product_units || [];
+    
+    const transformed: ProductWithUnits = {
       ...product,
       category_name: product.category?.name,
+      // Ensure units are properly mapped for cross-module compatibility
+      units: unitsFromDB,
+      product_units: unitsFromDB,
+      unitCount: unitsFromDB.length,
+      availableUnits: unitsFromDB.filter((u: any) => u.status === 'available').length,
     };
+
+    // Enhanced logging for debugging cross-module data sync
+    if (product.has_serial) {
+      if (unitsFromDB.length > 0) {
+        console.log(`✅ Product ${product.brand} ${product.model} has ${unitsFromDB.length} units from supplier/inventory`);
+        // Log first unit structure for debugging
+        if (unitsFromDB[0]) {
+          console.log('📋 Sample unit structure:', {
+            hasSerial: Boolean(unitsFromDB[0].serial_number || unitsFromDB[0].serial),
+            hasBarcode: Boolean(unitsFromDB[0].barcode),
+            hasPrice: Boolean(unitsFromDB[0].price || unitsFromDB[0].purchase_price),
+            status: unitsFromDB[0].status,
+            keys: Object.keys(unitsFromDB[0])
+          });
+        }
+      } else {
+        console.warn('⚠️ Serialized product missing units data:', { 
+          id: product.id, 
+          brand: product.brand, 
+          model: product.model,
+          has_serial: product.has_serial,
+          stock: product.stock,
+          rawUnits: product.units,
+          rawProductUnits: product.product_units
+        });
+      }
+    }
+
+    return transformed;
   }
 }

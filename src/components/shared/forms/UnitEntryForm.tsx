@@ -13,6 +13,7 @@ import { Plus, Trash2 } from "lucide-react";
 import type { UnitEntryForm } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
+import { useBarcodeService } from "@/components/shared/useBarcodeService";
 
 interface UnitEntryFormProps {
   entries: UnitEntryForm[];
@@ -21,6 +22,8 @@ interface UnitEntryFormProps {
   showPricing?: boolean;
   title?: string;
   className?: string;
+  productId?: string; // For barcode generation
+  showBarcodeActions?: boolean; // To show/hide barcode generation buttons
 }
 
 export function UnitEntryForm({ 
@@ -29,9 +32,12 @@ export function UnitEntryForm({
   onStockChange,
   showPricing = true,
   title = "Product Units",
-  className = ""
+  className = "",
+  productId,
+  showBarcodeActions = false
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
+  const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
   
   const addEntry = () => {
     const newEntry: UnitEntryForm = {
@@ -58,11 +64,76 @@ export function UnitEntryForm({
 
   const validEntriesCount = entries.filter(e => e.serial?.trim()).length;
 
+  // Barcode generation functions
+  const generateBarcodeForEntry = async (index: number) => {
+    if (!barcodeServiceReady || !productId) return;
+    
+    const entry = entries[index];
+    if (!entry.serial?.trim()) {
+      console.warn('Cannot generate barcode for entry without serial number');
+      return;
+    }
+
+    try {
+      // For existing units, use unit-specific barcode generation
+      const barcode = await generateUnitBarcode(`${productId}_${entry.serial}`, {
+        metadata: { 
+          serial: entry.serial,
+          color: entry.color,
+          storage: entry.storage,
+          ram: entry.ram
+        }
+      });
+      
+      console.log(`✅ Generated barcode for ${entry.serial}: ${barcode}`);
+      
+      // Update entry with barcode (you could extend UnitEntryForm to include barcode field)
+      const updatedEntries = [...entries];
+      (updatedEntries[index] as any).barcode = barcode;
+      setEntries(updatedEntries);
+      
+    } catch (error) {
+      console.error('Failed to generate barcode:', error);
+    }
+  };
+
+  const generateBarcodesForAll = async () => {
+    if (!barcodeServiceReady || !productId) return;
+    
+    const validEntries = entries.filter(e => e.serial?.trim());
+    if (validEntries.length === 0) return;
+
+    try {
+      for (let i = 0; i < entries.length; i++) {
+        if (entries[i].serial?.trim()) {
+          await generateBarcodeForEntry(i);
+        }
+      }
+      console.log(`✅ Generated barcodes for ${validEntries.length} units`);
+    } catch (error) {
+      console.error('Failed to generate barcodes:', error);
+    }
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">{title}</Label>
-        <div className="text-sm text-muted-foreground">Units: {validEntriesCount}</div>
+        <div className="flex items-center gap-4">
+          {showBarcodeActions && validEntriesCount > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={generateBarcodesForAll}
+              disabled={!barcodeServiceReady || !productId}
+              className="h-8"
+            >
+              Generate Barcodes
+            </Button>
+          )}
+          <div className="text-sm text-muted-foreground">Units: {validEntriesCount}</div>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -71,17 +142,32 @@ export function UnitEntryForm({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-muted-foreground">Unit #{index + 1}</span>
-                {entries.length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => removeEntry(index)} 
-                    className="h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {showBarcodeActions && entry.serial?.trim() && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => generateBarcodeForEntry(index)}
+                      disabled={!barcodeServiceReady || !productId}
+                      className="h-8 px-2 text-xs"
+                      title="Generate barcode for this unit"
+                    >
+                      📊
+                    </Button>
+                  )}
+                  {entries.length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => removeEntry(index)} 
+                      className="h-8 w-8 p-0"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Serial Number - Full width */}

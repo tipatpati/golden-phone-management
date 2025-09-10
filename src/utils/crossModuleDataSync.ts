@@ -44,8 +44,9 @@ export function getTransformationLogs(): DataTransformationLog[] {
 
 /**
  * Transform ProductUnit[] to UnitEntryForm[] consistently across modules
+ * Enhanced to handle supplier-created units and various field formats
  */
-export function transformUnitsToEntries(units: ProductUnit[]): UnitEntryForm[] {
+export function transformUnitsToEntries(units: any[]): UnitEntryForm[] {
   const log: DataTransformationLog = {
     source: 'ProductUnit[]',
     target: 'UnitEntryForm[]',
@@ -60,25 +61,52 @@ export function transformUnitsToEntries(units: ProductUnit[]): UnitEntryForm[] {
       throw new Error('Input is not an array');
     }
 
-    const entries = units.map(unit => ({
-      serial: unit.serial_number || '',
-      battery_level: unit.battery_level || 0,
-      color: unit.color || '',
-      storage: unit.storage || 0,
-      ram: unit.ram || 0,
-      price: unit.price,
-      min_price: unit.min_price,
-      max_price: unit.max_price,
-    } as UnitEntryForm));
+    if (units.length === 0) {
+      console.log('⚠️ Empty units array received');
+      log.output = [];
+      log.success = true;
+      logDataTransformation(log);
+      return [];
+    }
 
-    log.output = entries;
+    const entries = units.map((unit, index) => {
+      // Enhanced field mapping to handle supplier module data
+      const entry: UnitEntryForm = {
+        serial: unit.serial_number || unit.serial || '',
+        battery_level: unit.battery_level || unit.batteryLevel || 0,
+        color: unit.color || undefined,
+        storage: unit.storage || undefined,
+        ram: unit.ram || undefined,
+        price: unit.price || unit.purchase_price || unit.unit_cost || undefined,
+        min_price: unit.min_price || unit.minPrice || undefined,
+        max_price: unit.max_price || unit.maxPrice || undefined,
+      };
+
+      // Log any missing serial numbers as warnings
+      if (!entry.serial) {
+        console.warn(`⚠️ Unit ${index} has no serial number:`, unit);
+      }
+
+      return entry;
+    });
+
+    // Filter out units without serial numbers to prevent empty forms
+    const validEntries = entries.filter(entry => entry.serial?.trim());
+
+    if (validEntries.length !== entries.length) {
+      console.warn(`⚠️ Filtered out ${entries.length - validEntries.length} units without serial numbers`);
+    }
+
+    log.output = validEntries;
     log.success = true;
     logDataTransformation(log);
     
-    return entries;
+    console.log(`✅ Successfully transformed ${units.length} units to ${validEntries.length} valid entries`);
+    return validEntries;
   } catch (error) {
     log.errors = [error instanceof Error ? error.message : 'Unknown transformation error'];
     logDataTransformation(log);
+    console.error('❌ Error transforming units to entries:', error);
     return [];
   }
 }
