@@ -2,8 +2,6 @@ import React from "react";
 import type { ProductFormProps, ProductFormData } from "@/services/inventory/types";
 import { ProductFormFields } from "./ProductFormFields";
 import { SerialNumberManager } from "./SerialNumberManager";
-import { BarcodeManager } from "./BarcodeManager";
-import { BarcodePreview } from "./BarcodePreview";
 import { useProductForm } from "./hooks/useProductForm";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 
@@ -219,21 +217,6 @@ export function ProductForm({
         />
       )}
 
-      {/* Enhanced Barcode Preview */}
-      <BarcodePreview
-        productId={productId}
-        unitEntries={unitEntries}
-        productBarcode={formData.barcode}
-        hasSerial={formData.has_serial || false}
-      />
-
-      {/* Legacy Barcode Manager (for compatibility) */}
-      <BarcodeManager
-        serialNumbers={unitEntries.map(e => e.serial).join('\n')}
-        hasSerial={formData.has_serial || false}
-        productId={productId}
-        onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
-      />
 
       {/* Form-level error display - Show all validation errors */}
       {React.useMemo(() => {
