@@ -86,17 +86,17 @@ export function UnitEntryForm({
 
               {/* Serial Number - Full width */}
               <div>
-                <Label className="text-xs font-medium mb-1 block">Serial Number / IMEI *</Label>
+                <Label className="text-xs font-medium mb-1 block">IMEI *</Label>
                 <Input
                   value={entry.serial || ''}
                   onChange={(e) => {
-                    // Allow alphanumeric for flexibility
-                    const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                    // Only allow digits for IMEI
+                    const value = e.target.value.replace(/[^0-9]/g, '');
                     updateEntry(index, 'serial', value);
                   }}
                   placeholder="123456789012345"
                   className="text-sm h-10 font-mono"
-                  maxLength={20}
+                  maxLength={15}
                 />
               </div>
 
