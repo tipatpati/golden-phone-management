@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRepairs } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { logger } from "@/utils/logger";
 
 type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted" | "cancelled";
 
@@ -18,7 +19,7 @@ export function RepairStatus() {
     const channel = supabase
       .channel('repair-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
-        console.log('Repair status: Repairs data updated');
+        logger.debug('Repairs data updated', {}, 'RepairStatus');
       })
       .subscribe();
 

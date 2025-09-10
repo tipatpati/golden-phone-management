@@ -7,6 +7,7 @@ import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
+import { logger } from "@/utils/logger";
 
 interface InventoryTableToolbarProps {
   onSearchChange: (searchTerm: string) => void;
@@ -27,12 +28,6 @@ export function InventoryTableToolbar({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
-  // Debug logging
-  console.log('🔍 InventoryTableToolbar Debug:', {
-    currentRole,
-    hasInventoryPermission: currentRole ? roleUtils.hasPermission(currentRole, 'inventory') : false,
-    roleUtils_hasPermission_result: currentRole ? roleUtils.hasPermission(currentRole, 'inventory') : 'no role'
-  });
   
   // Check if user can add products using permission-based check
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
@@ -52,7 +47,7 @@ export function InventoryTableToolbar({
   
   const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
-    console.log('🔍 Search input changed:', newSearchTerm);
+    logger.debug('Search input changed', { searchTerm: newSearchTerm }, 'InventoryTableToolbar');
     onSearchChange(newSearchTerm);
   }, [onSearchChange]);
 
@@ -107,7 +102,7 @@ export function InventoryTableToolbar({
             />
           </div>
         </div>
-        <Button type="button" variant="outline" className="h-12 px-4 flex-shrink-0" onClick={() => console.log('Manual search triggered')}>
+        <Button type="button" variant="outline" className="h-12 px-4 flex-shrink-0" onClick={() => logger.debug('Manual search triggered', {}, 'InventoryTableToolbar')}>
           <Search className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">Cerca</span>
         </Button>

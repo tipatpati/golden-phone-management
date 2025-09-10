@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 interface BaseDialogProps {
   title: string;
@@ -75,7 +76,7 @@ export function BaseDialog({
             {onSubmit && (
               <Button
                 onClick={() => {
-                  console.log('🔄 BaseDialog submit button clicked');
+                  logger.debug('BaseDialog submit button clicked', {}, 'BaseDialog');
                   onSubmit();
                 }}
                 disabled={isLoading}

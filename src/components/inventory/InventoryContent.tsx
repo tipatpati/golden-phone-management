@@ -17,6 +17,7 @@ import { RoleGuard } from "@/components/common/RoleGuard";
 import { UserRole } from "@/types/roles";
 import { Package } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { logger } from "@/utils/logger";
 
 interface InventoryContentProps {
   showAddProduct: boolean;
@@ -42,7 +43,7 @@ export function InventoryContent({
 
   // Force refresh function for immediate table updates
   const refreshTable = useCallback(() => {
-    console.log('🔄 Refreshing inventory table...');
+    logger.debug('Refreshing inventory table', {}, 'InventoryContent');
     refetch();
     queryClient.invalidateQueries({ queryKey: ['products'] });
   }, [refetch, queryClient]);
@@ -62,7 +63,7 @@ export function InventoryContent({
   } = useBulkActions(Array.isArray(products) ? products : []);
 
   const handleSearchChange = useCallback((newSearchTerm: string) => {
-    console.log('🔍 Search term updated in InventoryContent:', newSearchTerm);
+    logger.debug('Search term updated', { searchTerm: newSearchTerm }, 'InventoryContent');
     setSearchTerm(newSearchTerm);
   }, []);
 
@@ -84,7 +85,7 @@ export function InventoryContent({
         description: "Product has been successfully deleted",
       });
     } catch (error) {
-      console.error('Delete error:', error);
+      logger.error('Delete error', error, 'InventoryContent');
       toast({
         title: "Delete Failed",
         description: "Failed to delete product",
@@ -94,12 +95,12 @@ export function InventoryContent({
   };
 
   const handleProductAdded = useCallback(() => {
-    console.log('🔄 Product added - refreshing table');
+    logger.info('Product added - refreshing table', {}, 'InventoryContent');
     refreshTable();
   }, [refreshTable]);
 
   const handleProductUpdated = useCallback(() => {
-    console.log('🔄 Product updated - refreshing table');
+    logger.info('Product updated - refreshing table', {}, 'InventoryContent');
     refreshTable();
   }, [refreshTable]);
 
@@ -108,7 +109,7 @@ export function InventoryContent({
   }
 
   if (error) {
-    console.error('Products fetch error:', error);
+    logger.error('Products fetch error', error, 'InventoryContent');
     return (
       <EmptyState
         icon={<Package />}

@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useSales } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { logger } from "@/utils/logger";
 
 export function RecentSales() {
   const { data: allGarentille = [], isLoading } = useSales();
@@ -16,7 +17,7 @@ export function RecentSales() {
     const channel = supabase
       .channel('recent-garentille-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
-        console.log('Recent garentille: Garentille data updated');
+        logger.debug('Garentille data updated', {}, 'RecentSales');
       })
       .subscribe();
 

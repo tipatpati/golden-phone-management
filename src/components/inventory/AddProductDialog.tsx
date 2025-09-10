@@ -47,7 +47,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose,
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    console.log('🔄 AddProductDialog: Starting product creation with InventoryManagementService');
+    logger.info('Starting product creation', { data }, 'AddProductDialog');
     
     setIsCreating(true);
     try {
@@ -82,7 +82,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose,
       }
       
     } catch (error) {
-      console.error('❌ AddProductDialog: Product creation failed', error);
+      logger.error('Product creation failed', error, 'AddProductDialog');
       toast.error(error instanceof Error ? error.message : 'Failed to create product');
     } finally {
       setIsCreating(false);
@@ -112,7 +112,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose,
       {externalOpen === undefined && (
         <Button 
           onClick={() => {
-            console.log('🔵 Aggiungi Prodotto button clicked');
+            logger.debug('Add Product button clicked', {}, 'AddProductDialog');
             setInternalOpen(true);
           }} 
           className="flex items-center gap-2"
@@ -242,11 +242,11 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose,
           </Button>
           <Button
             onClick={async () => {
-              console.log('🔄 Manual submit button clicked');
+              logger.debug('Manual submit triggered', {}, 'AddProductDialog');
               if (formSubmitRef.current) {
                 await formSubmitRef.current();
               } else {
-                console.error('❌ Form submit function not available');
+                logger.error('Form submit function not available', {}, 'AddProductDialog');
               }
             }}
             disabled={isCreating}

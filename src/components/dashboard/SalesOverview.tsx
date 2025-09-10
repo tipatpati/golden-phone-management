@@ -9,6 +9,7 @@ import { useRepairs } from "@/services";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { useClients } from "@/services/clients/ClientReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 import { LoadingSkeleton } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 const chartConfig = {
@@ -58,14 +59,14 @@ export const SalesOverview = React.memo(() => {
       schema: 'public',
       table: 'sales'
     }, () => {
-      console.log('Sales overview: Sales data updated');
+      logger.debug('Sales data updated', {}, 'SalesOverview');
     }).subscribe();
     const repairsChannel = supabase.channel('repairs-overview-updates').on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'repairs'
     }, () => {
-      console.log('Sales overview: Repairs data updated');
+      logger.debug('Repairs data updated', {}, 'SalesOverview');
     }).subscribe();
     return () => {
       supabase.removeChannel(salesChannel);

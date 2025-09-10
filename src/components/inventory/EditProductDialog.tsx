@@ -5,7 +5,7 @@ import { useUpdateProduct } from "@/services/inventory/InventoryReactQueryServic
 import type { Product, ProductFormData, UnitEntryForm } from "@/services/inventory/types";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { toast } from "@/components/ui/sonner";
-import { log } from "@/utils/logger";
+import { logger } from "@/utils/logger";
 
 interface EditProductDialogProps {
   product: Product;
@@ -20,7 +20,7 @@ export function EditProductDialog({
   onClose, 
   onSuccess 
 }: EditProductDialogProps) {
-  log.debug('EditProductDialog rendering', { productId: product.id }, 'EditProductDialog');
+  logger.debug('EditProductDialog rendering', { productId: product.id }, 'EditProductDialog');
   
   const [initialData, setInitialData] = useState<Partial<ProductFormData> | null>(null);
   const updateProduct = useUpdateProduct();
@@ -38,7 +38,7 @@ export function EditProductDialog({
           throw new Error('Product not found');
         }
         
-        console.log('📦 Loaded product data via coordinator for edit:', {
+        logger.debug('Loaded product data via coordinator for edit', {
           productId: product.id,
           unitCount: result.units.length,
           unitEntriesCount: result.unitEntries.length,
@@ -63,7 +63,7 @@ export function EditProductDialog({
           unit_entries: result.unitEntries,
         };
         
-        console.log('📝 Prepared initial data for edit via coordinator:', {
+        logger.debug('Prepared initial data for edit via coordinator', {
           productId: product.id,
           unitEntriesCount: result.unitEntries.length,
           hasSerial: result.product.has_serial,
@@ -72,7 +72,7 @@ export function EditProductDialog({
         
         setInitialData(preparedData);
       } catch (error) {
-        console.error('Failed to load product units for edit via coordinator:', error);
+        logger.error('Failed to load product units for edit via coordinator', error, 'EditProductDialog');
         // Fallback to basic data without units
         setInitialData({
           brand: product.brand || "",
@@ -100,8 +100,8 @@ export function EditProductDialog({
   }, [product, open]);
 
   const handleSubmit = async (data: ProductFormData) => {
-    console.log('🔄 EditProductDialog handleSubmit called with data:', data);
-    log.debug('Submitting product update', { 
+    logger.debug('EditProductDialog handleSubmit called', { data }, 'EditProductDialog');
+    logger.debug('Submitting product update', { 
       brand: data.brand, 
       model: data.model, 
       categoryId: data.category_id 
@@ -169,7 +169,7 @@ export function EditProductDialog({
                 max_price: data.max_price
               }
             });
-            console.log(`✅ Created ${newUnitEntries.length} new product units with default pricing`);
+            logger.info(`Created ${newUnitEntries.length} new product units with default pricing`, {}, 'EditProductDialog');
             
             // Refresh thermal labels after updating product units
             if (typeof (window as any).__refreshThermalLabels === 'function') {
@@ -200,12 +200,12 @@ export function EditProductDialog({
       onSuccess();
       onClose();
     } catch (error) {
-      log.error('Product update failed', error, 'EditProductDialog');
+      logger.error('Product update failed', error, 'EditProductDialog');
     }
   };
 
   const handleFormDialogSubmit = async () => {
-    console.log('🔄 FormDialog submit wrapper called');
+    logger.debug('FormDialog submit wrapper called', {}, 'EditProductDialog');
     // Call the form's submit function directly through the global handler
     const formSubmitHandler = (window as any).__currentFormSubmit;
     if (formSubmitHandler) {

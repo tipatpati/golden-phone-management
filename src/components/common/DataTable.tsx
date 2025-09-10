@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/utils/logger";
 
 interface Column<T> {
   key: keyof T;
@@ -101,7 +102,7 @@ export function DataTable<T>({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          console.log('Button clicked:', action.label, item);
+                          logger.debug('DataTable action clicked', { action: action.label, item }, 'DataTable');
                           if (typeof action.onClick === 'function') {
                             action.onClick(item);
                           }

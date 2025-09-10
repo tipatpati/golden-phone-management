@@ -61,72 +61,8 @@ export function ProductForm({
   // Check if category requires serial numbers
   const requiresSerial = formData.category_id !== 2;
 
-  // Auto-fill function for testing
-  const autoFillTestData = () => {
-    const testData = {
-      brand: 'Apple',
-      model: 'iPhone 15 Pro',
-      year: 2024,
-      category_id: 1, // Phones
-      price: 1200,
-      min_price: 1000,
-      max_price: 1400,
-      stock: 3,
-      threshold: 5,
-      description: 'Latest iPhone with advanced features',
-      supplier: 'Tech Supplier Inc',
-      has_serial: true
-    };
-
-    // Update all fields
-    Object.entries(testData).forEach(([key, value]) => {
-      updateField(key as keyof ProductFormData, value);
-    });
-
-    // Add sample unit entries for testing
-    const sampleEntries = [
-      {
-        serial: '123456789012345',
-        color: 'Space Black',
-        storage: 256,
-        battery_level: 85,
-        price: 1000,
-        min_price: 1200,
-        max_price: 1400
-      },
-      {
-        serial: '123456789012346', 
-        color: 'Natural Titanium',
-        storage: 256,
-        battery_level: 92,
-        price: 1000,
-        min_price: 1200,
-        max_price: 1400
-      }
-    ];
-    
-    updateUnitEntries(sampleEntries);
-  };
-
   return (
     <div className="space-y-6">
-      {/* Development Auto-fill Button - Always visible for testing */}
-      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-medium text-yellow-800">🧪 Development Tools</h4>
-              <p className="text-xs text-yellow-700">Quick fill for testing purposes</p>
-            </div>
-            <button
-              type="button"
-              onClick={autoFillTestData}
-              className="px-3 py-1 text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 rounded transition-colors"
-            >
-              Auto-fill Test Data
-            </button>
-          </div>
-        </div>
-      )
 
       {/* Product Form Guidance */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
@@ -248,24 +184,6 @@ export function ProductForm({
         return null;
       }, [getFieldError])}
 
-      {/* Debug Information (development only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg text-xs space-y-2">
-          <h4 className="font-semibold">Debug Info:</h4>
-          <div>
-            <strong>Form Data:</strong>
-            <pre className="mt-1 text-[10px] overflow-auto max-h-32">
-              {JSON.stringify(formData, null, 2)}
-            </pre>
-          </div>
-          <div>
-            <strong>Unit Entries:</strong> {unitEntries.length} entries
-          </div>
-          <div>
-            <strong>Has Errors:</strong> {hasErrors ? 'Yes' : 'No'}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

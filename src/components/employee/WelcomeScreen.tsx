@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
+import { logger } from "@/utils/logger";
 import { 
   ShoppingCart, 
   Package, 
@@ -34,13 +35,13 @@ interface ModuleButton {
 export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
   const navigate = useNavigate();
   
-  console.log('🔍 WelcomeScreen Debug:', { userRole, availableRoles: Object.keys(ROLE_CONFIGS) });
+  logger.debug('WelcomeScreen Debug', { userRole, availableRoles: Object.keys(ROLE_CONFIGS) }, 'WelcomeScreen');
   
   const config = ROLE_CONFIGS[userRole];
 
   if (!config) {
-    console.error('❌ No config found for role:', userRole);
-    console.log('📋 Available roles:', Object.keys(ROLE_CONFIGS));
+    logger.error('No config found for role', { userRole }, 'WelcomeScreen');
+    logger.debug('Available roles', { roles: Object.keys(ROLE_CONFIGS) }, 'WelcomeScreen');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 export function InventoryStatus() {
   const { data: allProducts = [] } = useProducts();
@@ -13,7 +14,7 @@ export function InventoryStatus() {
     const channel = supabase
       .channel('inventory-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        console.log('Inventory status: Inventory data updated');
+        logger.debug('Inventory data updated', {}, 'InventoryStatus');
       })
       .subscribe();
 

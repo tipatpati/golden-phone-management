@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRepairs } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 interface RepairStatsCardsProps {
   statusCounts?: {
@@ -23,7 +24,7 @@ export const RepairStatsCards: React.FC<RepairStatsCardsProps> = ({ statusCounts
     const channel = supabase
       .channel('repair-stats-card-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
-        console.log('Repair stats cards: Repair stats updated');
+        logger.debug('Repair stats updated', {}, 'RepairStatsCards');
       })
       .subscribe();
 
