@@ -39,8 +39,27 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
+      
+      // Priority order for unit data sources:
+      // 1. unit_entries (from form submission)
+      // 2. units (from database via getProductWithUnits)
+      // 3. serial_numbers (legacy format)
       if (initialData.unit_entries) {
         setUnitEntries(initialData.unit_entries);
+      } else if ((initialData as any).units && Array.isArray((initialData as any).units)) {
+        // Transform product_units from database to UnitEntryForm format
+        console.log('🔄 Transforming database units to unit entries:', (initialData as any).units);
+        const entries = (initialData as any).units.map((unit: any) => ({
+          serial: unit.serial_number,
+          battery_level: unit.battery_level || 0,
+          color: unit.color,
+          storage: unit.storage,
+          ram: unit.ram,
+          price: unit.price,
+          min_price: unit.min_price,
+          max_price: unit.max_price,
+        } as UnitEntryForm));
+        setUnitEntries(entries.length > 0 ? entries : [{ serial: '', battery_level: 0 }]);
       } else if (initialData.serial_numbers) {
         // Simple conversion - only extract serial numbers
         const entries = initialData.serial_numbers.map(serial => ({
