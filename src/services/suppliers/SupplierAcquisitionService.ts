@@ -152,24 +152,94 @@ class SupplierAcquisitionService {
     const unitIds: string[] = [];
 
     if (item.createsNewProduct && item.productData) {
-      // Create new product
-      productId = await this.createProduct(transactionId, item.productData);
-      productIds.push(productId);
+      // Create new product using unified creation service
+      const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+      
+      const result = await unifiedProductCreationService.createProduct(item.productData, {
+        source: 'supplier',
+        transactionId,
+        unitCost: item.unitCost,
+        supplierId: supplierId,
+        metadata: {
+          acquisition: true,
+          quantity: item.quantity
+        }
+      });
+
+      if (!result.success) {
+        throw new Error(`Failed to create/resolve product: ${result.errors.join(', ')}`);
+      }
+
+      productId = result.product!.id;
+      if (!result.isExistingProduct) {
+        productIds.push(productId);
+      }
+      
+      // Units are already created by the unified service
+      unitIds.push(...result.units.map(u => u.id));
+      
+      console.log(`✅ ${result.isExistingProduct ? 'Using existing' : 'Created new'} product: ${productId}`);
+      console.log(`✅ Created ${result.createdUnitCount} units for product`);
+
     } else if (item.productId) {
-      // Use existing product
+      // Use existing product and add units to it
       productId = item.productId;
+      
+      // For existing products, use unified approach to add units 
+      if (item.unitEntries && item.unitEntries.length > 0) {
+        // Use unified product creation service to add units to existing product
+        const { unifiedProductCreationService } = await import('@/services/shared/UnifiedProductCreationService');
+        
+        // Get existing product data to create proper ProductFormData
+        const { data: existingProduct } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+        
+        if (!existingProduct) {
+          throw new Error(`Product ${productId} not found`);
+        }
+        
+        // Create form data for unified service
+        const formData = {
+          ...existingProduct,
+          unit_entries: item.unitEntries,
+          has_serial: true // Existing products with unit entries are serialized
+        };
+        
+        const result = await unifiedProductCreationService.createProduct(formData, {
+          source: 'supplier',
+          transactionId,
+          unitCost: item.unitCost,
+          supplierId: supplierId,
+          metadata: {
+            acquisition: true,
+            existingProduct: true,
+            quantity: item.quantity
+          }
+        });
+
+        if (!result.success) {
+          throw new Error(`Failed to add units to existing product: ${result.errors.join(', ')}`);
+        }
+
+        unitIds.push(...result.units.map(u => u.id));
+        console.log(`✅ Added ${result.createdUnitCount} units to existing product: ${productId}`);
+      } else {
+        // For non-serialized existing products, create units traditionally
+        const createdUnits = await this.createProductUnits(
+          transactionId,
+          productId,
+          supplierId,
+          item
+        );
+        unitIds.push(...createdUnits);
+        console.log(`✅ Added ${createdUnits.length} units to existing product: ${productId}`);
+      }
     } else {
       throw new Error('Invalid acquisition item: missing product data');
     }
-
-    // Create or update product units
-    const createdUnits = await this.createProductUnits(
-      transactionId,
-      productId,
-      supplierId,
-      item
-    );
-    unitIds.push(...createdUnits);
 
     // Determine if product is serialized
     const hasSerial = item.createsNewProduct
@@ -192,7 +262,7 @@ class SupplierAcquisitionService {
         quantity: item.quantity,
         unitCost: item.unitCost,
         totalCost,
-        productUnitIds: createdUnits,
+        productUnitIds: unitIds,
         createsNewProduct: item.createsNewProduct,
         unitDetails: {
           entries: item.unitEntries,

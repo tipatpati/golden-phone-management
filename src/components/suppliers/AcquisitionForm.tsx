@@ -375,7 +375,15 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                         <div className="space-y-2">
                           <Label>Product</Label>
                           <Select 
-                            onValueChange={(value) => updateItem(index, { productId: value })}
+                            onValueChange={(value) => {
+                              const selectedProduct = products.find(p => p.id === value);
+                              updateItem(index, { 
+                                productId: value,
+                                // Reset unit entries when product changes
+                                unitEntries: [],
+                                quantity: selectedProduct?.has_serial ? 0 : 1
+                              });
+                            }}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select product" />
@@ -383,47 +391,125 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                             <SelectContent>
                               {Array.isArray(products) && products.map((product) => (
                                 <SelectItem key={product.id} value={product.id}>
-                                  {product.brand} {product.model}
+                                  {product.brand} {product.model} {product.has_serial ? '(Serialized)' : ''}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Quantity</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value) || 1 })}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Unit Cost</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={item.unitCost}
-                              onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        {/* Show unit management for serialized existing products */}
+                        {item.productId && (() => {
+                          const selectedProduct = products.find(p => p.id === item.productId);
+                          return selectedProduct?.has_serial ? (
+                            <div className="space-y-4">
+                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-blue-800">
+                                  ℹ️ This product uses serial numbers. Add specific units below.
+                                </p>
+                              </div>
+                              
+                              <UnitEntryForm
+                                entries={item.unitEntries}
+                                setEntries={(entries) => updateUnitEntries(index, entries)}
+                                onStockChange={(stock) => updateItem(index, { quantity: stock })}
+                                title="New Units to Add (IMEI/SN + pricing)"
+                                showPricing={true}
+                              />
+                              
+                              {/* Barcode Preview for Units */}
+                              <BarcodePreview
+                                unitEntries={item.unitEntries}
+                                hasSerial={true}
+                                productBarcode={productBarcodes[index]}
+                              />
+                              
+                              {/* Unit Barcode Manager */}
+                              <UnitBarcodeManager
+                                units={item.unitEntries}
+                                productId={item.productId}
+                                existingUnitBarcodes={unitBarcodes[index] || {}}
+                                onBarcodeGenerated={(serial, barcode) => {
+                                  setUnitBarcodes(prev => ({
+                                    ...prev,
+                                    [index]: { ...prev[index], [serial]: barcode }
+                                  }));
+                                  
+                                  // Notify coordination system
+                                  import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
+                                    UnifiedBarcodeCoordinator.notifyEvent({
+                                      type: 'barcode_generated',
+                                      source: 'supplier',
+                                      entityId: item.productId!, 
+                                      metadata: { serial, barcode, module: 'supplier_existing_product' }
+                                    });
+                                  });
+                                }}
+                                onPrintRequested={(barcodes) => {
+                                  // Notify about print request
+                                  import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
+                                    UnifiedBarcodeCoordinator.notifyEvent({
+                                      type: 'print_requested',
+                                      source: 'supplier',
+                                      entityId: item.productId!,
+                                      metadata: { 
+                                        barcodeCount: barcodes.length,
+                                        module: 'supplier_existing_product'
+                                      }
+                                    });
+                                  });
+                                }}
+                                showPrintButton={true}
+                              />
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Quantity</Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value) || 1 })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Unit Cost (€)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={item.unitCost}
+                                  onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })()}
 
-                    {!item.createsNewProduct && (
-                      <div className="space-y-2">
-                        <Label>Unit Cost</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.unitCost}
-                          onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
-                        />
+                        {/* Unit Cost for serialized products */}
+                        {item.productId && (() => {
+                          const selectedProduct = products.find(p => p.id === item.productId);
+                          return selectedProduct?.has_serial && (
+                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
+                              <div className="space-y-2">
+                                <Label>Unit Cost (€)</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  value={item.unitCost}
+                                  onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
+                                  placeholder="0.00"
+                                />
+                                <p className="text-xs text-yellow-700">
+                                  This cost will be applied to all units if not specified individually
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
