@@ -1,7 +1,7 @@
 import React from "react";
 import type { SerialNumberManagerProps } from "@/services/inventory/types";
 import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
-import { UnitBarcodeManager } from "@/components/shared/forms/UnitBarcodeManager";
+import { UniversalBarcodeManager } from "@/components/shared/UniversalBarcodeManager";
 
 export function SerialNumberManager({
   serialNumbers, // optional legacy
@@ -15,6 +15,17 @@ export function SerialNumberManager({
     return null;
   }
 
+  // For inventory forms, try to extract product info for barcode manager
+  const getProductInfo = () => {
+    // This would need to be passed down or fetched, for now use defaults
+    return {
+      brand: 'Unknown',
+      model: 'Unknown'
+    };
+  };
+
+  const productInfo = getProductInfo();
+
   return (
     <div className="space-y-4">
       <UnitEntryForm
@@ -25,10 +36,16 @@ export function SerialNumberManager({
         showPricing={true}
       />
       
-      <UnitBarcodeManager
-        units={unitEntries}
+      <UniversalBarcodeManager
         productId={productId}
+        productBrand={productInfo.brand}
+        productModel={productInfo.model}
+        units={unitEntries}
+        source="inventory"
         showPrintButton={true}
+        onPrintCompleted={(printedUnits) => {
+          console.log(`✅ Printed labels for inventory units: ${printedUnits.join(', ')}`);
+        }}
       />
       
       <p className="text-xs text-muted-foreground">

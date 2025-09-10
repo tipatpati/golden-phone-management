@@ -311,32 +311,15 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                               units={item.unitEntries}
                               source="supplier"
                               showPrintButton={true}
-                                
-                                // PHASE 4: Notify coordination system
-                                import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
-                                  UnifiedBarcodeCoordinator.notifyEvent({
-                                    type: 'barcode_generated',
-                                    source: 'supplier',
-                                    entityId: `supplier-product-${index}`, // Use index as identifier for supplier products
-                                    metadata: { serial, barcode, module: 'supplier_acquisition' }
-                                  });
-                                });
+                              onBarcodeGenerated={(serial, barcode) => {
+                                setUnitBarcodes(prev => ({
+                                  ...prev,
+                                  [index]: { ...prev[index], [serial]: barcode }
+                                }));
                               }}
-                              onPrintRequested={(barcodes) => {
-                                // PHASE 4: Notify about print request
-                                import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
-                                  UnifiedBarcodeCoordinator.notifyEvent({
-                                    type: 'print_requested',
-                                    source: 'supplier',
-                                    entityId: `supplier-product-${index}`, // Use index as identifier for supplier products
-                                    metadata: { 
-                                      barcodeCount: barcodes.length,
-                                      module: 'supplier_acquisition'
-                                    }
-                                  });
-                                });
+                              onPrintCompleted={(printedUnits) => {
+                                console.log(`✅ Printed labels for units: ${printedUnits.join(', ')}`);
                               }}
-                              showPrintButton={true}
                             />
                           </div>
                         )}
@@ -427,42 +410,23 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                                 productBarcode={productBarcodes[index]}
                               />
                               
-                              {/* Unit Barcode Manager */}
-                              <UnitBarcodeManager
-                                units={item.unitEntries}
+                              {/* UNIVERSAL: Unified Barcode Manager for existing products */}
+                              <UniversalBarcodeManager
                                 productId={item.productId}
-                                existingUnitBarcodes={unitBarcodes[index] || {}}
+                                productBrand={products.find(p => p.id === item.productId)?.brand || 'Unknown'}
+                                productModel={products.find(p => p.id === item.productId)?.model || 'Unknown'}
+                                units={item.unitEntries}
+                                source="supplier"
+                                showPrintButton={true}
                                 onBarcodeGenerated={(serial, barcode) => {
                                   setUnitBarcodes(prev => ({
                                     ...prev,
                                     [index]: { ...prev[index], [serial]: barcode }
                                   }));
-                                  
-                                  // Notify coordination system
-                                  import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
-                                    UnifiedBarcodeCoordinator.notifyEvent({
-                                      type: 'barcode_generated',
-                                      source: 'supplier',
-                                      entityId: item.productId!, 
-                                      metadata: { serial, barcode, module: 'supplier_existing_product' }
-                                    });
-                                  });
                                 }}
-                                onPrintRequested={(barcodes) => {
-                                  // Notify about print request
-                                  import("@/services/shared/UnifiedBarcodeCoordinator").then(({ UnifiedBarcodeCoordinator }) => {
-                                    UnifiedBarcodeCoordinator.notifyEvent({
-                                      type: 'print_requested',
-                                      source: 'supplier',
-                                      entityId: item.productId!,
-                                      metadata: { 
-                                        barcodeCount: barcodes.length,
-                                        module: 'supplier_existing_product'
-                                      }
-                                    });
-                                  });
+                                onPrintCompleted={(printedUnits) => {
+                                  console.log(`✅ Printed labels for existing product units: ${printedUnits.join(', ')}`);
                                 }}
-                                showPrintButton={true}
                               />
                             </div>
                           ) : (
