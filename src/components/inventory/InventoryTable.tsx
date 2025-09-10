@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Table, 
   TableBody, 
@@ -82,8 +83,29 @@ export function InventoryTable({
   // Use products passed from parent - no double data fetching
   const productList = Array.isArray(products) ? products : [];
 
-  const handlePrintLabels = (product: Product) => {
-    setSelectedProduct(product);
+  const handlePrintLabels = async (product: Product) => {
+    try {
+      // Fetch latest product units data to ensure barcodes are up to date
+      const { data: units, error } = await supabase
+        .from('product_units')
+        .select('*')
+        .eq('product_id', product.id);
+
+      if (error) {
+        console.error('Failed to fetch latest units:', error);
+      } else {
+        // Update product with latest units data
+        const updatedProduct = {
+          ...product,
+          units: units || []
+        };
+        setSelectedProduct(updatedProduct);
+      }
+    } catch (error) {
+      console.error('Error syncing product data:', error);
+      setSelectedProduct(product);
+    }
+    
     setPrintDialogOpen(true);
   };
 
