@@ -271,7 +271,7 @@ class ProductUnitCoordinatorClass {
 
   /**
    * PRINT LABELS FOR UNITS
-   * Unified label printing across all modules
+   * Uses the sophisticated ThermalLabelDataService for high-quality thermal labels
    */
   async printLabelsForUnits(
     productId: string,
@@ -281,35 +281,75 @@ class ProductUnitCoordinatorClass {
     options: UnitOperationOptions
   ): Promise<LabelPrintingResult> {
     try {
-      const unitsForPrinting = units.map(unit => ({
-        serial: unit.serial,
-        barcode: unit.barcode || `${productId}_${unit.serial}`,
-        color: unit.color,
-        storage: unit.storage,
-        ram: unit.ram,
-        price: unit.price
-      }));
+      console.log(`🎯 UNIT COORDINATOR: Printing thermal labels for ${units.length} units from ${options.source}`);
 
-      const result = await universalBarcodeService.printLabelsForUnits({
-        productId,
-        productBrand,
-        productModel,
-        units: unitsForPrinting,
-        source: options.source,
-        metadata: {
-          printedAt: new Date().toISOString(),
-          ...options.metadata
-        }
+      // Get product data for thermal label generation
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(id, name)
+        `)
+        .eq('id', productId)
+        .single();
+
+      if (productError) {
+        throw new Error(`Failed to fetch product: ${productError.message}`);
+      }
+
+      // Convert units to ProductForLabels format
+      const productsForLabels = [{
+        id: productId,
+        brand: productBrand,
+        model: productModel,
+        price: product.price,
+        min_price: product.min_price,
+        max_price: product.max_price,
+        category: product.category,
+        serial_numbers: units.map(u => u.serial).filter(Boolean),
+        storage: units[0]?.storage || undefined,
+        ram: units[0]?.ram || undefined,
+        year: product.year
+      }];
+
+      // Import the sophisticated ThermalLabelDataService
+      const { ThermalLabelDataService } = await import('@/services/labels/ThermalLabelDataService');
+      
+      // Generate high-quality thermal label data
+      const labelResult = await ThermalLabelDataService.generateLabelsForProducts(
+        productsForLabels,
+        { useMasterBarcode: false }
+      );
+
+      if (!labelResult.success || labelResult.labels.length === 0) {
+        throw new Error(`Failed to generate thermal labels: ${labelResult.errors.join(', ')}`);
+      }
+
+      // Import the professional ThermalLabelService for printing
+      const { ThermalLabelService } = await import('@/components/inventory/labels/services/ThermalLabelService');
+      
+      // Use the high-quality thermal label printing system
+      const printResult = await ThermalLabelService.printLabels(labelResult.labels, {
+        copies: 1,
+        includePrice: true,
+        includeBarcode: true,
+        includeCompany: true,
+        includeCategory: true,
+        format: "standard" as const,
+        companyName: "GOLDEN PHONE SRL"
       });
 
+      console.log(`✅ UNIT COORDINATOR: Thermal label printing completed`, printResult);
+
       return {
-        success: result.success,
-        totalLabels: result.totalLabels,
-        printedUnits: result.printedUnits,
-        errors: result.errors
+        success: printResult.success,
+        totalLabels: printResult.totalLabels || labelResult.labels.length,
+        printedUnits: units.map(u => u.serial).filter(Boolean),
+        errors: printResult.success ? [] : [printResult.message]
       };
+
     } catch (error) {
-      console.error('❌ UNIT COORDINATOR: Failed to print labels:', error);
+      console.error('❌ UNIT COORDINATOR: Failed to print thermal labels:', error);
       return {
         success: false,
         totalLabels: 0,

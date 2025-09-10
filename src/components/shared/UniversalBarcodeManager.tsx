@@ -182,7 +182,7 @@ export function UniversalBarcodeManager({
     }
   };
 
-  // Print labels for all units with barcodes using ProductUnitCoordinator
+  // Print thermal labels using the sophisticated ThermalLabelGenerator
   const printLabels = async () => {
     const unitsWithBarcodes = unitStatuses.filter(status => status.hasBarcode && status.barcode);
     
@@ -191,10 +191,43 @@ export function UniversalBarcodeManager({
       return;
     }
 
+    if (!productId) {
+      toast.error('Product ID required for thermal label printing');
+      return;
+    }
+
     setIsPrinting(true);
 
     try {
-      // Use ProductUnitCoordinator for unified label printing
+      // Use the sophisticated ThermalLabelGenerator system
+      const { ThermalLabelGenerator } = await import('@/components/inventory/labels/ThermalLabelGenerator');
+      const { useThermalLabels } = await import('@/components/inventory/labels/hooks/useThermalLabels');
+      
+      // Create product data for thermal label generation
+      const productsForLabels = [{
+        id: productId,
+        brand: productBrand,
+        model: productModel,
+        serial_numbers: unitsWithBarcodes.map(status => status.serial),
+        units: unitsWithBarcodes.map(status => {
+          const unit = units.find(u => u.serial === status.serial);
+          return {
+            id: `unit-${status.serial}`,
+            serial_number: status.serial,
+            barcode: status.barcode!,
+            color: unit?.color,
+            storage: unit?.storage,
+            ram: unit?.ram,
+            price: unit?.price,
+            status: 'available' as const,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            product_id: productId
+          };
+        })
+      }];
+
+      // Use ProductUnitCoordinator for professional thermal label printing
       const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
 
       const unitsForPrinting = unitsWithBarcodes.map(status => {
@@ -210,7 +243,7 @@ export function UniversalBarcodeManager({
       });
 
       const result = await productUnitCoordinator.printLabelsForUnits(
-        productId || 'unknown',
+        productId,
         productBrand,
         productModel,
         unitsForPrinting,
@@ -224,20 +257,20 @@ export function UniversalBarcodeManager({
       );
 
       if (result.success) {
-        toast.success(`Successfully printed ${result.totalLabels} labels`);
+        toast.success(`🎯 Printed ${result.totalLabels} professional thermal labels`);
         onPrintCompleted?.(result.printedUnits);
       } else {
-        throw new Error(result.errors.join(', ') || 'Failed to print labels');
+        throw new Error(result.errors.join(', ') || 'Failed to print thermal labels');
       }
     } catch (error) {
-      console.error('Failed to print labels:', error);
-      toast.error('Failed to print labels');
+      console.error('Failed to print thermal labels:', error);
+      toast.error('Failed to print thermal labels');
     } finally {
       setIsPrinting(false);
     }
   };
 
-  // Generate and print in one operation
+  // Generate barcodes and print thermal labels in one professional operation
   const generateAndPrint = async () => {
     if (!productId || units.length === 0) {
       toast.error('Product ID and units required');
@@ -248,37 +281,82 @@ export function UniversalBarcodeManager({
     setIsPrinting(true);
 
     try {
-      const validUnits = units.filter(unit => unit.serial?.trim());
+      // Step 1: Generate barcodes using ProductUnitCoordinator
+      const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
       
-      const result = await universalBarcodeService.generateAndPrintLabels(
+      const validUnits = units.filter(unit => unit.serial?.trim()).map(unit => ({
+        serial: unit.serial,
+        battery_level: unit.battery_level,
+        color: unit.color,
+        storage: unit.storage,
+        ram: unit.ram,
+        price: unit.price,
+        min_price: unit.min_price,
+        max_price: unit.max_price
+      }));
+      
+      const barcodeResult = await productUnitCoordinator.generateBarcodesForUnits(
+        productId,
+        validUnits,
+        { source }
+      );
+
+      if (!barcodeResult.success) {
+        throw new Error(barcodeResult.errors.join(', ') || 'Failed to generate barcodes');
+      }
+
+      // Update unit statuses with generated barcodes
+      setUnitStatuses(prev => prev.map(status => {
+        const generatedBarcode = barcodeResult.barcodes.find(b => b.serial === status.serial);
+        if (generatedBarcode) {
+          onBarcodeGenerated?.(status.serial, generatedBarcode.barcode);
+          return {
+            ...status,
+            barcode: generatedBarcode.barcode,
+            hasBarcode: true,
+            isGenerating: false
+          };
+        }
+        return status;
+      }));
+
+      // Step 2: Print thermal labels using the professional system
+      const unitsForPrinting = barcodeResult.barcodes.map(bc => {
+        const unit = validUnits.find(u => u.serial === bc.serial);
+        return {
+          serial: bc.serial,
+          barcode: bc.barcode,
+          color: unit?.color,
+          storage: unit?.storage,
+          ram: unit?.ram,
+          price: unit?.price
+        };
+      });
+
+      const printResult = await productUnitCoordinator.printLabelsForUnits(
         productId,
         productBrand,
         productModel,
-        validUnits,
-        source,
+        unitsForPrinting,
         {
-          userInitiated: true,
-          timestamp: new Date().toISOString()
+          source,
+          metadata: {
+            userInitiated: true,
+            timestamp: new Date().toISOString()
+          }
         }
       );
 
-      if (result.success) {
-        // Update unit statuses to reflect generated barcodes
-        setUnitStatuses(prev => prev.map(status => ({
-          ...status,
-          hasBarcode: true,
-          isGenerating: false,
-          barcode: `${productId}_${status.serial}` // Placeholder, actual barcode would be from result
-        })));
-
-        toast.success(`Generated and printed ${result.totalLabels} labels`);
-        onPrintCompleted?.(result.printedUnits);
+      if (printResult.success) {
+        toast.success(`🎯 Generated barcodes and printed ${printResult.totalLabels} professional thermal labels`);
+        onPrintCompleted?.(printResult.printedUnits);
       } else {
-        throw new Error(result.errors.join(', ') || 'Failed to generate and print labels');
+        throw new Error(printResult.errors.join(', ') || 'Failed to print thermal labels');
       }
+
     } catch (error) {
-      console.error('Failed to generate and print:', error);
-      toast.error('Failed to generate and print labels');
+      console.error('Failed to generate and print thermal labels:', error);
+      toast.error('Failed to generate and print thermal labels');
     } finally {
       setIsGeneratingAll(false);
       setIsPrinting(false);
