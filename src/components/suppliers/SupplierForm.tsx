@@ -11,7 +11,6 @@ interface SupplierFormProps {
 
 interface FormData {
   name: string;
-  contact_person: string;
   email: string;
   phone: string;
   address: string;
@@ -29,7 +28,6 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
 
   const [formData, setFormData] = useState<FormData>({
     name: supplier?.name || "",
-    contact_person: supplier?.contact_person || "",
     email: supplier?.email || "",
     phone: supplier?.phone || "",
     address: supplier?.address || "",
@@ -75,7 +73,6 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
     try {
       const submissionData = {
         name: formData.name,
-        contact_person: formData.contact_person || null,
         email: formData.email || null,
         phone: formData.phone || null,
         address: formData.address || null,
@@ -116,20 +113,12 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label="Supplier Name"
-          required
-          value={formData.name}
-          onChange={(value) => handleChange("name", value)}
-        />
-        <FormField
-          label="Contact Person"
-          required
-          value={formData.contact_person}
-          onChange={(value) => handleChange("contact_person", value)}
-        />
-      </div>
+      <FormField
+        label="Supplier Name"
+        required
+        value={formData.name}
+        onChange={(value) => handleChange("name", value)}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <FormField
