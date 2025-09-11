@@ -329,9 +329,10 @@ export class UnifiedPrintService implements IPrintService {
       printWindow.document.close();
       printWindow.focus();
       
-      // Wait for resources to load then print
+      // Wait for resources to load then show print preview
       setTimeout(() => {
-        printWindow.print();
+        printWindow.focus();
+        printWindow.print(); // This will show print preview dialog
       }, 2000);
 
       logger.info('Thermal labels prepared for printing successfully', { totalLabels }, 'UnifiedPrintService');
