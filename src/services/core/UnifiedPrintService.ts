@@ -23,13 +23,13 @@ export class UnifiedPrintService implements IPrintService {
       border: 2px solid #d1d5db;
       border-radius: 4px;
       padding: 3px;
-      margin: 8px;
+      margin: 3px;
       font-size: 8px;
       font-family: system-ui, -apple-system, sans-serif;
       background: white;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       text-align: center;
       line-height: 1.1;
       box-sizing: border-box;
@@ -82,7 +82,7 @@ export class UnifiedPrintService implements IPrintService {
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
         box-sizing: border-box !important;
         font-size: 3.5vw !important;
         min-height: 100vh !important;
