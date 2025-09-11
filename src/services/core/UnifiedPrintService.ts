@@ -145,6 +145,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .barcode-container {
+      margin-top: -17mm;
       display: flex;
       justify-content: center;
       align-items: center;
