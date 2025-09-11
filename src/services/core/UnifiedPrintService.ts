@@ -156,7 +156,7 @@ export class UnifiedPrintService implements IPrintService {
 
     .barcode-canvas {
       margin-top: -2.5mm
-      max-width: 35mm;
+      max-width: 45mm;
       height: 10mm;
       display: block;
     }
