@@ -311,7 +311,7 @@ export class UnifiedPrintService implements IPrintService {
       
       console.log(`🔍 UnifiedPrintService: Final barcode integrity check passed for ${barcodeToUse}`);
     }
-    // Convert the interface types to match the component types with proper battery level extraction
+    // Convert the interface types to match the component types with proper battery level
     const componentLabel = {
       productName: label.productName,
       serialNumber: label.serial,
@@ -319,7 +319,7 @@ export class UnifiedPrintService implements IPrintService {
       price: label.price,
       category: undefined,
       color: label.color,
-      batteryLevel: (label as any).batteryLevel, // Extract battery level from source data
+      batteryLevel: label.batteryLevel, // Now properly typed
       storage: label.storage ? parseInt(label.storage.replace(/\D/g, '')) || undefined : undefined,
       ram: label.ram ? parseInt(label.ram.replace(/\D/g, '')) || undefined : undefined
     };

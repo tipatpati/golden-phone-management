@@ -50,7 +50,8 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
         serial: label.serialNumber,
         color: label.color,
         storage: label.storage?.toString(),
-        ram: label.ram?.toString()
+        ram: label.ram?.toString(),
+        batteryLevel: label.batteryLevel // Now properly passed through
       };
     });
   };

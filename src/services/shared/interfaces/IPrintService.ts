@@ -28,6 +28,7 @@ export interface ThermalLabelData {
   color?: string;
   storage?: string;
   ram?: string;
+  batteryLevel?: number;
 }
 
 export interface ThermalLabelOptions extends PrintOptions {
