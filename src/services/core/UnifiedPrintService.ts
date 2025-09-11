@@ -39,12 +39,12 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .thermal-label {
-      width: 6cm !important;
-      height: 5cm !important;
+      width: 227px !important;   /* 6cm */
+      height: 189px !important;  /* 5cm */
       border: 2px solid #000 !important;
       border-radius: 4px !important;
       padding: 3px !important;
-      margin: 0 !important;
+      margin: 8px !important;
       font-size: 8px !important;
       font-family: system-ui, -apple-system, sans-serif !important;
       background: white !important;
@@ -65,48 +65,46 @@ export class UnifiedPrintService implements IPrintService {
       orientation: portrait !important;
     }
 
-    @media screen {
+    @media print {
       .thermal-label {
-        width: 227px;   /* 6cm at 96dpi for screen preview */
-        height: 189px;  /* 5cm at 96dpi for screen preview */
-        border: 2px solid #000;
-        margin: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 0 !important;
+        width: 6cm !important;
+        height: 5cm !important;
       }
     }
 
     .label-header {
-      min-height: 16px;
-      border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 1px;
-      margin-bottom: 2px;
-      overflow: hidden;
+      min-height: 16px !important;
+      border-bottom: 1px solid #e5e5e5 !important;
+      padding-bottom: 1px !important;
+      margin-bottom: 2px !important;
+      overflow: hidden !important;
     }
 
     .company-name {
-      font-size: 8px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #000;
-      letter-spacing: 0.5px;
-      line-height: 1.0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 8px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      color: #000 !important;
+      letter-spacing: 0.5px !important;
+      line-height: 1.0 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
 
     .product-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      min-height: 0;
-      overflow: hidden;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
     }
 
     .product-name {
-      font-size: 12px !important;
+      font-size: 16px !important;
       font-weight: 800 !important;
       line-height: 1.0 !important;
       color: #000 !important;
@@ -122,93 +120,50 @@ export class UnifiedPrintService implements IPrintService {
       hyphens: auto !important;
     }
 
-    @media screen {
-      .product-name {
-        font-size: 16px;
-        max-height: 50px;
-      }
-    }
-
     .product-details {
-      font-size: 10px;
-      font-weight: 600;
-      margin-top: 1px;
-      color: #333;
-      line-height: 1.0;
-    }
-
-    @media screen {
-      .product-details {
-        font-size: 14px;
-      }
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      margin-top: 1px !important;
+      color: #333 !important;
+      line-height: 1.0 !important;
     }
 
     .serial-number {
-      font-size: 10px;
-      font-weight: 600;
-      color: #000;
-      text-align: center;
-      margin-top: 2px;
-      letter-spacing: 0.1px;
-    }
-
-    @media screen {
-      .serial-number {
-        font-size: 10px;
-        margin-top: 2px;
-      }
+      font-size: 10px !important;
+      font-weight: 600 !important;
+      color: #000 !important;
+      text-align: center !important;
+      margin-top: 2px !important;
+      letter-spacing: 0.1px !important;
     }
 
     .price {
-      font-size: 18px;
-      font-weight: 900;
-      color: #000;
-      text-align: center;
-      padding: 2px 0;
-      border-top: 2px solid #000;
-      margin-bottom: 2px;
-      letter-spacing: 0.3px;
-      line-height: 1.0;
-    }
-
-    @media screen {
-      .price {
-        font-size: 24px;
-        padding: 2px 0;
-        margin-bottom: 2px;
-        letter-spacing: 0.3px;
-      }
+      font-size: 24px !important;
+      font-weight: 900 !important;
+      color: #000 !important;
+      text-align: center !important;
+      padding: 2px 0 !important;
+      border-top: 2px solid #000 !important;
+      margin-bottom: 2px !important;
+      letter-spacing: 0.3px !important;
+      line-height: 1.0 !important;
     }
 
     .barcode-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 55px;
-      max-height: 55px;
-      background: #ffffff;
-      padding: 2px;
-      overflow: hidden;
-    }
-
-    @media screen {
-      .barcode-container {
-        min-height: 55px;
-        max-height: 55px;
-        padding: 2px;
-      }
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      min-height: 55px !important;
+      max-height: 55px !important;
+      background: #ffffff !important;
+      padding: 2px !important;
+      overflow: hidden !important;
     }
 
     .barcode-canvas {
-      max-width: 200px;
-      height: 50px;
-    }
-
-    @media screen {
-      .barcode-canvas {
-        max-width: 200px;
-        height: 50px;
-      }
+      max-width: 200px !important;
+      height: 50px !important;
+      display: block !important;
     }
   `;
 
