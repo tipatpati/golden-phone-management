@@ -40,10 +40,10 @@ export class UnifiedPrintService implements IPrintService {
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     }
 
-    /* Print styles - adaptive to printer */
+    /* Print styles - fixed 6cm x 5cm thermal label */
     @media print {
       @page {
-        size: auto !important;
+        size: 6cm 5cm !important;
         margin: 0mm !important;
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
