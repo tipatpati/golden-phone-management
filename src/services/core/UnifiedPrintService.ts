@@ -82,19 +82,12 @@ export class UnifiedPrintService implements IPrintService {
         page-break-inside: avoid !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         box-sizing: border-box !important;
         font-size: 3.5vw !important;
         min-height: 100vh !important;
+        gap: 1mm !important;
       }
-    }
-
-    .label-header {
-      min-height: 16px !important;
-      border-bottom: 1px solid #e5e5e5 !important;
-      padding-bottom: 1px !important;
-      margin-bottom: 2px !important;
-      overflow: hidden !important;
     }
 
     .label-header {
@@ -121,8 +114,8 @@ export class UnifiedPrintService implements IPrintService {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 2px;
+      justify-content: flex-start;
+      gap: 1px;
       min-height: 0;
       overflow: hidden;
     }
