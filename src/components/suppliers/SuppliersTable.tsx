@@ -98,29 +98,41 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   ];
 
   // Define actions
-  const actions = [
+  const actions = React.useMemo(() => [
     {
       icon: <Eye className="h-4 w-4" />,
       label: "View Details",
-      onClick: (supplier: any) => setViewingSupplier(supplier)
+      onClick: (supplier: any) => {
+        console.log('SuppliersTable: View Details clicked for supplier:', supplier.id);
+        setViewingSupplier(supplier);
+      }
     },
     {
       icon: <MessageCircle className="h-4 w-4" />,
       label: "Contact",
-      onClick: (supplier: any) => setContactingSupplier(supplier)
+      onClick: (supplier: any) => {
+        console.log('SuppliersTable: Contact clicked for supplier:', supplier.id);
+        setContactingSupplier(supplier);
+      }
     },
     {
       icon: <Edit2 className="h-4 w-4" />,
       label: "Edit",
-      onClick: (supplier: any) => setEditingSupplier(supplier)
+      onClick: (supplier: any) => {
+        console.log('SuppliersTable: Edit clicked for supplier:', supplier.id);
+        setEditingSupplier(supplier);
+      }
     },
     {
       icon: <Trash2 className="h-4 w-4" />,
       label: "Delete",
-      onClick: handleDeleteSupplier,
+      onClick: (supplier: any) => {
+        console.log('SuppliersTable: Delete clicked for supplier:', supplier.id);
+        handleDeleteSupplier(supplier);
+      },
       variant: "destructive" as const
     }
-  ];
+  ], [handleDeleteSupplier]);
 
   const handleSuccess = () => {
     refetch();
@@ -178,22 +190,34 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
               {
                 icon: <Eye className="h-3 w-3 mr-1" />,
                 label: "View",
-                onClick: () => setViewingSupplier(supplier)
+                onClick: () => {
+                  console.log('Mobile View clicked for supplier:', supplier.id);
+                  setViewingSupplier(supplier);
+                }
               },
               {
                 icon: <MessageCircle className="h-3 w-3 mr-1" />,
                 label: "Contact",
-                onClick: () => setContactingSupplier(supplier)
+                onClick: () => {
+                  console.log('Mobile Contact clicked for supplier:', supplier.id);
+                  setContactingSupplier(supplier);
+                }
               },
               {
                 icon: <Edit2 className="h-3 w-3 mr-1" />,
                 label: "Edit",
-                onClick: () => setEditingSupplier(supplier)
+                onClick: () => {
+                  console.log('Mobile Edit clicked for supplier:', supplier.id);
+                  setEditingSupplier(supplier);
+                }
               },
               {
                 icon: <Trash2 className="h-3 w-3 mr-1" />,
                 label: "Delete",
-                onClick: () => handleDeleteSupplier(supplier),
+                onClick: () => {
+                  console.log('Mobile Delete clicked for supplier:', supplier.id);
+                  handleDeleteSupplier(supplier);
+                },
                 variant: "outline",
                 className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
               }

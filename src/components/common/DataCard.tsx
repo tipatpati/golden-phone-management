@@ -111,7 +111,9 @@ export function DataCard({
                 size="sm"
                 className={`touch-button h-8 md:h-7 text-xs font-medium ${action.className || ''}`}
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
+                  console.log('DataCard action clicked:', action.label);
                   action.onClick();
                 }}
               >

@@ -242,13 +242,43 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
               <div>Date: {new Date(transaction.transaction_date).toLocaleDateString()}</div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button size="sm" variant="outline" onClick={() => { setSelectedTransaction(transaction); setShowDetailsDialog(true); }}>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  console.log('Transaction View clicked:', transaction.id);
+                  setSelectedTransaction(transaction); 
+                  setShowDetailsDialog(true); 
+                }}
+              >
                 View
               </Button>
-              <Button size="sm" variant="outline" onClick={() => { setSelectedTransaction(transaction); setShowEditDialog(true); }}>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  console.log('Transaction Edit clicked:', transaction.id);
+                  setSelectedTransaction(transaction); 
+                  setShowEditDialog(true); 
+                }}
+              >
                 Edit
               </Button>
-              <Button size="sm" variant="outline" onClick={() => { setSelectedTransaction(transaction); setShowDeleteDialog(true); }}>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  console.log('Transaction Delete clicked:', transaction.id);
+                  setSelectedTransaction(transaction); 
+                  setShowDeleteDialog(true); 
+                }}
+              >
                 Delete
               </Button>
             </div>

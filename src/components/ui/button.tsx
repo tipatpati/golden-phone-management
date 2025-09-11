@@ -45,27 +45,16 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
-    const [ripples, setRipples] = React.useState<Array<{ x: number; y: number; size: number; id: number }>>([]);
-
-    const createRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
-      const button = event.currentTarget;
-      const rect = button.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const x = event.clientX - rect.left - size / 2;
-      const y = event.clientY - rect.top - size / 2;
-      const newRipple = { x, y, size, id: Date.now() };
-
-      setRipples(prev => [...prev, newRipple]);
+    const handleClick = React.useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+      // Ensure button is enabled and not loading
+      if (props.disabled) {
+        event.preventDefault();
+        return;
+      }
       
-      setTimeout(() => {
-        setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
-      }, 600);
-    };
-
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (!asChild) createRipple(event);
+      // Call the original onClick handler
       props.onClick?.(event);
-    };
+    }, [props.onClick, props.disabled]);
 
     const Comp = asChild ? Slot : "button"
     return (
@@ -74,25 +63,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
         onClick={asChild ? props.onClick : handleClick}
+        style={{ 
+          ...props.style,
+          cursor: props.disabled ? 'not-allowed' : 'pointer'
+        }}
       >
         {children}
-        {!asChild && (
-          <div className="absolute inset-0 overflow-hidden rounded-inherit pointer-events-none">
-            {ripples.map((ripple) => (
-              <span
-                key={ripple.id}
-                className="absolute bg-current opacity-20 rounded-full animate-ping"
-                style={{
-                  left: ripple.x,
-                  top: ripple.y,
-                  width: ripple.size,
-                  height: ripple.size,
-                  animationDuration: '600ms',
-                }}
-              />
-            ))}
-          </div>
-        )}
       </Comp>
     )
   }

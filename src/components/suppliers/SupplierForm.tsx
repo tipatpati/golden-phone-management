@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/common";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateSupplier, useUpdateSupplier } from "@/services";
+import { useClickHandler } from "@/hooks/useClickHandler";
 
 interface SupplierFormProps {
   supplier?: any;
@@ -77,8 +78,16 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = React.useCallback(async () => {
+    console.log('SupplierForm handleSubmit called');
+    
+    if (isLoading) {
+      console.log('Already loading, skipping submission');
+      return;
+    }
+
     if (!validateForm()) {
+      console.log('Form validation failed');
       toast({
         title: "Validation Error",
         description: "Please fix the errors in the form",
@@ -100,6 +109,8 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         notes: formData.notes.trim() || null,
         status: formData.status as "active" | "inactive",
       };
+
+      console.log('Submitting supplier data:', submissionData);
 
       if (supplier) {
         await updateSupplier.mutateAsync({ 
@@ -128,15 +139,23 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData, isLoading, supplier, validateForm, createSupplier, updateSupplier, onSuccess, toast]);
+
+  const isFormValid = React.useMemo(() => {
+    return formData.name.trim() && 
+      (!formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
+      (!formData.phone || /^[\d\s\-\+\(\)]+$/.test(formData.phone)) &&
+      !isNaN(parseFloat(formData.credit_limit)) &&
+      parseFloat(formData.credit_limit) >= 0;
+  }, [formData]);
+
+  const optimizedSubmit = useClickHandler(handleSubmit, {
+    debounceMs: 500,
+    preventDefault: true,
+    disabled: isLoading || !isFormValid
+  });
 
   const getFieldError = (field: keyof FormData) => errors[field];
-
-  const isFormValid = formData.name.trim() && 
-    (!formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) &&
-    (!formData.phone || /^[\d\s\-\+\(\)]+$/.test(formData.phone)) &&
-    !isNaN(parseFloat(formData.credit_limit)) &&
-    parseFloat(formData.credit_limit) >= 0;
 
   return (
     <div className="space-y-4">
@@ -224,9 +243,10 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button
-          onClick={handleSubmit}
+          onClick={optimizedSubmit}
           disabled={isLoading || !isFormValid}
           className="min-w-[120px]"
+          type="button"
         >
           {isLoading ? (
             <>
