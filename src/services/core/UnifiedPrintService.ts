@@ -352,12 +352,12 @@ export class UnifiedPrintService implements IPrintService {
 
         <!-- Main Content Section -->
         <div class="product-info">
-          <!-- Product Name with Storage/RAM - Primary focus -->
+          <!-- Product Name with Storage/RAM/Battery - Primary focus -->
           <div class="product-name">
             ${this.escapeHtml(formattedLabel.productName)}
             ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
               <div class="product-details">
-                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel || ''}
+                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel ? formattedLabel.batteryLevel + '%' : ''}
               </div>
             ` : ''}
           </div>
