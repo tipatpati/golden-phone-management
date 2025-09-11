@@ -19,48 +19,68 @@ export class UnifiedPrintService implements IPrintService {
       @page {
         size: 6cm 5cm;
         margin: 0;
+        padding: 0;
       }
       body {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
         background: white;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
+      * {
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
       }
     }
 
     .thermal-label {
-      width: 227px;
-      height: 189px;
-      border: 2px solid #000;
-      border-radius: 4px;
-      padding: 3px;
-      margin: 8px;
-      font-size: 8px;
+      width: 6cm;
+      height: 5cm;
+      border: 1px solid #000;
+      border-radius: 2px;
+      padding: 2mm;
+      margin: 0;
+      font-size: 7px;
+      font-family: Arial, sans-serif;
       background: white;
       display: flex;
       flex-direction: column;
       text-align: center;
-      line-height: 1.1;
+      line-height: 1.0;
       box-sizing: border-box;
       overflow: hidden;
+      page-break-after: always;
       page-break-inside: avoid;
       gap: 1px;
+      color: #000;
+    }
+
+    @media screen {
+      .thermal-label {
+        width: 227px;   /* 6cm at 96dpi for screen preview */
+        height: 189px;  /* 5cm at 96dpi for screen preview */
+        border: 2px solid #000;
+        margin: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
     }
 
     .label-header {
-      min-height: 16px;
+      min-height: 12px;
       border-bottom: 1px solid #e5e5e5;
       padding-bottom: 1px;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       overflow: hidden;
     }
 
     .company-name {
-      font-size: 8px;
+      font-size: 7px;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       line-height: 1.0;
       white-space: nowrap;
       overflow: hidden;
@@ -72,65 +92,115 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2px;
+      gap: 1px;
       min-height: 0;
       overflow: hidden;
+      padding: 1px 0;
     }
 
     .product-name {
-      font-size: 16px;
+      font-size: 12px;
       font-weight: 800;
-      line-height: 1.0;
+      line-height: 0.9;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.2px;
-      max-height: 50px;
+      letter-spacing: 0.1px;
+      max-height: 1.2cm;
       overflow: hidden;
       text-align: center;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+
+    @media screen {
+      .product-name {
+        font-size: 16px;
+        max-height: 50px;
+      }
     }
 
     .product-details {
-      font-size: 14px;
+      font-size: 9px;
       font-weight: 600;
       margin-top: 1px;
       color: #333;
+      line-height: 1.0;
+    }
+
+    @media screen {
+      .product-details {
+        font-size: 14px;
+      }
     }
 
     .serial-number {
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 600;
       color: #000;
       text-align: center;
-      margin-top: 2px;
+      margin-top: 1px;
       letter-spacing: 0.1px;
     }
 
+    @media screen {
+      .serial-number {
+        font-size: 10px;
+        margin-top: 2px;
+      }
+    }
+
     .price {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 900;
       color: #000;
       text-align: center;
-      padding: 2px 0;
+      padding: 1px 0;
       border-top: 2px solid #000;
-      margin-bottom: 2px;
-      letter-spacing: 0.3px;
+      margin: 1px 0;
+      letter-spacing: 0.2px;
       line-height: 1.0;
+    }
+
+    @media screen {
+      .price {
+        font-size: 24px;
+        padding: 2px 0;
+        margin-bottom: 2px;
+        letter-spacing: 0.3px;
+      }
     }
 
     .barcode-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 55px;
-      max-height: 55px;
+      min-height: 1.2cm;
+      max-height: 1.2cm;
       background: #ffffff;
-      padding: 2px;
+      padding: 1px;
       overflow: hidden;
     }
 
+    @media screen {
+      .barcode-container {
+        min-height: 55px;
+        max-height: 55px;
+        padding: 2px;
+      }
+    }
+
     .barcode-canvas {
-      max-width: 200px;
-      height: 50px;
+      max-width: 5.2cm;
+      height: 1.1cm;
+    }
+
+    @media screen {
+      .barcode-canvas {
+        max-width: 200px;
+        height: 50px;
+      }
     }
   `;
 
