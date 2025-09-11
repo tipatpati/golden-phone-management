@@ -18,7 +18,7 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     /* Unified styles - WYSIWYG: same size for preview and print */
     @page {
-      size: 6cm 5cm !important;
+      size: 6cm 5cm portrait !important;
       margin: 0mm !important;
       -webkit-print-color-adjust: exact !important;
       color-adjust: exact !important;
