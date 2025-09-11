@@ -150,7 +150,6 @@ export class UnifiedPrintService implements IPrintService {
       font-weight: 600;
       color: #000;
       text-align: center;
-      margin-top: 2px;
       letter-spacing: 0.1px;
     }
 
