@@ -337,6 +337,10 @@ export class UnifiedPrintService implements IPrintService {
     // Use the same formatter as the preview to ensure consistency
     const formattedLabel = formatLabelElements(componentLabel, componentOptions);
     
+    // Calculate display price exactly like in preview  
+    const displayPrice = (label as any).maxPrice !== undefined && (label as any).maxPrice !== null ? (label as any).maxPrice : label.price;
+    const priceString = typeof displayPrice === 'number' ? `€${displayPrice.toFixed(2)}` : '€0.00';
+    
     return `
       <div class="thermal-label">
         <!-- Header Section -->
@@ -365,8 +369,8 @@ export class UnifiedPrintService implements IPrintService {
         </div>
 
         <!-- Price Section -->
-        ${formattedLabel.price ? `
-          <div class="price">${formattedLabel.price}</div>
+        ${options.showPrice !== false ? `
+          <div class="price">${priceString}</div>
         ` : ''}
 
         <!-- Barcode Section -->
