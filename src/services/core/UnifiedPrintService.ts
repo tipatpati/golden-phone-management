@@ -46,8 +46,8 @@ export class UnifiedPrintService implements IPrintService {
     }
     
     .thermal-label {
-      width: 6cm;
-      height: 5cm;
+      width: 5cm;
+      height: 4cm;
       border: none;
       border-radius: 0;
       margin: 0;
