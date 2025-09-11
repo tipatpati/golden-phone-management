@@ -1542,6 +1542,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_supplier_transaction_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_transaction_number: {
         Args: Record<PropertyKey, never>
         Returns: string
