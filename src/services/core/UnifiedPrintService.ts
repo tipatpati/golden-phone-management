@@ -11,6 +11,7 @@ import type {
   PrintResult 
 } from '../shared/interfaces/IPrintService';
 import { logger } from '@/utils/logger';
+import { formatLabelElements } from '@/components/inventory/labels/services/labelDataFormatter';
 
 export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
@@ -244,34 +245,64 @@ export class UnifiedPrintService implements IPrintService {
    * Generate single label HTML
    */
   generateSingleLabel(label: ThermalLabelData, options: ThermalLabelOptions): string {
-    const companyName = options.companyName || 'GPMS';
+    // Convert the interface types to match the component types
+    const componentLabel = {
+      productName: label.productName,
+      serialNumber: label.serial,
+      barcode: label.barcode,
+      price: label.price,
+      category: undefined,
+      color: label.color,
+      batteryLevel: undefined,
+      storage: label.storage ? parseInt(label.storage.replace(/\D/g, '')) || undefined : undefined,
+      ram: label.ram ? parseInt(label.ram.replace(/\D/g, '')) || undefined : undefined
+    };
+    
+    const componentOptions = {
+      copies: options.copies || 1,
+      includePrice: options.showPrice !== false,
+      includeBarcode: true,
+      includeCompany: !!options.companyName,
+      includeCategory: false,
+      format: "standard" as const,
+      companyName: options.companyName
+    };
+    
+    // Use the same formatter as the preview to ensure consistency
+    const formattedLabel = formatLabelElements(componentLabel, componentOptions);
     
     return `
       <div class="thermal-label">
-        <div class="label-header">
-          <div class="company-name">${this.escapeHtml(companyName)}</div>
-        </div>
+        ${formattedLabel.companyName ? `
+          <div class="label-header">
+            <div class="company-name">${this.escapeHtml(formattedLabel.companyName)}</div>
+          </div>
+        ` : ''}
         
         <div class="product-info">
-          <div class="product-name">${this.escapeHtml(label.productName)}</div>
-          ${(label.storage || label.ram) ? `
+          <div class="product-name">${this.escapeHtml(formattedLabel.productName)}</div>
+          ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
             <div class="product-details">
-              ${label.storage || ''}${label.storage && label.ram ? ' • ' : ''}${label.ram || ''}
+              ${formattedLabel.storage || ''}
+              ${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}
+              ${formattedLabel.ram || ''}
+              ${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}
+              ${formattedLabel.batteryLevel || ''}
             </div>
           ` : ''}
           
-          ${label.serial ? `
-            <div class="serial-number">${this.escapeHtml(label.serial)}</div>
+          ${formattedLabel.serialNumber ? `
+            <div class="serial-number">${this.escapeHtml(formattedLabel.serialNumber)}</div>
           ` : ''}
         </div>
 
-        ${label.price ? `
-          <div class="price">€${label.price.toFixed(2)}</div>
+        ${formattedLabel.price ? `
+          <div class="price">${formattedLabel.price}</div>
         ` : ''}
 
-        ${label.barcode ? `
+        ${formattedLabel.barcode ? `
           <div class="barcode-container">
-            <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(label.barcode)}"></canvas>
+            <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(formattedLabel.barcode)}"></canvas>
           </div>
         ` : ''}
       </div>
@@ -292,12 +323,6 @@ export class UnifiedPrintService implements IPrintService {
     labels.forEach((label, index) => {
       if (!label.productName?.trim()) {
         errors.push(`Label ${index + 1}: Product name is required`);
-      }
-      if (!label.brand?.trim()) {
-        errors.push(`Label ${index + 1}: Brand is required`);
-      }
-      if (!label.model?.trim()) {
-        errors.push(`Label ${index + 1}: Model is required`);
       }
       if (!label.barcode?.trim()) {
         errors.push(`Label ${index + 1}: Barcode is required`);
