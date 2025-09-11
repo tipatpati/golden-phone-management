@@ -16,94 +16,73 @@ import { Services } from './Services';
 
 export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
-    /* Screen styles - for preview */
+    /* Unified styles - WYSIWYG: same size for preview and print */
+    @page {
+      size: 6cm 5cm !important;
+      margin: 0mm !important;
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      font-family: system-ui, -apple-system, sans-serif !important;
+      background: white !important;
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    * {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    .label-container {
+      width: 6cm;
+      height: 5cm;
+      margin: 0;
+      padding: 0;
+    }
+    
     .thermal-label {
-      width: 227px;
-      height: 189px;
-      border: 2px solid #d1d5db;
-      border-radius: 4px;
-      padding: 3px;
-      margin: 3px;
-      font-size: 8px;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: white;
+      width: 6cm;
+      height: 5cm;
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      padding: 2mm;
+      box-shadow: none;
+      page-break-after: always;
+      page-break-inside: avoid;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      box-sizing: border-box;
+      font-size: 2.8mm;
+      gap: 1mm;
+      background: white;
+      color: #000;
       text-align: center;
       line-height: 1.1;
-      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
       overflow: hidden;
-      gap: 1px;
-      color: #000;
-      position: relative;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    }
-
-    /* Print styles - fixed 6cm x 5cm thermal label */
-    @media print {
-      @page {
-        size: 6cm 5cm !important;
-        margin: 0mm !important;
-        -webkit-print-color-adjust: exact !important;
-        color-adjust: exact !important;
-      }
-      
-      body {
-        margin: 0 !important;
-        padding: 0 !important;
-        font-family: system-ui, -apple-system, sans-serif !important;
-        background: white !important;
-        -webkit-print-color-adjust: exact !important;
-        color-adjust: exact !important;
-      }
-      
-      * {
-        -webkit-print-color-adjust: exact !important;
-        color-adjust: exact !important;
-      }
-      
-      .label-container {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      
-      .thermal-label {
-        width: 100% !important;
-        height: 100% !important;
-        border: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
-        padding: 2mm !important;
-        box-shadow: none !important;
-        page-break-after: always !important;
-        page-break-inside: avoid !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        box-sizing: border-box !important;
-        font-size: 3.5vw !important;
-        min-height: 100vh !important;
-        gap: 1mm !important;
-      }
     }
 
     .label-header {
-      min-height: 16px;
-      border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 1px;
-      margin-bottom: 2px;
+      min-height: 3mm;
+      border-bottom: 0.2mm solid #e5e5e5;
+      padding-bottom: 0.5mm;
+      margin-bottom: 1mm;
       overflow: hidden;
     }
 
     .company-name {
-      font-size: 8px;
+      font-size: 2.2mm;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.1mm;
       line-height: 1.0;
       white-space: nowrap;
       overflow: hidden;
@@ -115,19 +94,19 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 1px;
+      gap: 0.5mm;
       min-height: 0;
       overflow: hidden;
     }
 
     .product-name {
-      font-size: 16px;
+      font-size: 4mm;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.2px;
-      max-height: 50px;
+      letter-spacing: 0.1mm;
+      max-height: 15mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
@@ -138,30 +117,30 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-details {
-      font-size: 14px;
+      font-size: 3mm;
       font-weight: 600;
-      margin-top: 1px;
+      margin-top: 0.5mm;
       color: #333;
       line-height: 1.0;
     }
 
     .serial-number {
-      font-size: 10px;
+      font-size: 2.5mm;
       font-weight: 600;
       color: #000;
       text-align: center;
-      letter-spacing: 0.1px;
+      letter-spacing: 0.1mm;
     }
 
     .price {
-      font-size: 30px;
+      font-size: 7mm;
       font-weight: 900;
       color: #000;
       text-align: center;
-      padding: 2px 0;
-      border-top: 2px solid #000;
-      margin-bottom: 2px;
-      letter-spacing: 0.3px;
+      padding: 1mm 0;
+      border-top: 0.5mm solid #000;
+      margin-bottom: 1mm;
+      letter-spacing: 0.2mm;
       line-height: 1.0;
     }
 
@@ -169,65 +148,17 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 55px;
-      max-height: 55px;
+      min-height: 12mm;
+      max-height: 12mm;
       background: #ffffff;
-      padding: 2px;
+      padding: 1mm;
       overflow: hidden;
     }
 
     .barcode-canvas {
-      max-width: 200px;
-      height: 50px;
+      max-width: 50mm;
+      height: 10mm;
       display: block;
-    }
-
-    /* Print-specific responsive styling */
-    @media print {
-      .label-header {
-        min-height: 0.8em !important;
-        margin-bottom: 0.3em !important;
-      }
-      
-      .company-name {
-        font-size: 2.5vw !important;
-      }
-      
-      .product-name {
-        font-size: 4.5vw !important;
-        max-height: none !important;
-        flex: 1 !important;
-      }
-      
-      .product-details {
-        font-size: 3.8vw !important;
-        margin-top: 0.2em !important;
-      }
-      
-      .serial-number {
-        font-size: 3vw !important;
-        margin-top: 0.1em !important;
-      }
-      
-      .price {
-        font-size: 8vw !important;
-        padding: 0.3em 0 !important;
-        border-top: 0.1em solid #000 !important;
-        margin-bottom: 0.3em !important;
-      }
-      
-      .barcode-container {
-        flex: 0 0 auto !important;
-        min-height: 15% !important;
-        max-height: 20% !important;
-        margin-top: auto !important;
-      }
-      
-      .barcode-canvas {
-        max-width: 90% !important;
-        height: auto !important;
-        max-height: 100% !important;
-      }
     }
   `;
 
@@ -262,45 +193,34 @@ export class UnifiedPrintService implements IPrintService {
                const barcode = canvas.getAttribute('data-barcode');
                if (barcode && window.JsBarcode) {
                  try {
-                   // Check if we're in print mode
-                   const isPrint = window.matchMedia('print').matches;
-                   
-                   JsBarcode(canvas, barcode, {
-                     format: 'CODE128',
-                     width: isPrint ? 2.5 : 1.8,
-                     height: isPrint ? 45 : 35,
-                     displayValue: true,
-                     fontSize: isPrint ? 14 : 10,
-                     fontOptions: 'bold',
-                     font: 'Arial',
-                     textAlign: 'center',
-                     textPosition: 'bottom',
-                     textMargin: isPrint ? 2 : 4,
-                     margin: isPrint ? 2 : 5,
-                     background: '#ffffff',
-                     lineColor: '#000000',
-                     marginTop: isPrint ? 1 : 2,
-                     marginBottom: isPrint ? 1 : 2,
-                     marginLeft: isPrint ? 3 : 10,
-                     marginRight: isPrint ? 3 : 10
-                   });
+                    // Unified barcode settings for WYSIWYG
+                    JsBarcode(canvas, barcode, {
+                      format: 'CODE128',
+                      width: 1.8,
+                      height: 28,
+                      displayValue: true,
+                      fontSize: 8,
+                      fontOptions: 'bold',
+                      font: 'Arial',
+                      textAlign: 'center',
+                      textPosition: 'bottom',
+                      textMargin: 2,
+                      margin: 2,
+                      background: '#ffffff',
+                      lineColor: '#000000',
+                      marginTop: 1,
+                      marginBottom: 1,
+                      marginLeft: 3,
+                      marginRight: 3
+                    });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
                  }
                }
              });
            }
-           
-           window.addEventListener('load', generateBarcodes);
-           
-           // Regenerate barcodes when entering print mode
-           window.addEventListener('beforeprint', generateBarcodes);
-           
-           // Also listen for print media query changes
-           if (window.matchMedia) {
-             const mediaQuery = window.matchMedia('print');
-             mediaQuery.addListener(generateBarcodes);
-           }
+            
+            window.addEventListener('load', generateBarcodes);
         </script>
       </body>
       </html>
@@ -320,7 +240,7 @@ export class UnifiedPrintService implements IPrintService {
       const html = this.generateLabelHTML(labels, options);
       const totalLabels = labels.length * (options.copies || 1);
       
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      const printWindow = window.open('', '_blank', 'width=300,height=250');
       if (!printWindow) {
         throw new Error('Print popup blocked. Please allow popups.');
       }
