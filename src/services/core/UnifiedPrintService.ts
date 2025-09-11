@@ -39,15 +39,15 @@ export class UnifiedPrintService implements IPrintService {
     }
     
     .label-container {
-      width: 5.5cm;
-      height: 4.5cm;
+      width: 6cm;
+      height: 5cm;
       margin: 0;
       padding: 0;
     }
     
     .thermal-label {
-      width: 4.5cm;
-      height: 3.5cm;
+      width: 6cm;
+      height: 5cm;
       border: none;
       border-radius: 0;
       margin: 0;
@@ -78,7 +78,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .company-name {
-      font-size: 2.2mm;
+      font-size: 3.2mm;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
