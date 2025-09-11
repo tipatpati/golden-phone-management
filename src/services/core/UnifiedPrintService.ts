@@ -18,7 +18,7 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     /* Unified styles - WYSIWYG: same size for preview and print */
     @page {
-      size: 6cm 5cm !important;
+      size: 6cm 5cm portrait !important;
       margin: 0mm !important;
       -webkit-print-color-adjust: exact !important;
       color-adjust: exact !important;
@@ -39,15 +39,15 @@ export class UnifiedPrintService implements IPrintService {
     }
     
     .label-container {
-      width: 5.5cm;
-      height: 4.5cm;
+      width: 6cm;
+      height: 5cm;
       margin: 0;
       padding: 0;
     }
     
     .thermal-label {
-      width: 5cm;
-      height: 4cm;
+      width: 6cm;
+      height: 5cm;
       border: none;
       border-radius: 0;
       margin: 0;
@@ -114,7 +114,7 @@ export class UnifiedPrintService implements IPrintService {
       -webkit-box-orient: vertical;
       word-break: break-word;
       hyphens: auto;
-    
+      border-bottom: 1px solid black;
     }
 
     .product-details {
@@ -156,7 +156,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .barcode-canvas {
-      max-width: 35mm;
+      max-width: 50mm;
       height: 10mm;
       display: block;
     }
