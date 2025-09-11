@@ -18,9 +18,11 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     @media print {
       @page {
-        size: 6cm 5cm;
-        margin: 0;
-        padding: 0;
+        size: 6cm 5cm portrait !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
       body {
         margin: 0;
@@ -37,27 +39,30 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .thermal-label {
-      width: 6cm;
-      height: 5cm;
-      border: 2px solid #000;
-      border-radius: 4px;
-      padding: 3px;
-      margin: 0;
-      font-size: 8px;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      text-align: center;
-      line-height: 1.1;
-      box-sizing: border-box;
-      overflow: hidden;
-      page-break-after: always;
-      page-break-inside: avoid;
-      gap: 1px;
-      color: #000;
-      position: relative;
+      width: 6cm !important;
+      height: 5cm !important;
+      border: 2px solid #000 !important;
+      border-radius: 4px !important;
+      padding: 3px !important;
+      margin: 0 !important;
+      font-size: 8px !important;
+      font-family: system-ui, -apple-system, sans-serif !important;
+      background: white !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      text-align: center !important;
+      line-height: 1.1 !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      gap: 1px !important;
+      color: #000 !important;
+      position: relative !important;
+      transform: none !important;
+      -webkit-transform: none !important;
+      orientation: portrait !important;
     }
 
     @media screen {
@@ -101,20 +106,20 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-name {
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1.0;
-      color: #000;
-      text-transform: uppercase;
-      letter-spacing: 0.2px;
-      max-height: 50px;
-      overflow: hidden;
-      text-align: center;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      word-break: break-word;
-      hyphens: auto;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      line-height: 1.0 !important;
+      color: #000 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.2px !important;
+      max-height: 50px !important;
+      overflow: hidden !important;
+      text-align: center !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 3 !important;
+      -webkit-box-orient: vertical !important;
+      word-break: break-word !important;
+      hyphens: auto !important;
     }
 
     @media screen {
@@ -351,7 +356,7 @@ export class UnifiedPrintService implements IPrintService {
       
       console.log(`🔍 UnifiedPrintService: Final barcode integrity check passed for ${barcodeToUse}`);
     }
-    // Convert the interface types to match the component types
+    // Convert the interface types to match the component types with proper battery level extraction
     const componentLabel = {
       productName: label.productName,
       serialNumber: label.serial,
@@ -359,7 +364,7 @@ export class UnifiedPrintService implements IPrintService {
       price: label.price,
       category: undefined,
       color: label.color,
-      batteryLevel: undefined,
+      batteryLevel: (label as any).batteryLevel, // Extract battery level from source data
       storage: label.storage ? parseInt(label.storage.replace(/\D/g, '')) || undefined : undefined,
       ram: label.ram ? parseInt(label.ram.replace(/\D/g, '')) || undefined : undefined
     };
