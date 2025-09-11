@@ -33,18 +33,26 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
 
   // Helper function to convert component labels to service labels
   const convertLabels = (labels: ComponentLabelData[]): ServiceLabelData[] => {
-    return labels.map(label => ({
-      id: label.barcode || Math.random().toString(),
-      productName: label.productName,
-      brand: "GPMS", // Default brand
-      model: label.productName,
-      price: label.price,
-      barcode: label.barcode,
-      serial: label.serialNumber,
-      color: label.color,
-      storage: label.storage?.toString(),
-      ram: label.ram?.toString()
-    }));
+    return labels.map(label => {
+      // CRITICAL: Preserve exact barcode - do not modify or generate fallbacks
+      if (!label.barcode) {
+        console.error('❌ convertLabels: Missing barcode for label:', label);
+        throw new Error('Cannot print label without barcode');
+      }
+      
+      return {
+        id: label.barcode, // Use barcode as ID to maintain traceability
+        productName: label.productName,
+        brand: "GPMS", // Default brand
+        model: label.productName,
+        price: label.price,
+        barcode: label.barcode, // Preserve exact barcode from source
+        serial: label.serialNumber,
+        color: label.color,
+        storage: label.storage?.toString(),
+        ram: label.ram?.toString()
+      };
+    });
   };
 
   // Helper function to convert component options to service options
