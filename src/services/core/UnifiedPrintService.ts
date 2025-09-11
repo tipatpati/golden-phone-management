@@ -39,8 +39,8 @@ export class UnifiedPrintService implements IPrintService {
     }
     
     .label-container {
-      width: 6cm;
-      height: 5cm;
+      width: 5.5cm;
+      height: 4.5cm;
       margin: 0;
       padding: 0;
     }
