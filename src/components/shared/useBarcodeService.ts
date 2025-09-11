@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Services } from '@/services/core';
-import type { BarcodeService } from '@/services/shared/BarcodeService';
+import { Services } from '@/services/core/Services';
+import type { BarcodeAuthorityService } from '@/services/core/BarcodeAuthorityService';
 
 /**
- * React hook for accessing the injectable barcode service
+ * React hook for accessing the barcode authority service (single source of truth)
  * Provides a clean interface for components to use barcode functionality
  */
 export function useBarcodeService() {
-  const [service, setService] = useState<BarcodeService | null>(null);
+  const [service, setService] = useState<BarcodeAuthorityService | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,14 +16,15 @@ export function useBarcodeService() {
 
     const initializeService = async () => {
       try {
-        const barcodeService = await Services.getBarcodeService();
+        // Use BarcodeAuthority as single source of truth
+        const barcodeAuthority = Services.getBarcodeAuthority();
         if (mounted) {
-          setService(barcodeService);
+          setService(barcodeAuthority);
           setError(null);
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to initialize barcode service');
+          setError(err instanceof Error ? err.message : 'Failed to initialize barcode authority');
         }
       } finally {
         if (mounted) {
@@ -49,9 +50,14 @@ export function useBarcodeService() {
     return await service.generateProductBarcode(productId, options);
   }, [service]);
 
-  const validateBarcode = useCallback(async (barcode: string) => {
+  const validateBarcode = useCallback((barcode: string) => {
     if (!service) return { isValid: false, errors: ['Service not available'] };
-    return await service.validateBarcode(barcode);
+    return service.validateBarcode(barcode);
+  }, [service]);
+
+  const verifyBarcodeIntegrity = useCallback((barcode: string, expectedSource?: string) => {
+    if (!service) return false;
+    return service.verifyBarcodeIntegrity(barcode, expectedSource);
   }, [service]);
 
   return {
@@ -61,6 +67,7 @@ export function useBarcodeService() {
     isReady: service !== null && !isLoading && !error,
     generateUnitBarcode,
     generateProductBarcode,
-    validateBarcode
+    validateBarcode,
+    verifyBarcodeIntegrity
   };
 }

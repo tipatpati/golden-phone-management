@@ -3,7 +3,7 @@ import type { ProductUnit } from "@/services/inventory/types";
 import { formatProductName, formatProductUnitName } from "@/utils/productNaming";
 import { LabelDataValidator } from "./LabelDataValidator";
 import { ProductForLabels, ThermalLabelData, LabelDataResult } from "./types";
-import { Code128GeneratorService } from "@/services/barcodes/Code128GeneratorService";
+import { Services } from "@/services/core/Services";
 
 export class ThermalLabelDataService {
   /**
@@ -118,18 +118,20 @@ export class ThermalLabelDataService {
       const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
       console.log(`✅ Found ${units.length} units from ProductUnitManagementService`);
       
-      // PHASE 3: Always check existing barcodes before generation
-      const { BarcodeService } = await import("@/services/shared/BarcodeService");
-      const barcodeService = new BarcodeService();
+      // PHASE 3: Use BarcodeAuthority as single source of truth
+      const barcodeAuthority = Services.getBarcodeAuthority();
       
       // Cross-module data validation - ensure supplier-created units are included
       for (const unit of units) {
         if (unit.barcode) {
-          // Validate existing barcode integrity
-          const validation = await barcodeService?.validateBarcode(unit.barcode);
-          if (!validation?.isValid) {
+          // Validate existing barcode integrity using authority
+          const validation = barcodeAuthority.validateBarcode(unit.barcode);
+          if (!validation.isValid) {
             warnings.push(`Unit ${unit.serial_number} has invalid barcode: ${unit.barcode}`);
           }
+          
+          // Verify barcode integrity
+          barcodeAuthority.verifyBarcodeIntegrity(unit.barcode, 'existing');
         }
       }
 
@@ -137,12 +139,17 @@ export class ThermalLabelDataService {
       for (const unit of units) {
         let unitBarcode = unit.barcode;
         
-        // Auto-generate unit barcode if missing
+        // Auto-generate unit barcode if missing using BarcodeAuthority
         if (!unitBarcode) {
           try {
-            console.log(`🔨 Generating missing unit barcode for ${unit.serial_number}...`);
-            unitBarcode = await Code128GeneratorService.generateUnitBarcode(unit.id);
-            console.log(`✅ Generated unit barcode: ${unitBarcode}`);
+            console.log(`🔨 Generating missing unit barcode for ${unit.serial_number} via BarcodeAuthority...`);
+            unitBarcode = await barcodeAuthority.generateUnitBarcode(unit.id);
+            console.log(`✅ Generated unit barcode via BarcodeAuthority: ${unitBarcode}`);
+            
+            // Verify the generated barcode
+            if (!barcodeAuthority.verifyBarcodeIntegrity(unitBarcode, 'generated')) {
+              throw new Error('Generated barcode failed integrity check');
+            }
           } catch (error) {
             console.error(`❌ Failed to generate unit barcode for ${unit.serial_number}:`, error);
             unitsMissingBarcodes++;
@@ -197,13 +204,19 @@ export class ThermalLabelDataService {
       model: cleanModel 
     });
 
-    // Auto-generate product barcode if missing
+    // Auto-generate product barcode if missing using BarcodeAuthority
     let productBarcode = product.barcode;
     if (!productBarcode) {
       try {
-        console.log(`🔨 Generating missing product barcode for ${product.id}...`);
-        productBarcode = await Code128GeneratorService.generateProductBarcode(product.id);
-        console.log(`✅ Generated product barcode: ${productBarcode}`);
+        console.log(`🔨 Generating missing product barcode for ${product.id} via BarcodeAuthority...`);
+        const barcodeAuthority = Services.getBarcodeAuthority();
+        productBarcode = await barcodeAuthority.generateProductBarcode(product.id);
+        console.log(`✅ Generated product barcode via BarcodeAuthority: ${productBarcode}`);
+        
+        // Verify the generated barcode
+        if (!barcodeAuthority.verifyBarcodeIntegrity(productBarcode, 'generated')) {
+          throw new Error('Generated barcode failed integrity check');
+        }
       } catch (error) {
         console.error(`❌ Failed to generate product barcode for ${product.id}:`, error);
         return {
@@ -219,6 +232,13 @@ export class ThermalLabelDataService {
             genericLabels: 0
           }
         };
+      }
+    } else {
+      // Validate existing product barcode
+      const barcodeAuthority = Services.getBarcodeAuthority();
+      const validation = barcodeAuthority.validateBarcode(productBarcode);
+      if (!validation.isValid) {
+        console.warn(`⚠️ Product ${product.id} has invalid barcode: ${productBarcode}`);
       }
     }
 

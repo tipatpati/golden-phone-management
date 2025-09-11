@@ -12,6 +12,7 @@ import type {
 } from '../shared/interfaces/IPrintService';
 import { logger } from '@/utils/logger';
 import { formatLabelElements } from '@/components/inventory/labels/services/labelDataFormatter';
+import { Services } from './Services';
 
 export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
@@ -312,9 +313,42 @@ export class UnifiedPrintService implements IPrintService {
   }
 
   /**
-   * Generate single label HTML
+   * Generate single label HTML with barcode integrity validation
    */
   generateSingleLabel(label: ThermalLabelData, options: ThermalLabelOptions): string {
+    // BARCODE INTEGRITY CHECK - Verify barcode before printing
+    const barcodeAuthority = Services.getBarcodeAuthority();
+    const barcodeToUse = label.barcode;
+    
+    console.log(`🖨️ UnifiedPrintService: Preparing to print barcode ${barcodeToUse}`);
+    
+    // Validate barcode integrity
+    if (barcodeToUse) {
+      const validation = barcodeAuthority.validateBarcode(barcodeToUse);
+      if (!validation.isValid) {
+        console.error(`❌ UnifiedPrintService: Invalid barcode ${barcodeToUse}:`, validation.errors);
+        throw new Error(`Cannot print invalid barcode: ${validation.errors.join(', ')}`);
+      }
+      
+      // Verify barcode contract if available
+      const contract = barcodeAuthority.getBarcodeContract(barcodeToUse);
+      if (contract) {
+        console.log(`✅ UnifiedPrintService: Barcode contract verified`, {
+          barcode: barcodeToUse,
+          source: contract.source,
+          traceId: contract.traceId
+        });
+        
+        // Ensure barcode integrity is maintained
+        if (!barcodeAuthority.verifyBarcodeIntegrity(barcodeToUse)) {
+          throw new Error(`Barcode integrity check failed for ${barcodeToUse}`);
+        }
+      } else {
+        console.warn(`⚠️ UnifiedPrintService: No contract found for barcode ${barcodeToUse} (may be legacy)`);
+      }
+      
+      console.log(`🔍 UnifiedPrintService: Final barcode integrity check passed for ${barcodeToUse}`);
+    }
     // Convert the interface types to match the component types
     const componentLabel = {
       productName: label.productName,
