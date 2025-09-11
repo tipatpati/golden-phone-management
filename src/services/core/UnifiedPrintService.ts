@@ -114,7 +114,7 @@ export class UnifiedPrintService implements IPrintService {
       -webkit-box-orient: vertical;
       word-break: break-word;
       hyphens: auto;
-      border-bottom: 1px solid black;
+    
     }
 
     .product-details {
