@@ -359,7 +359,7 @@ export class UnifiedPrintService implements IPrintService {
             ${this.escapeHtml(formattedLabel.productName)}
             ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
               <div class="product-details">
-                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel ? formattedLabel.batteryLevel + '%' : ''}
+                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel || ''}
               </div>
             ` : ''}
           </div>
