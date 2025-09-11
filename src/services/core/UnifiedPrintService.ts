@@ -16,58 +16,78 @@ import { Services } from './Services';
 
 export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
-    /* WYSIWYG - Unified styles for both screen and print */
-    @page {
-      size: 6cm 5cm !important;
-      margin: 0mm !important;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      font-family: system-ui, -apple-system, sans-serif !important;
-      background: white !important;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    
-    * {
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    
-    .label-container {
-      width: 6cm !important;
-      height: 5cm !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: white !important;
-    }
-    
+    /* Screen styles - for preview */
     .thermal-label {
-      width: 6cm !important;
-      height: 5cm !important;
-      border: none !important;
-      border-radius: 0 !important;
-      margin: 0 !important;
-      padding: 2mm !important;
-      box-shadow: none !important;
-      page-break-after: always !important;
-      page-break-inside: avoid !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      box-sizing: border-box !important;
-      background: white !important;
-      color: #000 !important;
-      font-family: system-ui, -apple-system, sans-serif !important;
-      text-align: center !important;
-      line-height: 1.1 !important;
-      overflow: hidden !important;
-      gap: 1mm !important;
-      position: relative !important;
+      width: 227px;
+      height: 189px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      padding: 3px;
+      margin: 3px;
+      font-size: 8px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.1;
+      box-sizing: border-box;
+      overflow: hidden;
+      gap: 1px;
+      color: #000;
+      position: relative;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    /* Print styles - fixed 6cm x 5cm thermal label */
+    @media print {
+      @page {
+        size: 6cm 5cm !important;
+        margin: 0mm !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: system-ui, -apple-system, sans-serif !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      .label-container {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .thermal-label {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 2mm !important;
+        box-shadow: none !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        font-size: 3.5vw !important;
+        min-height: 100vh !important;
+        gap: 1mm !important;
+      }
     }
 
     .label-header {
@@ -162,102 +182,52 @@ export class UnifiedPrintService implements IPrintService {
       display: block;
     }
 
-    /* Unified element styling - same for screen and print */
-    .label-header {
-      min-height: 0.8em !important;
-      margin-bottom: 0.3em !important;
-      border-bottom: 1px solid #e5e5e5 !important;
-      padding-bottom: 1px !important;
-      overflow: hidden !important;
-    }
-    
-    .company-name {
-      font-size: 2.5vw !important;
-      font-weight: 700 !important;
-      text-transform: uppercase !important;
-      color: #000 !important;
-      letter-spacing: 0.5px !important;
-      line-height: 1.0 !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-    }
-    
-    .product-info {
-      flex: 1 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-start !important;
-      gap: 1px !important;
-      min-height: 0 !important;
-      overflow: hidden !important;
-    }
-    
-    .product-name {
-      font-size: 4.5vw !important;
-      font-weight: 800 !important;
-      line-height: 1.0 !important;
-      color: #000 !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.2px !important;
-      max-height: none !important;
-      flex: 1 !important;
-      overflow: hidden !important;
-      text-align: center !important;
-      display: -webkit-box !important;
-      -webkit-line-clamp: 3 !important;
-      -webkit-box-orient: vertical !important;
-      word-break: break-word !important;
-      hyphens: auto !important;
-    }
-    
-    .product-details {
-      font-size: 3.8vw !important;
-      font-weight: 600 !important;
-      margin-top: 0.2em !important;
-      color: #333 !important;
-      line-height: 1.0 !important;
-    }
-    
-    .serial-number {
-      font-size: 3vw !important;
-      font-weight: 600 !important;
-      color: #000 !important;
-      text-align: center !important;
-      letter-spacing: 0.1px !important;
-      margin-top: 0.1em !important;
-    }
-    
-    .price {
-      font-size: 8vw !important;
-      font-weight: 900 !important;
-      color: #000 !important;
-      text-align: center !important;
-      padding: 0.3em 0 !important;
-      border-top: 0.1em solid #000 !important;
-      margin-bottom: 0.3em !important;
-      letter-spacing: 0.3px !important;
-      line-height: 1.0 !important;
-    }
-    
-    .barcode-container {
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      flex: 0 0 auto !important;
-      min-height: 15% !important;
-      max-height: 20% !important;
-      background: #ffffff !important;
-      padding: 2px !important;
-      overflow: hidden !important;
-      margin-top: auto !important;
-    }
-    
-    .barcode-canvas {
-      max-width: 90% !important;
-      height: auto !important;
-      max-height: 100% !important;
-      display: block !important;
+    /* Print-specific responsive styling */
+    @media print {
+      .label-header {
+        min-height: 0.8em !important;
+        margin-bottom: 0.3em !important;
+      }
+      
+      .company-name {
+        font-size: 2.5vw !important;
+      }
+      
+      .product-name {
+        font-size: 4.5vw !important;
+        max-height: none !important;
+        flex: 1 !important;
+      }
+      
+      .product-details {
+        font-size: 3.8vw !important;
+        margin-top: 0.2em !important;
+      }
+      
+      .serial-number {
+        font-size: 3vw !important;
+        margin-top: 0.1em !important;
+      }
+      
+      .price {
+        font-size: 8vw !important;
+        padding: 0.3em 0 !important;
+        border-top: 0.1em solid #000 !important;
+        margin-bottom: 0.3em !important;
+      }
+      
+      .barcode-container {
+        flex: 0 0 auto !important;
+        min-height: 15% !important;
+        max-height: 20% !important;
+        margin-top: auto !important;
+      }
+      
+      .barcode-canvas {
+        max-width: 90% !important;
+        height: auto !important;
+        max-height: 100% !important;
+      }
     }
   `;
 
@@ -292,26 +262,28 @@ export class UnifiedPrintService implements IPrintService {
                const barcode = canvas.getAttribute('data-barcode');
                if (barcode && window.JsBarcode) {
                  try {
-                    // Use unified barcode settings for WYSIWYG
-                    JsBarcode(canvas, barcode, {
-                      format: 'CODE128',
-                      width: 2.5,
-                      height: 45,
-                      displayValue: true,
-                      fontSize: 14,
-                      fontOptions: 'bold',
-                      font: 'Arial',
-                      textAlign: 'center',
-                      textPosition: 'bottom',
-                      textMargin: 2,
-                      margin: 2,
-                      background: '#ffffff',
-                      lineColor: '#000000',
-                      marginTop: 1,
-                      marginBottom: 1,
-                      marginLeft: 3,
-                      marginRight: 3
-                    });
+                   // Check if we're in print mode
+                   const isPrint = window.matchMedia('print').matches;
+                   
+                   JsBarcode(canvas, barcode, {
+                     format: 'CODE128',
+                     width: isPrint ? 2.5 : 1.8,
+                     height: isPrint ? 45 : 35,
+                     displayValue: true,
+                     fontSize: isPrint ? 14 : 10,
+                     fontOptions: 'bold',
+                     font: 'Arial',
+                     textAlign: 'center',
+                     textPosition: 'bottom',
+                     textMargin: isPrint ? 2 : 4,
+                     margin: isPrint ? 2 : 5,
+                     background: '#ffffff',
+                     lineColor: '#000000',
+                     marginTop: isPrint ? 1 : 2,
+                     marginBottom: isPrint ? 1 : 2,
+                     marginLeft: isPrint ? 3 : 10,
+                     marginRight: isPrint ? 3 : 10
+                   });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
                  }
