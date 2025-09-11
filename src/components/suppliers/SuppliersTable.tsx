@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Building, Mail, Phone, Edit2, Trash2, MessageCircle, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState } from "@/components/common";
@@ -28,14 +28,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const handleDeleteSupplier = useCallback((supplier: any) => {
+  const handleDeleteSupplier = (supplier: any) => {
     showConfirmDialog({
       item: supplier,
       title: "Delete Supplier",
       message: `Are you sure you want to delete "${supplier.name}"? This action cannot be undone.`,
       onConfirm: () => setDeletingSupplier(supplier)
     });
-  }, [showConfirmDialog]);
+  };
 
   const getStatusColor = (status: string) => {
     return status === 'active' ? 'default' : 'secondary';
@@ -98,7 +98,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   ];
 
   // Define actions
-  const actions = React.useMemo(() => [
+  const actions = [
     {
       icon: <Eye className="h-4 w-4" />,
       label: "View Details",
@@ -132,7 +132,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
       },
       variant: "destructive" as const
     }
-  ], [handleDeleteSupplier]);
+  ];
 
   const handleSuccess = () => {
     refetch();

@@ -80,8 +80,8 @@ export function DeleteSupplierDialog({ supplier, open, onOpenChange }: DeleteSup
 
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-sm text-red-800">
-            <strong>Warning:</strong> Deleting this supplier will also remove all associated transactions and cannot be undone. 
-            Consider deactivating the supplier instead if you want to preserve historical data.
+            <strong>Warning:</strong> Suppliers with existing transactions cannot be deleted to maintain data integrity. 
+            Consider deactivating the supplier instead to preserve historical data while preventing new transactions.
           </p>
         </div>
 

@@ -10,6 +10,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDeleteSupplierTransaction } from "@/services/suppliers/SupplierTransactionService";
+import { toast } from "sonner";
 
 interface SupplierTransaction {
   id: string;
@@ -26,15 +28,18 @@ interface DeleteTransactionDialogProps {
   transaction: SupplierTransaction | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function DeleteTransactionDialog({
   transaction,
   open,
   onOpenChange,
+  onSuccess,
 }: DeleteTransactionDialogProps) {
   const { userRole } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
+  const deleteTransaction = useDeleteSupplierTransaction();
 
   // Only super admins can delete transactions
   if (userRole !== 'super_admin') {
@@ -44,14 +49,18 @@ export function DeleteTransactionDialog({
   if (!transaction) return null;
 
   const handleDelete = async () => {
+    if (!transaction) return;
+    
     setIsDeleting(true);
     
     try {
-      // Simulate API call - in real implementation, use your delete mutation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await deleteTransaction.mutateAsync(transaction.id);
+      toast.success('Transaction deleted successfully');
       onOpenChange(false);
-    } catch (error) {
+      onSuccess?.();
+    } catch (error: any) {
       console.error('Error deleting transaction:', error);
+      toast.error(error.message || 'Failed to delete transaction');
     } finally {
       setIsDeleting(false);
     }
