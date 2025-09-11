@@ -129,6 +129,13 @@ export const supplierTransactionApi = {
   },
 
   async delete(id: string): Promise<void> {
+    // Delete child items first to satisfy FK constraints
+    const { error: itemsError } = await (supabase as any)
+      .from("supplier_transaction_items")
+      .delete()
+      .eq("transaction_id", id);
+    if (itemsError) throw itemsError;
+
     const { error } = await (supabase as any)
       .from("supplier_transactions")
       .delete()
