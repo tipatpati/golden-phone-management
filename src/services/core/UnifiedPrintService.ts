@@ -18,15 +18,14 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     @media print {
       @page {
-        size: 6cm 5cm portrait !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        size: A4 !important;
+        margin: 15mm !important;
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
       }
       body {
         margin: 0;
-        padding: 0;
+        padding: 10mm;
         font-family: system-ui, -apple-system, sans-serif;
         background: white;
         -webkit-print-color-adjust: exact;
@@ -41,7 +40,7 @@ export class UnifiedPrintService implements IPrintService {
     .thermal-label {
       width: 227px !important;   /* 6cm */
       height: 189px !important;  /* 5cm */
-      border: 2px solid #000 !important;
+      border: 2px solid #d1d5db !important;
       border-radius: 4px !important;
       padding: 3px !important;
       margin: 8px !important;
@@ -62,14 +61,17 @@ export class UnifiedPrintService implements IPrintService {
       position: relative !important;
       transform: none !important;
       -webkit-transform: none !important;
-      orientation: portrait !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
     }
 
     @media print {
       .thermal-label {
-        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 5mm !important;
         width: 6cm !important;
         height: 5cm !important;
+        box-shadow: none !important;
       }
     }
 
