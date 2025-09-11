@@ -207,7 +207,7 @@ export class UnifiedPrintService implements IPrintService {
       
       .serial-number {
         font-size: 3vw !important;
-        margin-top: 0.3em !important;
+        margin-top: 0.1em !important;
       }
       
       .price {
