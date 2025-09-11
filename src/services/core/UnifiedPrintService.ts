@@ -25,7 +25,7 @@ export class UnifiedPrintService implements IPrintService {
       body {
         margin: 0;
         padding: 0;
-        font-family: Arial, sans-serif;
+        font-family: system-ui, -apple-system, sans-serif;
         background: white;
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
@@ -39,23 +39,25 @@ export class UnifiedPrintService implements IPrintService {
     .thermal-label {
       width: 6cm;
       height: 5cm;
-      border: 1px solid #000;
-      border-radius: 2px;
-      padding: 2mm;
+      border: 2px solid #000;
+      border-radius: 4px;
+      padding: 3px;
       margin: 0;
-      font-size: 7px;
-      font-family: Arial, sans-serif;
+      font-size: 8px;
+      font-family: system-ui, -apple-system, sans-serif;
       background: white;
       display: flex;
       flex-direction: column;
+      justify-content: flex-start;
       text-align: center;
-      line-height: 1.0;
+      line-height: 1.1;
       box-sizing: border-box;
       overflow: hidden;
       page-break-after: always;
       page-break-inside: avoid;
       gap: 1px;
       color: #000;
+      position: relative;
     }
 
     @media screen {
@@ -69,19 +71,19 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .label-header {
-      min-height: 12px;
+      min-height: 16px;
       border-bottom: 1px solid #e5e5e5;
       padding-bottom: 1px;
-      margin-bottom: 1px;
+      margin-bottom: 2px;
       overflow: hidden;
     }
 
     .company-name {
-      font-size: 7px;
+      font-size: 8px;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
       line-height: 1.0;
       white-space: nowrap;
       overflow: hidden;
@@ -93,26 +95,26 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 1px;
+      gap: 2px;
       min-height: 0;
       overflow: hidden;
-      padding: 1px 0;
     }
 
     .product-name {
       font-size: 12px;
       font-weight: 800;
-      line-height: 0.9;
+      line-height: 1.0;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.1px;
-      max-height: 1.2cm;
+      letter-spacing: 0.2px;
+      max-height: 50px;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       word-break: break-word;
+      hyphens: auto;
     }
 
     @media screen {
@@ -123,7 +125,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-details {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       margin-top: 1px;
       color: #333;
@@ -137,11 +139,11 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .serial-number {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 600;
       color: #000;
       text-align: center;
-      margin-top: 1px;
+      margin-top: 2px;
       letter-spacing: 0.1px;
     }
 
@@ -157,10 +159,10 @@ export class UnifiedPrintService implements IPrintService {
       font-weight: 900;
       color: #000;
       text-align: center;
-      padding: 1px 0;
+      padding: 2px 0;
       border-top: 2px solid #000;
-      margin: 1px 0;
-      letter-spacing: 0.2px;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
       line-height: 1.0;
     }
 
@@ -177,10 +179,10 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 1.2cm;
-      max-height: 1.2cm;
+      min-height: 55px;
+      max-height: 55px;
       background: #ffffff;
-      padding: 1px;
+      padding: 2px;
       overflow: hidden;
     }
 
@@ -193,8 +195,8 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .barcode-canvas {
-      max-width: 5.2cm;
-      height: 1.1cm;
+      max-width: 200px;
+      height: 50px;
     }
 
     @media screen {
@@ -377,33 +379,37 @@ export class UnifiedPrintService implements IPrintService {
     
     return `
       <div class="thermal-label">
-        ${formattedLabel.companyName ? `
-          <div class="label-header">
+        <!-- Header Section -->
+        <div class="label-header">
+          ${formattedLabel.companyName ? `
             <div class="company-name">${this.escapeHtml(formattedLabel.companyName)}</div>
-          </div>
-        ` : ''}
-        
-        <div class="product-info">
-          <div class="product-name">${this.escapeHtml(formattedLabel.productName)}</div>
-          ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
-            <div class="product-details">
-              ${formattedLabel.storage || ''}
-              ${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}
-              ${formattedLabel.ram || ''}
-              ${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}
-              ${formattedLabel.batteryLevel || ''}
-            </div>
           ` : ''}
+        </div>
+
+        <!-- Main Content Section -->
+        <div class="product-info">
+          <!-- Product Name with Storage/RAM - Primary focus -->
+          <div class="product-name">
+            ${this.escapeHtml(formattedLabel.productName)}
+            ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
+              <div class="product-details">
+                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel || ''}
+              </div>
+            ` : ''}
+          </div>
           
+          <!-- Serial Number Section -->
           ${formattedLabel.serialNumber ? `
             <div class="serial-number">${this.escapeHtml(formattedLabel.serialNumber)}</div>
           ` : ''}
         </div>
 
+        <!-- Price Section -->
         ${formattedLabel.price ? `
           <div class="price">${formattedLabel.price}</div>
         ` : ''}
 
+        <!-- Barcode Section -->
         ${formattedLabel.barcode ? `
           <div class="barcode-container">
             <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(formattedLabel.barcode)}"></canvas>
