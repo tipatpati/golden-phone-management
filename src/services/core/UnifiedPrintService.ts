@@ -211,7 +211,7 @@ export class UnifiedPrintService implements IPrintService {
       }
       
       .price {
-        font-size: 6vw !important;
+        font-size: 8vw !important;
         padding: 0.3em 0 !important;
         border-top: 0.1em solid #000 !important;
         margin-bottom: 0.3em !important;
