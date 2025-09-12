@@ -44,6 +44,9 @@ export interface ProductUnit extends BaseEntity {
   price?: number;
   min_price?: number;
   max_price?: number;
+  purchase_price?: number;
+  purchase_date?: string;
+  supplier_id?: string;
   status: 'available' | 'sold' | 'reserved' | 'damaged';
 }
 

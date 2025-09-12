@@ -66,6 +66,7 @@ export interface CreateTransactionItemData {
   quantity: number;
   unit_cost: number;
   unit_barcodes?: string[];
+  product_unit_ids?: string[]; // For linking to specific units with individual prices
 }
 
 export interface UpdateTransactionData {
@@ -82,6 +83,7 @@ export interface EditableTransactionItem {
   quantity: number;
   unit_cost: number;
   unit_barcodes?: string[];
+  product_unit_ids?: string[]; // For linking to specific units with individual prices
 }
 
 // ============= SEARCH AND FILTER TYPES =============
