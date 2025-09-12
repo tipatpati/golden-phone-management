@@ -46,6 +46,7 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
         brand: "GPMS", // Default brand
         model: label.productName,
         price: label.price,
+        maxPrice: label.maxPrice, // Pass through maxPrice for print service
         barcode: label.barcode, // Preserve exact barcode from source
         serial: label.serialNumber,
         color: label.color,

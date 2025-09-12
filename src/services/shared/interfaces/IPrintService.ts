@@ -23,6 +23,7 @@ export interface ThermalLabelData {
   brand: string;
   model: string;
   price: number;
+  maxPrice?: number;
   barcode: string;
   serial?: string;
   color?: string;

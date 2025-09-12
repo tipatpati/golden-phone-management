@@ -337,7 +337,7 @@ export class UnifiedPrintService implements IPrintService {
     const formattedLabel = formatLabelElements(componentLabel, componentOptions);
     
     // Only use maxPrice, leave blank if not available
-    const maxPrice = (label as any).maxPrice;
+    const maxPrice = label.maxPrice;
     const priceString = (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') 
       ? `€${maxPrice.toFixed(2)}` 
       : '';
