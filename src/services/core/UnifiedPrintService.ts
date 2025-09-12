@@ -336,7 +336,7 @@ export class UnifiedPrintService implements IPrintService {
     // Use the same formatter as the preview to ensure consistency
     const formattedLabel = formatLabelElements(componentLabel, componentOptions);
     
-    // Calculate display price exactly like in preview  
+    // Always use maxPrice if available, otherwise fall back to price (same logic as preview)
     const displayPrice = (label as any).maxPrice !== undefined && (label as any).maxPrice !== null ? (label as any).maxPrice : label.price;
     const priceString = typeof displayPrice === 'number' ? `€${displayPrice.toFixed(2)}` : '€0.00';
     

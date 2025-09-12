@@ -205,7 +205,8 @@ export function ThermalLabelPreview({
       lineHeight: '1.0'
     }}>
           €{(() => {
-            const displayPrice = label.maxPrice !== undefined && label.maxPrice !== null ? label.maxPrice : label.price;
+            // Always use maxPrice if available, otherwise fall back to price
+            const displayPrice = (label as any).maxPrice !== undefined && (label as any).maxPrice !== null ? (label as any).maxPrice : label.price;
             return typeof displayPrice === 'number' ? displayPrice.toFixed(2) : '0.00';
           })()}
         </div>}
