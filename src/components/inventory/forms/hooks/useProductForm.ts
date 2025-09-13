@@ -177,7 +177,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       barcode: formData.barcode,
       has_serial: formData.has_serial!,
       serial_numbers: formData.has_serial ? serialArray : undefined,
-      unit_entries: formData.has_serial ? unitEntries.filter(e => e.serial?.trim()) : undefined,
+      unit_entries: formData.has_serial ? unitEntries : undefined,
     };
 
     setIsSubmitting(true);
