@@ -237,8 +237,8 @@ export function EditTransactionDialogV2({
   const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
     const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
     if (product?.has_serial && itemUnitEntries[index]?.length) {
-      // Use individual unit prices for serialized products
-      return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || 0), 0);
+      // Use individual unit prices for serialized products, fallback to default if no price
+      return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
     }
     // Use quantity * unit_cost for non-serialized products
     return item.quantity * item.unit_cost;
@@ -288,8 +288,8 @@ export function EditTransactionDialogV2({
                 unitEntries: newUnitEntries,
                 defaultPricing: {
                   price: item.unit_cost,
-                  min_price: undefined,
-                  max_price: undefined,
+                  min_price: item.unit_cost, // Use unit_cost as fallback for min_price
+                  max_price: item.unit_cost, // Use unit_cost as fallback for max_price
                 },
                 metadata: {
                   supplierId: transaction.supplier_id,
@@ -318,10 +318,14 @@ export function EditTransactionDialogV2({
           // Combine existing and new unit IDs
           const allUnitIds = [...existingUnitIds, ...createdUnitIds];
 
+          // Calculate correct unit cost - if units have individual prices, use average; otherwise use default
+          const totalUnitPrice = unitEntries.reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
+          const avgUnitCost = unitEntries.length > 0 ? totalUnitPrice / unitEntries.length : item.unit_cost;
+          
           return {
             ...item,
             product_unit_ids: allUnitIds,
-            unit_cost: unitEntries.reduce((sum, entry) => sum + (entry.price || 0), 0) / item.quantity || item.unit_cost
+            unit_cost: avgUnitCost
           };
         }
         
