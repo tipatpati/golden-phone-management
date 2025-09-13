@@ -25,8 +25,11 @@ import {
   useReplaceSupplierTransactionItems, 
   useSupplierTransactionItems 
 } from "@/services/suppliers/SupplierTransactionService";
+import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { useToast } from "@/hooks/use-toast";
+import { useSuppliers } from "@/services";
 import type { SupplierTransaction, EditableTransactionItem } from "@/services/suppliers/types";
+import type { ProductUnit } from "@/services/inventory/types";
 
 interface EditTransactionDialogProps {
   transaction: SupplierTransaction | null;
@@ -41,6 +44,7 @@ export function EditTransactionDialogV2({
 }: EditTransactionDialogProps) {
   const { userRole } = useAuth();
   const { data: products } = useProducts();
+  const { data: suppliers } = useSuppliers();
   const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
   const { toast } = useToast();
 
@@ -48,9 +52,12 @@ export function EditTransactionDialogV2({
   const [status, setStatus] = useState<SupplierTransaction["status"]>("pending");
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState("");
+  const [supplierId, setSupplierId] = useState("");
   const [items, setItems] = useState<EditableTransactionItem[]>([
-    { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [] },
+    { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] },
   ]);
+  const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
+  const [itemUnitPrices, setItemUnitPrices] = useState<Record<number, number[]>>({});
 
   const updateTx = useUpdateSupplierTransaction();
   const replaceItems = useReplaceSupplierTransactionItems();
@@ -62,6 +69,7 @@ export function EditTransactionDialogV2({
       setStatus(transaction.status);
       setNotes(transaction.notes || "");
       setDate(transaction.transaction_date?.split("T")[0] || "");
+      setSupplierId(transaction.supplier_id);
     }
   }, [transaction]);
 
@@ -74,25 +82,61 @@ export function EditTransactionDialogV2({
         quantity: item.quantity,
         unit_cost: item.unit_cost,
         unit_barcodes: item.unit_details?.barcodes || [],
+        product_unit_ids: (item as any).product_unit_ids || [],
       }));
       setItems(mappedItems);
     }
   }, [existingItems]);
 
   const addItem = () => {
-    setItems((prev) => [...prev, { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [] }]);
+    setItems((prev) => [...prev, { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] }]);
   };
 
   const removeItem = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+    if (items.length > 1) {
+      setItems((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
-  const updateItem = (index: number, field: keyof EditableTransactionItem, value: any) => {
+  const updateItem = async (index: number, field: keyof EditableTransactionItem, value: any) => {
     setItems((prev) => {
       const copy = [...prev];
       (copy[index] as any)[field] = value;
       return copy;
     });
+
+    // Load units when product changes for serialized products
+    if (field === 'product_id' && value) {
+      const product = products?.find(p => p.id === value);
+      if (product?.has_serial) {
+        try {
+          const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
+          setProductUnits(prev => ({ ...prev, [value]: units }));
+          
+          // Initialize unit prices array for this item
+          const defaultPrices = units.slice(0, items[index].quantity).map(unit => 
+            unit.purchase_price || unit.price || 0
+          );
+          setItemUnitPrices(prev => ({ ...prev, [index]: defaultPrices }));
+        } catch (error) {
+          console.error('Failed to load product units:', error);
+        }
+      }
+    }
+
+    // Update unit prices when quantity changes for serialized products
+    if (field === 'quantity' && typeof value === 'number') {
+      const item = items[index];
+      const product = products?.find(p => p.id === item.product_id);
+      if (product?.has_serial) {
+        const units = productUnits[item.product_id] || [];
+        const newPrices = Array.from({ length: value }, (_, i) => {
+          const unit = units[i];
+          return unit?.purchase_price || unit?.price || item.unit_cost;
+        });
+        setItemUnitPrices(prev => ({ ...prev, [index]: newPrices }));
+      }
+    }
   };
 
   const parseBarcodes = (text: string): string[] =>
@@ -101,10 +145,30 @@ export function EditTransactionDialogV2({
       .map((s) => s.trim())
       .filter(Boolean);
 
-  const total = useMemo(() => 
-    items.reduce((sum, it) => sum + (Number(it.quantity || 0) * Number(it.unit_cost || 0)), 0), 
-    [items]
-  );
+  const updateUnitPrice = (itemIndex: number, unitIndex: number, price: number) => {
+    setItemUnitPrices(prev => {
+      const newPrices = { ...prev };
+      if (!newPrices[itemIndex]) newPrices[itemIndex] = [];
+      newPrices[itemIndex][unitIndex] = price;
+      return newPrices;
+    });
+  };
+
+  const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
+    const product = products?.find(p => p.id === item.product_id);
+    if (product?.has_serial && itemUnitPrices[index]?.length) {
+      // Use individual unit prices for serialized products
+      return itemUnitPrices[index].reduce((sum, price) => sum + price, 0);
+    }
+    // Use quantity * unit_cost for non-serialized products
+    return item.quantity * item.unit_cost;
+  };
+
+  const calculateTotal = () => {
+    return items.reduce((sum, item, index) => sum + calculateItemTotal(item, index), 0);
+  };
+
+  const total = useMemo(() => calculateTotal(), [items, itemUnitPrices]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,10 +199,28 @@ export function EditTransactionDialogV2({
         });
       }
 
+      // Prepare items with unit IDs for serialized products
+      const preparedItems = items.map((item, index) => {
+        const product = products?.find(p => p.id === item.product_id);
+        const units = productUnits[item.product_id] || [];
+        
+        if (product?.has_serial && units.length >= item.quantity) {
+          // Link to specific product units for serialized products
+          const selectedUnits = units.slice(0, item.quantity);
+          return {
+            ...item,
+            product_unit_ids: selectedUnits.map(unit => unit.id),
+            unit_cost: itemUnitPrices[index]?.reduce((sum, price) => sum + price, 0) / item.quantity || item.unit_cost
+          };
+        }
+        
+        return item;
+      });
+
       // Replace items (inventory_manager can also do this per RLS)
       await replaceItems.mutateAsync({
         transactionId: transaction.id,
-        items,
+        items: preparedItems,
       });
 
       toast({ 
@@ -169,13 +251,28 @@ export function EditTransactionDialogV2({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Transaction Fields */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as any)} disabled={!canEditTransaction}>
+              <Label htmlFor="supplier_id">Supplier *</Label>
+              <Select value={supplierId} onValueChange={(value) => setSupplierId(value)} disabled={!canEditTransaction}>
+                <SelectTrigger className="">
+                  <SelectValue placeholder="Select supplier" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-lg">
+                  {Array.isArray(suppliers) ? suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  )) : []}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="type">Transaction Type *</Label>
+              <Select value={type} onValueChange={(value) => setType(value as any)} disabled={!canEditTransaction}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border shadow-lg">
                   <SelectItem value="purchase">Purchase</SelectItem>
@@ -184,9 +281,23 @@ export function EditTransactionDialogV2({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as any)} disabled={!canEditTransaction}>
+              <Label htmlFor="transaction_date">Transaction Date *</Label>
+              <Input
+                id="transaction_date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                disabled={!canEditTransaction}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={status} onValueChange={(value) => setStatus(value as any)} disabled={!canEditTransaction}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -196,19 +307,6 @@ export function EditTransactionDialogV2({
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label>Date</Label>
-              <Input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
-                disabled={!canEditTransaction} 
-              />
-            </div>
-            <div>
-              <Label>Total</Label>
-              <div className="py-2 font-semibold text-lg">€{total.toFixed(2)}</div>
             </div>
           </div>
 
@@ -284,7 +382,7 @@ export function EditTransactionDialogV2({
                         <div className="col-span-1">
                           <Label className="text-xs">Total</Label>
                           <div className="text-sm font-medium py-2">
-                            €{(item.quantity * item.unit_cost).toFixed(2)}
+                            €{calculateItemTotal(item, index).toFixed(2)}
                           </div>
                         </div>
                         <div className="col-span-1">
@@ -302,35 +400,83 @@ export function EditTransactionDialogV2({
                         </div>
                       </div>
 
-                      <div>
-                        <Label className="text-xs">Unit Barcodes (optional)</Label>
-                        <Textarea
-                          placeholder="Enter barcodes separated by comma or new line"
-                          value={(item.unit_barcodes || []).join("\n")}
-                          onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
-                          rows={2}
-                          disabled={!canEditItems}
-                        />
-                      </div>
+                      {/* Show individual unit pricing for serialized products */}
+                      {(() => {
+                        const product = products?.find(p => p.id === item.product_id);
+                        const units = productUnits[item.product_id] || [];
+                        
+                        if (product?.has_serial && units.length > 0) {
+                          return (
+                            <div className="space-y-2">
+                              <Label className="text-xs">Individual Unit Prices (€)</Label>
+                              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                                {Array.from({ length: item.quantity }, (_, unitIndex) => {
+                                  const unit = units[unitIndex];
+                                  const currentPrice = itemUnitPrices[index]?.[unitIndex] || 0;
+                                  
+                                  return (
+                                    <div key={unitIndex} className="flex items-center gap-2 text-xs">
+                                      <span className="min-w-0 flex-1 truncate">
+                                        Unit {unitIndex + 1}: {unit?.serial_number || 'TBD'}
+                                      </span>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={currentPrice}
+                                        onChange={(e) => updateUnitPrice(index, unitIndex, parseFloat(e.target.value) || 0)}
+                                        className="w-20 h-6 text-xs"
+                                        disabled={!canEditItems}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Average: €{itemUnitPrices[index]?.length ? 
+                                  (itemUnitPrices[index].reduce((sum, price) => sum + price, 0) / itemUnitPrices[index].length).toFixed(2) : 
+                                  '0.00'
+                                }
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div>
+                            <Label className="text-xs">Unit Barcodes (optional)</Label>
+                            <Textarea
+                              placeholder="Enter barcodes separated by comma or new line"
+                              value={(item.unit_barcodes || []).join("\n")}
+                              onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
+                              rows={2}
+                              disabled={!canEditItems}
+                            />
+                          </div>
+                        );
+                      })()}
                     </div>
                   ))}
 
-                  <div className="flex justify-end text-lg font-semibold border-t pt-4">
-                    <span>Items Total: €{total.toFixed(2)}</span>
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between items-center text-lg font-semibold">
+                      <span>Total Amount:</span>
+                      <span>€{total.toFixed(2)}</span>
+                    </div>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* Notes */}
           <div>
-            <Label>Notes</Label>
-            <Textarea 
-              value={notes} 
-              onChange={(e) => setNotes(e.target.value)} 
-              rows={3} 
-              placeholder="Additional notes..." 
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Additional notes about this transaction..."
               disabled={!canEditTransaction}
             />
           </div>
