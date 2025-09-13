@@ -44,8 +44,8 @@ export function EditTransactionDialogV2({
   onOpenChange,
 }: EditTransactionDialogProps) {
   const { userRole } = useAuth();
-  const { data: products } = useProducts();
-  const { data: suppliers } = useSuppliers();
+  const { data: products, isLoading: productsLoading, error: productsError } = useProducts();
+  const { data: suppliers, isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
   const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
   const { toast } = useToast();
 
@@ -95,7 +95,7 @@ export function EditTransactionDialogV2({
 
         for (let i = 0; i < mappedItems.length; i++) {
           const item = mappedItems[i];
-          const product = products?.find(p => p.id === item.product_id);
+          const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
           
           if (product?.has_serial && item.product_unit_ids?.length > 0) {
             try {
@@ -166,7 +166,7 @@ export function EditTransactionDialogV2({
 
     // Load units when product changes for serialized products
     if (field === 'product_id' && value) {
-      const product = products?.find(p => p.id === value);
+      const product = Array.isArray(products) ? products.find(p => p.id === value) : undefined;
       if (product?.has_serial) {
         try {
           const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
@@ -193,7 +193,7 @@ export function EditTransactionDialogV2({
     // Update unit entries when quantity changes for serialized products
     if (field === 'quantity' && typeof value === 'number') {
       const item = items[index];
-      const product = products?.find(p => p.id === item.product_id);
+      const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
       if (product?.has_serial) {
         const units = productUnits[item.product_id] || [];
         const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
@@ -235,7 +235,7 @@ export function EditTransactionDialogV2({
   };
 
   const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
-    const product = products?.find(p => p.id === item.product_id);
+    const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
     if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products
       return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || 0), 0);
@@ -281,7 +281,7 @@ export function EditTransactionDialogV2({
 
       // Prepare items with unit IDs for serialized products
       const preparedItems = items.map((item, index) => {
-        const product = products?.find(p => p.id === item.product_id);
+        const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
         const units = productUnits[item.product_id] || [];
         
         if (product?.has_serial && units.length >= item.quantity) {
@@ -339,11 +339,17 @@ export function EditTransactionDialogV2({
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border shadow-lg">
-                  {Array.isArray(suppliers) ? suppliers.map((supplier) => (
+                  {suppliersLoading ? (
+                    <SelectItem value="" disabled>Loading suppliers...</SelectItem>
+                  ) : suppliersError ? (
+                    <SelectItem value="" disabled>Error loading suppliers</SelectItem>
+                  ) : Array.isArray(suppliers) ? suppliers.map((supplier) => (
                     <SelectItem key={supplier.id} value={supplier.id}>
                       {supplier.name}
                     </SelectItem>
-                  )) : []}
+                  )) : (
+                    <SelectItem value="" disabled>No suppliers available</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -430,11 +436,17 @@ export function EditTransactionDialogV2({
                               <SelectValue placeholder="Select product" />
                             </SelectTrigger>
                             <SelectContent className="bg-background border shadow-lg">
-                              {(products || []).map((p: any) => (
+                              {productsLoading ? (
+                                <SelectItem value="" disabled>Loading products...</SelectItem>
+                              ) : productsError ? (
+                                <SelectItem value="" disabled>Error loading products</SelectItem>
+                              ) : Array.isArray(products) ? products.map((p: any) => (
                                 <SelectItem key={p.id} value={p.id}>
                                   {p.brand} {p.model} {p.has_serial ? '(serial)' : ''}
                                 </SelectItem>
-                              ))}
+                              )) : (
+                                <SelectItem value="" disabled>No products available</SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
