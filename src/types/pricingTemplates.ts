@@ -4,10 +4,9 @@
 
 export interface StoragePricingRule {
   storage: number; // Storage in GB
-  purchasePrice?: number;
-  sellingPrice?: number;
-  minPrice?: number;
-  maxPrice?: number;
+  purchasePrice?: number; // Default purchase price for this storage
+  minPrice?: number;      // Default minimum selling price
+  maxPrice?: number;      // Default maximum selling price
 }
 
 export interface StoragePricingTemplate {
@@ -24,7 +23,7 @@ export interface PricingTemplateService {
   saveTemplate(template: Omit<StoragePricingTemplate, 'id' | 'createdAt' | 'updatedAt'>): StoragePricingTemplate;
   updateTemplate(id: string, template: Partial<StoragePricingTemplate>): StoragePricingTemplate;
   deleteTemplate(id: string): void;
-  applyTemplateToUnits(templateId: string, units: any[]): any[];
+  applyTemplateDefaults(templateId: string, units: any[]): any[];
 }
 
 export interface ApplyPricingResult {

@@ -31,7 +31,7 @@ export function StoragePricingTemplateEditor({
   const addRule = () => {
     const newRule: StoragePricingRule = {
       storage: 64,
-      sellingPrice: 0,
+      purchasePrice: 0,
       minPrice: 0,
       maxPrice: 0
     };
@@ -100,7 +100,7 @@ export function StoragePricingTemplateEditor({
             {template ? 'Edit' : 'Create'} Storage Pricing Template
           </DialogTitle>
           <DialogDescription>
-            Set default prices based on storage capacity. These will be applied automatically to units.
+            Set default fallback prices based on storage capacity. These prices will be used when individual unit prices are not specified.
           </DialogDescription>
         </DialogHeader>
 
@@ -185,18 +185,18 @@ export function StoragePricingTemplateEditor({
                     </div>
                     
                     <div>
-                      <Label className="text-xs">Selling Price</Label>
+                      <Label className="text-xs">Purchase Price</Label>
                       <Input
                         type="number"
-                        value={rule.sellingPrice || ''}
-                        onChange={(e) => updateRule(index, 'sellingPrice', parseFloat(e.target.value))}
+                        value={rule.purchasePrice || ''}
+                        onChange={(e) => updateRule(index, 'purchasePrice', parseFloat(e.target.value))}
                         placeholder="0.00"
                         className="h-9"
                       />
                     </div>
                     
                     <div>
-                      <Label className="text-xs">Min Price</Label>
+                      <Label className="text-xs">Min Selling</Label>
                       <Input
                         type="number"
                         value={rule.minPrice || ''}
@@ -207,7 +207,7 @@ export function StoragePricingTemplateEditor({
                     </div>
                     
                     <div>
-                      <Label className="text-xs">Max Price</Label>
+                      <Label className="text-xs">Max Selling</Label>
                       <Input
                         type="number"
                         value={rule.maxPrice || ''}

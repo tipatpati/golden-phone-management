@@ -57,7 +57,7 @@ export class StoragePricingTemplateService {
     this.saveToStorage(templates);
   }
 
-  static applyTemplateToUnits(templateId: string, units: UnitEntryForm[]): ApplyPricingResult {
+  static applyTemplateDefaults(templateId: string, units: UnitEntryForm[], defaultPurchasePrice?: number): ApplyPricingResult {
     const template = this.getTemplates().find(t => t.id === templateId);
     if (!template) {
       throw new Error('Template not found');
@@ -83,20 +83,25 @@ export class StoragePricingTemplateService {
       }
 
       try {
-        // Apply pricing from template rule
-        if (rule.sellingPrice !== undefined) {
-          updatedUnits[i] = { ...unit, price: rule.sellingPrice };
+        // Apply default pricing from template rule only if current values are empty/zero
+        // This acts as fallback pricing, preserving any manually set values
+        if (!unit.price && rule.purchasePrice !== undefined) {
+          updatedUnits[i] = { ...unit, price: rule.purchasePrice };
+        } else if (!unit.price && defaultPurchasePrice) {
+          updatedUnits[i] = { ...unit, price: defaultPurchasePrice };
         }
-        if (rule.minPrice !== undefined) {
+        
+        if (!unit.min_price && rule.minPrice !== undefined) {
           updatedUnits[i] = { ...updatedUnits[i], min_price: rule.minPrice };
         }
-        if (rule.maxPrice !== undefined) {
+        
+        if (!unit.max_price && rule.maxPrice !== undefined) {
           updatedUnits[i] = { ...updatedUnits[i], max_price: rule.maxPrice };
         }
         
         appliedCount++;
       } catch (error) {
-        errors.push(`Failed to apply pricing to unit ${i + 1}: ${error}`);
+        errors.push(`Failed to apply defaults to unit ${i + 1}: ${error}`);
         skippedCount++;
       }
     }
@@ -106,6 +111,20 @@ export class StoragePricingTemplateService {
       skippedCount,
       errors,
       updatedUnits
+    };
+  }
+
+  static getDefaultPricingForStorage(templateId: string, storage: number): Partial<UnitEntryForm> | null {
+    const template = this.getTemplates().find(t => t.id === templateId);
+    if (!template) return null;
+
+    const rule = template.rules.find(r => r.storage === storage);
+    if (!rule) return null;
+
+    return {
+      price: rule.purchasePrice,
+      min_price: rule.minPrice,
+      max_price: rule.maxPrice
     };
   }
 
@@ -121,12 +140,12 @@ export class StoragePricingTemplateService {
   static getDefaultTemplate(): Partial<StoragePricingTemplate> {
     return {
       name: 'New Storage Pricing Template',
-      description: 'Default pricing based on storage capacity',
+      description: 'Default fallback pricing based on storage capacity',
       rules: [
-        { storage: 64, sellingPrice: 200, minPrice: 180, maxPrice: 250 },
-        { storage: 128, sellingPrice: 300, minPrice: 280, maxPrice: 350 },
-        { storage: 256, sellingPrice: 400, minPrice: 380, maxPrice: 450 },
-        { storage: 512, sellingPrice: 500, minPrice: 480, maxPrice: 550 },
+        { storage: 64, purchasePrice: 200, minPrice: 180, maxPrice: 250 },
+        { storage: 128, purchasePrice: 300, minPrice: 280, maxPrice: 350 },
+        { storage: 256, purchasePrice: 400, minPrice: 380, maxPrice: 450 },
+        { storage: 512, purchasePrice: 500, minPrice: 480, maxPrice: 550 },
       ]
     };
   }

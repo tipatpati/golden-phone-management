@@ -20,7 +20,7 @@ export function StoragePricingTemplateSelector({
   units, 
   onUnitsChange,
   title = "Storage Pricing Templates",
-  description = "Apply pricing templates based on storage capacity"
+  description = "Apply default pricing templates based on storage capacity"
 }: StoragePricingTemplateSelectorProps) {
   const [templates, setTemplates] = useState<StoragePricingTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -38,7 +38,7 @@ export function StoragePricingTemplateSelector({
     if (!selectedTemplateId) return;
 
     try {
-      const result = StoragePricingTemplateService.applyTemplateToUnits(selectedTemplateId, units);
+      const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units);
       onUnitsChange(result.updatedUnits);
       setLastAppliedResult(result);
     } catch (error) {
@@ -128,7 +128,7 @@ export function StoragePricingTemplateSelector({
             <div className="flex flex-wrap gap-1">
               {selectedTemplate.rules.map((rule, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
-                  {rule.storage}GB: €{rule.sellingPrice}
+                  {rule.storage}GB: €{rule.purchasePrice || '0'}
                 </Badge>
               ))}
             </div>
@@ -148,7 +148,7 @@ export function StoragePricingTemplateSelector({
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            Apply Template
+            Apply Defaults
           </Button>
         </div>
 
@@ -156,7 +156,7 @@ export function StoragePricingTemplateSelector({
         {lastAppliedResult && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="text-sm text-green-800">
-              ✓ Applied pricing to {lastAppliedResult.appliedCount} units
+              ✓ Applied default pricing to {lastAppliedResult.appliedCount} units
               {lastAppliedResult.skippedCount > 0 && (
                 <span className="text-yellow-700">
                   {', '}skipped {lastAppliedResult.skippedCount} units
