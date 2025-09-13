@@ -161,6 +161,15 @@ export function EditTransactionDialogV2({
     setItems((prev) => {
       const copy = [...prev];
       (copy[index] as any)[field] = value;
+      
+      // Auto-populate unit_cost with product default price when product is selected
+      if (field === 'product_id' && value) {
+        const product = Array.isArray(products) ? products.find(p => p.id === value) : undefined;
+        if (product?.price && copy[index].unit_cost === 0) {
+          copy[index].unit_cost = product.price;
+        }
+      }
+      
       return copy;
     });
 
