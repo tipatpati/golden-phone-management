@@ -50,30 +50,70 @@ class SupplierAcquisitionService {
     };
 
     try {
+      logger.info('🚀 Starting supplier acquisition', {
+        transactionId,
+        supplierId: data.supplierId,
+        itemCount: data.items.length
+      });
+
       // Validate supplier exists and is active
       const supplier = await this.validateSupplier(data.supplierId);
       if (!supplier) {
         throw new Error('Supplier not found or inactive');
       }
 
+      // Pre-validate all items to prevent partial failures
+      await this.validateAcquisitionItems(data.items);
+
       let totalAmount = 0;
       const transactionItems = [];
 
-      // Process each acquisition item
-      for (const item of data.items) {
+      // Process each acquisition item with enhanced error handling
+      for (const [index, item] of data.items.entries()) {
+        logger.info(`📦 Processing item ${index + 1}/${data.items.length}`, {
+          transactionId,
+          item: {
+            productId: item.productId,
+            createsNew: item.createsNewProduct,
+            quantity: item.quantity,
+            unitCost: item.unitCost,
+            unitEntriesCount: item.unitEntries?.length || 0
+          }
+        });
+
         const itemResult = await this.processAcquisitionItem(
           transactionId,
           data.supplierId,
           item
         );
         
+        // Validate item processing results
+        if (itemResult.totalCost === 0 && item.unitCost > 0) {
+          logger.warn('⚠️  Item total cost is 0 despite positive unit cost', {
+            transactionId,
+            item: { unitCost: item.unitCost, quantity: item.quantity }
+          });
+        }
+
         result.productIds.push(...itemResult.productIds);
         result.unitIds.push(...itemResult.unitIds);
         totalAmount += itemResult.totalCost;
         transactionItems.push(itemResult.transactionItem);
+
+        logger.info(`✅ Item ${index + 1} processed successfully`, {
+          transactionId,
+          totalCost: itemResult.totalCost,
+          unitsCreated: itemResult.unitIds.length
+        });
       }
 
-      // Create supplier transaction record
+      logger.info('💰 Calculated transaction total', {
+        transactionId,
+        totalAmount,
+        itemCount: transactionItems.length
+      });
+
+      // Create supplier transaction record with integrity validation
       const supplierTransactionId = await this.createSupplierTransaction(
         transactionId,
         data.supplierId,
@@ -82,12 +122,15 @@ class SupplierAcquisitionService {
         data.notes
       );
 
-      // Create transaction items
+      // Create transaction items with data consistency checks
       await this.createTransactionItems(
         transactionId,
         supplierTransactionId,
         transactionItems
       );
+
+      // Final integrity check before commit
+      await this.validateTransactionIntegrity(supplierTransactionId, result);
 
       // Commit the transaction
       await transactionCoordinator.commitTransaction(transactionId);
@@ -104,23 +147,34 @@ class SupplierAcquisitionService {
         data: {
           supplierId: data.supplierId,
           productIds: result.productIds,
-          unitIds: result.unitIds
+          unitIds: result.unitIds,
+          totalAmount
         },
         metadata: {
           timestamp: Date.now()
         }
       });
 
-      logger.info('Supplier acquisition completed successfully', {
+      logger.info('🎉 Supplier acquisition completed successfully', {
         transactionId: supplierTransactionId,
         productsCreated: result.productIds.length,
-        unitsCreated: result.unitIds.length
+        unitsCreated: result.unitIds.length,
+        totalAmount
       });
 
     } catch (error) {
+      logger.error('❌ Supplier acquisition failed', { error, transactionId });
       await transactionCoordinator.abortTransaction(transactionId, (error as Error).message);
       result.errors = [error instanceof Error ? error.message : 'Unknown error occurred'];
-      logger.error('Supplier acquisition failed', { error, transactionId });
+      
+      // Add detailed error context
+      result.errors.push(`Transaction ID: ${transactionId}`);
+      if (result.productIds.length > 0) {
+        result.errors.push(`Products created: ${result.productIds.length}`);
+      }
+      if (result.unitIds.length > 0) {
+        result.errors.push(`Units created: ${result.unitIds.length}`);
+      }
     }
 
     return result;
@@ -151,6 +205,17 @@ class SupplierAcquisitionService {
     const productIds: string[] = [];
     const unitIds: string[] = [];
 
+    logger.info('🔧 Processing acquisition item', {
+      transactionId,
+      item: {
+        createsNew: item.createsNewProduct,
+        productId: item.productId,
+        unitCost: item.unitCost,
+        quantity: item.quantity,
+        unitEntriesCount: item.unitEntries?.length || 0
+      }
+    });
+
     if (item.createsNewProduct && item.productData) {
       // Use Universal Product Service for ALL product operations
       const { universalProductService } = await import('@/services/shared/UniversalProductService');
@@ -163,6 +228,16 @@ class SupplierAcquisitionService {
         stock: item.unitEntries && item.unitEntries.length > 0 ? 0 : item.quantity
       };
       
+      logger.info('📱 Creating new product with units', {
+        transactionId,
+        productData: {
+          brand: productDataWithUnits.brand,
+          model: productDataWithUnits.model,
+          hasSerial: productDataWithUnits.has_serial,
+          unitEntriesCount: productDataWithUnits.unit_entries?.length || 0
+        }
+      });
+
       const result = await universalProductService.processProduct(productDataWithUnits, {
         source: 'supplier',
         transactionId,
@@ -186,66 +261,80 @@ class SupplierAcquisitionService {
       // Units are handled by the universal service
       unitIds.push(...result.units.map(u => u.id));
       
-      console.log(`✅ ${result.isExistingProduct ? 'Using existing' : 'Created new'} product: ${productId}`);
-      console.log(`✅ Processed ${result.createdUnitCount} new units, ${result.updatedUnitCount} updated units`);
+      logger.info(`✅ ${result.isExistingProduct ? 'Using existing' : 'Created new'} product`, {
+        transactionId,
+        productId,
+        createdUnits: result.createdUnitCount,
+        updatedUnits: result.updatedUnitCount
+      });
 
     } else if (item.productId) {
-      // Use existing product and add units to it using Universal Product Service
+      // Use existing product and add units to it
       productId = item.productId;
       
+      logger.info('📦 Adding units to existing product', {
+        transactionId,
+        productId,
+        unitEntriesCount: item.unitEntries?.length || 0
+      });
+      
       if (item.unitEntries && item.unitEntries.length > 0) {
-        // Use ProductUnitCoordinator for all unit operations
-        const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
+        // Use ProductUnitManagementService directly for unit creation
+        const { ProductUnitManagementService } = await import('@/services/shared/ProductUnitManagementService');
         
-        // Get existing product data to merge with new units
-        const productData = await productUnitCoordinator.getProductWithUnits(productId);
-        
-        if (!productData.product) {
-          throw new Error(`Product ${productId} not found`);
-        }
-        
-        // CRITICAL: Merge existing units with new units to prevent data loss
-        const existingUnits = productData.unitEntries || [];
-        const newUnits = item.unitEntries.map(entry => ({
-          serial: entry.serial,
-          battery_level: entry.battery_level,
-          color: entry.color,
-          storage: entry.storage,
-          ram: entry.ram,
-          price: entry.price,
-          min_price: entry.min_price,
-          max_price: entry.max_price
-        }));
-        
-        const allUnits = [...existingUnits, ...newUnits];
-        
-        // Process units through coordinator
-        const result = await productUnitCoordinator.processUnits(
-          productId,
-          allUnits,
-          {
-            price: item.unitCost,
-            min_price: undefined,
-            max_price: undefined
-          },
-          {
-            source: 'supplier',
-            transactionId,
-            supplierId: supplierId,
-            unitCost: item.unitCost,
+        try {
+          // Calculate individual unit costs from unit entries
+          const unitEntriesWithCosts = item.unitEntries.map(entry => ({
+            ...entry,
+            // Use individual unit price if available, otherwise use item unit cost
+            purchase_price: entry.price || item.unitCost
+          }));
+
+          const unitsResult = await ProductUnitManagementService.createUnitsForProduct({
+            productId,
+            unitEntries: unitEntriesWithCosts,
+            defaultPricing: {
+              price: item.unitCost,
+              min_price: undefined,
+              max_price: undefined
+            },
             metadata: {
-              acquisitionItem: item.productId || productId,
-              originalQuantity: item.quantity
+              supplierId: supplierId,
+              transactionId,
+              acquisitionDate: new Date()
             }
+          });
+
+          unitIds.push(...unitsResult.units.map(u => u.id));
+          
+          if (unitsResult.errors.length > 0) {
+            logger.warn('⚠️  Some units had issues during creation', {
+              transactionId,
+              productId,
+              errors: unitsResult.errors
+            });
           }
-        );
-        
-        unitIds.push(...result.units.map(u => u.id));
-        console.log(`✅ Processed ${result.createdCount} new units, ${result.updatedCount} updated units for existing product: ${productId}`);
+
+          logger.info('✅ Units created for existing product', {
+            transactionId,
+            productId,
+            unitsCreated: unitsResult.units.length
+          });
+        } catch (error) {
+          logger.error('❌ Failed to create units for existing product', {
+            transactionId,
+            productId,
+            error
+          });
+          throw new Error(`Failed to create units: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       } else {
         // For non-serialized existing products, use traditional stock update
-        console.log(`📦 Updating stock for non-serialized product: ${productId}`);
-        // We'll handle stock updates separately for non-serialized products
+        logger.info('📊 Non-serialized product, will update stock', {
+          transactionId,
+          productId,
+          quantity: item.quantity
+        });
       }
     } else {
       throw new Error('Invalid acquisition item: missing product data');
@@ -261,7 +350,27 @@ class SupplierAcquisitionService {
       await this.updateProductStock(transactionId, productId, item.quantity);
     }
 
-    const totalCost = item.unitCost * item.quantity;
+    // Calculate total cost - use individual unit costs if available
+    let totalCost = 0;
+    if (hasSerial && item.unitEntries && item.unitEntries.length > 0) {
+      // For serialized products, sum individual unit costs
+      totalCost = item.unitEntries.reduce((sum, entry) => {
+        return sum + (entry.price || item.unitCost);
+      }, 0);
+    } else {
+      // For non-serialized products or when no unit entries, use quantity * unit cost
+      totalCost = item.unitCost * item.quantity;
+    }
+
+    logger.info('💰 Item cost calculation', {
+      transactionId,
+      productId,
+      hasSerial,
+      unitCost: item.unitCost,
+      quantity: item.quantity,
+      totalCost,
+      calculation: hasSerial && item.unitEntries ? 'individual_unit_costs' : 'quantity_x_unit_cost'
+    });
 
     return {
       productIds,
@@ -551,6 +660,101 @@ class SupplierAcquisitionService {
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
     const timeStr = Date.now().toString().slice(-6);
     return `SUP-${dateStr}-${timeStr}`;
+  }
+
+  /**
+   * Validate acquisition items before processing
+   */
+  private async validateAcquisitionItems(items: AcquisitionItem[]): Promise<void> {
+    for (const [index, item] of items.entries()) {
+      if (!item.createsNewProduct && !item.productId) {
+        throw new Error(`Item ${index + 1}: Must specify either productId or product data for new product`);
+      }
+      
+      if (item.unitCost <= 0) {
+        throw new Error(`Item ${index + 1}: Unit cost must be greater than 0`);
+      }
+      
+      if (item.quantity <= 0) {
+        throw new Error(`Item ${index + 1}: Quantity must be greater than 0`);
+      }
+
+      if (item.unitEntries && item.unitEntries.length !== item.quantity) {
+        logger.warn(`Item ${index + 1}: Unit entries count (${item.unitEntries.length}) doesn't match quantity (${item.quantity})`);
+      }
+
+      // Validate serial numbers for uniqueness
+      if (item.unitEntries && item.unitEntries.length > 0) {
+        const serials = item.unitEntries.map(e => e.serial).filter(s => s);
+        const uniqueSerials = new Set(serials);
+        if (serials.length !== uniqueSerials.size) {
+          throw new Error(`Item ${index + 1}: Duplicate serial numbers detected`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate transaction integrity after processing
+   */
+  private async validateTransactionIntegrity(
+    transactionId: string, 
+    result: AcquisitionResult
+  ): Promise<void> {
+    try {
+      // Verify transaction exists in database
+      const { data: transaction, error } = await supabase
+        .from('supplier_transactions')
+        .select('id, total_amount')
+        .eq('id', transactionId)
+        .single();
+
+      if (error || !transaction) {
+        throw new Error('Transaction record not found in database');
+      }
+
+      if (transaction.total_amount === 0 && result.unitIds.length > 0) {
+        logger.warn('⚠️  Transaction has zero total but units were created', {
+          transactionId,
+          totalAmount: transaction.total_amount,
+          unitsCreated: result.unitIds.length
+        });
+      }
+
+      // Verify transaction items exist
+      const { data: items, error: itemsError } = await supabase
+        .from('supplier_transaction_items')
+        .select('id, total_cost')
+        .eq('transaction_id', transactionId);
+
+      if (itemsError) {
+        throw new Error(`Failed to verify transaction items: ${itemsError.message}`);
+      }
+
+      const itemsTotal = items.reduce((sum, item) => sum + item.total_cost, 0);
+      if (Math.abs(itemsTotal - transaction.total_amount) > 0.01) {
+        logger.warn('⚠️  Transaction total mismatch', {
+          transactionId,
+          transactionTotal: transaction.total_amount,
+          itemsTotal,
+          difference: Math.abs(itemsTotal - transaction.total_amount)
+        });
+      }
+
+      logger.info('✅ Transaction integrity validated', {
+        transactionId,
+        totalAmount: transaction.total_amount,
+        itemsCount: items.length,
+        unitsCreated: result.unitIds.length
+      });
+
+    } catch (error) {
+      logger.error('❌ Transaction integrity validation failed', {
+        transactionId,
+        error
+      });
+      throw new Error(`Transaction integrity validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
 
