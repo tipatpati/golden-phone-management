@@ -43,62 +43,54 @@ export function useProductValidation() {
       // Allow forms to be in intermediate states (e.g., during supplier acquisition)
       if (entries.length > 0) {
         // Validate each entry if present
-      for (const [idx, entry] of entries.entries()) {
-        // IMEI validation - must be exactly 15 digits
-        const serialInput = entry.serial || '';
-        const numericSerial = serialInput.replace(/\D/g, '');
-        
-        if (!serialInput.trim()) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI/Serial is required` });
-          break;
-        }
-        
-        if (numericSerial.length !== 15) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI must be exactly 15 digits` });
-          break;
-        }
+        for (const [idx, entry] of entries.entries()) {
+          // IMEI validation - must be exactly 15 digits
+          const serialInput = entry.serial || '';
+          const numericSerial = serialInput.replace(/\D/g, '');
+          
+          if (!serialInput.trim()) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI/Serial is required` });
+            break;
+          }
+          
+          if (numericSerial.length !== 15) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI must be exactly 15 digits` });
+            break;
+          }
 
-        // Pricing rules
-        const price = entry.price;
-        const minPrice = entry.min_price;
-        const maxPrice = entry.max_price;
+          // Pricing rules
+          const price = entry.price;
+          const minPrice = entry.min_price;
+          const maxPrice = entry.max_price;
 
-        if (price === undefined || price === null || isNaN(price) || price < 0) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Purchase price is required and must be >= 0` });
-          break;
-        }
-        if (minPrice === undefined || minPrice === null || isNaN(minPrice) || minPrice <= price) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Min selling must be a number greater than purchase price` });
-          break;
-        }
-        if (maxPrice === undefined || maxPrice === null || isNaN(maxPrice) || maxPrice <= minPrice) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Max selling must be a number greater than min selling` });
-          break;
-        }
+          if (price === undefined || price === null || isNaN(price) || price < 0) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Purchase price is required and must be >= 0` });
+            break;
+          }
+          if (minPrice === undefined || minPrice === null || isNaN(minPrice) || minPrice <= price) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Min selling must be a number greater than purchase price` });
+            break;
+          }
+          if (maxPrice === undefined || maxPrice === null || isNaN(maxPrice) || maxPrice <= minPrice) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Max selling must be a number greater than min selling` });
+            break;
+          }
 
-        // Battery level integer 0-100 (required)
-        const battery = entry.battery_level;
-        if (battery === undefined || battery === null || isNaN(battery) || battery < 0 || battery > 100 || !Number.isInteger(battery)) {
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Battery level must be an integer between 0 and 100` });
-          break;
-        }
+          // Battery level integer 0-100 (required)
+          const battery = entry.battery_level;
+          if (battery === undefined || battery === null || isNaN(battery) || battery < 0 || battery > 100 || !Number.isInteger(battery)) {
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Battery level must be an integer between 0 and 100` });
+            break;
+          }
 
-        // Optional: We can still run a lightweight serial validation if utility exists
-        const basicValidation = validateSerialWithBattery(entry.serial + '');
-        if (!basicValidation.isValid && entry.serial.length < 10) {
-          // Only flag obviously invalid very short serials
-          newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Serial appears invalid` });
-          break;
+          // Optional: We can still run a lightweight serial validation if utility exists
+          const basicValidation = validateSerialWithBattery(entry.serial + '');
+          if (!basicValidation.isValid && entry.serial.length < 10) {
+            // Only flag obviously invalid very short serials
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Serial appears invalid` });
+            break;
+          }
         }
-      }
-    }
-      // For products without serial numbers, require at least one default price
-      const hasDefaultPrice = (data.price !== undefined && data.price !== null && String(data.price) !== '') ||
-                              (data.min_price !== undefined && data.min_price !== null && String(data.min_price) !== '') ||
-                              (data.max_price !== undefined && data.max_price !== null && String(data.max_price) !== '');
-      
-      if (!hasDefaultPrice) {
-        newErrors.push({ field: 'price', message: 'Products without serial numbers require at least one default price (base, min, or max)' });
       }
     } else {
       // For products without serial numbers, require at least one default price
