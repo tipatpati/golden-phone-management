@@ -237,7 +237,7 @@ export const supplierTransactionApi = {
 
   async replaceItems(transactionId: string, items: EditableTransactionItem[]): Promise<void> {
     // Get existing items before deletion to track changes
-    const existingItems = await this.getItems(transactionId);
+    const existingItems = await this.getTransactionItems(transactionId);
     
     // Track affected products and changes for inventory coordination
     const affectedProducts = new Set<string>();
