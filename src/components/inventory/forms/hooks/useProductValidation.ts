@@ -102,8 +102,6 @@ export function useProductValidation() {
         newErrors.push({ field: 'price', message: 'Products without serial numbers require at least one default price (base, min, or max)' });
       }
     }
-
-    // Price validation (only validate if prices are provided)
     if (data.price !== undefined && data.price !== null && String(data.price) !== '') {
       const price = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
       if ((typeof price !== 'number') || isNaN(price) || price < 0) {
