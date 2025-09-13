@@ -81,8 +81,8 @@ export class TransactionIntegrityService {
     transactions?.forEach(transaction => {
       const items = transaction.supplier_transaction_items || [];
       const hasUnits = items.some(item => {
-        const unitIds = item.product_unit_ids as any;
-        return unitIds && Array.isArray(unitIds) && unitIds.length > 0;
+        const unitIds = item.product_unit_ids;
+        return Array.isArray(unitIds) && unitIds.length > 0;
       });
 
       if (hasUnits) {
@@ -90,7 +90,7 @@ export class TransactionIntegrityService {
           type: 'error',
           message: `Transaction ${transaction.transaction_number} has zero total but contains product units`,
           transactionId: transaction.id,
-          data: { itemsWithUnits: items.filter(i => i.product_unit_ids?.length > 0).length }
+          data: { itemsWithUnits: items.filter(i => Array.isArray(i.product_unit_ids) && i.product_unit_ids.length > 0).length }
         });
       }
     });
