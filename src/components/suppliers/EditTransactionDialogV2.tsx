@@ -671,13 +671,9 @@ export function EditTransactionDialogV2({
                         {isEditingUnitsForItem ? (
                           <UnitEntryForm
                             entries={unitEntries}
-                            onEntriesChange={(entries) => updateUnitEntries(index, entries)}
-                            quantity={item.quantity}
-                            defaultPricing={{
-                              price: item.unit_cost,
-                              min_price: item.unit_cost,
-                              max_price: item.unit_cost
-                            }}
+                            setEntries={(entries) => updateUnitEntries(index, entries)}
+                            showPricing={true}
+                            title={`Units for ${product.brand} ${product.model}`}
                           />
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
