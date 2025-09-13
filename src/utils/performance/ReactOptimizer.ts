@@ -145,7 +145,7 @@ export class ReactOptimizer {
     return (props: T) => React.createElement(
       React.Suspense,
       { fallback: fallback ? React.createElement(fallback) : React.createElement('div', {}, 'Loading...') },
-      React.createElement(LazyComponent, props)
+      React.createElement(LazyComponent, props as any)
     );
   }
 

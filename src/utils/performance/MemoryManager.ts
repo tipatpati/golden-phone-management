@@ -77,9 +77,10 @@ export class MemoryManager {
   /**
    * Weak reference utility
    */
-  static createWeakRef<T extends object>(target: T): WeakRef<T> | { deref: () => T | undefined } {
-    if (typeof WeakRef !== 'undefined') {
-      return new WeakRef(target);
+  static createWeakRef<T extends object>(target: T): { deref: () => T | undefined } {
+    if (typeof globalThis !== 'undefined' && 'WeakRef' in globalThis) {
+      const WeakRefConstructor = (globalThis as any).WeakRef;
+      return new WeakRefConstructor(target);
     }
     
     // Fallback for environments without WeakRef
