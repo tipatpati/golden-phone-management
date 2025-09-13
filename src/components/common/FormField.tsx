@@ -84,7 +84,6 @@ export function FormField({
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
             <SelectContent 
-              className="z-[100] bg-popover border shadow-lg"
               position="popper"
               sideOffset={4}
             >
