@@ -280,8 +280,9 @@ export function useTransactionEditor(
     setIsSubmitting(true);
     
     try {
-      // Validate items
-      if (state.items.some(item => !item.product_id)) {
+      // Validate items - check for empty strings and falsy values
+      const invalidItems = state.items.filter(item => !item.product_id || item.product_id.trim() === '');
+      if (invalidItems.length > 0) {
         toast({
           title: "Validation Error",
           description: "Please select a product for all items",
@@ -290,10 +291,18 @@ export function useTransactionEditor(
         return false;
       }
 
+      // Validate supplier is selected
+      if (!state.supplierId || state.supplierId.trim() === '') {
+        toast({
+          title: "Validation Error", 
+          description: "Please select a supplier",
+          variant: "destructive",
+        });
+        return false;
+      }
       const canEditTransaction = userRole === 'super_admin';
-      const total = calculateTotal();
 
-      // Update transaction details if user has permission
+      const total = calculateTotal();
       if (canEditTransaction) {
         await updateTx.mutateAsync({
           id: transaction.id,
@@ -307,26 +316,38 @@ export function useTransactionEditor(
         });
       }
 
-      // Prepare items with unit IDs for serialized products
-      const preparedItems = state.items.map((item, index) => {
-        if (!products) return item;
-        
-        const product = products.find(p => p.id === item.product_id);
-        const units = state.productUnits[item.product_id] || [];
-        
-        if (product?.has_serial && units.length >= item.quantity) {
-          const selectedUnits = units.slice(0, item.quantity);
-          const unitTotal = state.itemUnitEntries[index]?.reduce((sum, entry) => sum + (entry.price || 0), 0) || 0;
+      // Prepare items with unit IDs for serialized products - filter out invalid items
+      const preparedItems = state.items
+        .filter(item => item.product_id && item.product_id.trim() !== '') // Ensure valid product_id
+        .map((item, index) => {
+          if (!products) return item;
           
-          return {
-            ...item,
-            product_unit_ids: selectedUnits.map(unit => unit.id),
-            unit_cost: unitTotal / item.quantity || item.unit_cost
-          };
-        }
-        
-        return item;
-      });
+          const product = products.find(p => p.id === item.product_id);
+          const units = state.productUnits[item.product_id] || [];
+          
+          if (product?.has_serial && units.length >= item.quantity) {
+            const selectedUnits = units.slice(0, item.quantity);
+            const unitTotal = state.itemUnitEntries[index]?.reduce((sum, entry) => sum + (entry.price || 0), 0) || 0;
+            
+            return {
+              ...item,
+              product_unit_ids: selectedUnits.map(unit => unit.id),
+              unit_cost: unitTotal / item.quantity || item.unit_cost
+            };
+          }
+          
+          return item;
+        });
+
+      // Final validation - ensure no empty items made it through
+      if (preparedItems.length === 0) {
+        toast({
+          title: "Validation Error",
+          description: "No valid items to save",
+          variant: "destructive",
+        });
+        return false;
+      }
 
       // Replace items
       await replaceItems.mutateAsync({
