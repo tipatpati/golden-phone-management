@@ -14,6 +14,7 @@ import type { UnitEntryForm } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 import { useBarcodeService } from "@/components/shared/useBarcodeService";
+import { StoragePricingTemplateSelector } from "@/components/pricing/StoragePricingTemplateSelector";
 
 interface UnitEntryFormProps {
   entries: UnitEntryForm[];
@@ -24,6 +25,7 @@ interface UnitEntryFormProps {
   className?: string;
   productId?: string; // For barcode generation
   showBarcodeActions?: boolean; // To show/hide barcode generation buttons
+  showPricingTemplates?: boolean; // To show/hide pricing template selector
 }
 
 export function UnitEntryForm({ 
@@ -34,7 +36,8 @@ export function UnitEntryForm({
   title = "Product Units",
   className = "",
   productId,
-  showBarcodeActions = false
+  showBarcodeActions = false,
+  showPricingTemplates = false
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
@@ -135,6 +138,14 @@ export function UnitEntryForm({
           <div className="text-sm text-muted-foreground">Units: {validEntriesCount}</div>
         </div>
       </div>
+
+      {/* Storage Pricing Template Selector */}
+      {showPricingTemplates && showPricing && (
+        <StoragePricingTemplateSelector
+          units={entries}
+          onUnitsChange={setEntries}
+        />
+      )}
 
       <div className="space-y-3">
         {entries.map((entry, index) => (

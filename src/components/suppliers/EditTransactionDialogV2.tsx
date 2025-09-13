@@ -681,6 +681,7 @@ export function EditTransactionDialogV2({
                                   entries={unitEntries}
                                   setEntries={(entries) => updateUnitEntries(index, entries)}
                                   showPricing={true}
+                                  showPricingTemplates={true}
                                   title=""
                                   productId={item.product_id}
                                   className="border-0 p-0"

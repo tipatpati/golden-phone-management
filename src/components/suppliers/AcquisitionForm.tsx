@@ -289,13 +289,14 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                         {/* Serial Number Management */}
                         {item.productData?.has_serial && (
                           <div className="space-y-4">
-                            <UnitEntryForm
-                              entries={item.unitEntries}
-                              setEntries={(entries) => updateUnitEntries(index, entries)}
-                              onStockChange={(stock) => updateProductData(index, { stock })}
-                              title="Unit Details (IMEI/SN + pricing)"
-                              showPricing={true}
-                            />
+                             <UnitEntryForm
+                               entries={item.unitEntries}
+                               setEntries={(entries) => updateUnitEntries(index, entries)}
+                               onStockChange={(stock) => updateProductData(index, { stock })}
+                               title="Unit Details (IMEI/SN + pricing)"
+                               showPricing={true}
+                               showPricingTemplates={true}
+                             />
                             
                             {/* Barcode Preview for Units */}
                             <BarcodePreview

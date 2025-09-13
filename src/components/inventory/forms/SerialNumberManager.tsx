@@ -37,6 +37,7 @@ export function SerialNumberManager({
         onStockChange={onStockChange}
         title="Product Units (IMEI/SN + attributes)"
         showPricing={true}
+        showPricingTemplates={true}
       />
       
       <UniversalBarcodeManager
