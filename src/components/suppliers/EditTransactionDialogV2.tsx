@@ -327,14 +327,13 @@ export function EditTransactionDialogV2({
           // Combine existing and new unit IDs
           const allUnitIds = [...existingUnitIds, ...createdUnitIds];
 
-          // Calculate correct unit cost - if units have individual prices, use average; otherwise use default
-          const totalUnitPrice = unitEntries.reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
-          const avgUnitCost = unitEntries.length > 0 ? totalUnitPrice / unitEntries.length : item.unit_cost;
+          // Keep unit_cost as the default product price for hybrid pricing model
+          // Individual unit prices are handled separately in calculateItemTotal
           
           return {
             ...item,
             product_unit_ids: allUnitIds,
-            unit_cost: avgUnitCost
+            unit_cost: item.unit_cost // Keep the default product price
           };
         }
         
