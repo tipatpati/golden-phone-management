@@ -127,9 +127,23 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   }, []);
 
   const updateUnitEntries = useCallback(async (index: number, unitEntries: UnitEntryFormType[]) => {
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { ...item, unitEntries, quantity: unitEntries.length } : item
-    ));
+    setItems(prev => prev.map((item, i) => {
+      if (i === index) {
+        // Calculate average unit cost from individual unit entries
+        const validUnits = unitEntries.filter(unit => unit.price && unit.price > 0);
+        const calculatedUnitCost = validUnits.length > 0 
+          ? validUnits.reduce((sum, unit) => sum + (unit.price || 0), 0) / validUnits.length
+          : item.unitCost;
+        
+        return { 
+          ...item, 
+          unitEntries, 
+          quantity: unitEntries.length,
+          unitCost: calculatedUnitCost
+        };
+      }
+      return item;
+    }));
     
     // Removed immediate unit barcode generation to avoid invalid UUID in registry
 
