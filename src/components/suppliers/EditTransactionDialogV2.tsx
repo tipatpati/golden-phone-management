@@ -43,7 +43,7 @@ export function EditTransactionDialogV2({
   open,
   onOpenChange,
 }: EditTransactionDialogProps) {
-  // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC
+  // ALL HOOKS MUST BE AT THE TOP - NO CONDITIONAL RETURNS BEFORE ALL HOOKS
   const { userRole } = useAuth();
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: suppliers = [], isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
@@ -65,8 +65,12 @@ export function EditTransactionDialogV2({
   const updateTx = useUpdateSupplierTransaction();
   const replaceItems = useReplaceSupplierTransactionItems();
 
-  // Early return if data is still loading or products not available
-  if (productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers)) {
+  // Determine what to render based on loading and error states
+  const isDataLoading = productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers);
+  const hasDataError = productsError || suppliersError;
+
+  // Show loading state
+  if (isDataLoading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -82,8 +86,8 @@ export function EditTransactionDialogV2({
     );
   }
 
-  // Show error state if products or suppliers failed to load
-  if (productsError || suppliersError) {
+  // Show error state
+  if (hasDataError) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
