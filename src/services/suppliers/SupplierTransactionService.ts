@@ -64,7 +64,7 @@ export const supplierTransactionApi = {
     return data as SupplierTransaction[];
   },
 
-  async getById(id: string): Promise<SupplierTransaction> {
+  async getById(id: string): Promise<SupplierTransaction | null> {
     const { data, error } = await (supabase as any)
       .from("supplier_transactions")
       .select(`
@@ -74,10 +74,14 @@ export const supplierTransactionApi = {
         )
       `)
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
-    if (error) throw error;
-    return data as SupplierTransaction;
+    if (error) {
+      console.error('Error fetching transaction by ID:', error);
+      throw error;
+    }
+    
+    return data as SupplierTransaction | null;
   },
 
   async create(transactionData: CreateTransactionData): Promise<SupplierTransaction> {
@@ -96,9 +100,16 @@ export const supplierTransactionApi = {
         status: transactionData.status || "pending",
       })
       .select()
-      .single();
+      .maybeSingle();
 
-    if (transactionError) throw transactionError;
+    if (transactionError) {
+      console.error('Error creating transaction:', transactionError);
+      throw transactionError;
+    }
+    
+    if (!transaction) {
+      throw new Error('Transaction was not created successfully');
+    }
 
     // Create transaction items
     if (transactionData.items.length > 0) {
@@ -148,10 +159,15 @@ export const supplierTransactionApi = {
       .from('products')
       .select('has_serial')
       .eq('id', item.product_id)
-      .single();
+      .maybeSingle();
 
-    if (error || !product) {
+    if (error) {
       console.warn('Failed to fetch product info, using fallback calculation:', error);
+      return item.quantity * item.unit_cost;
+    }
+    
+    if (!product) {
+      console.warn('Product not found, using fallback calculation');
       return item.quantity * item.unit_cost;
     }
 
