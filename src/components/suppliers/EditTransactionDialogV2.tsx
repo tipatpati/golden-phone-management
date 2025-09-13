@@ -43,11 +43,27 @@ export function EditTransactionDialogV2({
   open,
   onOpenChange,
 }: EditTransactionDialogProps) {
+  // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC
   const { userRole } = useAuth();
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: suppliers = [], isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
   const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
   const { toast } = useToast();
+  
+  const [type, setType] = useState<SupplierTransaction["type"]>("purchase");
+  const [status, setStatus] = useState<SupplierTransaction["status"]>("pending");
+  const [notes, setNotes] = useState("");
+  const [date, setDate] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [items, setItems] = useState<EditableTransactionItem[]>([
+    { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] },
+  ]);
+  const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
+  const [itemUnitEntries, setItemUnitEntries] = useState<Record<number, UnitEntryFormType[]>>({});
+  const [editingUnits, setEditingUnits] = useState<Record<number, boolean>>({});
+
+  const updateTx = useUpdateSupplierTransaction();
+  const replaceItems = useReplaceSupplierTransactionItems();
 
   // Early return if data is still loading or products not available
   if (productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers)) {
@@ -81,21 +97,6 @@ export function EditTransactionDialogV2({
       </Dialog>
     );
   }
-
-  const [type, setType] = useState<SupplierTransaction["type"]>("purchase");
-  const [status, setStatus] = useState<SupplierTransaction["status"]>("pending");
-  const [notes, setNotes] = useState("");
-  const [date, setDate] = useState("");
-  const [supplierId, setSupplierId] = useState("");
-  const [items, setItems] = useState<EditableTransactionItem[]>([
-    { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] },
-  ]);
-  const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
-  const [itemUnitEntries, setItemUnitEntries] = useState<Record<number, UnitEntryFormType[]>>({});
-  const [editingUnits, setEditingUnits] = useState<Record<number, boolean>>({});
-
-  const updateTx = useUpdateSupplierTransaction();
-  const replaceItems = useReplaceSupplierTransactionItems();
 
   // Load transaction data
   useEffect(() => {
