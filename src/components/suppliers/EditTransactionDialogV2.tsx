@@ -292,14 +292,25 @@ export function EditTransactionDialogV2({
           // Create new units if any
           if (newUnitEntries.length > 0) {
             try {
+              // Calculate proper default pricing based on hybrid model
+              const unitPricesSpecified = newUnitEntries.filter(entry => entry.price && entry.price > 0);
+              const hasIndividualPrices = unitPricesSpecified.length > 0;
+              
+              // Use hybrid pricing model: individual prices + default fallback
+              const defaultPricing = hasIndividualPrices ? {
+                price: item.unit_cost, // Default product price for units without individual pricing
+                min_price: Math.min(...unitPricesSpecified.map(e => e.min_price || e.price || item.unit_cost), item.unit_cost),
+                max_price: Math.max(...unitPricesSpecified.map(e => e.max_price || e.price || item.unit_cost), item.unit_cost),
+              } : {
+                price: item.unit_cost,
+                min_price: item.unit_cost,
+                max_price: item.unit_cost,
+              };
+
               const createResult = await ProductUnitManagementService.createUnitsForProduct({
                 productId: item.product_id,
                 unitEntries: newUnitEntries,
-                defaultPricing: {
-                  price: item.unit_cost,
-                  min_price: item.unit_cost, // Use unit_cost as fallback for min_price
-                  max_price: item.unit_cost, // Use unit_cost as fallback for max_price
-                },
+                defaultPricing,
                 metadata: {
                   supplierId: transaction.supplier_id,
                   transactionId: transaction.id,
@@ -312,7 +323,15 @@ export function EditTransactionDialogV2({
               console.log(`Created ${createdUnitIds.length} new units for product ${item.product_id}`);
             } catch (error) {
               console.error('Failed to create new units:', error);
-              throw new Error(`Failed to create units for ${product.brand} ${product.model}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              // More specific error handling - distinguish between critical and recoverable errors
+              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+              if (errorMessage.includes('duplicate') || errorMessage.includes('serial number')) {
+                throw new Error(`Duplicate serial number detected for ${product.brand} ${product.model}. Please check serial numbers.`);
+              } else if (errorMessage.includes('validation')) {
+                throw new Error(`Invalid unit data for ${product.brand} ${product.model}: ${errorMessage}`);
+              } else {
+                throw new Error(`Failed to create inventory units for ${product.brand} ${product.model}: ${errorMessage}`);
+              }
             }
           }
 
@@ -341,35 +360,88 @@ export function EditTransactionDialogV2({
       }));
 
       // Step 2: Update transaction (only super_admin can update per RLS)
+      let transactionUpdated = false;
       if (userRole === 'super_admin') {
-        await updateTx.mutateAsync({
-          id: transaction.id,
-          updates: {
-            type,
-            status,
-            notes,
-            transaction_date: date,
-            total_amount: total,
-          },
-        });
+        try {
+          await updateTx.mutateAsync({
+            id: transaction.id,
+            updates: {
+              type,
+              status,
+              notes,
+              transaction_date: date,
+              total_amount: total,
+            },
+          });
+          transactionUpdated = true;
+        } catch (transactionError) {
+          console.error("Transaction update failed:", transactionError);
+          // Continue with items update even if transaction update fails
+          // This allows partial success scenarios
+        }
       }
 
       // Step 3: Replace items with prepared data including new unit IDs
-      await replaceItems.mutateAsync({
-        transactionId: transaction.id,
-        items: preparedItems,
-      });
+      let itemsUpdated = false;
+      try {
+        await replaceItems.mutateAsync({
+          transactionId: transaction.id,
+          items: preparedItems,
+        });
+        itemsUpdated = true;
+      } catch (itemsError) {
+        console.error("Items update failed:", itemsError);
+        // If transaction was updated but items failed, we need to handle this
+        if (transactionUpdated) {
+          toast({ 
+            title: "Partial Update", 
+            description: "Transaction details updated but items update failed. Please refresh and try again.", 
+            variant: "destructive" 
+          });
+          return;
+        }
+        throw itemsError; // Re-throw if both failed
+      }
 
-      toast({ 
-        title: "Success", 
-        description: "Transaction updated successfully" 
-      });
+      // Success handling
+      if (transactionUpdated && itemsUpdated) {
+        toast({ 
+          title: "Success", 
+          description: "Transaction updated successfully" 
+        });
+      } else if (itemsUpdated && !transactionUpdated) {
+        toast({ 
+          title: "Items Updated", 
+          description: "Transaction items updated successfully" 
+        });
+      } else if (transactionUpdated && !itemsUpdated) {
+        toast({ 
+          title: "Partial Update", 
+          description: "Transaction details updated. Items update failed." 
+        });
+      }
+      
       onOpenChange(false);
     } catch (err: any) {
       console.error("Update error:", err);
+      
+      // Enhanced error messaging
+      let errorMessage = 'Unable to update transaction';
+      if (err?.message) {
+        if (err.message.includes('serial number')) {
+          errorMessage = 'Serial number conflict detected. Please check for duplicates.';
+        } else if (err.message.includes('validation')) {
+          errorMessage = 'Data validation failed. Please check all fields.';
+        } else if (err.message.includes('inventory units')) {
+          errorMessage = 'Failed to create inventory units. Transaction not updated.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       toast({ 
         title: "Update failed", 
-        description: err?.message || 'Unable to update transaction', 
+        description: errorMessage, 
         variant: "destructive" 
       });
     }
