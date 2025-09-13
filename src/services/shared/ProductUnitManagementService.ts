@@ -360,6 +360,27 @@ export class ProductUnitManagementService {
   }
 
   /**
+   * Get specific units by their IDs
+   */
+  static async getUnitsByIds(unitIds: string[]): Promise<ProductUnit[]> {
+    try {
+      const { data, error } = await supabase
+        .from('product_units')
+        .select('*')
+        .in('id', unitIds)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw InventoryError.createDatabaseError('getUnitsByIds', error, { unitIds });
+      }
+
+      return (data || []) as ProductUnit[];
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
    * Backfill missing barcodes for existing units
    */
   static async backfillMissingBarcodes(): Promise<{ updated: number; errors: number }> {

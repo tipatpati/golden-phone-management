@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Edit3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { 
@@ -26,10 +26,11 @@ import {
   useSupplierTransactionItems 
 } from "@/services/suppliers/SupplierTransactionService";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
+import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
 import { useToast } from "@/hooks/use-toast";
 import { useSuppliers } from "@/services";
 import type { SupplierTransaction, EditableTransactionItem } from "@/services/suppliers/types";
-import type { ProductUnit } from "@/services/inventory/types";
+import type { ProductUnit, UnitEntryForm as UnitEntryFormType } from "@/services/inventory/types";
 
 interface EditTransactionDialogProps {
   transaction: SupplierTransaction | null;
@@ -57,7 +58,8 @@ export function EditTransactionDialogV2({
     { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] },
   ]);
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
-  const [itemUnitPrices, setItemUnitPrices] = useState<Record<number, number[]>>({});
+  const [itemUnitEntries, setItemUnitEntries] = useState<Record<number, UnitEntryFormType[]>>({});
+  const [editingUnits, setEditingUnits] = useState<Record<number, boolean>>({});
 
   const updateTx = useUpdateSupplierTransaction();
   const replaceItems = useReplaceSupplierTransactionItems();
@@ -73,20 +75,77 @@ export function EditTransactionDialogV2({
     }
   }, [transaction]);
 
-  // Load existing items
+  // Load existing items and their product units
   useEffect(() => {
-    if (existingItems && existingItems.length > 0) {
-      const mappedItems: EditableTransactionItem[] = existingItems.map(item => ({
-        id: item.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        unit_cost: item.unit_cost,
-        unit_barcodes: item.unit_details?.barcodes || [],
-        product_unit_ids: (item as any).product_unit_ids || [],
-      }));
-      setItems(mappedItems);
-    }
-  }, [existingItems]);
+    const loadItemsAndUnits = async () => {
+      if (existingItems && existingItems.length > 0) {
+        const mappedItems: EditableTransactionItem[] = existingItems.map(item => ({
+          id: item.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_cost: item.unit_cost,
+          unit_barcodes: item.unit_details?.barcodes || [],
+          product_unit_ids: (item as any).product_unit_ids || [],
+        }));
+        setItems(mappedItems);
+
+        // Load product units for serialized products that have existing unit IDs
+        const newProductUnits: Record<string, ProductUnit[]> = {};
+        const newItemUnitEntries: Record<number, UnitEntryFormType[]> = {};
+
+        for (let i = 0; i < mappedItems.length; i++) {
+          const item = mappedItems[i];
+          const product = products?.find(p => p.id === item.product_id);
+          
+          if (product?.has_serial && item.product_unit_ids?.length > 0) {
+            try {
+              // Load the specific units that were used in this transaction
+              const units = await ProductUnitManagementService.getUnitsByIds(item.product_unit_ids);
+              newProductUnits[item.product_id] = units;
+              
+              // Convert units to unit entry forms for editing
+              const unitEntries: UnitEntryFormType[] = units.map(unit => ({
+                serial: unit.serial_number || '',
+                battery_level: unit.battery_level,
+                color: unit.color,
+                storage: unit.storage,
+                ram: unit.ram,
+                price: unit.purchase_price || unit.price || item.unit_cost,
+                min_price: unit.min_price,
+                max_price: unit.max_price
+              }));
+              newItemUnitEntries[i] = unitEntries;
+            } catch (error) {
+              console.error('Failed to load existing product units:', error);
+              // Fallback to available units
+              try {
+                const availableUnits = await ProductUnitManagementService.getAvailableUnitsForProduct(item.product_id);
+                newProductUnits[item.product_id] = availableUnits;
+                const unitEntries: UnitEntryFormType[] = availableUnits.slice(0, item.quantity).map(unit => ({
+                  serial: unit.serial_number || '',
+                  battery_level: unit.battery_level,
+                  color: unit.color,
+                  storage: unit.storage,
+                  ram: unit.ram,
+                  price: unit.purchase_price || unit.price || item.unit_cost,
+                  min_price: unit.min_price,
+                  max_price: unit.max_price
+                }));
+                newItemUnitEntries[i] = unitEntries;
+              } catch (fallbackError) {
+                console.error('Failed to load available units:', fallbackError);
+              }
+            }
+          }
+        }
+
+        setProductUnits(newProductUnits);
+        setItemUnitEntries(newItemUnitEntries);
+      }
+    };
+
+    loadItemsAndUnits();
+  }, [existingItems, products]);
 
   const addItem = () => {
     setItems((prev) => [...prev, { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] }]);
@@ -113,28 +172,44 @@ export function EditTransactionDialogV2({
           const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
           setProductUnits(prev => ({ ...prev, [value]: units }));
           
-          // Initialize unit prices array for this item
-          const defaultPrices = units.slice(0, items[index].quantity).map(unit => 
-            unit.purchase_price || unit.price || 0
-          );
-          setItemUnitPrices(prev => ({ ...prev, [index]: defaultPrices }));
+          // Initialize unit entries for this item
+          const unitEntries: UnitEntryFormType[] = units.slice(0, items[index].quantity).map(unit => ({
+            serial: unit.serial_number || '',
+            battery_level: unit.battery_level,
+            color: unit.color,
+            storage: unit.storage,
+            ram: unit.ram,
+            price: unit.purchase_price || unit.price || 0,
+            min_price: unit.min_price,
+            max_price: unit.max_price
+          }));
+          setItemUnitEntries(prev => ({ ...prev, [index]: unitEntries }));
         } catch (error) {
           console.error('Failed to load product units:', error);
         }
       }
     }
 
-    // Update unit prices when quantity changes for serialized products
+    // Update unit entries when quantity changes for serialized products
     if (field === 'quantity' && typeof value === 'number') {
       const item = items[index];
       const product = products?.find(p => p.id === item.product_id);
       if (product?.has_serial) {
         const units = productUnits[item.product_id] || [];
-        const newPrices = Array.from({ length: value }, (_, i) => {
+        const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
           const unit = units[i];
-          return unit?.purchase_price || unit?.price || item.unit_cost;
+          return {
+            serial: unit?.serial_number || '',
+            battery_level: unit?.battery_level,
+            color: unit?.color,
+            storage: unit?.storage,
+            ram: unit?.ram,
+            price: unit?.purchase_price || unit?.price || item.unit_cost,
+            min_price: unit?.min_price,
+            max_price: unit?.max_price
+          };
         });
-        setItemUnitPrices(prev => ({ ...prev, [index]: newPrices }));
+        setItemUnitEntries(prev => ({ ...prev, [index]: newEntries }));
       }
     }
   };
@@ -145,20 +220,25 @@ export function EditTransactionDialogV2({
       .map((s) => s.trim())
       .filter(Boolean);
 
-  const updateUnitPrice = (itemIndex: number, unitIndex: number, price: number) => {
-    setItemUnitPrices(prev => {
-      const newPrices = { ...prev };
-      if (!newPrices[itemIndex]) newPrices[itemIndex] = [];
-      newPrices[itemIndex][unitIndex] = price;
-      return newPrices;
-    });
+  const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
+    setItemUnitEntries(prev => ({
+      ...prev,
+      [itemIndex]: entries
+    }));
+  };
+
+  const toggleUnitEditing = (itemIndex: number) => {
+    setEditingUnits(prev => ({
+      ...prev,
+      [itemIndex]: !prev[itemIndex]
+    }));
   };
 
   const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
     const product = products?.find(p => p.id === item.product_id);
-    if (product?.has_serial && itemUnitPrices[index]?.length) {
+    if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products
-      return itemUnitPrices[index].reduce((sum, price) => sum + price, 0);
+      return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || 0), 0);
     }
     // Use quantity * unit_cost for non-serialized products
     return item.quantity * item.unit_cost;
@@ -168,7 +248,7 @@ export function EditTransactionDialogV2({
     return items.reduce((sum, item, index) => sum + calculateItemTotal(item, index), 0);
   };
 
-  const total = useMemo(() => calculateTotal(), [items, itemUnitPrices]);
+  const total = useMemo(() => calculateTotal(), [items, itemUnitEntries]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,7 +290,7 @@ export function EditTransactionDialogV2({
           return {
             ...item,
             product_unit_ids: selectedUnits.map(unit => unit.id),
-            unit_cost: itemUnitPrices[index]?.reduce((sum, price) => sum + price, 0) / item.quantity || item.unit_cost
+            unit_cost: itemUnitEntries[index]?.reduce((sum, entry) => sum + (entry.price || 0), 0) / item.quantity || item.unit_cost
           };
         }
         
@@ -400,43 +480,79 @@ export function EditTransactionDialogV2({
                         </div>
                       </div>
 
-                      {/* Show individual unit pricing for serialized products */}
+                      {/* Show editable product units for serialized products */}
                       {(() => {
                         const product = products?.find(p => p.id === item.product_id);
-                        const units = productUnits[item.product_id] || [];
                         
-                        if (product?.has_serial && units.length > 0) {
+                        if (product?.has_serial) {
+                          const isEditing = editingUnits[index];
+                          const unitEntries = itemUnitEntries[index] || [];
+                          
+                          if (isEditing && unitEntries.length > 0) {
+                            return (
+                              <div className="space-y-3 border-t pt-3">
+                                <div className="flex justify-between items-center">
+                                  <Label className="text-sm font-medium">Edit Product Units</Label>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => toggleUnitEditing(index)}
+                                    disabled={!canEditItems}
+                                  >
+                                    Done
+                                  </Button>
+                                </div>
+                                <UnitEntryForm
+                                  entries={unitEntries}
+                                  setEntries={(entries) => updateUnitEntries(index, entries)}
+                                  showPricing={true}
+                                  title=""
+                                  productId={item.product_id}
+                                  className="border-0 p-0"
+                                />
+                              </div>
+                            );
+                          }
+                          
                           return (
                             <div className="space-y-2">
-                              <Label className="text-xs">Individual Unit Prices (€)</Label>
-                              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-                                {Array.from({ length: item.quantity }, (_, unitIndex) => {
-                                  const unit = units[unitIndex];
-                                  const currentPrice = itemUnitPrices[index]?.[unitIndex] || 0;
-                                  
-                                  return (
-                                    <div key={unitIndex} className="flex items-center gap-2 text-xs">
-                                      <span className="min-w-0 flex-1 truncate">
-                                        Unit {unitIndex + 1}: {unit?.serial_number || 'TBD'}
-                                      </span>
-                                      <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={currentPrice}
-                                        onChange={(e) => updateUnitPrice(index, unitIndex, parseFloat(e.target.value) || 0)}
-                                        className="w-20 h-6 text-xs"
-                                        disabled={!canEditItems}
-                                      />
-                                    </div>
-                                  );
-                                })}
+                              <div className="flex justify-between items-center">
+                                <Label className="text-xs">Product Units ({item.quantity})</Label>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleUnitEditing(index)}
+                                  disabled={!canEditItems}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  <Edit3 className="h-3 w-3 mr-1" />
+                                  Edit Units
+                                </Button>
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                Average: €{itemUnitPrices[index]?.length ? 
-                                  (itemUnitPrices[index].reduce((sum, price) => sum + price, 0) / itemUnitPrices[index].length).toFixed(2) : 
-                                  '0.00'
-                                }
+                              <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                                {unitEntries.length > 0 ? (
+                                  <>
+                                    {unitEntries.slice(0, 3).map((entry, i) => (
+                                      <div key={i} className="flex justify-between">
+                                        <span>{entry.serial || `Unit ${i + 1}`}</span>
+                                        <span>€{(entry.price || 0).toFixed(2)}</span>
+                                      </div>
+                                    ))}
+                                    {unitEntries.length > 3 && (
+                                      <div className="text-center text-muted-foreground mt-1">
+                                        +{unitEntries.length - 3} more units
+                                      </div>
+                                    )}
+                                    <div className="border-t mt-2 pt-2 flex justify-between font-medium">
+                                      <span>Total:</span>
+                                      <span>€{unitEntries.reduce((sum, entry) => sum + (entry.price || 0), 0).toFixed(2)}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div>Click "Edit Units" to configure product units</div>
+                                )}
                               </div>
                             </div>
                           );
