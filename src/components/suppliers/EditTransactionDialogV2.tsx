@@ -190,7 +190,7 @@ export function EditTransactionDialogV2({
     }
   };
 
-  const updateItem = async (index: number, field: keyof EditableTransactionItem, value: any) => {
+  const updateItem = (index: number, field: keyof EditableTransactionItem, value: any) => {
     setItems((prev) => {
       const copy = [...prev];
       (copy[index] as any)[field] = value;
@@ -206,29 +206,12 @@ export function EditTransactionDialogV2({
       return copy;
     });
 
-    // Load units when product changes for serialized products
+    // Load units when product changes for serialized products (moved to useEffect)
     if (field === 'product_id' && value) {
       const product = products.find(p => p.id === value);
       if (product?.has_serial) {
-        try {
-          const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
-          setProductUnits(prev => ({ ...prev, [value]: units }));
-          
-          // Initialize unit entries for this item
-          const unitEntries: UnitEntryFormType[] = units.slice(0, items[index].quantity).map(unit => ({
-            serial: unit.serial_number || '',
-            battery_level: unit.battery_level,
-            color: unit.color,
-            storage: unit.storage,
-            ram: unit.ram,
-            price: unit.purchase_price || unit.price || 0,
-            min_price: unit.min_price,
-            max_price: unit.max_price
-          }));
-          setItemUnitEntries(prev => ({ ...prev, [index]: unitEntries }));
-        } catch (error) {
-          console.error('Failed to load product units:', error);
-        }
+        // Trigger async loading via useEffect by updating a dependency
+        setProductUnits(prev => ({ ...prev, [value]: [] })); // Initialize empty array to trigger loading
       }
     }
 
@@ -255,6 +238,40 @@ export function EditTransactionDialogV2({
       }
     }
   };
+
+  // Separate useEffect for loading product units to avoid async hooks violation
+  useEffect(() => {
+    const loadProductUnits = async () => {
+      for (const [productId, units] of Object.entries(productUnits)) {
+        if (units.length === 0) { // Only load if array is empty (initialization marker)
+          try {
+            const loadedUnits = await ProductUnitManagementService.getAvailableUnitsForProduct(productId);
+            setProductUnits(prev => ({ ...prev, [productId]: loadedUnits }));
+            
+            // Find the item index for this product to initialize unit entries
+            const itemIndex = items.findIndex(item => item.product_id === productId);
+            if (itemIndex >= 0) {
+              const unitEntries: UnitEntryFormType[] = loadedUnits.slice(0, items[itemIndex].quantity).map(unit => ({
+                serial: unit.serial_number || '',
+                battery_level: unit.battery_level,
+                color: unit.color,
+                storage: unit.storage,
+                ram: unit.ram,
+                price: unit.purchase_price || unit.price || 0,
+                min_price: unit.min_price,
+                max_price: unit.max_price
+              }));
+              setItemUnitEntries(prev => ({ ...prev, [itemIndex]: unitEntries }));
+            }
+          } catch (error) {
+            console.error('Failed to load product units:', error);
+          }
+        }
+      }
+    };
+
+    loadProductUnits();
+  }, [productUnits, items]);
 
   const parseBarcodes = (text: string): string[] =>
     text
