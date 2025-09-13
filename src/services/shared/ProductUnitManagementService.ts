@@ -220,19 +220,27 @@ export class ProductUnitManagementService {
   }
 
   /**
-   * Update the purchase price of a product unit
+   * Update the purchase price of a product unit and sync related pricing
    */
   static async updateUnitPurchasePrice(unitId: string, purchasePrice: number): Promise<void> {
     try {
+      console.log(`🔄 Updating unit ${unitId} purchase price to ${purchasePrice}`);
+      
       const { error } = await supabase
         .from('product_units')
-        .update({ purchase_price: purchasePrice })
+        .update({ 
+          purchase_price: purchasePrice,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', unitId);
 
       if (error) {
         throw InventoryError.createDatabaseError('updateUnitPurchasePrice', error, { unitId, purchasePrice });
       }
+      
+      console.log(`✅ Successfully updated unit ${unitId} purchase price`);
     } catch (error) {
+      console.error(`❌ Failed to update unit ${unitId} purchase price:`, error);
       throw handleInventoryError(error);
     }
   }

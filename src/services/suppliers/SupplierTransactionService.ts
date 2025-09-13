@@ -168,9 +168,12 @@ export const supplierTransactionApi = {
           return item.quantity * item.unit_cost;
         }
 
-        // Sum actual purchase prices
+        // Sum actual purchase prices using hybrid pricing model
         return units.reduce((sum, unit) => {
-          const unitPrice = unit.purchase_price || unit.price || item.unit_cost;
+          // Prioritize purchase_price, then individual unit price, then default unit_cost
+          const unitPrice = unit.purchase_price > 0 ? unit.purchase_price :
+                           unit.price > 0 ? unit.price : 
+                           item.unit_cost;
           return sum + unitPrice;
         }, 0);
       } catch (error) {
@@ -297,15 +300,27 @@ export const supplierTransactionApi = {
       
       if (insertError) throw insertError;
       
-      // Update individual product unit prices if needed
+      // Update individual product unit prices based on hybrid pricing model
       for (const item of items) {
         if (item.product_unit_ids?.length) {
           try {
+            // Get the actual unit entries to use individual prices if specified
+            const { data: units } = await supabase
+              .from('product_units')
+              .select('id, price, purchase_price')
+              .in('id', item.product_unit_ids);
+              
             for (const unitId of item.product_unit_ids) {
-              await ProductUnitManagementService.updateUnitPurchasePrice(unitId, item.unit_cost);
+              const unit = units?.find(u => u.id === unitId);
+              // Only update if the unit doesn't already have a proper purchase_price
+              if (unit && (!unit.purchase_price || unit.purchase_price === 0)) {
+                const newPurchasePrice = unit.price || item.unit_cost;
+                await ProductUnitManagementService.updateUnitPurchasePrice(unitId, newPurchasePrice);
+              }
             }
           } catch (error) {
             console.error('Error updating product unit purchase prices:', error);
+            // Don't throw to prevent blocking the main operation
           }
         }
       }

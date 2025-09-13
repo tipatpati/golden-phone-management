@@ -28,7 +28,7 @@ import {
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
 import { useToast } from "@/hooks/use-toast";
-import { useSuppliers } from "@/services";
+import { useSuppliers } from "@/services/suppliers/SuppliersReactQueryService";
 import type { SupplierTransaction, EditableTransactionItem } from "@/services/suppliers/types";
 import type { ProductUnit, UnitEntryForm as UnitEntryFormType } from "@/services/inventory/types";
 
@@ -44,10 +44,43 @@ export function EditTransactionDialogV2({
   onOpenChange,
 }: EditTransactionDialogProps) {
   const { userRole } = useAuth();
-  const { data: products, isLoading: productsLoading, error: productsError } = useProducts();
-  const { data: suppliers, isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
+  const { data: suppliers = [], isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
   const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
   const { toast } = useToast();
+
+  // Early return if data is still loading or products not available
+  if (productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers)) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Loading Transaction Data...</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-2">Loading products and suppliers...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error state if products or suppliers failed to load
+  if (productsError || suppliersError) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Error Loading Data</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-8 text-destructive">
+            <span>Failed to load required data. Please refresh and try again.</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const [type, setType] = useState<SupplierTransaction["type"]>("purchase");
   const [status, setStatus] = useState<SupplierTransaction["status"]>("pending");
@@ -95,7 +128,7 @@ export function EditTransactionDialogV2({
 
         for (let i = 0; i < mappedItems.length; i++) {
           const item = mappedItems[i];
-          const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
+          const product = products.find(p => p.id === item.product_id);
           
           if (product?.has_serial && item.product_unit_ids?.length > 0) {
             try {
@@ -164,7 +197,7 @@ export function EditTransactionDialogV2({
       
       // Auto-populate unit_cost with product default price when product is selected
       if (field === 'product_id' && value) {
-        const product = Array.isArray(products) ? products.find(p => p.id === value) : undefined;
+        const product = products.find(p => p.id === value);
         if (product?.price && copy[index].unit_cost === 0) {
           copy[index].unit_cost = product.price;
         }
@@ -175,7 +208,7 @@ export function EditTransactionDialogV2({
 
     // Load units when product changes for serialized products
     if (field === 'product_id' && value) {
-      const product = Array.isArray(products) ? products.find(p => p.id === value) : undefined;
+      const product = products.find(p => p.id === value);
       if (product?.has_serial) {
         try {
           const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
@@ -202,7 +235,7 @@ export function EditTransactionDialogV2({
     // Update unit entries when quantity changes for serialized products
     if (field === 'quantity' && typeof value === 'number') {
       const item = items[index];
-      const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
+      const product = products.find(p => p.id === item.product_id);
       if (product?.has_serial) {
         const units = productUnits[item.product_id] || [];
         const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
@@ -244,7 +277,7 @@ export function EditTransactionDialogV2({
   };
 
   const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
-    const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
+    const product = products.find(p => p.id === item.product_id);
     if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products, fallback to default if no price
       return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
@@ -276,7 +309,7 @@ export function EditTransactionDialogV2({
 
       // Step 1: Create new units for serialized products first
       const preparedItems = await Promise.all(items.map(async (item, index) => {
-        const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
+        const product = products.find(p => p.id === item.product_id);
         const unitEntries = itemUnitEntries[index] || [];
         const existingUnits = productUnits[item.product_id] || [];
         
