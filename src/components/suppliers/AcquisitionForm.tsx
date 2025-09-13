@@ -403,6 +403,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                                 onStockChange={(stock) => updateItem(index, { quantity: stock })}
                                 title="New Units to Add (IMEI/SN + pricing)"
                                 showPricing={true}
+                                showPricingTemplates={true}
                               />
                               
                               {/* Barcode Preview for Units */}
