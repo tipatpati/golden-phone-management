@@ -265,7 +265,70 @@ export function EditTransactionDialogV2({
         return;
       }
 
-      // Update transaction (only super_admin can update per RLS)
+      // Step 1: Create new units for serialized products first
+      const preparedItems = await Promise.all(items.map(async (item, index) => {
+        const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
+        const unitEntries = itemUnitEntries[index] || [];
+        const existingUnits = productUnits[item.product_id] || [];
+        
+        if (product?.has_serial && unitEntries.length > 0) {
+          // Detect new units (those without existing unit IDs)
+          const newUnitEntries = unitEntries.filter(entry => {
+            const existingUnit = existingUnits.find(unit => unit.serial_number === entry.serial);
+            return !existingUnit || !existingUnit.id;
+          });
+
+          let createdUnitIds: string[] = [];
+          
+          // Create new units if any
+          if (newUnitEntries.length > 0) {
+            try {
+              const createResult = await ProductUnitManagementService.createUnitsForProduct({
+                productId: item.product_id,
+                unitEntries: newUnitEntries,
+                defaultPricing: {
+                  price: item.unit_cost,
+                  min_price: undefined,
+                  max_price: undefined,
+                },
+                metadata: {
+                  supplierId: transaction.supplier_id,
+                  transactionId: transaction.id,
+                  acquisitionDate: new Date(date)
+                }
+              });
+              
+              createdUnitIds = createResult.units.map(unit => unit.id!);
+              
+              console.log(`Created ${createdUnitIds.length} new units for product ${item.product_id}`);
+            } catch (error) {
+              console.error('Failed to create new units:', error);
+              throw new Error(`Failed to create units for ${product.brand} ${product.model}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+          }
+
+          // Get IDs of existing units that match the serial numbers
+          const existingUnitIds = unitEntries
+            .map(entry => {
+              const existingUnit = existingUnits.find(unit => unit.serial_number === entry.serial);
+              return existingUnit?.id;
+            })
+            .filter(Boolean) as string[];
+
+          // Combine existing and new unit IDs
+          const allUnitIds = [...existingUnitIds, ...createdUnitIds];
+
+          return {
+            ...item,
+            product_unit_ids: allUnitIds,
+            unit_cost: unitEntries.reduce((sum, entry) => sum + (entry.price || 0), 0) / item.quantity || item.unit_cost
+          };
+        }
+        
+        return item;
+      }));
+
+      // Step 2: Update transaction (only super_admin can update per RLS)
       if (userRole === 'super_admin') {
         await updateTx.mutateAsync({
           id: transaction.id,
@@ -279,25 +342,7 @@ export function EditTransactionDialogV2({
         });
       }
 
-      // Prepare items with unit IDs for serialized products
-      const preparedItems = items.map((item, index) => {
-        const product = Array.isArray(products) ? products.find(p => p.id === item.product_id) : undefined;
-        const units = productUnits[item.product_id] || [];
-        
-        if (product?.has_serial && units.length >= item.quantity) {
-          // Link to specific product units for serialized products
-          const selectedUnits = units.slice(0, item.quantity);
-          return {
-            ...item,
-            product_unit_ids: selectedUnits.map(unit => unit.id),
-            unit_cost: itemUnitEntries[index]?.reduce((sum, entry) => sum + (entry.price || 0), 0) / item.quantity || item.unit_cost
-          };
-        }
-        
-        return item;
-      });
-
-      // Replace items (inventory_manager can also do this per RLS)
+      // Step 3: Replace items with prepared data including new unit IDs
       await replaceItems.mutateAsync({
         transactionId: transaction.id,
         items: preparedItems,
