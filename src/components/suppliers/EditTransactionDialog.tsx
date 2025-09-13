@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -137,9 +136,6 @@ export function EditTransactionDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit Transaction – {transaction.transaction_number}</DialogTitle>
-          <DialogDescription>
-            Modify transaction details and items. Only super admins can edit transaction metadata.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
