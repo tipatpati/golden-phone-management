@@ -95,7 +95,7 @@ export function EditTransactionDialogV2({
 
         for (let i = 0; i < mappedItems.length; i++) {
           const item = mappedItems[i];
-          const product = products?.find(p => p.id === item.product_id);
+          const product = (products || []).find(p => p.id === item.product_id);
           
           if (product?.has_serial && item.product_unit_ids?.length > 0) {
             try {
@@ -166,7 +166,7 @@ export function EditTransactionDialogV2({
 
     // Load units when product changes for serialized products
     if (field === 'product_id' && value) {
-      const product = products?.find(p => p.id === value);
+      const product = (products || []).find(p => p.id === value);
       if (product?.has_serial) {
         try {
           const units = await ProductUnitManagementService.getAvailableUnitsForProduct(value);
@@ -193,7 +193,7 @@ export function EditTransactionDialogV2({
     // Update unit entries when quantity changes for serialized products
     if (field === 'quantity' && typeof value === 'number') {
       const item = items[index];
-      const product = products?.find(p => p.id === item.product_id);
+      const product = (products || []).find(p => p.id === item.product_id);
       if (product?.has_serial) {
         const units = productUnits[item.product_id] || [];
         const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
@@ -235,7 +235,7 @@ export function EditTransactionDialogV2({
   };
 
   const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
-    const product = products?.find(p => p.id === item.product_id);
+    const product = (products || []).find(p => p.id === item.product_id);
     if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products
       return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || 0), 0);
@@ -281,7 +281,7 @@ export function EditTransactionDialogV2({
 
       // Prepare items with unit IDs for serialized products
       const preparedItems = items.map((item, index) => {
-        const product = products?.find(p => p.id === item.product_id);
+        const product = (products || []).find(p => p.id === item.product_id);
         const units = productUnits[item.product_id] || [];
         
         if (product?.has_serial && units.length >= item.quantity) {
@@ -482,7 +482,7 @@ export function EditTransactionDialogV2({
 
                       {/* Show editable product units for serialized products */}
                       {(() => {
-                        const product = products?.find(p => p.id === item.product_id);
+                        const product = (products || []).find(p => p.id === item.product_id);
                         
                         if (product?.has_serial) {
                           const isEditing = editingUnits[index];
