@@ -49,7 +49,9 @@ export function EditTransactionDialogV2({
   const { data: suppliers = [], isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
   const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
   const { toast } = useToast();
-  
+  const updateTx = useUpdateSupplierTransaction();
+  const replaceItems = useReplaceSupplierTransactionItems();
+
   const [type, setType] = useState<SupplierTransaction["type"]>("purchase");
   const [status, setStatus] = useState<SupplierTransaction["status"]>("pending");
   const [notes, setNotes] = useState("");
@@ -61,46 +63,6 @@ export function EditTransactionDialogV2({
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
   const [itemUnitEntries, setItemUnitEntries] = useState<Record<number, UnitEntryFormType[]>>({});
   const [editingUnits, setEditingUnits] = useState<Record<number, boolean>>({});
-
-  const updateTx = useUpdateSupplierTransaction();
-  const replaceItems = useReplaceSupplierTransactionItems();
-
-  // Determine what to render based on loading and error states
-  const isDataLoading = productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers);
-  const hasDataError = productsError || suppliersError;
-
-  // Show loading state
-  if (isDataLoading) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Loading Transaction Data...</DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="w-8 h-8 animate-spin" />
-            <span className="ml-2">Loading products and suppliers...</span>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Show error state
-  if (hasDataError) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Error Loading Data</DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center justify-center p-8 text-destructive">
-            <span>Failed to load required data. Please refresh and try again.</span>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   // Load transaction data
   useEffect(() => {
@@ -116,7 +78,7 @@ export function EditTransactionDialogV2({
   // Load existing items and their product units
   useEffect(() => {
     const loadItemsAndUnits = async () => {
-      if (existingItems && existingItems.length > 0) {
+      if (existingItems && existingItems.length > 0 && products.length > 0) {
         const mappedItems: EditableTransactionItem[] = existingItems.map(item => ({
           id: item.id,
           product_id: item.product_id,
@@ -185,6 +147,90 @@ export function EditTransactionDialogV2({
     loadItemsAndUnits();
   }, [existingItems, products]);
 
+  // Separate useEffect for loading product units to avoid async hooks violation
+  useEffect(() => {
+    const loadProductUnits = async () => {
+      for (const [productId, units] of Object.entries(productUnits)) {
+        if (units.length === 0) { // Only load if array is empty (initialization marker)
+          try {
+            const loadedUnits = await ProductUnitManagementService.getAvailableUnitsForProduct(productId);
+            setProductUnits(prev => ({ ...prev, [productId]: loadedUnits }));
+            
+            // Find the item index for this product to initialize unit entries
+            const itemIndex = items.findIndex(item => item.product_id === productId);
+            if (itemIndex >= 0) {
+              const unitEntries: UnitEntryFormType[] = loadedUnits.slice(0, items[itemIndex].quantity).map(unit => ({
+                serial: unit.serial_number || '',
+                battery_level: unit.battery_level,
+                color: unit.color,
+                storage: unit.storage,
+                ram: unit.ram,
+                price: unit.purchase_price || unit.price || 0,
+                min_price: unit.min_price,
+                max_price: unit.max_price
+              }));
+              setItemUnitEntries(prev => ({ ...prev, [itemIndex]: unitEntries }));
+            }
+          } catch (error) {
+            console.error('Failed to load product units:', error);
+          }
+        }
+      }
+    };
+
+    loadProductUnits();
+  }, [productUnits, items]);
+
+  // Calculate total using useMemo
+  const total = useMemo(() => {
+    return items.reduce((sum, item, index) => {
+      const product = products.find(p => p.id === item.product_id);
+      if (product?.has_serial && itemUnitEntries[index]?.length) {
+        // Use individual unit prices for serialized products, fallback to default if no price
+        return sum + itemUnitEntries[index].reduce((unitSum, entry) => unitSum + (entry.price || item.unit_cost), 0);
+      }
+      // Use quantity * unit_cost for non-serialized products
+      return sum + (item.quantity * item.unit_cost);
+    }, 0);
+  }, [items, itemUnitEntries, products]);
+
+  // Determine what to render based on loading and error states
+  const isDataLoading = productsLoading || suppliersLoading || !Array.isArray(products) || !Array.isArray(suppliers);
+  const hasDataError = productsError || suppliersError;
+
+  // Show loading state
+  if (isDataLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Loading Transaction Data...</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-2">Loading products and suppliers...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error state
+  if (hasDataError) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Error Loading Data</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-8 text-destructive">
+            <span>Failed to load required data. Please refresh and try again.</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   const addItem = () => {
     setItems((prev) => [...prev, { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] }]);
   };
@@ -244,40 +290,6 @@ export function EditTransactionDialogV2({
     }
   };
 
-  // Separate useEffect for loading product units to avoid async hooks violation
-  useEffect(() => {
-    const loadProductUnits = async () => {
-      for (const [productId, units] of Object.entries(productUnits)) {
-        if (units.length === 0) { // Only load if array is empty (initialization marker)
-          try {
-            const loadedUnits = await ProductUnitManagementService.getAvailableUnitsForProduct(productId);
-            setProductUnits(prev => ({ ...prev, [productId]: loadedUnits }));
-            
-            // Find the item index for this product to initialize unit entries
-            const itemIndex = items.findIndex(item => item.product_id === productId);
-            if (itemIndex >= 0) {
-              const unitEntries: UnitEntryFormType[] = loadedUnits.slice(0, items[itemIndex].quantity).map(unit => ({
-                serial: unit.serial_number || '',
-                battery_level: unit.battery_level,
-                color: unit.color,
-                storage: unit.storage,
-                ram: unit.ram,
-                price: unit.purchase_price || unit.price || 0,
-                min_price: unit.min_price,
-                max_price: unit.max_price
-              }));
-              setItemUnitEntries(prev => ({ ...prev, [itemIndex]: unitEntries }));
-            }
-          } catch (error) {
-            console.error('Failed to load product units:', error);
-          }
-        }
-      }
-    };
-
-    loadProductUnits();
-  }, [productUnits, items]);
-
   const parseBarcodes = (text: string): string[] =>
     text
       .split(/\n|,/)
@@ -307,12 +319,6 @@ export function EditTransactionDialogV2({
     // Use quantity * unit_cost for non-serialized products
     return item.quantity * item.unit_cost;
   };
-
-  const calculateTotal = () => {
-    return items.reduce((sum, item, index) => sum + calculateItemTotal(item, index), 0);
-  };
-
-  const total = useMemo(() => calculateTotal(), [items, itemUnitEntries]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,388 +438,313 @@ export function EditTransactionDialogV2({
         } catch (transactionError) {
           console.error("Transaction update failed:", transactionError);
           // Continue with items update even if transaction update fails
-          // This allows partial success scenarios
         }
       }
 
-      // Step 3: Replace items with prepared data including new unit IDs
+      // Step 3: Replace transaction items (admin+ can update per RLS)
       let itemsUpdated = false;
-      try {
-        await replaceItems.mutateAsync({
-          transactionId: transaction.id,
-          items: preparedItems,
-        });
-        itemsUpdated = true;
-      } catch (itemsError) {
-        console.error("Items update failed:", itemsError);
-        // If transaction was updated but items failed, we need to handle this
-        if (transactionUpdated) {
-          toast({ 
-            title: "Partial Update", 
-            description: "Transaction details updated but items update failed. Please refresh and try again.", 
-            variant: "destructive" 
+      if (userRole === 'super_admin' || userRole === 'admin') {
+        try {
+          await replaceItems.mutateAsync({
+            transactionId: transaction.id,
+            items: preparedItems.map(item => ({
+              product_id: item.product_id,
+              quantity: item.quantity,
+              unit_cost: item.unit_cost,
+              product_unit_ids: item.product_unit_ids || [],
+              unit_barcodes: item.unit_barcodes || [],
+            })),
           });
-          return;
+          itemsUpdated = true;
+        } catch (itemsError) {
+          console.error("Items update failed:", itemsError);
+          throw new Error(`Failed to update transaction items: ${itemsError}`);
         }
-        throw itemsError; // Re-throw if both failed
       }
 
-      // Success handling
+      // Report success
       if (transactionUpdated && itemsUpdated) {
-        toast({ 
-          title: "Success", 
-          description: "Transaction updated successfully" 
+        toast({
+          title: "Success",
+          description: "Transaction updated successfully",
         });
-      } else if (itemsUpdated && !transactionUpdated) {
-        toast({ 
-          title: "Items Updated", 
-          description: "Transaction items updated successfully" 
+      } else if (itemsUpdated) {
+        toast({
+          title: "Partial Success",
+          description: "Transaction items updated. Note: Only super admins can update transaction details.",
         });
-      } else if (transactionUpdated && !itemsUpdated) {
-        toast({ 
-          title: "Partial Update", 
-          description: "Transaction details updated. Items update failed." 
+      } else if (transactionUpdated) {
+        toast({
+          title: "Partial Success", 
+          description: "Transaction details updated. Note: Items update requires admin privileges.",
         });
+      } else {
+        toast({
+          title: "Access Restricted",
+          description: "You don't have permission to update this transaction.",
+          variant: "destructive",
+        });
+        return;
       }
-      
+
       onOpenChange(false);
-    } catch (err: any) {
-      console.error("Update error:", err);
-      
-      // Enhanced error messaging
-      let errorMessage = 'Unable to update transaction';
-      if (err?.message) {
-        if (err.message.includes('serial number')) {
-          errorMessage = 'Serial number conflict detected. Please check for duplicates.';
-        } else if (err.message.includes('validation')) {
-          errorMessage = 'Data validation failed. Please check all fields.';
-        } else if (err.message.includes('inventory units')) {
-          errorMessage = 'Failed to create inventory units. Transaction not updated.';
-        } else {
-          errorMessage = err.message;
-        }
-      }
-      
-      toast({ 
-        title: "Update failed", 
-        description: errorMessage, 
-        variant: "destructive" 
+    } catch (error) {
+      console.error("Transaction update error:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update transaction",
+        variant: "destructive",
       });
     }
   };
-
-  const canEditTransaction = userRole === 'super_admin';
-  const canEditItems = ['super_admin', 'admin', 'manager', 'inventory_manager'].includes(userRole || '');
-
-  if (!transaction) return null;
-
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Transaction – {transaction.transaction_number}</DialogTitle>
+          <DialogTitle>Edit Transaction</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="supplier_id">Supplier *</Label>
-              <Select value={supplierId} onValueChange={(value) => setSupplierId(value)} disabled={!canEditTransaction}>
-                <SelectTrigger className="">
-                  <SelectValue placeholder="Select supplier" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg">
-                  {suppliersLoading ? (
-                    <SelectItem value="" disabled>Loading suppliers...</SelectItem>
-                  ) : suppliersError ? (
-                    <SelectItem value="" disabled>Error loading suppliers</SelectItem>
-                  ) : Array.isArray(suppliers) ? suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  )) : (
-                    <SelectItem value="" disabled>No suppliers available</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="type">Transaction Type *</Label>
-              <Select value={type} onValueChange={(value) => setType(value as any)} disabled={!canEditTransaction}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="purchase">Purchase</SelectItem>
-                  <SelectItem value="payment">Payment</SelectItem>
-                  <SelectItem value="return">Return</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="transaction_date">Transaction Date *</Label>
-              <Input
-                id="transaction_date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                disabled={!canEditTransaction}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value as any)} disabled={!canEditTransaction}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {!canEditTransaction && (
-            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-              Note: Only super admins can edit transaction details. You can edit items below.
-            </div>
-          )}
-
-          {/* Transaction Items */}
+          {/* Transaction Details */}
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Transaction Items</CardTitle>
-                {canEditItems && (
-                  <Button type="button" onClick={addItem} size="sm" variant="outline">
-                    <Plus className="h-4 w-4 mr-2" /> Add Item
-                  </Button>
-                )}
-              </div>
+              <CardTitle>Transaction Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {loadingItems ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="ml-2">Loading items...</span>
-                </div>
-              ) : (
-                <>
-                  {items.map((item, index) => (
-                    <div key={index} className="space-y-3 border rounded-lg p-4">
-                      <div className="grid grid-cols-12 gap-3 items-end">
-                        <div className="col-span-5">
-                          <Label>Product</Label>
-                          <Select
-                            value={item.product_id}
-                            onValueChange={(value) => updateItem(index, "product_id", value)}
-                            disabled={!canEditItems}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select product" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background border shadow-lg">
-                              {productsLoading ? (
-                                <SelectItem value="" disabled>Loading products...</SelectItem>
-                              ) : productsError ? (
-                                <SelectItem value="" disabled>Error loading products</SelectItem>
-                              ) : Array.isArray(products) ? products.map((p: any) => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.brand} {p.model} {p.has_serial ? '(serial)' : ''}
-                                </SelectItem>
-                              )) : (
-                                <SelectItem value="" disabled>No products available</SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="col-span-2">
-                          <Label>Quantity</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={item.quantity}
-                            onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 1)}
-                            disabled={!canEditItems}
-                          />
-                        </div>
-                        <div className="col-span-3">
-                          <Label>Unit Cost (€)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min={0}
-                            value={item.unit_cost}
-                            onChange={(e) => updateItem(index, "unit_cost", parseFloat(e.target.value) || 0)}
-                            disabled={!canEditItems}
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <Label className="text-xs">Total</Label>
-                          <div className="text-sm font-medium py-2">
-                            €{calculateItemTotal(item, index).toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="col-span-1">
-                          {items.length > 1 && canEditItems && (
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => removeItem(index)} 
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="supplier">Supplier</Label>
+                <Select value={supplierId} onValueChange={setSupplierId} disabled={userRole !== 'super_admin'}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name} - {supplier.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                      {/* Show editable product units for serialized products */}
-                      {(() => {
-                        const product = products?.find(p => p.id === item.product_id);
-                        
-                        if (product?.has_serial) {
-                          const isEditing = editingUnits[index];
-                          const unitEntries = itemUnitEntries[index] || [];
-                          
-                          if (isEditing && unitEntries.length > 0) {
-                            return (
-                              <div className="space-y-3 border-t pt-3">
-                                <div className="flex justify-between items-center">
-                                  <Label className="text-sm font-medium">Edit Product Units</Label>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => toggleUnitEditing(index)}
-                                    disabled={!canEditItems}
-                                  >
-                                    Done
-                                  </Button>
-                                </div>
-                                <UnitEntryForm
-                                  entries={unitEntries}
-                                  setEntries={(entries) => updateUnitEntries(index, entries)}
-                                  showPricing={true}
-                                  showPricingTemplates={true}
-                                  title=""
-                                  productId={item.product_id}
-                                  className="border-0 p-0"
-                                />
-                              </div>
-                            );
-                          }
-                          
-                          return (
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <Label className="text-xs">Product Units ({item.quantity})</Label>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleUnitEditing(index)}
-                                  disabled={!canEditItems}
-                                  className="h-6 px-2 text-xs"
-                                >
-                                  <Edit3 className="h-3 w-3 mr-1" />
-                                  Edit Units
-                                </Button>
-                              </div>
-                              <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                                {unitEntries.length > 0 ? (
-                                  <>
-                                    {unitEntries.slice(0, 3).map((entry, i) => (
-                                      <div key={i} className="flex justify-between">
-                                        <span>{entry.serial || `Unit ${i + 1}`}</span>
-                                        <span>€{(entry.price || 0).toFixed(2)}</span>
-                                      </div>
-                                    ))}
-                                    {unitEntries.length > 3 && (
-                                      <div className="text-center text-muted-foreground mt-1">
-                                        +{unitEntries.length - 3} more units
-                                      </div>
-                                    )}
-                                    <div className="border-t mt-2 pt-2 flex justify-between font-medium">
-                                      <span>Total:</span>
-                                      <span>€{unitEntries.reduce((sum, entry) => sum + (entry.price || 0), 0).toFixed(2)}</span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div>Click "Edit Units" to configure product units</div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        }
-                        
-                        return (
-                          <div>
-                            <Label className="text-xs">Unit Barcodes (optional)</Label>
-                            <Textarea
-                              placeholder="Enter barcodes separated by comma or new line"
-                              value={(item.unit_barcodes || []).join("\n")}
-                              onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
-                              rows={2}
-                              disabled={!canEditItems}
-                            />
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  ))}
+              <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
+                <Select value={type} onValueChange={(value: SupplierTransaction["type"]) => setType(value)} disabled={userRole !== 'super_admin'}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="purchase">Purchase</SelectItem>
+                    <SelectItem value="return">Return</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between items-center text-lg font-semibold">
-                      <span>Total Amount:</span>
-                      <span>€{total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={status} onValueChange={(value: SupplierTransaction["status"]) => setStatus(value)} disabled={userRole !== 'super_admin'}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  disabled={userRole !== 'super_admin'}
+                />
+              </div>
+
+              <div className="md:col-span-2 space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Additional notes..."
+                  disabled={userRole !== 'super_admin'}
+                />
+              </div>
             </CardContent>
           </Card>
 
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Additional notes about this transaction..."
-              disabled={!canEditTransaction}
-            />
-          </div>
+          {/* Transaction Items */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Transaction Items</CardTitle>
+              {(userRole === 'super_admin' || userRole === 'admin') && (
+                <Button type="button" onClick={addItem} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Item
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {items.map((item, index) => {
+                const product = products.find(p => p.id === item.product_id);
+                const isSerializedProduct = product?.has_serial;
+                const unitEntries = itemUnitEntries[index] || [];
+                const isEditingUnitsForItem = editingUnits[index];
+                
+                return (
+                  <Card key={index} className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <Label>Product</Label>
+                        <Select 
+                          value={item.product_id} 
+                          onValueChange={(value) => updateItem(index, "product_id", value)}
+                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select product" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {products.map((product) => (
+                              <SelectItem key={product.id} value={product.id}>
+                                {product.brand} {product.model}
+                                {product.has_serial && " (Serialized)"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4">
+                      <div className="space-y-2">
+                        <Label>Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 1)}
+                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Unit Cost (€)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.unit_cost}
+                          onChange={(e) => updateItem(index, "unit_cost", parseFloat(e.target.value) || 0)}
+                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Total</Label>
+                        <div className="p-2 bg-muted rounded text-sm font-medium">
+                          €{calculateItemTotal(item, index).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Serialized Product Unit Management */}
+                    {isSerializedProduct && (userRole === 'super_admin' || userRole === 'admin') && (
+                      <div className="space-y-4 border-t pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">Unit Details (Serial Numbers)</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleUnitEditing(index)}
+                          >
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            {isEditingUnitsForItem ? 'Close Editor' : 'Edit Units'}
+                          </Button>
+                        </div>
+                        
+                        {isEditingUnitsForItem ? (
+                          <UnitEntryForm
+                            entries={unitEntries}
+                            onEntriesChange={(entries) => updateUnitEntries(index, entries)}
+                            quantity={item.quantity}
+                            defaultPricing={{
+                              price: item.unit_cost,
+                              min_price: item.unit_cost,
+                              max_price: item.unit_cost
+                            }}
+                          />
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {unitEntries.slice(0, item.quantity).map((entry, entryIndex) => (
+                              <div key={entryIndex} className="p-2 bg-muted/50 rounded text-sm">
+                                <div className="font-medium">{entry.serial || `Unit ${entryIndex + 1}`}</div>
+                                {entry.storage && <div className="text-muted-foreground">{entry.storage}GB</div>}
+                                {entry.price && <div className="text-muted-foreground">€{entry.price}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Non-serialized Product Barcode Management */}
+                    {!isSerializedProduct && (userRole === 'super_admin' || userRole === 'admin') && (
+                      <div className="space-y-2 border-t pt-4">
+                        <Label>Unit Barcodes (one per line)</Label>
+                        <Textarea
+                          value={(item.unit_barcodes || []).join('\n')}
+                          onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
+                          placeholder="Enter barcodes, one per line..."
+                          rows={3}
+                        />
+                      </div>
+                    )}
+
+                    {(userRole === 'super_admin' || userRole === 'admin') && items.length > 1 && (
+                      <div className="flex justify-end pt-2">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeItem(index)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+
+              <div className="flex justify-between items-center pt-4 border-t">
+                <div className="text-lg font-semibold">
+                  Total: €{total.toFixed(2)}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Buttons */}
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            {(canEditTransaction || canEditItems) && (
-              <Button 
-                type="submit" 
-                disabled={updateTx.isPending || replaceItems.isPending}
-              >
-                {updateTx.isPending || replaceItems.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            )}
+            <Button 
+              type="submit" 
+              disabled={updateTx.isPending || replaceItems.isPending}
+            >
+              {(updateTx.isPending || replaceItems.isPending) && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
+              Update Transaction
+            </Button>
           </div>
         </form>
       </DialogContent>
