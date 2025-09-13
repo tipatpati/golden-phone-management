@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Wand2, Plus, Trash2, Edit } from 'lucide-react';
 import { StoragePricingTemplateEditor } from './StoragePricingTemplateEditor';
 import { StoragePricingTemplateService } from '@/services/pricing/StoragePricingTemplateService';
@@ -25,6 +27,7 @@ export function StoragePricingTemplateSelector({
   const [templates, setTemplates] = useState<StoragePricingTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [lastAppliedResult, setLastAppliedResult] = useState<any>(null);
+  const [forceApply, setForceApply] = useState(false);
 
   const loadTemplates = () => {
     setTemplates(StoragePricingTemplateService.getTemplates());
@@ -38,7 +41,7 @@ export function StoragePricingTemplateSelector({
     if (!selectedTemplateId) return;
 
     try {
-      const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units);
+      const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units, undefined, forceApply);
       onUnitsChange(result.updatedUnits);
       setLastAppliedResult(result);
     } catch (error) {
@@ -135,6 +138,18 @@ export function StoragePricingTemplateSelector({
           </div>
         )}
 
+        {/* Force Apply Toggle */}
+        <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg">
+          <Switch
+            id="force-apply"
+            checked={forceApply}
+            onCheckedChange={setForceApply}
+          />
+          <Label htmlFor="force-apply" className="text-sm">
+            Force Apply (overwrite existing values)
+          </Label>
+        </div>
+
         {/* Apply Button */}
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
@@ -148,7 +163,7 @@ export function StoragePricingTemplateSelector({
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            Apply Defaults
+            {forceApply ? 'Force Apply Template' : 'Apply Defaults'}
           </Button>
         </div>
 
@@ -156,10 +171,10 @@ export function StoragePricingTemplateSelector({
         {lastAppliedResult && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="text-sm text-green-800">
-              ✓ Applied default pricing to {lastAppliedResult.appliedCount} units
+              ✓ {forceApply ? 'Applied template pricing to' : 'Applied default pricing to'} {lastAppliedResult.appliedCount} units
               {lastAppliedResult.skippedCount > 0 && (
                 <span className="text-yellow-700">
-                  {', '}skipped {lastAppliedResult.skippedCount} units
+                  {', '}skipped {lastAppliedResult.skippedCount} units {forceApply ? '(no matching storage rule)' : '(already had values)'}
                 </span>
               )}
             </div>

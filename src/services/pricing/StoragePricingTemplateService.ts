@@ -57,7 +57,7 @@ export class StoragePricingTemplateService {
     this.saveToStorage(templates);
   }
 
-  static applyTemplateDefaults(templateId: string, units: UnitEntryForm[], defaultPurchasePrice?: number): ApplyPricingResult {
+  static applyTemplateDefaults(templateId: string, units: UnitEntryForm[], defaultPurchasePrice?: number, forceApply = false): ApplyPricingResult {
     const template = this.getTemplates().find(t => t.id === templateId);
     if (!template) {
       throw new Error('Template not found');
@@ -83,23 +83,32 @@ export class StoragePricingTemplateService {
       }
 
       try {
-        // Apply default pricing from template rule only if current values are empty/zero
-        // This acts as fallback pricing, preserving any manually set values
-        if (!unit.price && rule.purchasePrice !== undefined) {
+        let hasChanges = false;
+        
+        // Apply pricing based on mode (force apply or defaults only)
+        if (forceApply || (!unit.price && rule.purchasePrice !== undefined)) {
           updatedUnits[i] = { ...unit, price: rule.purchasePrice };
+          hasChanges = true;
         } else if (!unit.price && defaultPurchasePrice) {
           updatedUnits[i] = { ...unit, price: defaultPurchasePrice };
+          hasChanges = true;
         }
         
-        if (!unit.min_price && rule.minPrice !== undefined) {
+        if (forceApply || (!unit.min_price && rule.minPrice !== undefined)) {
           updatedUnits[i] = { ...updatedUnits[i], min_price: rule.minPrice };
+          hasChanges = true;
         }
         
-        if (!unit.max_price && rule.maxPrice !== undefined) {
+        if (forceApply || (!unit.max_price && rule.maxPrice !== undefined)) {
           updatedUnits[i] = { ...updatedUnits[i], max_price: rule.maxPrice };
+          hasChanges = true;
         }
         
-        appliedCount++;
+        if (hasChanges) {
+          appliedCount++;
+        } else {
+          skippedCount++;
+        }
       } catch (error) {
         errors.push(`Failed to apply defaults to unit ${i + 1}: ${error}`);
         skippedCount++;
