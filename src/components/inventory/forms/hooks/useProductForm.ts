@@ -108,7 +108,24 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
 
   const updateField = useCallback((field: keyof ProductFormData, value: any) => {
     logger.debug('Field updated', { field: String(field), value }, 'useProductForm');
-    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Handle has_serial toggle specifically
+    if (field === 'has_serial') {
+      if (value === false) {
+        // When disabling serial numbers, clear unit entries and reset stock
+        logger.debug('Disabling serial numbers, clearing unit entries', {}, 'useProductForm');
+        setUnitEntries([]);
+        setFormData(prev => ({ ...prev, [field]: value, stock: prev.stock || 0 }));
+      } else {
+        // When enabling serial numbers, initialize with empty unit entries
+        logger.debug('Enabling serial numbers, initializing unit entries', {}, 'useProductForm');
+        setUnitEntries([]);
+        setFormData(prev => ({ ...prev, [field]: value, stock: 0 }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+    
     clearErrors();
   }, [clearErrors]);
 
