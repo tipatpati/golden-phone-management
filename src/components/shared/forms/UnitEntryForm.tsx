@@ -15,6 +15,7 @@ import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 import { useBarcodeService } from "@/components/shared/useBarcodeService";
 import { StoragePricingTemplateSelector } from "@/components/pricing/StoragePricingTemplateSelector";
+import { PricingTemplateManager } from "@/components/pricing/PricingTemplateManager";
 
 interface UnitEntryFormProps {
   entries: UnitEntryForm[];
@@ -120,6 +121,16 @@ export function UnitEntryForm({
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* Pricing Template Manager */}
+      {showPricing && (
+        <div className="mb-4">
+          <PricingTemplateManager
+            units={entries}
+            onUnitsChange={setEntries}
+          />
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <Label className="text-base font-medium">{title}</Label>
         <div className="flex items-center gap-4">
@@ -139,7 +150,7 @@ export function UnitEntryForm({
         </div>
       </div>
 
-      {/* Storage Pricing Template Selector */}
+      {/* Storage Pricing Template Selector - Keep for backward compatibility */}
       {showPricingTemplates && showPricing && (
         <StoragePricingTemplateSelector
           units={entries}
