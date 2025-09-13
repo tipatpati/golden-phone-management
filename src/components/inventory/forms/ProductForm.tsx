@@ -119,12 +119,13 @@ export function ProductForm({
           checked={formData.has_serial}
           onChange={(e) => updateField('has_serial', e.target.checked)}
           className="rounded border-gray-300"
+          disabled={requiresSerial}
         />
         <label htmlFor="has-serial" className="text-sm font-medium">
           This product has serial numbers
         </label>
         {requiresSerial && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-amber-600 font-medium">
             (Required for this category)
           </span>
         )}

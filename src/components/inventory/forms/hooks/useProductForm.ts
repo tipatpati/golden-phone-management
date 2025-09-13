@@ -111,6 +111,32 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     
     // Handle has_serial toggle specifically
     if (field === 'has_serial') {
+      // Check if phones category (category_id: 1) requires IMEI
+      if (value === false && formData.category_id === 1) {
+        // Prevent disabling IMEI for phones category
+        toast({
+          title: "IMEI Required",
+          description: "Phones category requires IMEI/Serial numbers. Please change category first if this product doesn't need IMEI.",
+          variant: "destructive"
+        });
+        
+        // Scroll to category field to alert user
+        setTimeout(() => {
+          const categoryField = document.querySelector('[data-field="category"]') || 
+                               document.querySelector('#category') ||
+                               document.querySelector('select[name="category_id"]');
+          if (categoryField) {
+            categoryField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+              if (categoryField instanceof HTMLElement) {
+                categoryField.focus();
+              }
+            }, 500);
+          }
+        }, 100);
+        return; // Don't update the field
+      }
+      
       if (value === false) {
         // When disabling serial numbers, clear unit entries and reset stock
         logger.debug('Disabling serial numbers, clearing unit entries', {}, 'useProductForm');
@@ -127,7 +153,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     }
     
     clearErrors();
-  }, [clearErrors]);
+  }, [clearErrors, formData.category_id]);
 
   const updateUnitEntries = useCallback((entries: UnitEntryForm[]) => {
     setUnitEntries(entries);
