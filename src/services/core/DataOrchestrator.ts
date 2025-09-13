@@ -93,6 +93,9 @@ export class DataOrchestrator {
 
     // Client events - trigger sales relationship updates
     eventBus.subscribe(EVENT_TYPES.CLIENT_UPDATED, this.handleClientUpdated.bind(this), 5);
+    
+    // Supplier transaction events - trigger inventory updates
+    eventBus.subscribe(EVENT_TYPES.SUPPLIER_TRANSACTION_ITEMS_REPLACED, this.handleSupplierTransactionItemsReplaced.bind(this), 5);
 
     logger.debug('DataOrchestrator: Event listeners registered');
   }
@@ -351,6 +354,47 @@ export class DataOrchestrator {
       });
 
       throw error;
+    }
+  }
+
+  /**
+   * Handle supplier transaction items replacement - coordinate inventory updates
+   */
+  private async handleSupplierTransactionItemsReplaced(event: ModuleEvent): Promise<void> {
+    logger.info('DataOrchestrator: Handling supplier transaction items replacement', { 
+      transactionId: event.entityId, 
+      data: event.data 
+    });
+
+    try {
+      // Invalidate relevant caches
+      await cacheManager.invalidateQueryKey('products');
+      await cacheManager.invalidateQueryKey('product-units');
+      await cacheManager.invalidateQueryKey('supplier-transactions');
+      
+      // Update inventory for each affected product
+      if (event.data?.changes) {
+        for (const change of event.data.changes) {
+          // Update product units if needed
+          if (change.type === 'unit_update' && change.productUnitIds) {
+            for (const unitId of change.productUnitIds) {
+              await eventBus.emit({
+                type: EVENT_TYPES.UNIT_UPDATED,
+                module: 'inventory',
+                operation: 'update',
+                entityId: unitId,
+                data: { 
+                  purchasePrice: change.purchasePrice,
+                  source: 'supplier_transaction_edit',
+                  transactionId: event.entityId
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      logger.error('DataOrchestrator: Error handling supplier transaction items replacement', error);
     }
   }
 

@@ -220,6 +220,24 @@ export class ProductUnitManagementService {
   }
 
   /**
+   * Update the purchase price of a product unit
+   */
+  static async updateUnitPurchasePrice(unitId: string, purchasePrice: number): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('product_units')
+        .update({ purchase_price: purchasePrice })
+        .eq('id', unitId);
+
+      if (error) {
+        throw InventoryError.createDatabaseError('updateUnitPurchasePrice', error, { unitId, purchasePrice });
+      }
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
    * Validate unit entries before creation
    */
   static validateUnitEntries(entries: UnitEntryForm[]): { valid: boolean; errors: string[] } {

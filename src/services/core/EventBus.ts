@@ -2,7 +2,7 @@ import { logger } from '@/utils/logger';
 
 export interface SystemEvent {
   type: string;
-  module: 'sales' | 'inventory' | 'clients' | 'consistency' | 'conflict_resolution' | 'ui';
+  module: 'sales' | 'inventory' | 'clients' | 'suppliers' | 'consistency' | 'conflict_resolution' | 'ui';
   operation: 'create' | 'update' | 'delete' | 'check' | 'resolve' | 'violation' | 'notification';
   entityId: string;
   data?: any;
@@ -249,6 +249,12 @@ export const EVENT_TYPES = {
   UNIT_CREATED: 'inventory.unit_created',
   UNIT_UPDATED: 'inventory.unit_updated',
   UNIT_DELETED: 'inventory.unit_deleted',
+  
+  // Supplier events
+  SUPPLIER_TRANSACTION_CREATED: 'suppliers.transaction_created',
+  SUPPLIER_TRANSACTION_UPDATED: 'suppliers.transaction_updated',
+  SUPPLIER_TRANSACTION_DELETED: 'suppliers.transaction_deleted',
+  SUPPLIER_TRANSACTION_ITEMS_REPLACED: 'suppliers.transaction_items_replaced',
   
   // Client events
   CLIENT_CREATED: 'clients.created',

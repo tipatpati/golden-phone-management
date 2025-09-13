@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { eventBus, EVENT_TYPES } from '@/services/core/EventBus';
 import { UnifiedProductCoordinator } from "@/services/shared/UnifiedProductCoordinator";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import type { 
@@ -189,6 +190,15 @@ export const supplierTransactionApi = {
       .eq("id", id);
     
     if (error) throw error;
+    
+    // Emit event for inventory coordination
+    await eventBus.emit({
+      type: EVENT_TYPES.SUPPLIER_TRANSACTION_UPDATED,
+      module: 'suppliers',
+      operation: 'update',
+      entityId: id,
+      data: { updates }
+    });
   },
 
   async delete(id: string): Promise<void> {
@@ -226,6 +236,22 @@ export const supplierTransactionApi = {
   },
 
   async replaceItems(transactionId: string, items: EditableTransactionItem[]): Promise<void> {
+    // Get existing items before deletion to track changes
+    const existingItems = await this.getTransactionItems(transactionId);
+    
+    // Track affected products and changes for inventory coordination
+    const affectedProducts = new Set<string>();
+    const inventoryChanges: any[] = [];
+    
+    // Analyze changes for inventory coordination
+    for (const existingItem of existingItems) {
+      affectedProducts.add(existingItem.product_id);
+    }
+    
+    for (const newItem of items) {
+      affectedProducts.add(newItem.product_id);
+    }
+
     // Delete existing items
     const { error: deleteError } = await (supabase as any)
       .from("supplier_transaction_items")
@@ -239,6 +265,17 @@ export const supplierTransactionApi = {
       const itemsToInsert = await Promise.all(
         items.map(async (item) => {
           const itemTotal = await this.calculateItemTotal(item);
+          
+          // Track inventory changes for product units
+          if (item.product_unit_ids?.length) {
+            inventoryChanges.push({
+              type: 'unit_update',
+              productId: item.product_id,
+              productUnitIds: item.product_unit_ids,
+              purchasePrice: item.unit_cost
+            });
+          }
+          
           return {
             transaction_id: transactionId,
             product_id: item.product_id,
@@ -259,7 +296,32 @@ export const supplierTransactionApi = {
         .insert(itemsToInsert);
       
       if (insertError) throw insertError;
+      
+      // Update individual product unit prices if needed
+      for (const item of items) {
+        if (item.product_unit_ids?.length) {
+          try {
+            for (const unitId of item.product_unit_ids) {
+              await ProductUnitManagementService.updateUnitPurchasePrice(unitId, item.unit_cost);
+            }
+          } catch (error) {
+            console.error('Error updating product unit purchase prices:', error);
+          }
+        }
+      }
     }
+
+    // Emit event for inventory coordination
+    await eventBus.emit({
+      type: EVENT_TYPES.SUPPLIER_TRANSACTION_ITEMS_REPLACED,
+      module: 'suppliers',
+      operation: 'update',
+      entityId: transactionId,
+      data: {
+        changes: inventoryChanges,
+        affectedProducts: Array.from(affectedProducts)
+      }
+    });
   },
 
   async getSummary(filters: TransactionSearchFilters = {}): Promise<TransactionSummary> {
