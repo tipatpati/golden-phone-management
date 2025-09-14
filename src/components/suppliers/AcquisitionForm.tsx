@@ -8,22 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Package, PackagePlus } from 'lucide-react';
+import { Package, PackagePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
-import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
-import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
-import { UniversalBarcodeManager } from '@/components/shared/UniversalBarcodeManager';
-import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
-import { AcquisitionPricingManager } from './components/AcquisitionPricingManager';
-import { UnitPricingTable } from './components/UnitPricingTable';
-import { useProductForm } from '@/components/inventory/forms/hooks/useProductForm';
-import { logger } from '@/utils/logger';
+import { NewProductItem } from './forms/NewProductItem';
+import { ExistingProductItem } from './forms/ExistingProductItem';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
-import { Code128GeneratorService } from '@/services/barcodes';
 
 const acquisitionSchema = z.object({
   supplierId: z.string().min(1, 'Supplier is required'),
@@ -40,12 +32,9 @@ interface AcquisitionFormProps {
 export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [productBarcodes, setProductBarcodes] = useState<Record<number, string>>({});
-  const [unitBarcodes, setUnitBarcodes] = useState<Record<number, Record<string, string>>>({});
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
-  const categories = [{ id: 1, name: 'Electronics' }, { id: 2, name: 'Accessories' }];
 
   // Extract unique brands and models for autocomplete
   const { uniqueBrands, uniqueModels } = useMemo(() => {
@@ -128,7 +117,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     ));
   }, []);
 
-  const updateUnitEntries = useCallback(async (index: number, unitEntries: UnitEntryFormType[]) => {
+  const updateUnitEntries = useCallback((index: number, unitEntries: UnitEntryFormType[]) => {
     setItems(prev => prev.map((item, i) => {
       if (i === index) {
         // Calculate average unit cost from individual unit entries
@@ -146,13 +135,6 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       }
       return item;
     }));
-    
-    // Removed immediate unit barcode generation to avoid invalid UUID in registry
-
-  }, []);
-
-  const handleBarcodeGenerated = useCallback((index: number, barcode: string) => {
-    setProductBarcodes(prev => ({ ...prev, [index]: barcode }));
   }, []);
 
   const calculateTotal = useCallback(() => {
@@ -274,229 +256,30 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                 </div>
               </div>
 
-              {items.map((item, index) => (
-                <Card key={index}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base">
-                      {item.createsNewProduct ? 'New Product' : 'Existing Product'} #{index + 1}
-                    </CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {item.createsNewProduct ? (
-                      <div className="space-y-6">
-                        {/* Product Form Fields */}
-                        <ProductFormFields
-                          formData={item.productData!}
-                          onFieldChange={(field, value) => updateProductData(index, { [field]: value })}
-                          getFieldError={() => undefined}
-                          uniqueBrands={uniqueBrands}
-                          uniqueModels={uniqueModels}
-                        />
-
-                        {/* Serial Number Toggle */}
-                        <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
-                          <Switch
-                            id={`has_serial_${index}`}
-                            checked={item.productData?.has_serial || false}
-                            onCheckedChange={(checked) => updateProductData(index, { has_serial: checked })}
-                          />
-                          <Label htmlFor={`has_serial_${index}`} className="text-sm font-medium">
-                            Product has serial numbers / IMEI
-                          </Label>
-                        </div>
-
-                        {/* Serial Number Management */}
-                        {item.productData?.has_serial && (
-                          <div className="space-y-4">
-                             <UnitEntryForm
-                               entries={item.unitEntries}
-                               setEntries={(entries) => updateUnitEntries(index, entries)}
-                               onStockChange={(stock) => updateProductData(index, { stock })}
-                               title="Unit Details (IMEI/SN + pricing)"
-                               showPricing={true}
-                               showPricingTemplates={true}
-                             />
-                            
-                            {/* Barcode Preview for Units */}
-                            <BarcodePreview
-                              unitEntries={item.unitEntries}
-                              hasSerial={item.productData.has_serial}
-                              productBarcode={productBarcodes[index]}
-                            />
-                            
-                            
-                            {/* UNIVERSAL: Unified Barcode Manager */}
-                            <UniversalBarcodeManager
-                              productBrand={item.productData?.brand || 'Unknown'}
-                              productModel={item.productData?.model || 'Unknown'}
-                              units={item.unitEntries}
-                              source="supplier"
-                              showPrintButton={true}
-                              onBarcodeGenerated={(serial, barcode) => {
-                                setUnitBarcodes(prev => ({
-                                  ...prev,
-                                  [index]: { ...prev[index], [serial]: barcode }
-                                }));
-                              }}
-                              onPrintCompleted={(printedUnits) => {
-                                logger.info('Printed labels for units', { printedUnits }, 'AcquisitionForm');
-                              }}
-                            />
-
-                            {/* Unit Pricing Table for individual unit prices */}
-                            <UnitPricingTable
-                              units={item.unitEntries}
-                              defaultUnitCost={item.unitCost || 0}
-                              onUnitsChange={(entries) => updateUnitEntries(index, entries)}
-                            />
-                          </div>
-                        )}
-
-                        {/* Advanced Pricing Management */}
-                        <AcquisitionPricingManager
-                          item={item}
-                          index={index}
-                          onUpdateItem={updateItem}
-                          onUpdateUnitEntries={updateUnitEntries}
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Product</Label>
-                          <Select 
-                            onValueChange={(value) => {
-                              const selectedProduct = products.find(p => p.id === value);
-                              updateItem(index, { 
-                                productId: value,
-                                // Reset unit entries when product changes
-                                unitEntries: [],
-                                quantity: selectedProduct?.has_serial ? 0 : 1
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select product" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.isArray(products) && products.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.brand} {product.model} {product.has_serial ? '(Serialized)' : ''}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Show unit management for serialized existing products */}
-                        {item.productId && (() => {
-                          const selectedProduct = products.find(p => p.id === item.productId);
-                          return selectedProduct?.has_serial ? (
-                            <div className="space-y-4">
-                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p className="text-sm text-blue-800">
-                                  ℹ️ This product uses serial numbers. Add specific units below.
-                                </p>
-                              </div>
-                              
-                              <UnitEntryForm
-                                entries={item.unitEntries}
-                                setEntries={(entries) => updateUnitEntries(index, entries)}
-                                onStockChange={(stock) => updateItem(index, { quantity: stock })}
-                                title="New Units to Add (IMEI/SN + pricing)"
-                                showPricing={true}
-                                showPricingTemplates={true}
-                              />
-                              
-                              {/* Barcode Preview for Units */}
-                              <BarcodePreview
-                                unitEntries={item.unitEntries}
-                                hasSerial={true}
-                                productBarcode={productBarcodes[index]}
-                              />
-                              
-                              {/* UNIVERSAL: Unified Barcode Manager for existing products */}
-                              <UniversalBarcodeManager
-                                productId={item.productId}
-                                productBrand={products.find(p => p.id === item.productId)?.brand || 'Unknown'}
-                                productModel={products.find(p => p.id === item.productId)?.model || 'Unknown'}
-                                units={item.unitEntries}
-                                source="supplier"
-                                showPrintButton={true}
-                                onBarcodeGenerated={(serial, barcode) => {
-                                  setUnitBarcodes(prev => ({
-                                    ...prev,
-                                    [index]: { ...prev[index], [serial]: barcode }
-                                  }));
-                                }}
-                                onPrintCompleted={(printedUnits) => {
-                                  logger.info('Printed labels for existing product units', { printedUnits }, 'AcquisitionForm');
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label>Quantity</Label>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={item.quantity}
-                                  onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value) || 1 })}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Unit Cost (€)</Label>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  value={item.unitCost}
-                                  onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Advanced Pricing Management for Existing Products */}
-                        {item.productId && (
-                          <div className="space-y-4">
-                            {/* Unit Pricing Table for existing products with individual unit prices */}
-                            {(() => {
-                              const selectedProduct = products.find(p => p.id === item.productId);
-                              return selectedProduct?.has_serial && item.unitEntries.length > 0 && (
-                                <UnitPricingTable
-                                  units={item.unitEntries}
-                                  defaultUnitCost={item.unitCost || 0}
-                                  onUnitsChange={(entries) => updateUnitEntries(index, entries)}
-                                />
-                              );
-                            })()}
-
-                            {/* Pricing Management */}
-                            <AcquisitionPricingManager
-                              item={item}
-                              index={index}
-                              onUpdateItem={updateItem}
-                              onUpdateUnitEntries={updateUnitEntries}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                  </CardContent>
-                </Card>
-              ))}
+              {items.map((item, index) => 
+                item.createsNewProduct ? (
+                  <NewProductItem
+                    key={index}
+                    item={item}
+                    index={index}
+                    uniqueBrands={uniqueBrands}
+                    uniqueModels={uniqueModels}
+                    onRemove={() => removeItem(index)}
+                    onUpdateProductData={(productData) => updateProductData(index, productData)}
+                    onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
+                  />
+                ) : (
+                  <ExistingProductItem
+                    key={index}
+                    item={item}
+                    index={index}
+                    products={products}
+                    onRemove={() => removeItem(index)}
+                    onUpdateItem={(updates) => updateItem(index, updates)}
+                    onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
+                  />
+                )
+              )}
 
               {items.length === 0 && (
                 <Card>
