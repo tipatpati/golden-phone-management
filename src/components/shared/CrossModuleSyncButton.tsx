@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { UnifiedProductCoordinator } from "@/services/shared/UnifiedProductCoordinator";
+import { SupplierInventoryIntegrationService } from "@/services/suppliers/SupplierInventoryIntegrationService";
 import { toast } from "@/components/ui/sonner";
 
 interface CrossModuleSyncButtonProps {
@@ -20,10 +21,15 @@ export function CrossModuleSyncButton({
     try {
       console.log(`🔄 Requesting sync from ${source} module`);
       
-      // Request immediate synchronization
-      await UnifiedProductCoordinator.requestSync();
-      
-      toast.success("Sync requested - data will refresh automatically");
+      if (source === 'supplier') {
+        // For supplier module, also sync transactions to inventory
+        await SupplierInventoryIntegrationService.syncAllCompletedTransactions();
+        toast.success("Supplier transactions synced to inventory");
+      } else {
+        // Request immediate synchronization
+        await UnifiedProductCoordinator.requestSync();
+        toast.success("Sync requested - data will refresh automatically");
+      }
     } catch (error) {
       console.error("Failed to request sync:", error);
       toast.error("Failed to request sync");
