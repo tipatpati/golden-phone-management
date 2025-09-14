@@ -36,33 +36,33 @@ export class EmployeeCreationService {
   static async createEmployee(formData: EmployeeFormData): Promise<{ employee: any; tempPassword: string }> {
     // Generate a temporary password if not provided
     const tempPassword = formData.password || generateRandomPassword();
-    logger.info("Creating employee with auth user", {}, 'EmployeeCreationService');
+    logger.info("Creating employee using secure edge function", {}, 'EmployeeCreationService');
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
+      // Call the secure edge function to create auth user, profile, and role
+      const { data: authResult, error: authError } = await supabase.functions.invoke('create-employee-auth', {
+        body: {
+          email: formData.email,
+          password: tempPassword,
+          role: formData.role,
           first_name: formData.first_name,
-          last_name: formData.last_name,
-          role: formData.role
+          last_name: formData.last_name
         }
       });
 
       if (authError) {
-        logger.error("Failed to create auth user", { error: authError.message }, 'EmployeeCreationService');
+        logger.error("Failed to create auth user via edge function", { error: authError.message }, 'EmployeeCreationService');
         throw new Error(`Errore nella creazione dell'utente: ${authError.message}`);
       }
 
-      if (!authData.user) {
-        const error = "Nessun utente restituito dal servizio di autenticazione";
-        logger.error("No user returned from auth service", {}, 'EmployeeCreationService');
+      if (!authResult?.success || !authResult?.user_id) {
+        const error = authResult?.error || "Nessun utente restituito dal servizio di autenticazione";
+        logger.error("Edge function failed to create user", { error }, 'EmployeeCreationService');
         throw new Error(error);
       }
 
-      const userId = authData.user.id;
-      logger.info('Auth user created, creating employee record', { userId }, 'EmployeeCreationService');
+      const userId = authResult.user_id;
+      logger.info('Auth user created via edge function, creating employee record', { userId }, 'EmployeeCreationService');
 
       // Create employee record
       const { data: employee, error: employeeError } = await supabase
@@ -84,38 +84,9 @@ export class EmployeeCreationService {
 
       if (employeeError) {
         logger.error("Failed to create employee record", { error: employeeError.message }, 'EmployeeCreationService');
-        // Clean up auth user if employee creation fails
-        await supabase.auth.admin.deleteUser(userId);
+        // Note: We cannot easily clean up the auth user created by edge function
+        // The edge function handles its own cleanup on failure
         throw new Error(`Errore nella creazione del dipendente: ${employeeError.message}`);
-      }
-
-      // Create profile and user role
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userId,
-          username: `${formData.first_name.toLowerCase()}.${formData.last_name.toLowerCase()}`,
-          role: formData.role
-        });
-
-      if (profileError) {
-        logger.error("Failed to create profile", { error: profileError.message }, 'EmployeeCreationService');
-        // Clean up created records if profile creation fails
-        await supabase.from('employees').delete().eq('profile_id', userId);
-        await supabase.auth.admin.deleteUser(userId);
-        throw new Error(`Errore nella creazione del profilo: ${profileError.message}`);
-      }
-
-      // Add role to user_roles table 
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role: formData.role
-        });
-
-      if (roleError) {
-        logger.warn("Failed to add user role", { error: roleError.message }, 'EmployeeCreationService');
       }
 
       logger.info("Employee created successfully", { employeeId: employee.id }, 'EmployeeCreationService');
