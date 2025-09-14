@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Loader2, Edit3 } from "lucide-react";
+import { Plus, Loader2, Edit3, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { 
@@ -26,10 +26,10 @@ import {
   useSupplierTransactionItems 
 } from "@/services/suppliers/SupplierTransactionService";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
-import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
 import { useToast } from "@/hooks/use-toast";
 import { useSuppliers } from "@/services/suppliers/SuppliersReactQueryService";
-import type { SupplierTransaction, EditableTransactionItem } from "@/services/suppliers/types";
+import { EditableTransactionItem } from "./forms/EditableTransactionItem";
+import type { SupplierTransaction, EditableTransactionItem as EditableTransactionItemType } from "@/services/suppliers/types";
 import type { ProductUnit, UnitEntryForm as UnitEntryFormType } from "@/services/inventory/types";
 
 interface EditTransactionDialogProps {
@@ -57,7 +57,7 @@ export function EditTransactionDialogV2({
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState("");
   const [supplierId, setSupplierId] = useState("");
-  const [items, setItems] = useState<EditableTransactionItem[]>([
+  const [items, setItems] = useState<EditableTransactionItemType[]>([
     { product_id: "", quantity: 1, unit_cost: 0, unit_barcodes: [], product_unit_ids: [] },
   ]);
   const [productUnits, setProductUnits] = useState<Record<string, ProductUnit[]>>({});
@@ -79,7 +79,7 @@ export function EditTransactionDialogV2({
   useEffect(() => {
     const loadItemsAndUnits = async () => {
       if (existingItems && existingItems.length > 0 && products.length > 0) {
-        const mappedItems: EditableTransactionItem[] = existingItems.map(item => ({
+        const mappedItems: EditableTransactionItemType[] = existingItems.map(item => ({
           id: item.id,
           product_id: item.product_id,
           quantity: item.quantity,
@@ -238,10 +238,35 @@ export function EditTransactionDialogV2({
   const removeItem = (index: number) => {
     if (items.length > 1) {
       setItems((prev) => prev.filter((_, i) => i !== index));
+      // Clean up associated data
+      setItemUnitEntries(prev => {
+        const newEntries = { ...prev };
+        delete newEntries[index];
+        // Reindex remaining entries
+        const reindexed: Record<number, UnitEntryFormType[]> = {};
+        Object.entries(newEntries).forEach(([key, value]) => {
+          const oldIndex = parseInt(key);
+          const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+          reindexed[newIndex] = value;
+        });
+        return reindexed;
+      });
+      setEditingUnits(prev => {
+        const newEditing = { ...prev };
+        delete newEditing[index];
+        // Reindex remaining entries
+        const reindexed: Record<number, boolean> = {};
+        Object.entries(newEditing).forEach(([key, value]) => {
+          const oldIndex = parseInt(key);
+          const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+          reindexed[newIndex] = value;
+        });
+        return reindexed;
+      });
     }
   };
 
-  const updateItem = (index: number, field: keyof EditableTransactionItem, value: any) => {
+  const updateItem = (index: number, field: keyof EditableTransactionItemType, value: any) => {
     setItems((prev) => {
       const copy = [...prev];
       (copy[index] as any)[field] = value;
@@ -290,12 +315,6 @@ export function EditTransactionDialogV2({
     }
   };
 
-  const parseBarcodes = (text: string): string[] =>
-    text
-      .split(/\n|,/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-
   const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
     setItemUnitEntries(prev => ({
       ...prev,
@@ -310,7 +329,7 @@ export function EditTransactionDialogV2({
     }));
   };
 
-  const calculateItemTotal = (item: EditableTransactionItem, index: number) => {
+  const calculateItemTotal = (item: EditableTransactionItemType, index: number) => {
     const product = products.find(p => p.id === item.product_id);
     if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products, fallback to default if no price
@@ -430,20 +449,20 @@ export function EditTransactionDialogV2({
               type,
               status,
               notes,
-              transaction_date: date,
-              total_amount: total,
-            },
+              transaction_date: new Date(date).toISOString(),
+              total_amount: total
+            }
           });
           transactionUpdated = true;
         } catch (transactionError) {
           console.error("Transaction update failed:", transactionError);
-          // Continue with items update even if transaction update fails
+          throw new Error(`Failed to update transaction: ${transactionError}`);
         }
       }
 
-      // Step 3: Replace transaction items (admin+ can update per RLS)
+      // Step 3: Update transaction items (available to all authorized users)
       let itemsUpdated = false;
-      if (userRole === 'super_admin' || userRole === 'admin') {
+      if (userRole === 'super_admin' || userRole === 'admin' || userRole === 'manager' || userRole === 'inventory_manager') {
         try {
           await replaceItems.mutateAsync({
             transactionId: transaction.id,
@@ -506,241 +525,151 @@ export function EditTransactionDialogV2({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Transaction Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Transaction Details</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier</Label>
-                <Select value={supplierId} onValueChange={setSupplierId} disabled={userRole !== 'super_admin'}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name} - {supplier.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-6">
+            {/* Transaction Header */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit3 className="w-5 h-5" />
+                  Transaction Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="supplier">Supplier</Label>
+                    <Select value={supplierId} onValueChange={setSupplierId}>
+                      <SelectTrigger id="supplier">
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
-                <Select value={type} onValueChange={(value: SupplierTransaction["type"]) => setType(value)} disabled={userRole !== 'super_admin'}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="purchase">Purchase</SelectItem>
-                    <SelectItem value="return">Return</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="type">Type</Label>
+                    <Select value={type} onValueChange={(value: any) => setType(value)}>
+                      <SelectTrigger id="type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="purchase">Purchase</SelectItem>
+                        <SelectItem value="payment">Payment</SelectItem>
+                        <SelectItem value="return">Return</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={status} onValueChange={(value: SupplierTransaction["status"]) => setStatus(value)} disabled={userRole !== 'super_admin'}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={status} onValueChange={(value: any) => setStatus(value)}>
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  disabled={userRole !== 'super_admin'}
-                />
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="date">Transaction Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="notes">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Optional notes..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional notes..."
-                  disabled={userRole !== 'super_admin'}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Transaction Items */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Transaction Items</CardTitle>
-              {(userRole === 'super_admin' || userRole === 'admin') && (
-                <Button type="button" onClick={addItem} size="sm">
+            {/* Transaction Items */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Transaction Items</h3>
+                <Button type="button" variant="outline" onClick={addItem}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Item
                 </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {items.map((item, index) => {
-                const product = products.find(p => p.id === item.product_id);
-                const isSerializedProduct = product?.has_serial;
-                const unitEntries = itemUnitEntries[index] || [];
-                const isEditingUnitsForItem = editingUnits[index];
-                
-                return (
-                  <Card key={index} className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Product</Label>
-                        <Select 
-                          value={item.product_id} 
-                          onValueChange={(value) => updateItem(index, "product_id", value)}
-                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select product" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.brand} {product.model}
-                                {product.has_serial && " (Serialized)"}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Quantity</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 1)}
-                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Unit Cost (€)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={item.unit_cost}
-                          onChange={(e) => updateItem(index, "unit_cost", parseFloat(e.target.value) || 0)}
-                          disabled={userRole !== 'super_admin' && userRole !== 'admin'}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Total</Label>
-                        <div className="p-2 bg-muted rounded text-sm font-medium">
-                          €{calculateItemTotal(item, index).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Serialized Product Unit Management */}
-                    {isSerializedProduct && (userRole === 'super_admin' || userRole === 'admin') && (
-                      <div className="space-y-4 border-t pt-4">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm font-medium">Unit Details (Serial Numbers)</Label>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleUnitEditing(index)}
-                          >
-                            <Edit3 className="w-4 h-4 mr-2" />
-                            {isEditingUnitsForItem ? 'Close Editor' : 'Edit Units'}
-                          </Button>
-                        </div>
-                        
-                        {isEditingUnitsForItem ? (
-                          <UnitEntryForm
-                            entries={unitEntries}
-                            setEntries={(entries) => updateUnitEntries(index, entries)}
-                            showPricing={true}
-                            title={`Units for ${product.brand} ${product.model}`}
-                          />
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                            {unitEntries.slice(0, item.quantity).map((entry, entryIndex) => (
-                              <div key={entryIndex} className="p-2 bg-muted/50 rounded text-sm">
-                                <div className="font-medium">{entry.serial || `Unit ${entryIndex + 1}`}</div>
-                                {entry.storage && <div className="text-muted-foreground">{entry.storage}GB</div>}
-                                {entry.price && <div className="text-muted-foreground">€{entry.price}</div>}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Non-serialized Product Barcode Management */}
-                    {!isSerializedProduct && (userRole === 'super_admin' || userRole === 'admin') && (
-                      <div className="space-y-2 border-t pt-4">
-                        <Label>Unit Barcodes (one per line)</Label>
-                        <Textarea
-                          value={(item.unit_barcodes || []).join('\n')}
-                          onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
-                          placeholder="Enter barcodes, one per line..."
-                          rows={3}
-                        />
-                      </div>
-                    )}
-
-                    {(userRole === 'super_admin' || userRole === 'admin') && items.length > 1 && (
-                      <div className="flex justify-end pt-2">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeItem(index)}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Remove
-                        </Button>
-                      </div>
-                    )}
-                  </Card>
-                );
-              })}
-
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="text-lg font-semibold">
-                  Total: €{total.toFixed(2)}
-                </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Submit Buttons */}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={updateTx.isPending || replaceItems.isPending}
-            >
-              {(updateTx.isPending || replaceItems.isPending) && (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              )}
-              Update Transaction
-            </Button>
+              <div className="space-y-4">
+                {items.map((item, index) => (
+                  <EditableTransactionItem
+                    key={index}
+                    item={item}
+                    index={index}
+                    products={products}
+                    unitEntries={itemUnitEntries[index] || []}
+                    editingUnits={editingUnits[index] || false}
+                    canDelete={items.length > 1}
+                    onUpdateItem={updateItem}
+                    onRemoveItem={removeItem}
+                    onUpdateUnitEntries={updateUnitEntries}
+                    onToggleUnitEditing={toggleUnitEditing}
+                    calculateItemTotal={calculateItemTotal}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Transaction Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>Number of Items:</span>
+                    <span>{items.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Total Quantity:</span>
+                    <span>{items.reduce((sum, item) => sum + item.quantity, 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                    <span>Total Amount:</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateTx.isPending || replaceItems.isPending}>
+                {(updateTx.isPending || replaceItems.isPending) && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                )}
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
