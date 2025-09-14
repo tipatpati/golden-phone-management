@@ -49,12 +49,20 @@ export function EditableTransactionItem({
     addPendingChanges,
     clearPendingChanges,
     applyPendingChanges,
-    getPendingChangeForUnit
+    getPendingChangeForUnit,
+    calculateTotalWithPending
   } = usePendingPricingChanges();
   
   const selectedProduct = products.find(p => p.id === item.product_id);
-  const itemTotal = calculateItemTotal(item, index);
   const hasIndividualPricing = selectedProduct?.has_serial && unitEntries?.length > 0;
+  
+  // Calculate totals with pending changes consideration
+  const baseTotal = calculateItemTotal(item, index);
+  const totalWithPending = hasIndividualPricing && hasPendingChanges 
+    ? calculateTotalWithPending(unitEntries, item.unit_cost)
+    : baseTotal;
+  
+  const itemTotal = totalWithPending;
 
   const handleUpdateBarcodes = (barcodes: string[]) => {
     onUpdateItem(index, 'unit_barcodes', barcodes);
@@ -119,9 +127,22 @@ export function EditableTransactionItem({
           </CardTitle>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">
-                Total: ${itemTotal.toFixed(2)}
-              </span>
+              <div className="text-sm">
+                {hasPendingChanges && hasIndividualPricing ? (
+                  <div className="flex flex-col items-end">
+                    <span className="text-muted-foreground line-through">
+                      ${baseTotal.toFixed(2)}
+                    </span>
+                    <span className="font-medium text-orange-600">
+                      ${itemTotal.toFixed(2)} (pending)
+                    </span>
+                  </div>
+                ) : (
+                  <span className="font-medium">
+                    Total: ${itemTotal.toFixed(2)}
+                  </span>
+                )}
+              </div>
               {hasIndividualPricing && (
                 <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
                   Individual Pricing
@@ -282,11 +303,22 @@ export function EditableTransactionItem({
                   </div>
                 )}
 
-                <div className="space-y-2">
+                  <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">Item Total:</span>
                     <div className="text-right">
-                      <div className="font-semibold">${itemTotal.toFixed(2)}</div>
+                      {hasPendingChanges && hasIndividualPricing ? (
+                        <div>
+                          <div className="text-muted-foreground line-through text-xs">
+                            Current: ${baseTotal.toFixed(2)}
+                          </div>
+                          <div className="font-semibold text-orange-600">
+                            Pending: ${itemTotal.toFixed(2)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="font-semibold">${itemTotal.toFixed(2)}</div>
+                      )}
                       {hasIndividualPricing && (
                         <div className="text-muted-foreground text-xs">
                           ({unitEntries.length} units × individual pricing)

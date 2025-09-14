@@ -45,11 +45,11 @@ export function StoragePricingTemplateSelector({
     try {
       const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units, undefined, forceApply);
       
-      if (onPreviewPricing && !forceApply) {
-        // Use preview mode - don't apply immediately
+      if (onPreviewPricing) {
+        // Always use preview mode when preview handler is available
         onPreviewPricing(units, result.updatedUnits, selectedTemplate?.name);
       } else {
-        // Apply immediately (force apply or no preview handler)
+        // Apply immediately only when no preview handler is available
         onUnitsChange(result.updatedUnits);
       }
       
@@ -173,7 +173,7 @@ export function StoragePricingTemplateSelector({
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            {onPreviewPricing && !forceApply ? 'Preview Template' : (forceApply ? 'Force Apply Template' : 'Apply Defaults')}
+            {onPreviewPricing ? 'Preview Template' : 'Apply Template'}
           </Button>
         </div>
 
@@ -181,10 +181,10 @@ export function StoragePricingTemplateSelector({
         {lastAppliedResult && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="text-sm text-green-800">
-              ✓ {forceApply ? 'Applied template pricing to' : 'Applied default pricing to'} {lastAppliedResult.appliedCount} units
+              ✓ Applied template pricing to {lastAppliedResult.appliedCount} units
               {lastAppliedResult.skippedCount > 0 && (
                 <span className="text-yellow-700">
-                  {', '}skipped {lastAppliedResult.skippedCount} units {forceApply ? '(no matching storage rule)' : '(already had values)'}
+                  {', '}skipped {lastAppliedResult.skippedCount} units ({forceApply ? 'no matching storage rule' : 'already had values'})
                 </span>
               )}
             </div>

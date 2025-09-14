@@ -57,6 +57,26 @@ export function usePendingPricingChanges() {
     return pendingChanges.find(c => c.unitIndex === unitIndex);
   }, [pendingChanges]);
 
+  const calculateTotalWithPending = useCallback((
+    units: UnitEntryForm[],
+    unitCost: number
+  ) => {
+    if (pendingChanges.length === 0) {
+      // No pending changes, calculate total normally
+      const totalFromPrices = units.reduce((sum, unit, index) => {
+        return sum + (unit.price || unitCost);
+      }, 0);
+      return totalFromPrices > 0 ? totalFromPrices : units.length * unitCost;
+    }
+
+    // Calculate total with pending changes applied
+    return units.reduce((sum, unit, index) => {
+      const pendingChange = pendingChanges.find(c => c.unitIndex === index);
+      const effectivePrice = pendingChange?.proposedUnit.price || unit.price || unitCost;
+      return sum + effectivePrice;
+    }, 0);
+  }, [pendingChanges]);
+
   return {
     pendingChanges,
     hasPendingChanges,
@@ -65,5 +85,6 @@ export function usePendingPricingChanges() {
     clearPendingChanges,
     applyPendingChanges,
     getPendingChangeForUnit,
+    calculateTotalWithPending,
   };
 }
