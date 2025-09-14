@@ -17,6 +17,8 @@ import { ProductFormFields } from '@/components/inventory/forms/ProductFormField
 import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
 import { UniversalBarcodeManager } from '@/components/shared/UniversalBarcodeManager';
 import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
+import { AcquisitionPricingManager } from './components/AcquisitionPricingManager';
+import { UnitPricingTable } from './components/UnitPricingTable';
 import { useProductForm } from '@/components/inventory/forms/hooks/useProductForm';
 import { logger } from '@/utils/logger';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
@@ -154,7 +156,18 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   }, []);
 
   const calculateTotal = useCallback(() => {
-    return items.reduce((total, item) => total + (item.unitCost * item.quantity), 0);
+    return items.reduce((total, item) => {
+      // Check if item has individual unit pricing
+      const hasIndividualPricing = item.unitEntries.some(entry => entry.price && entry.price > 0);
+      
+      if (hasIndividualPricing) {
+        // Sum individual unit prices
+        return total + item.unitEntries.reduce((sum, entry) => sum + (entry.price || 0), 0);
+      } else {
+        // Use bulk pricing
+        return total + (item.unitCost * item.quantity);
+      }
+    }, 0);
   }, [items]);
 
   const onSubmit = async (data: AcquisitionFormData) => {
@@ -337,40 +350,23 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                                 logger.info('Printed labels for units', { printedUnits }, 'AcquisitionForm');
                               }}
                             />
+
+                            {/* Unit Pricing Table for individual unit prices */}
+                            <UnitPricingTable
+                              units={item.unitEntries}
+                              defaultUnitCost={item.unitCost || 0}
+                              onUnitsChange={(entries) => updateUnitEntries(index, entries)}
+                            />
                           </div>
                         )}
 
-                          {/* Unit Cost for Acquisition */}
-                          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label>Unit Cost (€)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={item.unitCost}
-                                  onChange={(e) => {
-                                    const unitCost = parseFloat(e.target.value) || 0;
-                                    updateItem(index, { unitCost });
-                                    // CRITICAL FIX: Set the product price to match unit cost for validation
-                                    updateProductData(index, { price: unitCost });
-                                  }}
-                                  placeholder="0.00"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Total Cost (€)</Label>
-                                <Input
-                                  type="number"
-                                  value={(item.unitCost * item.quantity).toFixed(2)}
-                                  readOnly
-                                  className="bg-muted"
-                                />
-                              </div>
-                            </div>
-                          </div>
+                        {/* Advanced Pricing Management */}
+                        <AcquisitionPricingManager
+                          item={item}
+                          index={index}
+                          onUpdateItem={updateItem}
+                          onUpdateUnitEntries={updateUnitEntries}
+                        />
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -471,35 +467,33 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                           );
                         })()}
 
-                        {/* Unit Cost for serialized products */}
-                        {item.productId && (() => {
-                          const selectedProduct = products.find(p => p.id === item.productId);
-                          return selectedProduct?.has_serial && (
-                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                              <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Acquisition Pricing</h4>
-                              <div className="space-y-2">
-                                <Label>Unit Cost (€)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={item.unitCost}
-                                  onChange={(e) => updateItem(index, { unitCost: parseFloat(e.target.value) || 0 })}
-                                  placeholder="0.00"
+                        {/* Advanced Pricing Management for Existing Products */}
+                        {item.productId && (
+                          <div className="space-y-4">
+                            {/* Unit Pricing Table for existing products with individual unit prices */}
+                            {(() => {
+                              const selectedProduct = products.find(p => p.id === item.productId);
+                              return selectedProduct?.has_serial && item.unitEntries.length > 0 && (
+                                <UnitPricingTable
+                                  units={item.unitEntries}
+                                  defaultUnitCost={item.unitCost || 0}
+                                  onUnitsChange={(entries) => updateUnitEntries(index, entries)}
                                 />
-                                <p className="text-xs text-yellow-700">
-                                  This cost will be applied to all units if not specified individually
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })()}
+                              );
+                            })()}
+
+                            {/* Pricing Management */}
+                            <AcquisitionPricingManager
+                              item={item}
+                              index={index}
+                              onUpdateItem={updateItem}
+                              onUpdateUnitEntries={updateUnitEntries}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    <div className="text-right text-sm text-muted-foreground">
-                      Total: ${(item.unitCost * item.quantity).toFixed(2)}
-                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -517,7 +511,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
             <div className="flex items-center justify-between pt-4 border-t">
               <div className="text-lg font-semibold">
-                Total Amount: ${calculateTotal().toFixed(2)}
+                Total Amount: €{calculateTotal().toFixed(2)}
               </div>
               <Button 
                 type="submit" 
