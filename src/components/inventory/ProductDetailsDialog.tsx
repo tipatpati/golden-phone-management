@@ -29,6 +29,7 @@ import { ProductUnitManagementService } from "@/services/shared/ProductUnitManag
 import type { ProductUnit } from "@/services/inventory/types";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 import { ProductHistoryView } from "./ProductHistoryView";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Product {
   id: string;
@@ -69,15 +70,43 @@ export function ProductDetailsDialog({
   const [selectedUnit, setSelectedUnit] = useState<ProductUnit | null>(null);
   const [unitPricingOpen, setUnitPricingOpen] = useState(false);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(product);
+
+  // Refresh product data when dialog opens to get latest pricing
+  useEffect(() => {
+    const refreshProductData = async () => {
+      if (!product || !open) return;
+      
+      try {
+        const { data: freshProduct, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', product.id)
+          .single();
+
+        if (error) {
+          console.error('Error refreshing product data:', error);
+          setCurrentProduct(product); // Fallback to original
+        } else {
+          setCurrentProduct(freshProduct);
+        }
+      } catch (error) {
+        console.error('Error refreshing product data:', error);
+        setCurrentProduct(product); // Fallback to original
+      }
+    };
+
+    refreshProductData();
+  }, [product, open]);
 
   // Fetch product units when dialog opens
   useEffect(() => {
     const fetchUnits = async () => {
-      if (!product || !open || !product.has_serial) return;
+      if (!currentProduct || !open || !currentProduct.has_serial) return;
       
       setIsLoadingUnits(true);
       try {
-        const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        const units = await ProductUnitManagementService.getUnitsForProduct(currentProduct.id);
         setProductUnits(units);
       } catch (error) {
         console.error('Error fetching product units:', error);
@@ -87,26 +116,41 @@ export function ProductDetailsDialog({
     };
 
     fetchUnits();
-  }, [product, open]);
+  }, [currentProduct, open]);
 
-  const handleUnitPricingSuccess = () => {
-    // Refresh units after pricing update
-    if (product) {
-      ProductUnitManagementService.getUnitsForProduct(product.id)
-        .then(setProductUnits)
-        .catch(console.error);
+  const handleUnitPricingSuccess = async () => {
+    // Refresh both units and product data after pricing update
+    if (currentProduct) {
+      try {
+        // Refresh units
+        const units = await ProductUnitManagementService.getUnitsForProduct(currentProduct.id);
+        setProductUnits(units);
+        
+        // Refresh product data to get updated min/max prices
+        const { data: freshProduct, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', currentProduct.id)
+          .single();
+
+        if (!error) {
+          setCurrentProduct(freshProduct);
+        }
+      } catch (error) {
+        console.error('Error refreshing data after pricing update:', error);
+      }
     }
   };
 
-  if (!product) return null;
+  if (!currentProduct) return null;
 
-  const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-  const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  const cleanBrand = currentProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+  const cleanModel = currentProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
   
   // Get storage info from first serial if available
   let storage;
-  if (product.serial_numbers && product.serial_numbers.length > 0) {
-    const parsed = parseSerialString(product.serial_numbers[0]);
+  if (currentProduct.serial_numbers && currentProduct.serial_numbers.length > 0) {
+    const parsed = parseSerialString(currentProduct.serial_numbers[0]);
     storage = parsed.storage;
   }
   
@@ -137,7 +181,7 @@ export function ProductDetailsDialog({
     }
   };
 
-  const stockStatus = getStockStatus(product.stock, product.threshold);
+  const stockStatus = getStockStatus(currentProduct.stock, currentProduct.threshold);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -171,30 +215,38 @@ export function ProductDetailsDialog({
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <CardTitle className="text-xl">{productName}</CardTitle>
-                    {product.year && (
+                    {currentProduct.year && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        {product.year}
+                        {currentProduct.year}
                       </div>
                     )}
-                    {product.category && (
-                      <Badge variant="outline" className={getCategoryBadgeColor(product.category.name)}>
-                        {product.category.name}
+                    {currentProduct.category && (
+                      <Badge variant="outline" className={getCategoryBadgeColor(currentProduct.category.name)}>
+                        {currentProduct.category.name}
                       </Badge>
                     )}
                   </div>
                   <div className="text-right space-y-2">
                     <div className="text-2xl font-bold text-primary">
-                      {product.price ? formatCurrency(product.price) : 'Unit-specific'}
+                      {currentProduct.has_serial && currentProduct.min_price && currentProduct.max_price && 
+                       currentProduct.min_price !== currentProduct.max_price ? 
+                        `${formatCurrency(currentProduct.min_price)} - ${formatCurrency(currentProduct.max_price)}` :
+                       currentProduct.has_serial && currentProduct.min_price ? 
+                        formatCurrency(currentProduct.min_price) :
+                       currentProduct.price ? 
+                        formatCurrency(currentProduct.price) : 
+                        'Unit-specific'
+                      }
                     </div>
                     <Badge variant="outline" className={stockStatus.color}>
                       {stockStatus.label}
                     </Badge>
                   </div>
                 </div>
-                {product.description && (
+                {currentProduct.description && (
                   <CardDescription className="mt-2">
-                    {product.description}
+                    {currentProduct.description}
                   </CardDescription>
                 )}
               </CardHeader>
@@ -212,13 +264,13 @@ export function ProductDetailsDialog({
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Current Stock:</span>
-                    <span className="font-medium">{product.stock}</span>
+                    <span className="font-medium">{currentProduct.stock}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Threshold:</span>
-                    <span className="font-medium">{product.threshold}</span>
+                    <span className="font-medium">{currentProduct.threshold}</span>
                   </div>
-                  {product.stock <= product.threshold && product.stock > 0 && (
+                  {currentProduct.stock <= currentProduct.threshold && currentProduct.stock > 0 && (
                     <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 p-2 rounded">
                       <AlertTriangle className="h-3 w-3" />
                       Stock is below threshold
@@ -238,23 +290,23 @@ export function ProductDetailsDialog({
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Default Price:</span>
                     <span className="font-medium">
-                      {product.price ? formatCurrency(product.price) : 'Not set'}
+                      {currentProduct.price ? formatCurrency(currentProduct.price) : 'Not set'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Default Min Price:</span>
+                    <span className="text-sm text-muted-foreground">Min Price:</span>
                     <span className="font-medium">
-                      {product.min_price ? formatCurrency(product.min_price) : 'Not set'}
+                      {currentProduct.min_price ? formatCurrency(currentProduct.min_price) : 'Not set'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Default Max Price:</span>
+                    <span className="text-sm text-muted-foreground">Max Price:</span>
                     <span className="font-medium">
-                      {product.max_price ? formatCurrency(product.max_price) : 'Not set'}
+                      {currentProduct.max_price ? formatCurrency(currentProduct.max_price) : 'Not set'}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-2 p-2 bg-blue-50 rounded">
-                    💰 Pricing is now managed at the unit level. These are default values for new units.
+                    💰 These prices are automatically calculated from individual unit prices.
                   </div>
                 </CardContent>
               </Card>
@@ -266,37 +318,37 @@ export function ProductDetailsDialog({
                 <CardTitle className="text-sm font-medium">Additional Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {product.barcode && (
+                {currentProduct.barcode && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Barcode className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">Barcode:</span>
                     </div>
-                    <span className="font-mono text-sm">{product.barcode}</span>
+                    <span className="font-mono text-sm">{currentProduct.barcode}</span>
                   </div>
                 )}
                 
-                {product.supplier && (
+                {currentProduct.supplier && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">Supplier:</span>
                     </div>
-                    <span className="text-sm">{product.supplier}</span>
+                    <span className="text-sm">{currentProduct.supplier}</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Serial Tracking:</span>
-                  <Badge variant={product.has_serial ? "default" : "secondary"}>
-                    {product.has_serial ? "Enabled" : "Disabled"}
+                  <Badge variant={currentProduct.has_serial ? "default" : "secondary"}>
+                    {currentProduct.has_serial ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
               </CardContent>
             </Card>
 
             {/* Product Units - Enhanced Details */}
-            {product.has_serial && (
+            {currentProduct.has_serial && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium">
@@ -409,13 +461,13 @@ export function ProductDetailsDialog({
                         </div>
                       ))}
                     </div>
-                  ) : product.serial_numbers && product.serial_numbers.length > 0 ? (
+                  ) : currentProduct.serial_numbers && currentProduct.serial_numbers.length > 0 ? (
                     <div className="space-y-2">
                       <div className="text-sm text-muted-foreground mb-3">
-                        Found {product.serial_numbers.length} serial numbers but no detailed unit records:
+                        Found {currentProduct.serial_numbers.length} serial numbers but no detailed unit records:
                       </div>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {product.serial_numbers.map((serial, index) => {
+                        {currentProduct.serial_numbers.map((serial, index) => {
                           const parsed = parseSerialString(serial);
                           return (
                             <div
@@ -469,7 +521,7 @@ export function ProductDetailsDialog({
 
           <TabsContent value="history">
             <ProductHistoryView 
-              productId={product.id}
+              productId={currentProduct.id}
               productUnits={productUnits.map(u => ({ id: u.id, serial_number: u.serial_number }))}
             />
           </TabsContent>
