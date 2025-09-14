@@ -89,5 +89,10 @@ export const roleUtils = {
     }
 
     return { isValid: true };
+  },
+
+  // Check if user can view purchase prices (super_admin only)
+  canViewPurchasePrice(userRole: UserRole | null): boolean {
+    return userRole === 'super_admin';
   }
 };

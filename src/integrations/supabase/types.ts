@@ -1444,6 +1444,88 @@ export type Database = {
         }
         Relationships: []
       }
+      product_units_limited: {
+        Row: {
+          barcode: string | null
+          battery_level: number | null
+          color: string | null
+          created_at: string | null
+          id: string | null
+          max_price: number | null
+          min_price: number | null
+          price: number | null
+          product_id: string | null
+          purchase_date: string | null
+          purchase_price: number | null
+          ram: number | null
+          serial_number: string | null
+          status: string | null
+          storage: number | null
+          supplier_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          battery_level?: number | null
+          color?: string | null
+          created_at?: string | null
+          id?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          price?: number | null
+          product_id?: string | null
+          purchase_date?: string | null
+          purchase_price?: never
+          ram?: number | null
+          serial_number?: string | null
+          status?: string | null
+          storage?: number | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          battery_level?: number | null
+          color?: string | null
+          created_at?: string | null
+          id?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          price?: number | null
+          product_id?: string | null
+          purchase_date?: string | null
+          purchase_price?: never
+          ram?: number | null
+          serial_number?: string | null
+          status?: string | null
+          storage?: number | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_units_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_effective_stock"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_units_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_units_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_add_user_role: {
@@ -1474,6 +1556,10 @@ export type Database = {
       calculate_employee_bonuses: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      can_view_purchase_price: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       can_view_salary: {
         Args: { target_employee_id: string }
@@ -1619,6 +1705,10 @@ export type Database = {
       is_ip_blocked: {
         Args: { client_ip: unknown }
         Returns: boolean
+      }
+      log_purchase_price_access_attempt: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       sanitize_and_validate_input: {
         Args: { input_text: string; input_type: string; max_length?: number }

@@ -7,6 +7,7 @@ import type { ProductUnit } from "@/services/inventory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { logger } from "@/utils/logger";
+import { PurchasePriceGuard } from "@/components/common/PurchasePriceGuard";
 
 interface UnitPricingDialogProps {
   unit: ProductUnit | null;
@@ -125,21 +126,23 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="price">Base Purchase Price (€)</Label>
-            <Input
-              id="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="0.00"
-            />
-            {errors.price && (
-              <p className="text-xs text-destructive">{errors.price}</p>
-            )}
-          </div>
+          <PurchasePriceGuard fallback={null}>
+            <div className="space-y-2">
+              <Label htmlFor="price">Base Purchase Price (€)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                placeholder="0.00"
+              />
+              {errors.price && (
+                <p className="text-xs text-destructive">{errors.price}</p>
+              )}
+            </div>
+          </PurchasePriceGuard>
 
           <div className="space-y-2">
             <Label htmlFor="min_price">Minimum Selling Price (€)</Label>

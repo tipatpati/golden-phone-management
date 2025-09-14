@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Services } from '@/services/core';
 import type { ProductUnit, CreateProductUnitData, UnitEntryForm } from '@/services/inventory/types';
 import { InventoryError, handleInventoryError } from '@/services/inventory/errors';
+import { createRoleAwareSelect, sanitizePurchasePriceArray } from '@/utils/purchasePriceUtils';
+import type { UserRole } from '@/types/roles';
 
 interface CreateUnitsParams {
   productId: string;
@@ -121,13 +123,16 @@ export class ProductUnitManagementService {
   }
 
   /**
-   * Get all units for a product with barcode information
+   * Get all units for a product with role-based purchase price filtering
    */
-  static async getUnitsForProduct(productId: string): Promise<ProductUnit[]> {
+  static async getUnitsForProduct(productId: string, userRole?: UserRole | null): Promise<ProductUnit[]> {
     try {
+      // Use role-aware select to automatically filter purchase prices
+      const selectFields = userRole ? createRoleAwareSelect(userRole) : '*';
+      
       const { data, error } = await supabase
         .from('product_units')
-        .select('*')
+        .select(selectFields)
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
 
@@ -135,7 +140,9 @@ export class ProductUnitManagementService {
         throw InventoryError.createDatabaseError('getUnitsForProduct', error, { productId });
       }
 
-      return (data || []) as ProductUnit[];
+      // Additional client-side sanitization as a safety net
+      const units = (data || []) as any[];
+      return userRole ? sanitizePurchasePriceArray(units as ProductUnit[], userRole) : (units as ProductUnit[]);
     } catch (error) {
       throw handleInventoryError(error);
     }
