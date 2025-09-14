@@ -545,18 +545,29 @@ export class ProductUnitManagementService {
         return;
       }
 
-      // Calculate min/max prices from actual unit prices
-      const prices = units
-        .map(unit => unit.price)
-        .filter(price => price != null && price > 0) as number[];
+      // Calculate min/max from unit selling prices (prioritize unit min/max, fallback to unit price)
+      const sellingPrices: number[] = [];
+      
+      units.forEach(unit => {
+        // Collect all valid selling prices
+        if (unit.min_price != null && unit.min_price > 0) {
+          sellingPrices.push(unit.min_price);
+        }
+        if (unit.max_price != null && unit.max_price > 0) {
+          sellingPrices.push(unit.max_price);
+        }
+        if (unit.price != null && unit.price > 0) {
+          sellingPrices.push(unit.price);
+        }
+      });
 
-      if (prices.length === 0) {
-        console.log('No valid unit prices found');
+      if (sellingPrices.length === 0) {
+        console.log('No valid unit selling prices found');
         return;
       }
 
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
+      const minPrice = Math.min(...sellingPrices);
+      const maxPrice = Math.max(...sellingPrices);
 
       // Update product with calculated min/max prices
       const { error } = await supabase
@@ -572,7 +583,7 @@ export class ProductUnitManagementService {
         throw InventoryError.createDatabaseError('syncProductPricing', error, { productId });
       }
 
-      console.log(`✅ Synced product pricing: min €${minPrice}, max €${maxPrice}`);
+      console.log(`✅ Synced product pricing: min €${minPrice}, max €${maxPrice} from ${units.length} units`);
     } catch (error) {
       console.error('Error syncing product pricing:', error);
       throw handleInventoryError(error);

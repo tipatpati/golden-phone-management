@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ProductForm } from "./forms/ProductForm";
-import { useUpdateProduct } from "@/services/inventory/InventoryReactQueryService";
+import { useUpdateProduct } from "@/hooks/useInventory";
 import type { Product, ProductFormData, UnitEntryForm } from "@/services/inventory/types";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
 import { toast } from "@/components/ui/sonner";
 import { logger } from "@/utils/logger";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EditProductDialogProps {
   product: Product;
@@ -24,6 +25,7 @@ export function EditProductDialog({
   
   const [initialData, setInitialData] = useState<Partial<ProductFormData> | null>(null);
   const updateProduct = useUpdateProduct();
+  const queryClient = useQueryClient();
   const initialSerialCount = product.serial_numbers?.length || 0;
 
   // Load existing product units and prepare initial data
@@ -200,6 +202,10 @@ export function EditProductDialog({
         }
       }
 
+      // Force cache invalidation for immediate UI updates
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products', 'detail', product.id] });
+      
       // Refresh thermal labels after product update
       if (typeof (window as any).__refreshThermalLabels === 'function') {
         logger.info('Refreshing thermal labels after product update', {}, 'EditProductDialog');
