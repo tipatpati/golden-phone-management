@@ -192,40 +192,39 @@ export class SupplierInventoryIntegrationService {
       // Update product stock for purchase transactions
       await this.updateProductStock(item.product_id, item.quantity, 'add');
 
-      // Update product units if they exist
-      if (item.product_unit_ids && Array.isArray(item.product_unit_ids)) {
-        // Prepare updates with individual pricing from unit details
-        const baseUpdates = {
-          purchase_price: item.unit_cost,
-          status: 'available'
-        };
+      // Prepare base updates for product units
+      const baseUpdates = {
+        purchase_price: item.unit_cost,
+        purchase_date: new Date().toISOString(),
+        status: 'available',
+        product_id: item.product_id
+      };
 
-        // If we have unit entries with individual pricing, apply them
-        if (item.unit_details?.entries && Array.isArray(item.unit_details.entries)) {
-          logger.info('🏷️ Applying individual pricing from entries:', {
-            entriesCount: item.unit_details.entries.length,
-            unitIdsCount: item.product_unit_ids.length,
-            pricingSample: item.unit_details.entries.slice(0, 3).map(e => ({ 
-              serial: e.serial, 
-              price: e.price, 
-              min_price: e.min_price, 
-              max_price: e.max_price 
-            }))
-          });
+      // Handle both old and new data structures for pricing
+      if (item.unit_details?.entries?.length) {
+        logger.info('💰 Processing individual unit pricing from entries');
+        
+        // Check if we have existing unit IDs to update
+        if (item.product_unit_ids?.length) {
+          logger.info('🔄 Updating existing units with new pricing from entries');
           await this.updateProductUnitsWithIndividualPricing(
             item.product_unit_ids, 
             item.unit_details.entries, 
             baseUpdates
           );
         } else {
-          logger.info('📦 Applying base pricing to units:', item.product_unit_ids.length);
-          await this.updateProductUnits(item.product_unit_ids, baseUpdates);
+          logger.info('🆕 Creating new product units from entries (missing unit IDs)');
+          await this.createProductUnitsFromEntries(
+            item.product_id, 
+            item.unit_details.entries, 
+            item.unit_cost
+          );
         }
-      }
-
-      // Create new product units if needed for serialized products
-      if (product.has_serial && item.unit_details?.entries) {
-        await this.createProductUnitsFromEntries(item.product_id, item.unit_details.entries, item.unit_cost);
+      } else if (item.product_unit_ids?.length) {
+        logger.info('📝 Updating product units with standard pricing (legacy structure)');
+        await this.updateProductUnits(item.product_unit_ids, baseUpdates);
+      } else {
+        logger.info('⚠️ No unit entries or IDs found - cannot update inventory');
       }
 
       logger.info(`✅ Successfully synced item ${item.id} to inventory`);
@@ -338,70 +337,108 @@ export class SupplierInventoryIntegrationService {
 
   /**
    * Update product units with individual pricing from unit entries
+   * Creates missing units if they don't exist
    */
   private static async updateProductUnitsWithIndividualPricing(
     unitIds: string[], 
     unitEntries: any[], 
     baseUpdates: Record<string, any>
   ): Promise<void> {
+    if (!unitIds.length || !unitEntries.length) {
+      logger.warn('⚠️ No unit IDs or entries to process for individual pricing');
+      return;
+    }
+
+    logger.info('💰 Updating units with individual pricing:', {
+      unitIds: unitIds.length,
+      entries: unitEntries.length
+    });
+
     try {
-      // First, get the existing units to match with entries by serial number
+      // First, check which units actually exist
       const { data: existingUnits, error: fetchError } = await supabase
         .from('product_units')
         .select('id, serial_number')
         .in('id', unitIds);
 
-      if (fetchError || !existingUnits) {
-        logger.error(`Failed to fetch existing units for pricing update:`, fetchError);
-        // Fallback to basic update
-        await this.updateProductUnits(unitIds, baseUpdates);
+      if (fetchError) {
+        logger.error('❌ Error fetching existing units:', fetchError);
         return;
       }
 
-      // Update each unit individually with its specific pricing
-      for (const unit of existingUnits) {
-        const matchingEntry = unitEntries.find(entry => 
-          entry.serial === unit.serial_number
+      const existingUnitIds = new Set(existingUnits?.map(u => u.id) || []);
+      const existingSerials = new Set(existingUnits?.map(u => u.serial_number) || []);
+      const missingUnitIds = unitIds.filter(id => !existingUnitIds.has(id));
+
+      if (missingUnitIds.length > 0) {
+        logger.warn(`⚠️ Found ${missingUnitIds.length} missing unit IDs:`, missingUnitIds);
+        
+        // Try to create missing units from entries
+        const missingEntries = unitEntries.filter(entry => 
+          entry.serial && !existingSerials.has(entry.serial)
         );
-
-        const unitUpdates = {
-          ...baseUpdates,
-          // Apply individual pricing if available, otherwise use base pricing
-          price: matchingEntry?.price || baseUpdates.purchase_price,
-          min_price: matchingEntry?.min_price || 0,
-          max_price: matchingEntry?.max_price || 0,
-          // Update other unit-specific properties if present
-          ...(matchingEntry?.color && { color: matchingEntry.color }),
-          ...(matchingEntry?.storage && { storage: matchingEntry.storage }),
-          ...(matchingEntry?.ram && { ram: matchingEntry.ram }),
-          ...(matchingEntry?.battery_level && { battery_level: matchingEntry.battery_level }),
-        };
-
-        const { error: updateError } = await supabase
-          .from('product_units')
-          .update({
-            ...unitUpdates,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', unit.id);
-
-        if (updateError) {
-          logger.error(`Failed to update unit ${unit.id} with individual pricing:`, updateError);
-        } else {
-          logger.info(`📱 Updated unit ${unit.serial_number} with individual pricing: $${unitUpdates.price}`);
-          
-          // Emit unit status change event
-          await eventBus.emit({
-            type: EVENT_TYPES.UNIT_STATUS_CHANGED,
-            module: 'suppliers',
-            operation: 'update',
-            entityId: unit.id,
-            data: unitUpdates
-          });
+        
+        if (missingEntries.length > 0) {
+          logger.info('🆕 Creating missing product units from entries');
+          await this.createProductUnitsFromEntries(
+            baseUpdates.product_id,
+            missingEntries,
+            baseUpdates.purchase_price || 0
+          );
         }
       }
 
-      logger.info(`✅ Successfully updated ${existingUnits.length} units with individual pricing`);
+      // Create a map of serial numbers to pricing data
+      const pricingMap = new Map();
+      unitEntries.forEach(entry => {
+        if (entry.serial) {
+          pricingMap.set(entry.serial, {
+            price: entry.price || baseUpdates.purchase_price,
+            min_price: entry.min_price,
+            max_price: entry.max_price,
+            color: entry.color,
+            storage: entry.storage,
+            ram: entry.ram,
+            battery_level: entry.battery_level
+          });
+        }
+      });
+
+      // Update existing units with their specific pricing
+      for (const unit of existingUnits || []) {
+        try {
+          const unitPricing = pricingMap.get(unit.serial_number);
+          const updateData = {
+            ...baseUpdates,
+            ...(unitPricing || {}),
+            updated_at: new Date().toISOString()
+          };
+
+          logger.info(`💰 Updating unit ${unit.id} (${unit.serial_number}) with pricing:`, unitPricing);
+
+          const { error } = await supabase
+            .from('product_units')
+            .update(updateData)
+            .eq('id', unit.id);
+
+          if (error) {
+            logger.error(`❌ Error updating unit ${unit.id}:`, error);
+          } else {
+            // Emit unit status change event
+            await eventBus.emit({
+              type: EVENT_TYPES.UNIT_STATUS_CHANGED,
+              module: 'suppliers',
+              operation: 'update',
+              entityId: unit.id,
+              data: updateData
+            });
+          }
+        } catch (error) {
+          logger.error(`❌ Error processing unit ${unit.id}:`, error);
+        }
+      }
+
+      logger.info(`✅ Successfully processed ${existingUnits?.length || 0} existing units with individual pricing`);
     } catch (error) {
       logger.error(`Failed to update units with individual pricing:`, error);
       // Fallback to basic update
@@ -417,20 +454,72 @@ export class SupplierInventoryIntegrationService {
     entries: any[], 
     defaultPrice: number
   ): Promise<void> {
+    if (!entries.length || !productId) {
+      logger.info('ℹ️ No entries or product ID to create units from');
+      return;
+    }
+
+    logger.info('🆕 Creating product units from entries:', {
+      productId,
+      entriesCount: entries.length,
+      defaultPrice,
+      entriesPreview: entries.slice(0, 3).map(e => ({ 
+        serial: e.serial, 
+        price: e.price, 
+        min_price: e.min_price, 
+        max_price: e.max_price 
+      }))
+    });
+
     try {
-      const unitsToCreate = entries.map(entry => ({
+      // Filter out entries without serial numbers
+      const validEntries = entries.filter(entry => entry.serial || entry.serial_number);
+      
+      if (validEntries.length === 0) {
+        logger.warn('⚠️ No valid entries with serial numbers found');
+        return;
+      }
+
+      // Check for existing units with same serial numbers to avoid duplicates
+      const serials = validEntries.map(e => e.serial || e.serial_number);
+      const { data: existingUnits } = await supabase
+        .from('product_units')
+        .select('serial_number')
+        .eq('product_id', productId)
+        .in('serial_number', serials);
+
+      const existingSerials = new Set(existingUnits?.map(u => u.serial_number) || []);
+      const newEntries = validEntries.filter(entry => 
+        !existingSerials.has(entry.serial || entry.serial_number)
+      );
+
+      if (newEntries.length === 0) {
+        logger.info('ℹ️ All units already exist, skipping creation');
+        return;
+      }
+
+      const unitsToCreate = newEntries.map(entry => ({
         product_id: productId,
-        serial_number: entry.serial,
+        serial_number: entry.serial || entry.serial_number,
+        barcode: entry.barcode,
         color: entry.color,
-        storage: entry.storage,
-        ram: entry.ram,
-        battery_level: entry.battery_level,
+        storage: entry.storage ? parseInt(entry.storage) : null,
+        ram: entry.ram ? parseInt(entry.ram) : null,
+        battery_level: entry.battery_level ? parseInt(entry.battery_level) : null,
         price: entry.price || defaultPrice,
-        min_price: entry.min_price || 0,
-        max_price: entry.max_price || 0,
-        purchase_price: entry.price || defaultPrice,
+        min_price: entry.min_price,
+        max_price: entry.max_price,
+        purchase_price: defaultPrice,
+        purchase_date: new Date().toISOString(),
         status: 'available'
       }));
+
+      logger.info('📝 Creating units with data:', unitsToCreate.map(u => ({
+        serial: u.serial_number,
+        price: u.price,
+        min_price: u.min_price,
+        max_price: u.max_price
+      })));
 
       const { data: createdUnits, error } = await supabase
         .from('product_units')
@@ -438,28 +527,27 @@ export class SupplierInventoryIntegrationService {
         .select();
 
       if (error) {
-        logger.error(`Failed to create product units for product ${productId}:`, error);
-        return;
-      }
-
-      logger.info(`📱 Created ${createdUnits?.length || 0} new product units for product ${productId}`);
-
-      // Emit unit creation events
-      for (const unit of createdUnits || []) {
-        await eventBus.emit({
-          type: EVENT_TYPES.UNIT_STATUS_CHANGED,
-          module: 'suppliers',
-          operation: 'create',
-          entityId: unit.id,
-          data: { 
-            productId: productId,
-            serialNumber: unit.serial_number,
-            status: 'available'
-          }
-        });
+        logger.error(`❌ Error creating product units:`, error);
+      } else {
+        logger.info(`✅ Created ${createdUnits?.length || 0} product units with pricing from entries`);
+        
+        // Emit events for each created unit
+        for (const unit of createdUnits || []) {
+          await eventBus.emit({
+            type: EVENT_TYPES.UNIT_STATUS_CHANGED,
+            module: 'suppliers',
+            operation: 'create',
+            entityId: unit.id,
+            data: { 
+              productId: productId,
+              serialNumber: unit.serial_number,
+              status: 'available'
+            }
+          });
+        }
       }
     } catch (error) {
-      logger.error(`Failed to create product units from entries:`, error);
+      logger.error(`❌ Failed to create product units from entries:`, error);
     }
   }
 
