@@ -84,6 +84,12 @@ export interface EditableTransactionItem {
   unit_cost: number;
   unit_barcodes?: string[];
   product_unit_ids?: string[]; // For linking to specific units with individual prices
+  unit_details?: {
+    barcodes?: string[];
+    serial_numbers?: string[];
+    entries?: any[]; // Individual unit pricing information
+    [key: string]: any;
+  };
 }
 
 // ============= SEARCH AND FILTER TYPES =============

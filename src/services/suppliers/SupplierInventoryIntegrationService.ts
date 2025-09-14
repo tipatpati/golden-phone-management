@@ -171,10 +171,22 @@ export class SupplierInventoryIntegrationService {
 
       // Update product units if they exist
       if (item.product_unit_ids && Array.isArray(item.product_unit_ids)) {
-        await this.updateProductUnits(item.product_unit_ids, {
+        // Prepare updates with individual pricing from unit details
+        const baseUpdates = {
           purchase_price: item.unit_cost,
           status: 'available'
-        });
+        };
+
+        // If we have unit entries with individual pricing, apply them
+        if (item.unit_details?.entries && Array.isArray(item.unit_details.entries)) {
+          await this.updateProductUnitsWithIndividualPricing(
+            item.product_unit_ids, 
+            item.unit_details.entries, 
+            baseUpdates
+          );
+        } else {
+          await this.updateProductUnits(item.product_unit_ids, baseUpdates);
+        }
       }
 
       // Create new product units if needed for serialized products
@@ -287,6 +299,79 @@ export class SupplierInventoryIntegrationService {
         entityId: unitId,
         data: updates
       });
+    }
+  }
+
+  /**
+   * Update product units with individual pricing from unit entries
+   */
+  private static async updateProductUnitsWithIndividualPricing(
+    unitIds: string[], 
+    unitEntries: any[], 
+    baseUpdates: Record<string, any>
+  ): Promise<void> {
+    try {
+      // First, get the existing units to match with entries by serial number
+      const { data: existingUnits, error: fetchError } = await supabase
+        .from('product_units')
+        .select('id, serial_number')
+        .in('id', unitIds);
+
+      if (fetchError || !existingUnits) {
+        logger.error(`Failed to fetch existing units for pricing update:`, fetchError);
+        // Fallback to basic update
+        await this.updateProductUnits(unitIds, baseUpdates);
+        return;
+      }
+
+      // Update each unit individually with its specific pricing
+      for (const unit of existingUnits) {
+        const matchingEntry = unitEntries.find(entry => 
+          entry.serial === unit.serial_number
+        );
+
+        const unitUpdates = {
+          ...baseUpdates,
+          // Apply individual pricing if available, otherwise use base pricing
+          price: matchingEntry?.price || baseUpdates.purchase_price,
+          min_price: matchingEntry?.min_price || 0,
+          max_price: matchingEntry?.max_price || 0,
+          // Update other unit-specific properties if present
+          ...(matchingEntry?.color && { color: matchingEntry.color }),
+          ...(matchingEntry?.storage && { storage: matchingEntry.storage }),
+          ...(matchingEntry?.ram && { ram: matchingEntry.ram }),
+          ...(matchingEntry?.battery_level && { battery_level: matchingEntry.battery_level }),
+        };
+
+        const { error: updateError } = await supabase
+          .from('product_units')
+          .update({
+            ...unitUpdates,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', unit.id);
+
+        if (updateError) {
+          logger.error(`Failed to update unit ${unit.id} with individual pricing:`, updateError);
+        } else {
+          logger.info(`📱 Updated unit ${unit.serial_number} with individual pricing: $${unitUpdates.price}`);
+          
+          // Emit unit status change event
+          await eventBus.emit({
+            type: EVENT_TYPES.UNIT_STATUS_CHANGED,
+            module: 'suppliers',
+            operation: 'update',
+            entityId: unit.id,
+            data: unitUpdates
+          });
+        }
+      }
+
+      logger.info(`✅ Successfully updated ${existingUnits.length} units with individual pricing`);
+    } catch (error) {
+      logger.error(`Failed to update units with individual pricing:`, error);
+      // Fallback to basic update
+      await this.updateProductUnits(unitIds, baseUpdates);
     }
   }
 

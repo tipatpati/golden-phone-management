@@ -466,13 +466,21 @@ export function EditTransactionDialogV2({
         try {
           await replaceItems.mutateAsync({
             transactionId: transaction.id,
-            items: preparedItems.map(item => ({
-              product_id: item.product_id,
-              quantity: item.quantity,
-              unit_cost: item.unit_cost,
-              product_unit_ids: item.product_unit_ids || [],
-              unit_barcodes: item.unit_barcodes || [],
-            })),
+            items: preparedItems.map((item, index) => {
+              const unitEntries = itemUnitEntries[index] || [];
+              return {
+                product_id: item.product_id,
+                quantity: item.quantity,
+                unit_cost: item.unit_cost,
+                product_unit_ids: item.product_unit_ids || [],
+                unit_barcodes: item.unit_barcodes || [],
+                unit_details: {
+                  barcodes: item.unit_barcodes || [],
+                  entries: unitEntries, // Include full unit entry information with pricing
+                  product_unit_ids: item.product_unit_ids || []
+                }
+              };
+            }),
           });
           itemsUpdated = true;
         } catch (itemsError) {

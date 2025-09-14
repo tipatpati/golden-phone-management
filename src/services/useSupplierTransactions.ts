@@ -177,6 +177,12 @@ export interface EditableTransactionItem {
   quantity: number;
   unit_cost: number;
   unit_barcodes?: string[];
+  unit_details?: {
+    barcodes?: string[];
+    entries?: any[]; // Individual unit pricing information
+    product_unit_ids?: string[];
+    [key: string]: any;
+  };
 }
 
 export function useUpdateSupplierTransaction() {
@@ -220,7 +226,12 @@ export function useReplaceSupplierTransactionItems() {
         quantity: it.quantity,
         unit_cost: it.unit_cost,
         total_cost: it.quantity * it.unit_cost,
-        unit_details: it.unit_barcodes && it.unit_barcodes.length ? { barcodes: it.unit_barcodes } : {},
+        unit_details: {
+          barcodes: it.unit_barcodes || [],
+          entries: it.unit_details?.entries || [],
+          product_unit_ids: it.unit_details?.product_unit_ids || [],
+          ...it.unit_details
+        },
       }));
 
       const { error: insError } = await (supabase as any)
