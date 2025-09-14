@@ -64,10 +64,10 @@ export class EmployeeCreationService {
       const userId = authResult.user_id;
       logger.info('Auth user created via edge function, creating employee record', { userId }, 'EmployeeCreationService');
 
-      // Create employee record
+      // Create employee record (should be auto-created by trigger, but insert as fallback)
       const { data: employee, error: employeeError } = await supabase
         .from('employees')
-        .insert({
+        .upsert({
           profile_id: userId,
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -78,6 +78,8 @@ export class EmployeeCreationService {
           salary: formData.salary ? parseFloat(formData.salary) : null,
           hire_date: formData.hire_date,
           status: formData.status
+        }, {
+          onConflict: 'profile_id'
         })
         .select()
         .single();

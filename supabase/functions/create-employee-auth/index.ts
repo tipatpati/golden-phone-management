@@ -180,7 +180,8 @@ serve(async (req) => {
         .upsert({
           id: authUser.user.id,
           username: first_name && last_name ? `${first_name}.${last_name}`.toLowerCase() : email.split('@')[0],
-          role: role
+          role: role,
+          is_system_user: ['admin', 'super_admin'].includes(role) // Mark system users
         }, {
           onConflict: 'id'
         })

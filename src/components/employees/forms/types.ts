@@ -19,8 +19,8 @@ export const getInitialEmployeeFormData = (): EmployeeFormData => ({
   last_name: "",
   email: "",
   phone: "",
-  department: "",
-  position: "",
+  department: "Vendite", // Default department
+  position: "Venditore", // Default position
   salary: "",
   hire_date: new Date().toISOString().split('T')[0],
   status: "active",
