@@ -97,7 +97,10 @@ export function EditableTransactionItem({
 
   // Handler for applying pending pricing changes
   const handleApplyPendingChanges = () => {
+    console.log('🎯 Applying pending pricing changes for item', index);
+    console.log('📊 Original units:', unitEntries.map(u => ({ serial: u.serial, price: u.price })));
     applyPendingChanges(unitEntries, (updatedUnits) => {
+      console.log('✨ Updated units:', updatedUnits.map(u => ({ serial: u.serial, price: u.price })));
       onUpdateUnitEntries(index, updatedUnits);
     });
   };
@@ -278,7 +281,11 @@ export function EditableTransactionItem({
 
                     <StoragePricingTemplateSelector
                       units={unitEntries}
-                      onUnitsChange={(updatedUnits) => onUpdateUnitEntries(index, updatedUnits)}
+                      onUnitsChange={(updatedUnits) => {
+                        console.log('🏷️ Template directly updating units for item', index);
+                        console.log('📈 Template updated units:', updatedUnits.map(u => ({ serial: u.serial, price: u.price })));
+                        onUpdateUnitEntries(index, updatedUnits);
+                      }}
                       onPreviewPricing={handlePreviewPricing}
                       title="Apply Pricing Template to Units"
                       description="Select a template to automatically set pricing based on storage capacity"

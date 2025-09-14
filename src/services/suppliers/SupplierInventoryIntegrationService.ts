@@ -158,7 +158,14 @@ export class SupplierInventoryIntegrationService {
    */
   static async syncTransactionItemToInventory(item: any): Promise<void> {
     try {
-      logger.info(`🔄 Syncing item ${item.id} to inventory...`);
+      logger.info(`🔄 Syncing item ${item.id} to inventory...`, {
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_cost: item.unit_cost,
+        has_unit_details: !!item.unit_details,
+        entries_count: item.unit_details?.entries?.length || 0,
+        entries_sample: item.unit_details?.entries?.slice(0, 3).map(e => ({ serial: e.serial, price: e.price })) || []
+      });
 
       const product = item.products || await this.getProductById(item.product_id);
       if (!product) {
@@ -179,12 +186,23 @@ export class SupplierInventoryIntegrationService {
 
         // If we have unit entries with individual pricing, apply them
         if (item.unit_details?.entries && Array.isArray(item.unit_details.entries)) {
+          logger.info('🏷️ Applying individual pricing from entries:', {
+            entriesCount: item.unit_details.entries.length,
+            unitIdsCount: item.product_unit_ids.length,
+            pricingSample: item.unit_details.entries.slice(0, 3).map(e => ({ 
+              serial: e.serial, 
+              price: e.price, 
+              min_price: e.min_price, 
+              max_price: e.max_price 
+            }))
+          });
           await this.updateProductUnitsWithIndividualPricing(
             item.product_unit_ids, 
             item.unit_details.entries, 
             baseUpdates
           );
         } else {
+          logger.info('📦 Applying base pricing to units:', item.product_unit_ids.length);
           await this.updateProductUnits(item.product_unit_ids, baseUpdates);
         }
       }

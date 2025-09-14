@@ -316,6 +316,8 @@ export function EditTransactionDialogV2({
   };
 
   const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
+    console.log('🔄 Updating unit entries for item', itemIndex, 'with', entries.length, 'entries');
+    console.log('💰 Entry prices:', entries.map(e => ({ serial: e.serial, price: e.price })));
     setItemUnitEntries(prev => ({
       ...prev,
       [itemIndex]: entries
@@ -464,23 +466,31 @@ export function EditTransactionDialogV2({
       let itemsUpdated = false;
       if (userRole === 'super_admin' || userRole === 'admin' || userRole === 'manager' || userRole === 'inventory_manager') {
         try {
+          const itemsToSave = preparedItems.map((item, index) => {
+            const unitEntries = itemUnitEntries[index] || [];
+            console.log(`💾 Saving item ${index}:`, {
+              product_id: item.product_id,
+              unit_cost: item.unit_cost,
+              entriesCount: unitEntries.length,
+              entriesPrices: unitEntries.map(e => ({ serial: e.serial, price: e.price }))
+            });
+            return {
+              product_id: item.product_id,
+              quantity: item.quantity,
+              unit_cost: item.unit_cost,
+              product_unit_ids: item.product_unit_ids || [],
+              unit_barcodes: item.unit_barcodes || [],
+              unit_details: {
+                barcodes: item.unit_barcodes || [],
+                entries: unitEntries, // Include full unit entry information with pricing
+                product_unit_ids: item.product_unit_ids || []
+              }
+            };
+          });
+          
           await replaceItems.mutateAsync({
             transactionId: transaction.id,
-            items: preparedItems.map((item, index) => {
-              const unitEntries = itemUnitEntries[index] || [];
-              return {
-                product_id: item.product_id,
-                quantity: item.quantity,
-                unit_cost: item.unit_cost,
-                product_unit_ids: item.product_unit_ids || [],
-                unit_barcodes: item.unit_barcodes || [],
-                unit_details: {
-                  barcodes: item.unit_barcodes || [],
-                  entries: unitEntries, // Include full unit entry information with pricing
-                  product_unit_ids: item.product_unit_ids || []
-                }
-              };
-            }),
+            items: itemsToSave,
           });
           itemsUpdated = true;
         } catch (itemsError) {
