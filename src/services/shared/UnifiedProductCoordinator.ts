@@ -194,7 +194,7 @@ export class UnifiedProductCoordinator {
     const sanitizedAdditional: Record<string, any> = {};
     if (additionalData) {
       for (const [k, v] of Object.entries(additionalData)) {
-        if (allowedKeys.has(k)) sanitizedAdditional[k] = v;
+        if (allowedKeys.has(k) && v !== undefined) sanitizedAdditional[k] = v;
       }
     }
     const productData = {
@@ -205,6 +205,7 @@ export class UnifiedProductCoordinator {
       threshold: sanitizedAdditional.threshold ?? 0,
       has_serial: sanitizedAdditional.has_serial ?? false,
       category_id: sanitizedAdditional.category_id,
+      supplier: sanitizedAdditional.supplier, // Ensure supplier name is preserved
       ...sanitizedAdditional
     };
 

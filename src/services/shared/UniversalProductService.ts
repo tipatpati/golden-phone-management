@@ -68,12 +68,19 @@ class UniversalProductServiceClass {
         return result;
       }
 
+      // Step 1.5: Resolve supplier name if supplier ID is provided
+      let supplierName = formData.supplier;
+      if (options.supplierId && !supplierName) {
+        supplierName = await this.getSupplierName(options.supplierId);
+      }
+
       // Step 2: Resolve product (create or find existing)
       const { product, isExisting } = await UnifiedProductCoordinator.resolveProduct(
         formData.brand,
         formData.model,
         {
           ...this.sanitizeProductData(formData),
+          supplier: supplierName, // Ensure supplier name is set
           price: options.unitCost || formData.price,
           has_serial: formData.has_serial || (formData.unit_entries && formData.unit_entries.length > 0)
         }
@@ -412,6 +419,29 @@ class UniversalProductServiceClass {
         units: [],
         unitEntries: []
       };
+    }
+  }
+
+  /**
+   * Get supplier name from supplier ID for product tracking
+   */
+  private async getSupplierName(supplierId: string): Promise<string | undefined> {
+    try {
+      const { data, error } = await supabase
+        .from('suppliers')
+        .select('name')
+        .eq('id', supplierId)
+        .single();
+
+      if (error || !data) {
+        console.warn(`Failed to resolve supplier name for ID: ${supplierId}`, error);
+        return undefined;
+      }
+
+      return data.name;
+    } catch (error) {
+      console.error('Error fetching supplier name:', error);
+      return undefined;
     }
   }
 

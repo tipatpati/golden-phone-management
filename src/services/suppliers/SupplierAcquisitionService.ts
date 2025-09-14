@@ -220,9 +220,14 @@ class SupplierAcquisitionService {
       // Use Universal Product Service for ALL product operations
       const { universalProductService } = await import('@/services/shared/UniversalProductService');
       
-      // Ensure unit_entries are set for product creation
+      // Get supplier name for product tracking
+      const supplier = await this.validateSupplier(supplierId);
+      const supplierName = supplier?.name;
+      
+      // Ensure unit_entries are set for product creation and supplier is tracked
       const productDataWithUnits = {
         ...item.productData,
+        supplier: supplierName, // Set supplier name for tracking
         unit_entries: item.unitEntries,
         has_serial: item.unitEntries && item.unitEntries.length > 0,
         stock: item.unitEntries && item.unitEntries.length > 0 ? 0 : item.quantity
