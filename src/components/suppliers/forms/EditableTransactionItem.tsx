@@ -290,8 +290,9 @@ export function EditableTransactionItem({
                         onUpdateUnitEntries(index, updatedUnits);
                       }}
                       onPreviewPricing={handlePreviewPricing}
+                      previewMode={true}
                       title="Apply Pricing Template to Units"
-                      description="Select a template to automatically set pricing based on storage capacity"
+                      description="Preview and apply pricing templates based on storage capacity"
                     />
                     
                     <UnitEntryForm

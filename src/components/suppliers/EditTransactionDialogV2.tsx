@@ -352,7 +352,16 @@ export function EditTransactionDialogV2({
     if (!transaction) return;
 
     try {
-      // Validate items
+      // Validate required fields
+      if (!supplierId) {
+        toast({
+          title: "Validation Error",
+          description: "Please select a supplier",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (items.some(item => !item.product_id)) {
         toast({
           title: "Validation Error",
@@ -458,7 +467,8 @@ export function EditTransactionDialogV2({
               status,
               notes,
               transaction_date: new Date(date).toISOString(),
-              total_amount: total
+              total_amount: total,
+              supplier_id: supplierId
             }
           });
           transactionUpdated = true;

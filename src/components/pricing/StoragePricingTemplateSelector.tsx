@@ -18,6 +18,7 @@ interface StoragePricingTemplateSelectorProps {
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
   title?: string;
   description?: string;
+  previewMode?: boolean; // New prop to control preview vs direct application
 }
 
 export function StoragePricingTemplateSelector({ 
@@ -26,7 +27,8 @@ export function StoragePricingTemplateSelector({
   onPreviewPricing,
   onDefaultPricesUpdate,
   title = "Storage Pricing Templates",
-  description = "Apply default pricing templates based on storage capacity"
+  description = "Apply default pricing templates based on storage capacity",
+  previewMode = false
 }: StoragePricingTemplateSelectorProps) {
   const [templates, setTemplates] = useState<StoragePricingTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -55,11 +57,11 @@ export function StoragePricingTemplateSelector({
         }
       }
       
-      if (onPreviewPricing) {
-        // Always use preview mode when preview handler is available
+      if (previewMode && onPreviewPricing) {
+        // Use preview mode when explicitly enabled and preview handler is available
         onPreviewPricing(units, result.updatedUnits, selectedTemplate?.name);
       } else {
-        // Apply immediately only when no preview handler is available
+        // Apply immediately when not in preview mode
         onUnitsChange(result.updatedUnits);
       }
       
@@ -183,7 +185,7 @@ export function StoragePricingTemplateSelector({
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            {onPreviewPricing ? 'Preview Template' : 'Apply Template'}
+            {previewMode && onPreviewPricing ? 'Preview Template' : 'Apply Template'}
           </Button>
         </div>
 

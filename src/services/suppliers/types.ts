@@ -75,6 +75,7 @@ export interface UpdateTransactionData {
   notes?: string;
   transaction_date?: string;
   total_amount?: number;
+  supplier_id?: string;
 }
 
 export interface EditableTransactionItem {
