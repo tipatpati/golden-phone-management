@@ -174,13 +174,15 @@ serve(async (req) => {
     console.log('Auth user created successfully:', authUser.user.id)
     
     try {
-      // Create profile entry for the new user
+      // Create profile entry for the new user (use upsert for idempotency)
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .insert({
+        .upsert({
           id: authUser.user.id,
           username: first_name && last_name ? `${first_name}.${last_name}`.toLowerCase() : email.split('@')[0],
           role: role
+        }, {
+          onConflict: 'id'
         })
 
       if (profileError) {
@@ -193,12 +195,14 @@ serve(async (req) => {
         )
       }
 
-      // Create user role entry
+      // Create user role entry (use upsert for idempotency)
       const { error: roleError } = await supabaseAdmin
         .from('user_roles')
-        .insert({
+        .upsert({
           user_id: authUser.user.id,
           role: role
+        }, {
+          onConflict: 'user_id,role'
         })
 
       if (roleError) {
