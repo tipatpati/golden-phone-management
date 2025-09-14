@@ -168,12 +168,35 @@ export function EditProductDialog({
             }
           });
           logger.info(`Created ${newUnitEntries.length} new product units with default pricing`, {}, 'EditProductDialog');
+        }
+        
+        // Update pricing for existing units if unit_entries have pricing changes
+        const existingUnitEntries = data.unit_entries?.filter(entry => 
+          existingSerials.includes(entry.serial)
+        ) || [];
+        
+        if (existingUnitEntries.length > 0) {
+          const { updated, errors } = await ProductUnitManagementService.updateUnitsWithPricing(
+            product.id, 
+            existingUnitEntries
+          );
           
-          // Refresh thermal labels after updating product units
-          if (typeof (window as any).__refreshThermalLabels === 'function') {
-            logger.info('Refreshing thermal labels after product unit update', {}, 'EditProductDialog');
-            (window as any).__refreshThermalLabels();
+          if (updated > 0) {
+            logger.info(`Updated pricing for ${updated} existing units`, {}, 'EditProductDialog');
           }
+          
+          if (errors.length > 0) {
+            logger.warn('Some unit pricing updates failed', { errors }, 'EditProductDialog');
+          }
+        }
+        
+        // Sync product-level min/max prices from actual unit prices
+        await ProductUnitManagementService.syncProductPricing(product.id);
+        
+        // Refresh thermal labels after updating product units
+        if (typeof (window as any).__refreshThermalLabels === 'function') {
+          logger.info('Refreshing thermal labels after product unit update', {}, 'EditProductDialog');
+          (window as any).__refreshThermalLabels();
         }
       }
 

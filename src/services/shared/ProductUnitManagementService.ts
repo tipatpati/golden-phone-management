@@ -488,6 +488,98 @@ export class ProductUnitManagementService {
   }
 
   /**
+   * Update pricing for existing units (used by pricing templates)
+   */
+  static async updateUnitsWithPricing(productId: string, unitEntries: UnitEntryForm[]): Promise<{ updated: number; errors: string[] }> {
+    const errors: string[] = [];
+    let updated = 0;
+
+    console.log('🔄 Updating unit pricing for product:', { productId, entries: unitEntries.length });
+
+    for (const entry of unitEntries) {
+      try {
+        const updateData: Record<string, any> = {
+          updated_at: new Date().toISOString()
+        };
+
+        // Only update pricing fields that are provided
+        if (entry.price !== undefined) updateData.price = entry.price;
+        if (entry.min_price !== undefined) updateData.min_price = entry.min_price;
+        if (entry.max_price !== undefined) updateData.max_price = entry.max_price;
+
+        const { error } = await supabase
+          .from('product_units')
+          .update(updateData)
+          .eq('product_id', productId)
+          .eq('serial_number', entry.serial);
+
+        if (error) {
+          console.error(`Failed to update pricing for unit ${entry.serial}:`, error);
+          errors.push(`${entry.serial}: ${error.message}`);
+        } else {
+          updated++;
+          console.log(`✅ Updated pricing for unit ${entry.serial}`);
+        }
+      } catch (error) {
+        console.error(`Error updating unit ${entry.serial}:`, error);
+        errors.push(`${entry.serial}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    console.log(`🎯 Unit pricing update completed: ${updated} updated, ${errors.length} errors`);
+    return { updated, errors };
+  }
+
+  /**
+   * Update product-level min/max prices based on actual unit prices
+   */
+  static async syncProductPricing(productId: string): Promise<void> {
+    try {
+      console.log('🔄 Syncing product-level pricing from units:', productId);
+
+      // Get all available units for this product
+      const units = await this.getAvailableUnitsForProduct(productId);
+      
+      if (units.length === 0) {
+        console.log('No available units to sync pricing from');
+        return;
+      }
+
+      // Calculate min/max prices from actual unit prices
+      const prices = units
+        .map(unit => unit.price)
+        .filter(price => price != null && price > 0) as number[];
+
+      if (prices.length === 0) {
+        console.log('No valid unit prices found');
+        return;
+      }
+
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+
+      // Update product with calculated min/max prices
+      const { error } = await supabase
+        .from('products')
+        .update({
+          min_price: minPrice,
+          max_price: maxPrice,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', productId);
+
+      if (error) {
+        throw InventoryError.createDatabaseError('syncProductPricing', error, { productId });
+      }
+
+      console.log(`✅ Synced product pricing: min €${minPrice}, max €${maxPrice}`);
+    } catch (error) {
+      console.error('Error syncing product pricing:', error);
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
    * Get product by ID for cross-module integration
    */
   static async getProductById(productId: string): Promise<any> {
