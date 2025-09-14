@@ -11,6 +11,12 @@ interface ProductFormFieldsProps {
   getFieldError: (field: string) => string | undefined;
   uniqueBrands?: string[];
   uniqueModels?: string[];
+  templateAppliedDefaults?: {
+    templateName?: string;
+    price?: number;
+    min_price?: number;
+    max_price?: number;
+  } | null;
 }
 
 export function ProductFormFields({
@@ -18,7 +24,8 @@ export function ProductFormFields({
   onFieldChange,
   getFieldError,
   uniqueBrands = [],
-  uniqueModels = []
+  uniqueModels = [],
+  templateAppliedDefaults
 }: ProductFormFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,6 +128,26 @@ export function ProductFormFields({
         className="md:col-span-1"
         error={getFieldError('max_price')}
       />
+
+      {/* Template Applied Notice */}
+      {templateAppliedDefaults && (
+        <div className="md:col-span-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h4 className="text-sm font-semibold text-green-900 mb-2">✅ Template Applied: {templateAppliedDefaults.templateName}</h4>
+          <div className="text-xs text-green-800 space-y-1">
+            <p><strong>Default prices have been updated based on the pricing template:</strong></p>
+            {templateAppliedDefaults.price !== undefined && (
+              <p>• Base Price: €{templateAppliedDefaults.price.toFixed(2)}</p>
+            )}
+            {templateAppliedDefaults.min_price !== undefined && (
+              <p>• Min Selling Price: €{templateAppliedDefaults.min_price.toFixed(2)}</p>
+            )}
+            {templateAppliedDefaults.max_price !== undefined && (
+              <p>• Max Selling Price: €{templateAppliedDefaults.max_price.toFixed(2)}</p>
+            )}
+            <p className="text-green-700 font-medium mt-2">These defaults now apply to new units without specific pricing.</p>
+          </div>
+        </div>
+      )}
 
       {/* Pricing Information Guide */}
       <div className="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

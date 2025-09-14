@@ -15,6 +15,7 @@ interface StoragePricingTemplateSelectorProps {
   units: UnitEntryForm[];
   onUnitsChange: (units: UnitEntryForm[]) => void;
   onPreviewPricing?: (originalUnits: UnitEntryForm[], updatedUnits: UnitEntryForm[], templateName?: string) => void;
+  onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
   title?: string;
   description?: string;
 }
@@ -23,6 +24,7 @@ export function StoragePricingTemplateSelector({
   units, 
   onUnitsChange,
   onPreviewPricing,
+  onDefaultPricesUpdate,
   title = "Storage Pricing Templates",
   description = "Apply default pricing templates based on storage capacity"
 }: StoragePricingTemplateSelectorProps) {
@@ -44,6 +46,14 @@ export function StoragePricingTemplateSelector({
 
     try {
       const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units, undefined, forceApply);
+      
+      // Update default prices if callback is provided
+      if (onDefaultPricesUpdate) {
+        const defaultPrices = StoragePricingTemplateService.calculateDefaultPricesFromTemplate(selectedTemplateId);
+        if (defaultPrices) {
+          onDefaultPricesUpdate(defaultPrices, selectedTemplate?.name);
+        }
+      }
       
       if (onPreviewPricing) {
         // Always use preview mode when preview handler is available

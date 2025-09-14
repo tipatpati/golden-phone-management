@@ -26,6 +26,7 @@ interface UnitEntryFormProps {
   productId?: string; // For barcode generation
   showBarcodeActions?: boolean; // To show/hide barcode generation buttons
   showPricingTemplates?: boolean; // To show/hide pricing template selector
+  onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
 }
 
 export function UnitEntryForm({ 
@@ -37,7 +38,8 @@ export function UnitEntryForm({
   className = "",
   productId,
   showBarcodeActions = false,
-  showPricingTemplates = false
+  showPricingTemplates = false,
+  onDefaultPricesUpdate
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
@@ -144,6 +146,7 @@ export function UnitEntryForm({
         <StoragePricingTemplateSelector
           units={entries}
           onUnitsChange={setEntries}
+          onDefaultPricesUpdate={onDefaultPricesUpdate}
           title="Apply Pricing Template"
           description="Select a template to automatically set pricing based on storage capacity"
         />

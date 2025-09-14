@@ -13,11 +13,13 @@ export function SerialNumberManager({
   productId,
   productBrand,
   productModel,
-  onBarcodeGenerated
+  onBarcodeGenerated,
+  onDefaultPricesUpdate
 }: SerialNumberManagerProps & { 
   productBrand?: string; 
   productModel?: string;
   onBarcodeGenerated?: (barcode: string) => void;
+  onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
 }) {
   if (!hasSerial) {
     return null;
@@ -35,6 +37,7 @@ export function SerialNumberManager({
         entries={unitEntries}
         setEntries={onUnitEntriesChange}
         onStockChange={onStockChange}
+        onDefaultPricesUpdate={onDefaultPricesUpdate}
         title="Product Units (IMEI/SN + attributes)"
         showPricing={true}
         showPricingTemplates={true}

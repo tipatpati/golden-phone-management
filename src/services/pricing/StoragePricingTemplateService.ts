@@ -137,6 +137,42 @@ export class StoragePricingTemplateService {
     };
   }
 
+  /**
+   * Calculate default product-level prices based on template rules
+   */
+  static calculateDefaultPricesFromTemplate(templateId: string): { price?: number; min_price?: number; max_price?: number } | null {
+    const template = this.getTemplates().find(t => t.id === templateId);
+    if (!template || template.rules.length === 0) return null;
+
+    const rules = template.rules.filter(r => 
+      r.purchasePrice !== undefined || r.minPrice !== undefined || r.maxPrice !== undefined
+    );
+
+    if (rules.length === 0) return null;
+
+    const result: { price?: number; min_price?: number; max_price?: number } = {};
+
+    // Calculate average purchase price from rules that have it
+    const purchasePrices = rules.filter(r => r.purchasePrice !== undefined).map(r => r.purchasePrice!);
+    if (purchasePrices.length > 0) {
+      result.price = purchasePrices.reduce((sum, price) => sum + price, 0) / purchasePrices.length;
+    }
+
+    // Calculate average min price from rules that have it
+    const minPrices = rules.filter(r => r.minPrice !== undefined).map(r => r.minPrice!);
+    if (minPrices.length > 0) {
+      result.min_price = minPrices.reduce((sum, price) => sum + price, 0) / minPrices.length;
+    }
+
+    // Calculate average max price from rules that have it
+    const maxPrices = rules.filter(r => r.maxPrice !== undefined).map(r => r.maxPrice!);
+    if (maxPrices.length > 0) {
+      result.max_price = maxPrices.reduce((sum, price) => sum + price, 0) / maxPrices.length;
+    }
+
+    return result;
+  }
+
   private static saveToStorage(templates: StoragePricingTemplate[]): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));

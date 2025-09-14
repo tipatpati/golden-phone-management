@@ -32,3 +32,9 @@ export interface ApplyPricingResult {
   errors: string[];
   updatedUnits: any[];
 }
+
+export interface DefaultPricesFromTemplate {
+  price?: number;
+  min_price?: number;
+  max_price?: number;
+}

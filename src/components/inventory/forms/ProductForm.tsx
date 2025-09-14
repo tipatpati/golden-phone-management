@@ -24,6 +24,32 @@ export function ProductForm({
     hasErrors
   } = useProductForm({ initialData, onSubmit });
 
+  const [templateAppliedDefaults, setTemplateAppliedDefaults] = React.useState<{
+    templateName?: string;
+    price?: number;
+    min_price?: number;
+    max_price?: number;
+  } | null>(null);
+
+  const handleDefaultPricesUpdate = React.useCallback((defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => {
+    // Update form fields with template defaults
+    if (defaults.price !== undefined) {
+      updateField('price', defaults.price);
+    }
+    if (defaults.min_price !== undefined) {
+      updateField('min_price', defaults.min_price);
+    }
+    if (defaults.max_price !== undefined) {
+      updateField('max_price', defaults.max_price);
+    }
+    
+    // Store template info for display
+    setTemplateAppliedDefaults({
+      templateName,
+      ...defaults
+    });
+  }, [updateField]);
+
   React.useEffect(() => {
     if (onRegisterSubmit) {
       onRegisterSubmit(handleSubmit);
@@ -109,6 +135,7 @@ export function ProductForm({
         getFieldError={getFieldError}
         uniqueBrands={uniqueBrands}
         uniqueModels={uniqueModels}
+        templateAppliedDefaults={templateAppliedDefaults}
       />
 
       {/* Serial Number Toggle */}
@@ -152,6 +179,7 @@ export function ProductForm({
           productBrand={formData.brand}
           productModel={formData.model}
           onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
+          onDefaultPricesUpdate={handleDefaultPricesUpdate}
         />
       )}
 
