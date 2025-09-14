@@ -6,17 +6,37 @@ import { logger } from '@/utils/logger';
  * Service to handle synchronization between supplier transactions and inventory
  */
 export class SupplierInventoryIntegrationService {
+  private static isInitialized = false;
+  private static channel: any = null;
   
   /**
    * Initialize integration listeners
    */
   static initialize(): void {
+    if (this.isInitialized) {
+      logger.info('🔗 SupplierInventoryIntegrationService already initialized, skipping...');
+      return;
+    }
+    
     logger.info('🔗 Initializing SupplierInventoryIntegrationService...');
     
     // Listen for transaction completion events
     this.setupTransactionListeners();
+    this.isInitialized = true;
     
     logger.info('✅ SupplierInventoryIntegrationService initialized');
+  }
+
+  /**
+   * Cleanup integration listeners
+   */
+  static cleanup(): void {
+    if (this.channel) {
+      supabase.removeChannel(this.channel);
+      this.channel = null;
+    }
+    this.isInitialized = false;
+    logger.info('🧹 SupplierInventoryIntegrationService cleaned up');
   }
 
   /**
@@ -24,7 +44,7 @@ export class SupplierInventoryIntegrationService {
    */
   private static setupTransactionListeners(): void {
     // Listen for supplier transaction status changes
-    supabase
+    this.channel = supabase
       .channel('supplier-inventory-integration')
       .on(
         'postgres_changes',

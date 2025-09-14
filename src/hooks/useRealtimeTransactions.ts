@@ -9,8 +9,9 @@ export function useRealtimeTransactions() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Initialize supplier-inventory integration
+    // Initialize supplier-inventory integration once
     SupplierInventoryIntegrationService.initialize();
+    
     const channel = supabase
       .channel('supplier-transactions-realtime')
       .on(
@@ -61,6 +62,7 @@ export function useRealtimeTransactions() {
 
     return () => {
       supabase.removeChannel(channel);
+      SupplierInventoryIntegrationService.cleanup();
     };
   }, [queryClient]);
 }
