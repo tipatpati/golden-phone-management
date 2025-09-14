@@ -176,9 +176,10 @@ export function SaleItemsSection() {
                       <Input
                         type="number"
                         step="0.01"
-                        value={item.unit_price}
-                        onChange={(e) => handleUpdatePrice(item.product_id, parseFloat(e.target.value) || 0)}
+                        value={item.unit_price || item.min_price || ''}
+                        onChange={(e) => handleUpdatePrice(item.product_id, parseFloat(e.target.value) || item.min_price || 0)}
                         className="h-8"
+                        placeholder={item.min_price ? `Min: €${item.min_price}` : 'Prezzo'}
                       />
                       {(item.min_price || item.max_price) && (
                         <div className="text-xs text-muted-foreground">
