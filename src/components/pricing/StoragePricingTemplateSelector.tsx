@@ -14,6 +14,7 @@ import type { UnitEntryForm } from '@/services/inventory/types';
 interface StoragePricingTemplateSelectorProps {
   units: UnitEntryForm[];
   onUnitsChange: (units: UnitEntryForm[]) => void;
+  onPreviewPricing?: (originalUnits: UnitEntryForm[], updatedUnits: UnitEntryForm[], templateName?: string) => void;
   title?: string;
   description?: string;
 }
@@ -21,6 +22,7 @@ interface StoragePricingTemplateSelectorProps {
 export function StoragePricingTemplateSelector({ 
   units, 
   onUnitsChange,
+  onPreviewPricing,
   title = "Storage Pricing Templates",
   description = "Apply default pricing templates based on storage capacity"
 }: StoragePricingTemplateSelectorProps) {
@@ -42,7 +44,15 @@ export function StoragePricingTemplateSelector({
 
     try {
       const result = StoragePricingTemplateService.applyTemplateDefaults(selectedTemplateId, units, undefined, forceApply);
-      onUnitsChange(result.updatedUnits);
+      
+      if (onPreviewPricing && !forceApply) {
+        // Use preview mode - don't apply immediately
+        onPreviewPricing(units, result.updatedUnits, selectedTemplate?.name);
+      } else {
+        // Apply immediately (force apply or no preview handler)
+        onUnitsChange(result.updatedUnits);
+      }
+      
       setLastAppliedResult(result);
     } catch (error) {
       console.error('Error applying template:', error);
@@ -163,7 +173,7 @@ export function StoragePricingTemplateSelector({
             size="sm"
           >
             <Wand2 className="h-4 w-4 mr-2" />
-            {forceApply ? 'Force Apply Template' : 'Apply Defaults'}
+            {onPreviewPricing && !forceApply ? 'Preview Template' : (forceApply ? 'Force Apply Template' : 'Apply Defaults')}
           </Button>
         </div>
 

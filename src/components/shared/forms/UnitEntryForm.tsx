@@ -144,6 +144,8 @@ export function UnitEntryForm({
         <StoragePricingTemplateSelector
           units={entries}
           onUnitsChange={setEntries}
+          title="Apply Pricing Template"
+          description="Select a template to automatically set pricing based on storage capacity"
         />
       )}
 

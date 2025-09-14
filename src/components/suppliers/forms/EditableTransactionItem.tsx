@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronRight, Trash2, Edit3 } from 'lucide-react';
 import { UnitEntryForm } from '@/components/shared/forms/UnitEntryForm';
+import { StoragePricingTemplateSelector } from '@/components/pricing/StoragePricingTemplateSelector';
+import { usePendingPricingChanges, type PendingPricingChange } from '@/hooks/usePendingPricingChanges';
+import { PendingPricingPreview } from '@/components/pricing/PendingPricingPreview';
 import type { EditableTransactionItem as EditableTransactionItemType } from '@/services/suppliers/types';
 import type { Product } from '@/services/inventory/types';
 import type { UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
@@ -40,6 +43,14 @@ export function EditableTransactionItem({
   calculateItemTotal
 }: EditableTransactionItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const {
+    pendingChanges,
+    hasPendingChanges,
+    addPendingChanges,
+    clearPendingChanges,
+    applyPendingChanges,
+    getPendingChangeForUnit
+  } = usePendingPricingChanges();
   
   const selectedProduct = products.find(p => p.id === item.product_id);
   const itemTotal = calculateItemTotal(item, index);
@@ -47,6 +58,40 @@ export function EditableTransactionItem({
 
   const handleUpdateBarcodes = (barcodes: string[]) => {
     onUpdateItem(index, 'unit_barcodes', barcodes);
+  };
+
+  // Handler for pricing template preview
+  const handlePreviewPricing = (originalUnits: UnitEntryFormType[], updatedUnits: UnitEntryFormType[], templateName?: string) => {
+    // Create pending changes for units that will be modified
+    const changes: PendingPricingChange[] = [];
+    
+    updatedUnits.forEach((updatedUnit, unitIndex) => {
+      const originalUnit = originalUnits[unitIndex];
+      if (originalUnit && (
+        originalUnit.price !== updatedUnit.price ||
+        originalUnit.min_price !== updatedUnit.min_price ||
+        originalUnit.max_price !== updatedUnit.max_price
+      )) {
+        changes.push({
+          unitIndex,
+          originalUnit,
+          proposedUnit: updatedUnit,
+          changeType: 'template_applied',
+          templateName
+        });
+      }
+    });
+    
+    if (changes.length > 0) {
+      addPendingChanges(changes);
+    }
+  };
+
+  // Handler for applying pending pricing changes
+  const handleApplyPendingChanges = () => {
+    applyPendingChanges(unitEntries, (updatedUnits) => {
+      onUpdateUnitEntries(index, updatedUnits);
+    });
   };
 
   return (
@@ -201,13 +246,30 @@ export function EditableTransactionItem({
                       </span>
                     </div>
                     
+                    {/* Pending Pricing Changes Preview */}
+                    {hasPendingChanges && (
+                      <PendingPricingPreview
+                        pendingChanges={pendingChanges}
+                        onApplyChanges={handleApplyPendingChanges}
+                        onCancelChanges={clearPendingChanges}
+                      />
+                    )}
+
+                    <StoragePricingTemplateSelector
+                      units={unitEntries}
+                      onUnitsChange={(updatedUnits) => onUpdateUnitEntries(index, updatedUnits)}
+                      onPreviewPricing={handlePreviewPricing}
+                      title="Apply Pricing Template to Units"
+                      description="Select a template to automatically set pricing based on storage capacity"
+                    />
+                    
                     <UnitEntryForm
                       entries={unitEntries}
                       setEntries={(entries) => onUpdateUnitEntries(index, entries)}
                       showPricing={true}
                       productId={item.product_id}
                       showBarcodeActions={true}
-                      showPricingTemplates={true}
+                      showPricingTemplates={false} // We show it separately above
                       title={`Units for ${selectedProduct.brand} ${selectedProduct.model}`}
                       className="bg-background"
                     />
