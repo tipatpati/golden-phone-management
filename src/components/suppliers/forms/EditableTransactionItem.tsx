@@ -73,12 +73,21 @@ export function EditableTransactionItem({
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              Total: ${itemTotal.toFixed(2)}
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium">
+                Total: ${itemTotal.toFixed(2)}
+              </span>
               {hasIndividualPricing && (
-                <span className="text-muted-foreground ml-1">(individual pricing)</span>
+                <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+                  Individual Pricing
+                </span>
               )}
-            </span>
+              {selectedProduct?.has_serial && (
+                <span className="text-xs px-2 py-1 bg-accent/20 text-accent-foreground rounded-full">
+                  Serialized Product
+                </span>
+              )}
+            </div>
             {canDelete && (
               <Button
                 type="button"
@@ -96,9 +105,9 @@ export function EditableTransactionItem({
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleContent>
           <CardContent className="space-y-4">
-            {/* Product Selection */}
+            {/* Product Configuration */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor={`product-${index}`}>Product</Label>
                 <Select
                   value={item.product_id}
@@ -110,15 +119,21 @@ export function EditableTransactionItem({
                   <SelectContent>
                     {products.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
-                        {product.brand} {product.model}
-                        {product.has_serial && ' (Serialized)'}
+                        <div className="flex items-center gap-2">
+                          <span>{product.brand} {product.model}</span>
+                          {product.has_serial && (
+                            <span className="text-xs px-1 py-0.5 bg-accent/20 text-accent-foreground rounded">
+                              Serialized
+                            </span>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor={`quantity-${index}`}>Quantity</Label>
                 <Input
                   id={`quantity-${index}`}
@@ -127,10 +142,17 @@ export function EditableTransactionItem({
                   value={item.quantity}
                   onChange={(e) => onUpdateItem(index, 'quantity', parseInt(e.target.value) || 1)}
                 />
+                {selectedProduct?.has_serial && (
+                  <p className="text-xs text-muted-foreground">
+                    Each unit requires individual serial number
+                  </p>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor={`unit-cost-${index}`}>Unit Cost</Label>
+              <div className="space-y-2">
+                <Label htmlFor={`unit-cost-${index}`}>
+                  {selectedProduct?.has_serial ? 'Base Unit Cost' : 'Unit Cost'}
+                </Label>
                 <Input
                   id={`unit-cost-${index}`}
                   type="number"
@@ -139,55 +161,126 @@ export function EditableTransactionItem({
                   value={item.unit_cost}
                   onChange={(e) => onUpdateItem(index, 'unit_cost', parseFloat(e.target.value) || 0)}
                 />
+                {selectedProduct?.has_serial && (
+                  <p className="text-xs text-muted-foreground">
+                    Default price, can be overridden per unit
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Unit Management for Serialized Products */}
             {selectedProduct?.has_serial && (
-              <div className="space-y-4">
+              <div className="space-y-4 border-t pt-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Unit Management</h4>
+                  <div>
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Edit3 className="w-4 h-4" />
+                      Individual Unit Management
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Configure serial numbers, pricing, and specifications for each unit
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => onToggleUnitEditing(index)}
                   >
-                    <Edit3 className="w-4 h-4 mr-2" />
-                    {editingUnits ? "Hide" : "Edit"} Units
+                    {editingUnits ? "Hide Editor" : "Edit Units"}
                   </Button>
                 </div>
 
                 {editingUnits && (
-                  <div className="border rounded-lg p-4">
+                  <div className="border rounded-lg p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium">Individual Unit Management</h5>
+                      <span className="text-sm text-muted-foreground">
+                        Configure each unit with unique pricing and details
+                      </span>
+                    </div>
+                    
                     <UnitEntryForm
                       entries={unitEntries}
                       setEntries={(entries) => onUpdateUnitEntries(index, entries)}
                       showPricing={true}
                       productId={item.product_id}
                       showBarcodeActions={true}
-                      showPricingTemplates={false}
+                      showPricingTemplates={true}
+                      title={`Units for ${selectedProduct.brand} ${selectedProduct.model}`}
+                      className="bg-background"
                     />
+                    
+                    <div className="text-xs text-muted-foreground p-2 bg-muted/30 rounded">
+                      💡 <strong>Tip:</strong> Use pricing templates to quickly apply storage-based pricing, 
+                      or set individual prices for each unit. The total will automatically update based on 
+                      individual unit prices when specified.
+                    </div>
                   </div>
                 )}
 
-                <div className="text-sm text-muted-foreground">
-                  Total for this item: ${itemTotal.toFixed(2)}
-                  {unitEntries?.length > 0 && " (based on individual unit pricing)"}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Item Total:</span>
+                    <div className="text-right">
+                      <div className="font-semibold">${itemTotal.toFixed(2)}</div>
+                      {hasIndividualPricing && (
+                        <div className="text-muted-foreground text-xs">
+                          ({unitEntries.length} units × individual pricing)
+                        </div>
+                      )}
+                      {!hasIndividualPricing && (
+                        <div className="text-muted-foreground text-xs">
+                          ({item.quantity} × ${item.unit_cost.toFixed(2)})
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {hasIndividualPricing && unitEntries.length > 0 && (
+                    <div className="mt-2 p-2 bg-accent/10 rounded text-xs">
+                      <div className="font-medium mb-1">Unit Breakdown:</div>
+                      <div className="grid grid-cols-2 gap-1">
+                        {unitEntries.slice(0, 6).map((entry, idx) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>{entry.serial || `Unit ${idx + 1}`}:</span>
+                            <span>${(entry.price || item.unit_cost).toFixed(2)}</span>
+                          </div>
+                        ))}
+                        {unitEntries.length > 6 && (
+                          <div className="col-span-2 text-center text-muted-foreground">
+                            +{unitEntries.length - 6} more units...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Barcode Management for Non-Serialized Products */}
             {selectedProduct && !selectedProduct.has_serial && (
-              <div className="space-y-2">
-                <Label htmlFor={`barcodes-${index}`}>Barcodes (one per line or comma-separated)</Label>
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor={`barcodes-${index}`} className="font-medium">Barcode Management</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add barcodes for product units (one per line or comma-separated)
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {(item.unit_barcodes?.length || 0)} barcodes
+                  </span>
+                </div>
                 <Textarea
                   id={`barcodes-${index}`}
                   value={(item.unit_barcodes || []).join('\n')}
                   onChange={(e) => handleUpdateBarcodes(e.target.value.split(/\n|,/).map(s => s.trim()).filter(Boolean))}
-                  placeholder="Enter barcodes..."
+                  placeholder="Enter barcodes (one per line)..."
                   rows={3}
+                  className="font-mono text-sm"
                 />
               </div>
             )}
