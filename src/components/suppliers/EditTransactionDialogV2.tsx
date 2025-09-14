@@ -318,10 +318,16 @@ export function EditTransactionDialogV2({
   const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
     console.log('🔄 Updating unit entries for item', itemIndex, 'with', entries.length, 'entries');
     console.log('💰 Entry prices:', entries.map(e => ({ serial: e.serial, price: e.price })));
-    setItemUnitEntries(prev => ({
-      ...prev,
-      [itemIndex]: entries
-    }));
+    console.log('📝 Current itemUnitEntries state before update:', itemUnitEntries[itemIndex]?.map(e => ({ serial: e.serial, price: e.price })));
+    
+    setItemUnitEntries(prev => {
+      const updated = {
+        ...prev,
+        [itemIndex]: entries
+      };
+      console.log('✅ Updated itemUnitEntries state for item', itemIndex, ':', updated[itemIndex]?.map(e => ({ serial: e.serial, price: e.price })));
+      return updated;
+    });
   };
 
   const toggleUnitEditing = (itemIndex: number) => {
@@ -472,9 +478,10 @@ export function EditTransactionDialogV2({
               product_id: item.product_id,
               unit_cost: item.unit_cost,
               entriesCount: unitEntries.length,
-              entriesPrices: unitEntries.map(e => ({ serial: e.serial, price: e.price }))
+              entriesPrices: unitEntries.map(e => ({ serial: e.serial, price: e.price, min_price: e.min_price, max_price: e.max_price }))
             });
-            return {
+            
+            const itemToSave = {
               product_id: item.product_id,
               quantity: item.quantity,
               unit_cost: item.unit_cost,
@@ -486,6 +493,9 @@ export function EditTransactionDialogV2({
                 product_unit_ids: item.product_unit_ids || []
               }
             };
+            
+            console.log(`🔍 Complete item ${index} unit_details.entries:`, JSON.stringify(itemToSave.unit_details.entries, null, 2));
+            return itemToSave;
           });
           
           await replaceItems.mutateAsync({

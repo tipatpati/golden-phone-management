@@ -101,6 +101,9 @@ export function EditableTransactionItem({
     console.log('📊 Original units:', unitEntries.map(u => ({ serial: u.serial, price: u.price })));
     applyPendingChanges(unitEntries, (updatedUnits) => {
       console.log('✨ Updated units:', updatedUnits.map(u => ({ serial: u.serial, price: u.price })));
+      console.log('🔄 Triggering onUpdateUnitEntries callback to sync parent state');
+      // Critical: This callback updates the parent dialog's itemUnitEntries state
+      // which is what gets saved to unit_details.entries in the database
       onUpdateUnitEntries(index, updatedUnits);
     });
   };

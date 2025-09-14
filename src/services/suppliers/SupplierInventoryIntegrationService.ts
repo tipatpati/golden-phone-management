@@ -164,8 +164,24 @@ export class SupplierInventoryIntegrationService {
         unit_cost: item.unit_cost,
         has_unit_details: !!item.unit_details,
         entries_count: item.unit_details?.entries?.length || 0,
-        entries_sample: item.unit_details?.entries?.slice(0, 3).map(e => ({ serial: e.serial, price: e.price })) || []
+        entries_with_pricing: item.unit_details?.entries?.filter(e => e.price || e.min_price || e.max_price).length || 0,
+        entries_sample: item.unit_details?.entries?.slice(0, 3).map(e => ({ 
+          serial: e.serial, 
+          price: e.price, 
+          min_price: e.min_price, 
+          max_price: e.max_price,
+          hasValidPricing: !!(e.price || e.min_price || e.max_price)
+        })) || []
       });
+      
+      if (item.unit_details?.entries?.length) {
+        console.log('🎯 [CRITICAL] Inventory service received unit entries with pricing data:');
+        item.unit_details.entries.forEach((entry, idx) => {
+          console.log(`  Entry ${idx}: ${entry.serial} - price: ${entry.price}, min: ${entry.min_price}, max: ${entry.max_price}`);
+        });
+      } else {
+        console.warn('⚠️ [CRITICAL] No unit entries in unit_details - pricing templates will not be applied to inventory!');
+      }
 
       const product = item.products || await this.getProductById(item.product_id);
       if (!product) {
