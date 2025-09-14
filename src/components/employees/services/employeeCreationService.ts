@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { EmployeeFormData } from "../types/employeeForm";
+import { EmployeeFormData } from "../forms/types";
 import { generateRandomPassword } from "../utils/passwordUtils";
 import { logger } from "@/utils/logger";
 
@@ -68,13 +68,16 @@ export class EmployeeCreationService {
       const { data: employee, error: employeeError } = await supabase
         .from('employees')
         .insert({
-          auth_user_id: userId,
+          profile_id: userId,
           first_name: formData.first_name,
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          role: formData.role,
-          is_active: true
+          department: formData.department,
+          position: formData.position,
+          salary: formData.salary ? parseFloat(formData.salary) : null,
+          hire_date: formData.hire_date,
+          status: formData.status
         })
         .select()
         .single();
@@ -86,16 +89,33 @@ export class EmployeeCreationService {
         throw new Error(`Errore nella creazione del dipendente: ${employeeError.message}`);
       }
 
-      // Create profile
+      // Create profile and user role
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: userId,
+          username: `${formData.first_name.toLowerCase()}.${formData.last_name.toLowerCase()}`,
           role: formData.role
         });
 
       if (profileError) {
-        logger.warn("Failed to create profile", { error: profileError.message }, 'EmployeeCreationService');
+        logger.error("Failed to create profile", { error: profileError.message }, 'EmployeeCreationService');
+        // Clean up created records if profile creation fails
+        await supabase.from('employees').delete().eq('profile_id', userId);
+        await supabase.auth.admin.deleteUser(userId);
+        throw new Error(`Errore nella creazione del profilo: ${profileError.message}`);
+      }
+
+      // Add role to user_roles table 
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: formData.role
+        });
+
+      if (roleError) {
+        logger.warn("Failed to add user role", { error: roleError.message }, 'EmployeeCreationService');
       }
 
       logger.info("Employee created successfully", { employeeId: employee.id }, 'EmployeeCreationService');
