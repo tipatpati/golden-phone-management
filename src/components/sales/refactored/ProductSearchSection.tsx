@@ -132,8 +132,11 @@ export function ProductSearchSection() {
     if (userRole === 'salesperson') {
       unitPrice = unit.max_price || product.max_price || product.price || 0;
     } else {
+      // For all other roles (including super_admin), use selling prices, NOT purchase prices
       if (unit.price && unit.price > 0) {
         unitPrice = unit.price;
+      } else if (unit.max_price && unit.max_price > 0) {
+        unitPrice = unit.max_price;
       } else if (product.max_price && product.max_price > 0) {
         unitPrice = product.max_price;
       } else if (product.price > 0) {
