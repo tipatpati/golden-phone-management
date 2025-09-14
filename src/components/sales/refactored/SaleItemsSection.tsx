@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   ShoppingCart, 
   Package, 
@@ -13,12 +14,21 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
+import { getSaleItemControlsState, isQuantityChangeValid } from '@/utils/saleItemsUtils';
 
 export function SaleItemsSection() {
   const { state, updateItem, removeItem } = useSaleCreation();
   const { items } = state;
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
+    const item = items.find(i => i.product_id === productId);
+    if (!item) return;
+    
+    // Check if quantity change is valid for serialized products
+    if (!isQuantityChangeValid(item.has_serial, quantity)) {
+      return;
+    }
+    
     if (quantity <= 0) {
       removeItem(productId);
       return;
@@ -55,6 +65,7 @@ export function SaleItemsSection() {
             const hasStockIssue = !item.has_serial && item.quantity > item.stock;
             const priceInRange = (!item.min_price || item.unit_price >= item.min_price) &&
                                (!item.max_price || item.unit_price <= item.max_price);
+            const controlsState = getSaleItemControlsState(item.has_serial, item.serial_number);
 
             return (
               <Card key={item.product_id} className={`p-4 ${hasStockIssue ? 'border-destructive' : ''}`}>
@@ -78,8 +89,8 @@ export function SaleItemsSection() {
                         </Badge>
                       )}
                       {item.has_serial && (
-                        <Badge variant="outline">
-                          Con IMEI
+                        <Badge variant="default">
+                          Prodotto Serializzato
                         </Badge>
                       )}
                     </div>
@@ -97,31 +108,65 @@ export function SaleItemsSection() {
                   {/* Quantity */}
                   <div className="space-y-2">
                     <Label>Quantità</Label>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleUpdateQuantity(item.product_id, parseInt(e.target.value) || 1)}
-                        className="h-8 text-center"
-                        min="1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <TooltipProvider>
+                      <div className="flex items-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
+                              disabled={controlsState.isQuantityDisabled}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          {controlsState.quantityTooltip && (
+                            <TooltipContent>
+                              <p>{controlsState.quantityTooltip}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => handleUpdateQuantity(item.product_id, parseInt(e.target.value) || 1)}
+                              className="h-8 text-center"
+                              min="1"
+                              disabled={controlsState.isQuantityDisabled}
+                            />
+                          </TooltipTrigger>
+                          {controlsState.quantityTooltip && (
+                            <TooltipContent>
+                              <p>{controlsState.quantityTooltip}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
+                              disabled={controlsState.isQuantityDisabled}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          {controlsState.quantityTooltip && (
+                            <TooltipContent>
+                              <p>{controlsState.quantityTooltip}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </div>
 
                   {/* Price */}
@@ -148,12 +193,36 @@ export function SaleItemsSection() {
                   {/* Serial */}
                   <div className="space-y-2">
                     <Label>Serial/IMEI</Label>
-                    <Input
-                      value={item.serial_number || ''}
-                      onChange={(e) => handleUpdateSerial(item.product_id, e.target.value)}
-                      placeholder={item.has_serial ? 'Richiesto' : 'Opzionale'}
-                      className="h-8"
-                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="relative">
+                            <Input
+                              value={item.serial_number || ''}
+                              onChange={(e) => handleUpdateSerial(item.product_id, e.target.value)}
+                              placeholder={item.has_serial ? 'Richiesto' : 'Opzionale'}
+                              className="h-8"
+                              disabled={controlsState.isSerialDisabled}
+                            />
+                            {controlsState.isSerialDisabled && item.serial_number && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-1 top-1 h-6 px-2 text-xs"
+                                onClick={() => handleUpdateSerial(item.product_id, '')}
+                              >
+                                Rimuovi
+                              </Button>
+                            )}
+                          </div>
+                        </TooltipTrigger>
+                        {controlsState.serialTooltip && (
+                          <TooltipContent>
+                            <p>{controlsState.serialTooltip}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Total */}

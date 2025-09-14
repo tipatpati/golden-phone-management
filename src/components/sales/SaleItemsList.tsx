@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { X, AlertTriangle, Search, RefreshCw } from "lucide-react";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
 import { useToast } from "@/hooks/use-toast";
+import { getSaleItemControlsState, isQuantityChangeValid } from '@/utils/saleItemsUtils';
 
 type SaleItem = {
   product_id: string;
@@ -20,6 +22,7 @@ type SaleItem = {
   min_price?: number;
   max_price?: number;
   serial_number?: string;
+  has_serial?: boolean;
 };
 
 type SaleItemsListProps = {
@@ -35,12 +38,14 @@ function SerialNumberInput({
   productId, 
   value, 
   onSerialNumberUpdate, 
-  allProducts 
+  allProducts,
+  disabled = false
 }: { 
   productId: string; 
   value: string; 
   onSerialNumberUpdate: (productId: string, serialNumber: string) => void;
   allProducts: any[];
+  disabled?: boolean;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -133,6 +138,7 @@ function SerialNumberInput({
             className={`h-10 md:h-12 font-mono text-sm md:text-base bg-background pr-10 ${
               validationError ? 'border-destructive focus:border-destructive' : ''
             }`}
+            disabled={disabled}
           />
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           
@@ -227,6 +233,15 @@ export function SaleItemsList({
   const handleQuantityUpdate = useCallback(async (productId: string, quantity: number) => {
     if (quantity <= 0) return;
 
+    // Find the item to check if it's serialized
+    const item = saleItems.find(i => i.product_id === productId);
+    if (!item) return;
+    
+    // Check if quantity change is valid for serialized products
+    if (!isQuantityChangeValid(item.has_serial || false, quantity)) {
+      return;
+    }
+
     // Get real-time stock for validation
     const currentStock = await StockCalculationService.fetchEffectiveStock(productId);
     
@@ -243,7 +258,7 @@ export function SaleItemsList({
     
     // Update local stock cache
     setRealTimeStock(prev => new Map(prev.set(productId, currentStock)));
-  }, [onQuantityUpdate, toast]);
+  }, [onQuantityUpdate, toast, saleItems]);
 
   if (saleItems.length === 0) {
     return null;
@@ -265,11 +280,14 @@ export function SaleItemsList({
         </Button>
       </div>
       <div className="space-y-3">
-        {saleItems.map((item) => (
-          <div 
-            key={item.product_id} 
-            className="border border-border rounded-lg p-4 md:p-6 lg:p-5 bg-card shadow-sm hover:shadow-md transition-shadow"
-          >
+        {saleItems.map((item) => {
+          const controlsState = getSaleItemControlsState(item.has_serial || false, item.serial_number);
+          
+          return (
+            <div 
+              key={item.product_id} 
+              className="border border-border rounded-lg p-4 md:p-6 lg:p-5 bg-card shadow-sm hover:shadow-md transition-shadow"
+            >
             {/* Header with product name and remove button */}
             <div className="flex items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
               <div className="flex-1 min-w-0">
@@ -315,18 +333,30 @@ export function SaleItemsList({
                   
                   return (
                     <div className="space-y-2 md:space-y-3">
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          min="1"
-                          max={availableStock}
-                          value={item.quantity}
-                          onChange={(e) => handleQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
-                          className={`h-10 md:h-12 text-center font-medium text-sm md:text-base ${
-                            hasStockWarning ? "border-destructive focus:border-destructive bg-destructive/5" : "bg-background"
-                          }`}
-                        />
-                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min="1"
+                                max={availableStock}
+                                value={item.quantity}
+                                onChange={(e) => handleQuantityUpdate(item.product_id, parseInt(e.target.value) || 0)}
+                                className={`h-10 md:h-12 text-center font-medium text-sm md:text-base ${
+                                  hasStockWarning ? "border-destructive focus:border-destructive bg-destructive/5" : "bg-background"
+                                }`}
+                                disabled={controlsState.isQuantityDisabled}
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          {controlsState.quantityTooltip && (
+                            <TooltipContent>
+                              <p>{controlsState.quantityTooltip}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                       {hasStockWarning && (
                         <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 bg-destructive/10 border border-destructive/20 rounded-md">
                           <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-destructive mt-0.5 shrink-0" />
@@ -390,12 +420,26 @@ export function SaleItemsList({
                   </Label>
                   <span className="text-xs md:text-sm text-muted-foreground">Opzionale</span>
                 </div>
-                <SerialNumberInput
-                  productId={item.product_id}
-                  value={item.serial_number || ""}
-                  onSerialNumberUpdate={onSerialNumberUpdate}
-                  allProducts={Array.isArray(allProducts) ? allProducts : []}
-                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <SerialNumberInput
+                          productId={item.product_id}
+                          value={item.serial_number || ""}
+                          onSerialNumberUpdate={onSerialNumberUpdate}
+                          allProducts={Array.isArray(allProducts) ? allProducts : []}
+                          disabled={controlsState.isSerialDisabled}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    {controlsState.serialTooltip && (
+                      <TooltipContent>
+                        <p>{controlsState.serialTooltip}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
 
@@ -412,7 +456,8 @@ export function SaleItemsList({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

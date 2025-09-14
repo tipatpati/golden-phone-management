@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect } 
 import { supabase } from '@/integrations/supabase/client';
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
 import { useToast } from '@/hooks/use-toast';
+import { getEnforcedQuantity } from '@/utils/saleItemsUtils';
 
 // Types
 export interface SaleItem {
@@ -154,15 +155,28 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       let newItems: SaleItem[];
       
       if (existingItemIndex >= 0) {
+        // For serialized products, don't increase quantity, just show warning
+        const existingItem = state.items[existingItemIndex];
+        if (existingItem.has_serial) {
+          console.log('⚠️ Cannot add more serialized items');
+          return state; // Return unchanged state
+        }
+        
         console.log('📈 Updating existing item quantity');
+        const enforcedQuantity = getEnforcedQuantity(existingItem.has_serial || false, action.payload.quantity);
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
-            ? { ...item, quantity: item.quantity + action.payload.quantity }
+            ? { ...item, quantity: item.quantity + enforcedQuantity }
             : item
         );
       } else {
         console.log('🆕 Adding new item to list');
-        newItems = [...state.items, action.payload];
+        // Enforce quantity = 1 for serialized products
+        const enforcedItem = {
+          ...action.payload,
+          quantity: getEnforcedQuantity(action.payload.has_serial || false, action.payload.quantity)
+        };
+        newItems = [...state.items, enforcedItem];
       }
       
       console.log('✅ New items array length:', newItems.length);
@@ -171,11 +185,17 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     }
 
     case 'UPDATE_ITEM': {
-      const newItems = state.items.map(item =>
-        item.product_id === action.payload.product_id
-          ? { ...item, ...action.payload.updates }
-          : item
-      );
+      const newItems = state.items.map(item => {
+        if (item.product_id === action.payload.product_id) {
+          const updates = { ...action.payload.updates };
+          // Enforce quantity = 1 for serialized products
+          if (item.has_serial && updates.quantity !== undefined) {
+            updates.quantity = getEnforcedQuantity(true, updates.quantity);
+          }
+          return { ...item, ...updates };
+        }
+        return item;
+      });
       const newState = { ...state, items: newItems };
       return calculateTotals(newState);
     }
