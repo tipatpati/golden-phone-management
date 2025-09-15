@@ -57,7 +57,16 @@ export function ProductUnitsList({ units, onEdit, onDelete, onView }: ProductUni
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Condition</span>
+                <p className="text-sm capitalize">
+                  <Badge variant={unit.condition === 'new' ? 'default' : 'secondary'} className="text-xs">
+                    {unit.condition}
+                  </Badge>
+                </p>
+              </div>
+
               {unit.barcode && (
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">Barcode</span>

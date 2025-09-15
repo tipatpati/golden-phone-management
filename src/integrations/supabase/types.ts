@@ -710,6 +710,7 @@ export type Database = {
           barcode: string | null
           battery_level: number | null
           color: string | null
+          condition: string
           created_at: string
           id: string
           max_price: number | null
@@ -729,6 +730,7 @@ export type Database = {
           barcode?: string | null
           battery_level?: number | null
           color?: string | null
+          condition?: string
           created_at?: string
           id?: string
           max_price?: number | null
@@ -748,6 +750,7 @@ export type Database = {
           barcode?: string | null
           battery_level?: number | null
           color?: string | null
+          condition?: string
           created_at?: string
           id?: string
           max_price?: number | null

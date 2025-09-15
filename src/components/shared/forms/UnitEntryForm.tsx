@@ -48,6 +48,7 @@ export function UnitEntryForm({
     const newEntry: UnitEntryForm = {
       serial: "",
       battery_level: 0,
+      condition: 'used', // Default to 'used' as per requirement
     };
     const updated = [...entries, newEntry];
     setEntries(updated);
@@ -203,7 +204,23 @@ export function UnitEntryForm({
               </div>
 
               {/* Device attributes - Responsive grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div>
+                  <Label className="text-xs font-medium mb-1 block">Condition</Label>
+                  <Select 
+                    value={entry.condition || 'used'} 
+                    onValueChange={(value) => updateEntry(index, 'condition', value as 'new' | 'used')}
+                  >
+                    <SelectTrigger className="text-sm h-10">
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      <SelectItem value="used" className="hover:bg-muted">Used</SelectItem>
+                      <SelectItem value="new" className="hover:bg-muted">New</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div>
                   <Label className="text-xs font-medium mb-1 block">Color</Label>
                   <AutocompleteInput

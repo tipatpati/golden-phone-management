@@ -46,6 +46,7 @@ describe('ThermalLabelDataService', () => {
       ram: 8,
       color: 'Blue',
       battery_level: 85,
+      condition: 'used' as const,
       status: 'available' as const,
       created_at: '2024-01-01',
       updated_at: '2024-01-01'
@@ -60,6 +61,7 @@ describe('ThermalLabelDataService', () => {
       ram: 6,
       color: 'Red',
       battery_level: 90,
+      condition: 'new' as const,
       status: 'available' as const,
       created_at: '2024-01-01',
       updated_at: '2024-01-01'
@@ -131,7 +133,8 @@ describe('ThermalLabelDataService', () => {
     const unitWithoutSpecs = {
       ...mockUnits[0],
       storage: undefined,
-      ram: undefined
+      ram: undefined,
+      condition: 'used' as const
     };
 
     vi.mocked(ProductUnitManagementService.getUnitsForProduct).mockResolvedValue([unitWithoutSpecs]);

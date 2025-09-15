@@ -18,6 +18,7 @@ export interface BaseUnit {
   purchase_price?: number;
   purchase_date?: string;
   supplier_id?: string;
+  condition?: 'new' | 'used';
   status?: 'available' | 'sold' | 'damaged' | 'repair' | 'reserved';
   created_at?: string;
   updated_at?: string;
@@ -30,6 +31,7 @@ export interface UnitFormData {
   storage?: number;
   ram?: number;
   battery_level?: number;
+  condition?: 'new' | 'used';
   price?: number;
   min_price?: number;
   max_price?: number;

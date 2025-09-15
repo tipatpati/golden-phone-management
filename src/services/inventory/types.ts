@@ -41,6 +41,7 @@ export interface ProductUnit extends BaseEntity {
   color?: string;
   storage?: number;
   ram?: number;
+  condition: 'new' | 'used';
   price?: number;
   min_price?: number;
   max_price?: number;
@@ -88,6 +89,7 @@ export interface UnitEntryForm {
   color?: string;
   storage?: number;
   ram?: number;
+  condition?: 'new' | 'used';
 }
 
 // ============================================
@@ -324,4 +326,9 @@ export const PRODUCT_STATUS_OPTIONS = [
   { value: 'sold', label: 'Sold' },
   { value: 'reserved', label: 'Reserved' },
   { value: 'damaged', label: 'Damaged' },
+] as const;
+
+export const CONDITION_OPTIONS = [
+  { value: 'new', label: 'New' },
+  { value: 'used', label: 'Used' },
 ] as const;
