@@ -16,12 +16,19 @@ import { SalesDataService } from "@/services/sales/SalesDataService";
 import { SalesAnalyticsDashboard } from "@/components/sales/SalesAnalyticsDashboard";
 import { EnhancedSalesFilters, type SalesFilters } from "@/components/sales/EnhancedSalesFilters";
 import { useSalesMonitoring } from "@/components/sales/SalesMonitoringService";
+import { AdvancedEditSaleDialog } from "@/components/sales/AdvancedEditSaleDialog";
+import { EnhancedDeleteDialog } from "@/components/sales/EnhancedDeleteDialog";
+import { BulkEditSaleDialog } from "@/components/sales/BulkEditSaleDialog";
 
 const Garentille = () => {
   const { userRole } = useAuth();
   const { trackInteraction } = useSalesMonitoring();
   const [filters, setFilters] = React.useState<SalesFilters>({});
   const [showAnalytics, setShowAnalytics] = React.useState(false);
+  const [selectedSaleForEdit, setSelectedSaleForEdit] = React.useState<Sale | null>(null);
+  const [selectedSaleForDelete, setSelectedSaleForDelete] = React.useState<Sale | null>(null);
+  const [showBulkEdit, setShowBulkEdit] = React.useState(false);
+  const [selectedSales, setSelectedSales] = React.useState<Sale[]>([]);
   
   const {
     searchTerm,
@@ -76,6 +83,39 @@ const Garentille = () => {
   const resetFilters = () => {
     setFilters({});
     trackInteraction('filters_reset');
+  };
+
+  // Enhanced CRUD handlers for super admin
+  const handleEditSale = (sale: Sale) => {
+    setSelectedSaleForEdit(sale);
+    trackInteraction('edit_sale', { saleId: sale.id });
+  };
+
+  const handleDeleteSale = (sale: Sale) => {
+    setSelectedSaleForDelete(sale);
+    trackInteraction('delete_sale_attempt', { saleId: sale.id });
+  };
+
+  const handleBulkEdit = (sales: Sale[]) => {
+    setSelectedSales(sales);
+    setShowBulkEdit(true);
+    trackInteraction('bulk_edit_open', { count: sales.length });
+  };
+
+  const handleEditSuccess = () => {
+    setSelectedSaleForEdit(null);
+    trackInteraction('edit_sale_success');
+  };
+
+  const handleDeleteSuccess = () => {
+    setSelectedSaleForDelete(null);
+    trackInteraction('delete_sale_success');
+  };
+
+  const handleBulkEditSuccess = () => {
+    setShowBulkEdit(false);
+    setSelectedSales([]);
+    trackInteraction('bulk_edit_success');
   };
 
   if (isLoading && !garentille.length) {
@@ -148,10 +188,36 @@ const Garentille = () => {
         
         <SalesList 
           sales={formattedGarentille} 
-          onEdit={userRole === 'super_admin' ? (sale) => console.log('Edit sale:', sale) : undefined}
-          onDelete={userRole === 'super_admin' ? (sale) => console.log('Delete sale:', sale) : undefined}
+          onEdit={userRole === 'super_admin' ? handleEditSale : undefined}
+          onDelete={userRole === 'super_admin' ? handleDeleteSale : undefined}
         />
       </div>
+
+      {/* Enhanced CRUD Dialogs */}
+      {selectedSaleForEdit && (
+        <AdvancedEditSaleDialog
+          sale={selectedSaleForEdit}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {selectedSaleForDelete && (
+        <EnhancedDeleteDialog
+          sale={selectedSaleForDelete}
+          open={!!selectedSaleForDelete}
+          onClose={() => setSelectedSaleForDelete(null)}
+          onSuccess={handleDeleteSuccess}
+        />
+      )}
+
+      {showBulkEdit && (
+        <BulkEditSaleDialog
+          selectedSales={selectedSales}
+          open={showBulkEdit}
+          onClose={() => setShowBulkEdit(false)}
+          onSuccess={handleBulkEditSuccess}
+        />
+      )}
     </div>
   );
 };
