@@ -4,7 +4,7 @@ import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Package, AlertTriangle, DollarSign } from "lucide-react";
+import { Edit, Trash2, Package, AlertTriangle, Euro } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface InventoryCardProps {
@@ -96,7 +96,7 @@ export function InventoryCard({
           )}
           {pricingInfo.type === 'unit-pricing' && (
             <Badge variant="outline" className="w-fit flex items-center gap-1">
-              <DollarSign className="h-3 w-3" />
+              <Euro className="h-3 w-3" />
               Prezzi Unità Individuali
             </Badge>
           )}

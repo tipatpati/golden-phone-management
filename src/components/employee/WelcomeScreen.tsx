@@ -12,7 +12,7 @@ import {
   Building2,
   BarChart3,
   Settings,
-  DollarSign,
+  Euro,
   CheckCircle,
   Calendar,
   UserCheck
@@ -105,7 +105,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
     },
     {
       title: "FINANZE",
-      icon: DollarSign,
+      icon: Euro,
       route: "/finances",
       color: "text-white",
       bgColor: "bg-[#7c3aed] hover:bg-[#6d28d9]", // Purple like "PANORAMICA" in reference

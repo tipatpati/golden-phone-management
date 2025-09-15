@@ -8,7 +8,7 @@ import {
   AlertTriangle, 
   XCircle, 
   Package, 
-  DollarSign, 
+  Euro,
   Hash,
   Tag,
   TrendingUp
@@ -92,7 +92,7 @@ export const InventoryValidationPanel: React.FC<InventoryValidationPanelProps> =
           name: 'Prezzi',
           status: 'error',
           message: 'Il prezzo minimo deve essere inferiore al massimo',
-          icon: DollarSign,
+          icon: Euro,
           severity: 'high'
         });
       } else if (price < minPrice) {
@@ -101,7 +101,7 @@ export const InventoryValidationPanel: React.FC<InventoryValidationPanelProps> =
           name: 'Prezzi',
           status: 'warning',
           message: 'Prezzo base inferiore al minimo',
-          icon: DollarSign,
+          icon: Euro,
           severity: 'medium'
         });
       } else if (maxPrice > 0 && price > maxPrice) {
@@ -110,7 +110,7 @@ export const InventoryValidationPanel: React.FC<InventoryValidationPanelProps> =
           name: 'Prezzi',
           status: 'warning',
           message: 'Prezzo base superiore al massimo',
-          icon: DollarSign,
+          icon: Euro,
           severity: 'medium'
         });
       } else {
@@ -119,7 +119,7 @@ export const InventoryValidationPanel: React.FC<InventoryValidationPanelProps> =
           name: 'Prezzi',
           status: 'valid',
           message: `Prezzo: €${price.toFixed(2)}`,
-          icon: DollarSign,
+          icon: Euro,
           severity: 'low'
         });
       }
@@ -129,7 +129,7 @@ export const InventoryValidationPanel: React.FC<InventoryValidationPanelProps> =
         name: 'Prezzi',
         status: 'error',
         message: 'Prezzo base è obbligatorio',
-        icon: DollarSign,
+        icon: Euro,
         severity: 'high'
       });
     }

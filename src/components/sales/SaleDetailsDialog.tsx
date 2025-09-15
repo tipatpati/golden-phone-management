@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, DollarSign, Printer, CheckCircle, AlertCircle } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Sale } from '@/services/sales';
 import { SaleReceiptDialog } from './SaleReceiptDialog';
@@ -229,7 +229,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <DollarSign className="h-5 w-5" />
+              <Euro className="h-5 w-5" />
               Riepilogo Vendita
             </CardTitle>
           </CardHeader>

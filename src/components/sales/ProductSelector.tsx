@@ -4,7 +4,7 @@ import { formatProductName, formatProductUnitDisplay, parseSerialString } from "
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Search, DollarSign } from "lucide-react";
+import { Search, Euro } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabaseProductApi } from "@/services/supabaseProducts";
@@ -126,7 +126,7 @@ export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelec
                 </div>
                 {product.has_serial && (
                   <Badge variant="outline" className="text-xs flex items-center gap-1">
-                    <DollarSign className="h-3 w-3" />
+                    <Euro className="h-3 w-3" />
                     Unità
                   </Badge>
                 )}

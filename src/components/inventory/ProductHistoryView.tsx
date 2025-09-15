@@ -11,7 +11,7 @@ import {
   Clock,
   User,
   Package,
-  DollarSign
+  Euro
 } from "lucide-react";
 import { InventoryManagementService } from "@/services/inventory/InventoryManagementService";
 import type { Tables } from "@/integrations/supabase/types";
@@ -184,7 +184,7 @@ export function ProductHistoryView({ productId, productUnits = [] }: ProductHist
                             {entry.type === 'product' ? (
                               <Package className="h-4 w-4" />
                             ) : (
-                              <DollarSign className="h-4 w-4" />
+                              <Euro className="h-4 w-4" />
                             )}
                             {entry.type === 'product' ? 'Product' : `Unit ${findUnitName(entry.product_unit_id!)}`}
                           </div>

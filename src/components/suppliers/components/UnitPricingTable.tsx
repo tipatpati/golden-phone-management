@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, Edit3, Save, X, DollarSign } from 'lucide-react';
+import { Calculator, Edit3, Save, X, Euro } from 'lucide-react';
 import type { UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 
 interface UnitPricingTableProps {
@@ -107,7 +107,7 @@ export function UnitPricingTable({
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <DollarSign className="w-4 h-4" />
+            <Euro className="w-4 h-4" />
             Unit Pricing Overview
           </CardTitle>
         </CardHeader>

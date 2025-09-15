@@ -7,7 +7,7 @@ import {
   CheckCircle, 
   AlertTriangle, 
   XCircle, 
-  DollarSign, 
+  Euro,
   Package, 
   User, 
   CreditCard,
@@ -143,7 +143,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
           name: 'Importo',
           status: 'warning',
           message: `Vendita di alto valore: €${totalAmount.toFixed(2)}`,
-          icon: DollarSign,
+          icon: Euro,
           severity: 'medium'
         });
       } else {
@@ -152,7 +152,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
           name: 'Importo',
           status: 'valid',
           message: `Totale: €${totalAmount.toFixed(2)}`,
-          icon: DollarSign,
+          icon: Euro,
           severity: 'low'
         });
       }

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Calculator, DollarSign, Package, Target } from 'lucide-react';
+import { Calculator, Euro, Package, Target } from 'lucide-react';
 import type { AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 
@@ -198,7 +198,7 @@ export function AcquisitionPricingManager({
           <Separator />
           <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-primary" />
+              <Euro className="w-4 h-4 text-primary" />
               <span className="font-medium">Total Acquisition Cost</span>
             </div>
             <div className="text-right">

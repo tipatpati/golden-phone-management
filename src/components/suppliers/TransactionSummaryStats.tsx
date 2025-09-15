@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   TrendingUp, 
   TrendingDown, 
-  DollarSign, 
+  Euro,
   Package, 
   Clock, 
   AlertTriangle 
@@ -62,7 +62,7 @@ export function TransactionSummaryStats({ filters = {} }: TransactionSummaryStat
     {
       title: "Total Amount",
       value: `€${summary.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-      icon: DollarSign,
+      icon: Euro,
       color: "default" as const,
       description: "All transaction types",
     },

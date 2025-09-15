@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, Download, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Clock } from 'lucide-react';
+import { CalendarIcon, Download, TrendingUp, TrendingDown, Euro, ShoppingCart, Users, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { Sale } from '@/services/sales/types';
@@ -162,7 +162,7 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Fatturato Totale</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <Euro className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">€{analytics.totalRevenue.toFixed(2)}</div>

@@ -18,10 +18,9 @@ import {
   Barcode, 
   Tag, 
   Calendar,
-  DollarSign,
+  Euro,
   Edit,
   Printer,
-  Euro,
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -282,7 +281,7 @@ export function ProductDetailsDialog({
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <Euro className="h-4 w-4" />
                     Pricing Information
                   </CardTitle>
                 </CardHeader>

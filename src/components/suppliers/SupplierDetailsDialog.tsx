@@ -22,7 +22,7 @@ import {
   ToggleLeft,
   ToggleRight,
   TrendingUp,
-  DollarSign
+  Euro
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SuppliersApiService } from "@/services/suppliers/SuppliersApiService";

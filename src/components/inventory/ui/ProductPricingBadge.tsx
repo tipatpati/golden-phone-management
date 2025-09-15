@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign } from "lucide-react";
+import { Euro } from "lucide-react";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ export function ProductPricingBadge({ product, className }: ProductPricingBadgeP
       
       {pricingInfo.type === 'unit-pricing' && (
         <Badge variant="outline" className="text-xs flex items-center gap-1">
-          <DollarSign className="h-3 w-3" />
+          <Euro className="h-3 w-3" />
           Unità
         </Badge>
       )}

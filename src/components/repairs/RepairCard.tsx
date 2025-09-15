@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Wrench, DollarSign, AlertTriangle } from "lucide-react";
+import { Calendar, User, Wrench, Euro, AlertTriangle } from "lucide-react";
 import { RepairDetailsDialog } from "./RepairDetailsDialog";
 import { EditRepairDialog } from "./EditRepairDialog";
 
@@ -165,7 +165,7 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
           
           <div className="flex items-center justify-between pt-2 border-t">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <Euro className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">Costo:</span>
               <span className="font-semibold text-lg">€{repair.cost.toFixed(2)}</span>
             </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Package, DollarSign, Calendar, User } from "lucide-react";
+import { Package, Euro, Calendar, User } from "lucide-react";
 
 interface InventoryMetricsProps {
   totalItems: number;
@@ -64,7 +64,7 @@ export function InventoryMetrics({
       {/* Total Value */}
       <div className="bg-background border rounded-lg p-4 space-y-2">
         <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-green-600" />
+          <Euro className="h-4 w-4 text-green-600" />
           <span className="text-sm font-medium">Total Value</span>
         </div>
         <div className="text-2xl font-bold text-green-600">

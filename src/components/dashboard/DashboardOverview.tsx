@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpRight, ArrowDownRight, DollarSign, ShoppingBag, Users, Calendar } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Euro, ShoppingBag, Users, Calendar } from "lucide-react";
 import { useSales } from "@/services";
 import { useRepairs } from "@/services";
 import { useClients } from "@/services/clients/ClientReactQueryService";
@@ -67,7 +67,7 @@ export function DashboardOverview() {
       value: `€${totalRevenue.toFixed(2)}`,
       change: `${revenueChange}%`,
       isPositive: parseFloat(revenueChange) >= 0,
-      icon: DollarSign,
+      icon: Euro,
       gradient: "from-blue-500 to-blue-600",
     },
     {
