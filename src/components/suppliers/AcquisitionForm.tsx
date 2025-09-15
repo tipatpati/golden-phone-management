@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Package, PackagePlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAutoSaveDraft } from '@/hooks/useAutoSaveDraft';
+import { DraftIndicator } from '@/components/ui/draft-indicator';
+import { DraftRestoreDialog } from '@/components/ui/draft-restore-dialog';
 import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
 import { NewProductItem } from './forms/NewProductItem';
@@ -32,6 +35,7 @@ interface AcquisitionFormProps {
 export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -58,6 +62,52 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       transactionDate: new Date().toISOString().split('T')[0]
     }
   });
+
+  // Prepare form data for auto-save
+  const formDataForSave = useMemo(() => ({
+    ...form.getValues(),
+    items
+  }), [form.watch(), items]);
+
+  // Auto-save draft functionality
+  const autoSave = useAutoSaveDraft('acquisition', formDataForSave, {
+    enabled: true,
+    debounceMs: 3000,
+    onDraftSaved: (draftId) => {
+      console.log('Draft saved:', draftId);
+    },
+    onError: (error) => {
+      console.error('Auto-save error:', error);
+    }
+  });
+
+  // Check for existing draft on mount
+  useEffect(() => {
+    if (autoSave.isDraftAvailable) {
+      setShowDraftDialog(true);
+    }
+  }, [autoSave.isDraftAvailable]);
+
+  const handleRestoreDraft = () => {
+    const draft = autoSave.restoreDraft();
+    if (draft && draft.formData) {
+      // Restore form values
+      if (draft.formData.supplierId) form.setValue('supplierId', draft.formData.supplierId);
+      if (draft.formData.transactionDate) form.setValue('transactionDate', draft.formData.transactionDate);
+      if (draft.formData.notes) form.setValue('notes', draft.formData.notes);
+      
+      // Restore items
+      if (draft.formData.items && Array.isArray(draft.formData.items)) {
+        setItems(draft.formData.items);
+      }
+    }
+    setShowDraftDialog(false);
+  };
+
+  const handleDiscardDraft = () => {
+    autoSave.deleteAllDrafts();
+    setShowDraftDialog(false);
+  };
 
   const addNewProductItem = useCallback(async () => {
     const newItem: AcquisitionItem = {
@@ -169,6 +219,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
       if (result.success) {
         toast.success('Supplier acquisition completed successfully');
+        // Clear the draft after successful submission
+        autoSave.deleteAllDrafts();
         onSuccess();
       } else {
         toast.error(result.errors?.join(', ') || 'Failed to complete acquisition');
@@ -185,7 +237,16 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Supplier Acquisition</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Supplier Acquisition</CardTitle>
+            <DraftIndicator
+              isAutoSaving={autoSave.isAutoSaving}
+              lastSavedAt={autoSave.lastSavedAt}
+              isDraftAvailable={autoSave.isDraftAvailable}
+              onRestoreDraft={() => setShowDraftDialog(true)}
+              onClearDraft={autoSave.deleteAllDrafts}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -306,6 +367,14 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
           </form>
         </CardContent>
       </Card>
+
+      <DraftRestoreDialog
+        isOpen={showDraftDialog}
+        onOpenChange={setShowDraftDialog}
+        draft={autoSave.loadDraft()}
+        onRestore={handleRestoreDraft}
+        onDiscard={handleDiscardDraft}
+      />
     </div>
   );
 }
