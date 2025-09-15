@@ -1,6 +1,6 @@
 import React from "react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Card } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/loading-states";
+import { Card } from "@/components/ui/updated-card";
 
 interface LoadingStateProps {
   message?: string;

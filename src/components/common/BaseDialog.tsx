@@ -4,8 +4,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Loader2 } from "lucide-react";
 import { logger } from "@/utils/logger";
 
@@ -66,7 +66,7 @@ export function BaseDialog({
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t bg-muted/30 mt-auto">
             <Button
               type="button"
-              variant="outline"
+              variant="outlined"
               onClick={onClose}
               disabled={isLoading}
               className="w-full sm:w-auto order-2 sm:order-1"

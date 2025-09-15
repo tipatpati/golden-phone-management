@@ -1,8 +1,8 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/updated-dialog';
+import { Button } from '@/components/ui/updated-button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/updated-card';
 import { Separator } from '@/components/ui/separator';
 import { Eye, User, Building, Mail, Phone, MapPin, CreditCard, CalendarDays, FileText } from 'lucide-react';
 import { format } from 'date-fns';
@@ -28,13 +28,13 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
     <Dialog>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm">
+          <Button variant="outlined" size="sm">
             <Eye className="h-4 w-4 mr-2" />
             View Details
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {client.type === "business" ? (
@@ -52,9 +52,9 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 {client.type === "business" ? (
-                  <Building className="h-5 w-5 text-purple-600" />
+                  <Building className="h-5 w-5 text-primary" />
                 ) : (
-                  <User className="h-5 w-5 text-blue-600" />
+                  <User className="h-5 w-5 text-primary" />
                 )}
                 Client Information
               </CardTitle>
@@ -68,7 +68,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
                 
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-muted-foreground">Type</div>
-                  <Badge variant="outline" className={client.type === 'business' ? 'border-purple-200 text-purple-700' : 'border-blue-200 text-blue-700'}>
+                  <Badge variant="outline" className="border-primary/20 text-primary">
                     {client.type === 'business' ? 'Business (B2B)' : 'Individual (B2C)'}
                   </Badge>
                 </div>

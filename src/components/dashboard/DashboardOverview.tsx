@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { ArrowUpRight, ArrowDownRight, Euro, ShoppingBag, Users, Calendar } from "lucide-react";
 import { useSales } from "@/services";
 import { useRepairs } from "@/services";
@@ -106,13 +106,13 @@ export function DashboardOverview() {
           onClick={() => handleCardClick(item.title)}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle variant="subtitle" className="text-on-surface-variant">{item.title}</CardTitle>
+            <CardTitle level={4} className="text-muted-foreground">{item.title}</CardTitle>
             <div className={`rounded-full bg-primary p-3 shadow-sm`}>
               <item.icon className="h-5 w-5 text-primary-foreground" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-on-surface mb-2">{item.value}</div>
+            <div className="text-3xl font-semibold text-foreground mb-2">{item.value}</div>
             <div className="flex items-center text-xs">
               {typeof item.change === 'string' && item.change.includes('%') ? (
                 <>
@@ -124,10 +124,10 @@ export function DashboardOverview() {
                   <span className={item.isPositive ? "text-green-500" : "text-red-500"}>
                     {item.change}
                   </span>
-                  <span className="text-gray-500 ml-1 hidden sm:inline">da ieri</span>
+                   <span className="text-muted-foreground ml-1 hidden sm:inline">da ieri</span>
                 </>
               ) : (
-                <span className="text-gray-500">{item.change}</span>
+                <span className="text-muted-foreground">{item.change}</span>
               )}
             </div>
           </CardContent>
