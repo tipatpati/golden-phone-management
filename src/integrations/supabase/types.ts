@@ -1473,17 +1473,17 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           id?: string | null
-          max_price?: number | null
-          min_price?: number | null
-          price?: number | null
+          max_price?: never
+          min_price?: never
+          price?: never
           product_id?: string | null
-          purchase_date?: string | null
+          purchase_date?: never
           purchase_price?: never
           ram?: number | null
           serial_number?: string | null
           status?: string | null
           storage?: number | null
-          supplier_id?: string | null
+          supplier_id?: never
           updated_at?: string | null
         }
         Update: {
@@ -1492,17 +1492,17 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           id?: string | null
-          max_price?: number | null
-          min_price?: number | null
-          price?: number | null
+          max_price?: never
+          min_price?: never
+          price?: never
           product_id?: string | null
-          purchase_date?: string | null
+          purchase_date?: never
           purchase_price?: never
           ram?: number | null
           serial_number?: string | null
           status?: string | null
           storage?: number | null
-          supplier_id?: string | null
+          supplier_id?: never
           updated_at?: string | null
         }
         Relationships: [
@@ -1518,13 +1518,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_units_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
