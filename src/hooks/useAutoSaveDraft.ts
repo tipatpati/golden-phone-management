@@ -28,7 +28,7 @@ export function useAutoSaveDraft(
 ): UseAutoSaveDraftReturn {
   const {
     enabled = true,
-    debounceMs = 3000,
+    debounceMs = 10000, // Less frequent saves
     onDraftSaved,
     onDraftLoaded,
     onError,
@@ -180,13 +180,13 @@ export function useAutoSaveDraft(
     try {
       const draft = loadDraft();
       if (draft) {
-        toast.success('Draft restored successfully');
+        // Removed intrusive toast notification
         return draft;
       }
       return null;
     } catch (error) {
       console.error('Failed to restore draft:', error);
-      toast.error('Failed to restore draft');
+      // Removed intrusive error toast
       onError?.(error as Error);
       return null;
     }
