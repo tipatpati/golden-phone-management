@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/updated-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/updated-button';
 import { Shield, AlertTriangle, Activity, Database, Users, Settings } from 'lucide-react';
 import { SecurityAuditLog } from '@/components/security/SecurityAuditLog';
 import { SecurityAlerts } from '@/components/security/SecurityAlerts';

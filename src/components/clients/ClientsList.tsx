@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { Building, User, Phone, Mail, Edit2, Trash2, Eye } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import { type Client } from "@/services";

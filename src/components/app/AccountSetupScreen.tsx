@@ -1,7 +1,7 @@
 import React from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
 import { useAuth } from "@/contexts/AuthContext";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
@@ -50,7 +50,7 @@ export function AccountSetupScreen({ variant = "loading" }: AccountSetupScreenPr
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button onClick={handleRetry} className="w-full" variant="outline">
+            <Button onClick={handleRetry} className="w-full" variant="outlined">
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
@@ -77,7 +77,7 @@ export function AccountSetupScreen({ variant = "loading" }: AccountSetupScreenPr
             <div className="text-sm text-muted-foreground text-center">
               Please contact your system administrator to complete your account setup.
             </div>
-            <Button onClick={handleSignOut} className="w-full" variant="outline">
+            <Button onClick={handleSignOut} className="w-full" variant="outlined">
               Sign Out
             </Button>
           </CardContent>

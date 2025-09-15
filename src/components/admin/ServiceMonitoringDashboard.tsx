@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/updated-card';
+import { Button } from '@/components/ui/updated-button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -168,7 +168,7 @@ export function ServiceMonitoringDashboard() {
               Service System Overview
             </div>
             <Button 
-              variant="outline" 
+              variant="outlined" 
               size="sm" 
               onClick={loadServiceMetrics}
               disabled={loading}
@@ -240,7 +240,7 @@ export function ServiceMonitoringDashboard() {
                   <div className="flex items-center gap-2">
                     {getStatusBadge(service.health.status)}
                     <Button 
-                      variant="outline" 
+                      variant="outlined" 
                       size="sm"
                       onClick={() => restartService(service.name)}
                     >

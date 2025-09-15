@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -145,7 +145,7 @@ export function UnifiedProductIntegrityDashboard() {
               <Button
                 onClick={runInitialValidation}
                 disabled={isValidating}
-                variant="outline"
+                variant="outlined"
                 size="sm"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
@@ -153,7 +153,7 @@ export function UnifiedProductIntegrityDashboard() {
               </Button>
               <Button
                 onClick={requestSync}
-                variant="outline"
+                variant="outlined"
                 size="sm"
               >
                 <Layers className="h-4 w-4 mr-2" />
