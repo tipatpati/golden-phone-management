@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/updated-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClientCard, ClientMetrics } from "./ui";
@@ -127,14 +127,14 @@ export function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClien
         {/* View Mode Toggle */}
         <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={viewMode === 'grid' ? 'filled' : 'outlined'}
             size="sm"
             onClick={() => setViewMode('grid')}
           >
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === 'list' ? 'filled' : 'outlined'}
             size="sm"
             onClick={() => setViewMode('list')}
           >
@@ -174,7 +174,7 @@ export function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClien
         <div className="text-center py-12">
           <p className="text-muted-foreground">No clients found matching your search criteria.</p>
           <Button 
-            variant="outline" 
+            variant="outlined" 
             className="mt-4"
             onClick={() => {
               setSearchTerm('');

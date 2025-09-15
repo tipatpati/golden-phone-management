@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { Edit, Trash2, User, Building, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -120,7 +120,7 @@ export function ClientCard({
           <div className="flex gap-2 pt-2">
             {onView && (
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={onView}
                 className="flex-1"
@@ -130,7 +130,7 @@ export function ClientCard({
             )}
             {onEdit && (
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={onEdit}
                 className={onView ? "" : "flex-1"}
@@ -141,7 +141,7 @@ export function ClientCard({
             )}
             {onDelete && (
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={onDelete}
                 className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"

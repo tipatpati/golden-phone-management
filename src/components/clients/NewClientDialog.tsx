@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { Plus } from "lucide-react";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ClientForm } from "./forms/ClientForm";

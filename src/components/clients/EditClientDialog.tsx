@@ -5,7 +5,7 @@ import { useUpdateClient, type Client } from "@/services";
 import { ClientFormData } from "./forms/types";
 import { toast } from "@/components/ui/sonner";
 import { Edit } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 
 interface EditClientDialogProps {
   client: Client;
