@@ -1,6 +1,6 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
 import { Loader2 } from "lucide-react";
 
 interface BaseFormProps {
@@ -38,7 +38,7 @@ export function BaseForm({
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button
               type="button"
-              variant="outline"
+              variant="outlined"
               onClick={onCancel}
               disabled={isLoading}
             >

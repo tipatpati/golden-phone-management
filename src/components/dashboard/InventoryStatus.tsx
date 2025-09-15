@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
@@ -37,14 +37,14 @@ export function InventoryStatus() {
 
   const getStockBadgeVariant = (level: string) => {
     if (level === "Critica") return "destructive";
-    return "outline";
+    return "outlined";
   };
 
   return (
     <Card className="card-glow border-0 shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-base sm:text-lg">Articoli con Scorte Basse</CardTitle>
-        <Button variant="outline" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">
+        <Button variant="outlined" size="sm" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm px-2 sm:px-3">
           Ordina Scorte
         </Button>
       </CardHeader>

@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/updated-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/updated-button";
 import { Edit2, Trash2 } from "lucide-react";
 
 interface DataField {
@@ -14,7 +14,7 @@ interface ActionButton {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
-  variant?: "default" | "outline" | "destructive";
+  variant?: "filled" | "outlined" | "destructive";
   className?: string;
 }
 
@@ -24,7 +24,7 @@ interface DataCardProps {
   icon?: React.ReactNode;
   badge?: {
     text: string;
-    variant?: "default" | "secondary" | "destructive" | "outline";
+    variant?: "default" | "secondary" | "destructive" | "outlined";
   };
   fields: DataField[];
   actions?: ActionButton[];
@@ -107,7 +107,7 @@ export function DataCard({
             {actions.map((action, index) => (
               <Button
                 key={index}
-                variant={action.variant || "default"}
+                variant={action.variant === "outlined" ? "outlined" : action.variant || "filled"}
                 size="sm"
                 className={`touch-button h-8 md:h-7 text-xs font-medium ${action.className || ''}`}
                 onClick={(e) => {
