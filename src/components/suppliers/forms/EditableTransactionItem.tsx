@@ -284,11 +284,6 @@ export function EditableTransactionItem({
 
                     <StoragePricingTemplateSelector
                       units={unitEntries}
-                      onUnitsChange={(updatedUnits) => {
-                        console.log('🏷️ Template directly updating units for item', index);
-                        console.log('📈 Template updated units:', updatedUnits.map(u => ({ serial: u.serial, price: u.price })));
-                        onUpdateUnitEntries(index, updatedUnits);
-                      }}
                       onPreviewPricing={handlePreviewPricing}
                       previewMode={true}
                       title="Apply Pricing Template to Units"

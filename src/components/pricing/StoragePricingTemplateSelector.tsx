@@ -13,7 +13,7 @@ import type { UnitEntryForm } from '@/services/inventory/types';
 
 interface StoragePricingTemplateSelectorProps {
   units: UnitEntryForm[];
-  onUnitsChange: (units: UnitEntryForm[]) => void;
+  onUnitsChange?: (units: UnitEntryForm[]) => void;
   onPreviewPricing?: (originalUnits: UnitEntryForm[], updatedUnits: UnitEntryForm[], templateName?: string) => void;
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
   title?: string;
@@ -60,8 +60,8 @@ export function StoragePricingTemplateSelector({
       if (previewMode && onPreviewPricing) {
         // Use preview mode when explicitly enabled and preview handler is available
         onPreviewPricing(units, result.updatedUnits, selectedTemplate?.name);
-      } else {
-        // Apply immediately when not in preview mode
+      } else if (onUnitsChange) {
+        // Apply immediately when not in preview mode and handler is available
         onUnitsChange(result.updatedUnits);
       }
       
