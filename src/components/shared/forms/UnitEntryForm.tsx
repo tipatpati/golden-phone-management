@@ -3,11 +3,12 @@
  * Shared between inventory and supplier modules for consistent unit data entry
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { Plus, Trash2 } from "lucide-react";
 import type { UnitEntryForm } from "@/services/inventory/types";
@@ -26,6 +27,7 @@ interface UnitEntryFormProps {
   productId?: string; // For barcode generation
   showBarcodeActions?: boolean; // To show/hide barcode generation buttons
   showPricingTemplates?: boolean; // To show/hide pricing template selector
+  enablePricingPreview?: boolean; // To enable preview mode for pricing templates
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
 }
 
@@ -39,10 +41,13 @@ export function UnitEntryForm({
   productId,
   showBarcodeActions = false,
   showPricingTemplates = false,
+  enablePricingPreview = false,
   onDefaultPricesUpdate
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
+  const [pendingPricingChanges, setPendingPricingChanges] = useState<UnitEntryForm[]>([]);
+  const [pendingTemplateName, setPendingTemplateName] = useState<string>('');
   
   const addEntry = () => {
     const newEntry: UnitEntryForm = {
@@ -69,6 +74,24 @@ export function UnitEntryForm({
   };
 
   const validEntriesCount = entries.filter(e => e.serial?.trim()).length;
+
+  const handlePreviewPricing = (originalUnits: UnitEntryForm[], updatedUnits: UnitEntryForm[], templateName?: string) => {
+    setPendingPricingChanges(updatedUnits);
+    setPendingTemplateName(templateName || '');
+  };
+
+  const handleApplyPendingChanges = () => {
+    setEntries(pendingPricingChanges);
+    setPendingPricingChanges([]);
+    setPendingTemplateName('');
+  };
+
+  const handleCancelPendingChanges = () => {
+    setPendingPricingChanges([]);
+    setPendingTemplateName('');
+  };
+
+  const hasPendingChanges = pendingPricingChanges.length > 0;
 
   // Barcode generation functions
   const generateBarcodeForEntry = async (index: number) => {
@@ -146,11 +169,60 @@ export function UnitEntryForm({
       {showPricingTemplates && showPricing && (
         <StoragePricingTemplateSelector
           units={entries}
-          onUnitsChange={setEntries}
+          onUnitsChange={enablePricingPreview ? undefined : setEntries}
+          onPreviewPricing={enablePricingPreview ? handlePreviewPricing : undefined}
           onDefaultPricesUpdate={onDefaultPricesUpdate}
+          previewMode={enablePricingPreview}
           title="Apply Pricing Template"
           description="Select a template to automatically set pricing based on storage capacity"
         />
+      )}
+
+      {/* Pending Pricing Changes */}
+      {hasPendingChanges && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm text-orange-800">
+              Pricing Template Preview: {pendingTemplateName}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-xs text-orange-700">
+              Preview of changes (not yet applied):
+            </div>
+            <div className="max-h-24 overflow-y-auto space-y-1">
+              {pendingPricingChanges.map((unit, index) => (
+                unit.price && unit.price !== entries[index]?.price ? (
+                  <div key={index} className="text-xs flex justify-between items-center bg-white p-2 rounded">
+                    <span className="truncate flex-1">
+                      {unit.serial || `Unit ${index + 1}`} ({unit.storage}GB)
+                    </span>
+                    <span className="font-medium text-orange-800">
+                      €{entries[index]?.price || 0} → €{unit.price}
+                    </span>
+                  </div>
+                ) : null
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleApplyPendingChanges}
+                size="sm"
+                className="flex-1"
+              >
+                Apply Template
+              </Button>
+              <Button 
+                onClick={handleCancelPendingChanges}
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="space-y-3">

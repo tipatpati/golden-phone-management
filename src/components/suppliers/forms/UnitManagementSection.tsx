@@ -58,6 +58,7 @@ export function UnitManagementSection({
           title={title}
           showPricing={true}
           showPricingTemplates={true}
+          enablePricingPreview={true}
         />
 
         {/* Barcode Management Toggle */}
