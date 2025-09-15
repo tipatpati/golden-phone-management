@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
 import { ROLE_CONFIGS, UserRole } from "@/types/roles";
 import { Users, Package, ShoppingCart, Settings } from "lucide-react";
 
@@ -28,11 +28,11 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
   const employeeRoles: UserRole[] = ['manager', 'inventory_manager', 'salesperson'];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">GOLDEN PHONE Portale Dipendenti</h1>
-          <p className="text-gray-600">Seleziona il tuo ruolo per continuare</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">GOLDEN PHONE Portale Dipendenti</h1>
+          <p className="text-muted-foreground">Seleziona il tuo ruolo per continuare</p>
         </div>
         
         <div className="grid md:grid-cols-3 gap-6">
@@ -56,7 +56,7 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="text-sm text-gray-600 mb-6 space-y-1">
+                  <ul className="text-sm text-muted-foreground mb-6 space-y-1">
                     {config.features.slice(0, 3).map((feature) => (
                       <li key={feature} className="flex items-center">
                         <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
@@ -83,7 +83,7 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
           <Button 
             variant="link" 
             onClick={() => onRoleSelect('admin')}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-muted-foreground hover:text-foreground"
           >
             Proprietario del negozio? Clicca qui
           </Button>

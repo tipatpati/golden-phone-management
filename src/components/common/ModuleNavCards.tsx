@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch } from "lucide-react";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
@@ -71,8 +71,8 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
   if (filteredActions.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border-0">
-      <h3 className="text-2xl font-bold text-gray-900 mb-6">Navigazione Rapida</h3>
+    <div className="bg-card rounded-xl shadow-lg p-6 border-0">
+      <h3 className="text-2xl font-bold text-foreground mb-6">Navigazione Rapida</h3>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
@@ -82,32 +82,32 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
               case 'crea garentille':
                 return {
                   bgColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
               case 'trova cliente':
                 return {
                   bgColor: "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
               case 'visualizza inventario':
                 return {
                   bgColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
               case 'nuova riparazione':
                 return {
                   bgColor: "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
               case 'fornitori':
                 return {
                   bgColor: "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
               default:
                 return {
                   bgColor: "bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700",
-                  textColor: "text-white"
+                  textColor: "text-primary-foreground"
                 };
             }
           };

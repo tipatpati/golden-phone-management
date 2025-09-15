@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { User, Building } from "lucide-react";
 import { type Client } from "@/services";
 
@@ -18,7 +18,7 @@ export const ClientsStats = ({ clients }: ClientsStatsProps) => {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-blue-700">Individual</CardTitle>
           <div className="rounded-full bg-gradient-to-br from-blue-500 to-blue-600 p-2.5 shadow-md">
-            <User className="h-4 w-4 text-white" />
+            <User className="h-4 w-4 text-primary-foreground" />
           </div>
         </CardHeader>
         <CardContent>
@@ -31,7 +31,7 @@ export const ClientsStats = ({ clients }: ClientsStatsProps) => {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-purple-700">Business</CardTitle>
           <div className="rounded-full bg-gradient-to-br from-purple-500 to-purple-600 p-2.5 shadow-md">
-            <Building className="h-4 w-4 text-white" />
+            <Building className="h-4 w-4 text-primary-foreground" />
           </div>
         </CardHeader>
         <CardContent>

@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/updated-card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/updated-button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, RefreshCw, Activity, Database, Zap } from 'lucide-react';
@@ -115,7 +115,7 @@ export function ServiceHealthDashboard() {
       case 'unhealthy':
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <Activity className="h-4 w-4 text-gray-500" />;
+        return <Activity className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -147,7 +147,7 @@ export function ServiceHealthDashboard() {
         <Button 
           onClick={refreshHealthData} 
           disabled={isRefreshing}
-          variant="outline"
+          variant="outlined"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh
