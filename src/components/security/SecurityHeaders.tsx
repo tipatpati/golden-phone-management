@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { apiConfig } from '@/config/api';
 
 export function SecurityHeaders() {
   useEffect(() => {
@@ -9,11 +10,11 @@ export function SecurityHeaders() {
       cspMeta.httpEquiv = 'Content-Security-Policy';
       cspMeta.content = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://joiwowvlujajwbarpsuc.supabase.co",
+        `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${apiConfig.supabase.url}`,
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",
-        "connect-src 'self' https://joiwowvlujajwbarpsuc.supabase.co wss://joiwowvlujajwbarpsuc.supabase.co",
+        `connect-src 'self' ${apiConfig.supabase.url} ${apiConfig.supabase.url.replace('https://', 'wss://')}`,
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'"

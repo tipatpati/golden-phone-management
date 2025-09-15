@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { apiConfig, createAuthHeaders } from "@/config/api";
 
 export function ProductExportDialog() {
   const [open, setOpen] = useState(false);
@@ -26,11 +27,9 @@ export function ProductExportDialog() {
       }
 
       const response = await fetch(
-        `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/product-bulk-operations?operation=export`,
+        `${apiConfig.functions.productBulkOperations}?operation=export`,
         {
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
+          headers: createAuthHeaders(session.session.access_token),
         }
       );
 

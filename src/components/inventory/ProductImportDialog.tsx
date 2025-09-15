@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { apiConfig, createAuthHeaders, createFormHeaders } from "@/config/api";
 
 interface ImportResult {
   success: boolean;
@@ -72,12 +73,10 @@ export function ProductImportDialog() {
       }, 200);
 
       const response = await fetch(
-        `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/product-bulk-operations?operation=import`,
+        `${apiConfig.functions.productBulkOperations}?operation=import`,
         {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
+          headers: createFormHeaders(session.session.access_token),
           body: formData,
         }
       );
@@ -122,11 +121,9 @@ export function ProductImportDialog() {
       }
 
       const response = await fetch(
-        `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/product-bulk-operations?operation=template`,
+        `${apiConfig.functions.productBulkOperations}?operation=template`,
         {
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
+          headers: createAuthHeaders(session.session.access_token),
         }
       );
 

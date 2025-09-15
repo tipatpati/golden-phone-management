@@ -6,6 +6,7 @@ import { type Sale } from "@/services";
 import QRCode from "qrcode";
 import { ReceiptContent } from "./ReceiptContent";
 import { supabase } from "@/integrations/supabase/client";
+import { apiConfig } from "@/config/api";
 
 interface SaleReceiptDialogProps {
   sale: Sale;
@@ -38,7 +39,7 @@ export function SaleReceiptDialog({
     
     try {
       // Create QR content with URL to the receipt
-      const receiptUrl = `https://joiwowvlujajwbarpsuc.supabase.co/functions/v1/capture-and-convert?sale_id=${saleId}`;
+      const receiptUrl = `${apiConfig.functions.captureAndConvert}?sale_id=${saleId}`;
       
       // Generate actual QR code
       const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
