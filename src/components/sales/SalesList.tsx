@@ -340,7 +340,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                   icon: <Trash2 className="h-3 w-3 mr-1" />,
                   label: "Elimina",
                   onClick: () => handleDeleteSale(sale),
-                  variant: "outline" as const,
+                  variant: "outlined" as const,
                   className: "text-red-600 hover:text-red-700 border-red-200/50 hover:bg-red-50"
                 }
               ] : [])

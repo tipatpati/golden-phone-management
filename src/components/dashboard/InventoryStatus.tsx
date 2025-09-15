@@ -37,7 +37,7 @@ export function InventoryStatus() {
 
   const getStockBadgeVariant = (level: string) => {
     if (level === "Critica") return "destructive";
-    return "outlined";
+    return "outline";
   };
 
   return (

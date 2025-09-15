@@ -218,7 +218,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
                   console.log('Mobile Delete clicked for supplier:', supplier.id);
                   handleDeleteSupplier(supplier);
                 },
-                variant: "outline",
+                variant: "outlined",
                 className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
               }
             ]}

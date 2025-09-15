@@ -205,7 +205,7 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
                 icon: <Trash2 className="h-3 w-3 mr-1" />,
                 label: "Delete",
                 onClick: () => handleDeleteEmployee(employee),
-                variant: "outline",
+                variant: "outlined",
                 className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
               }
             ]}

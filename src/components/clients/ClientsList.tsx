@@ -218,7 +218,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
                   icon: <Trash2 className="h-3 w-3 mr-1" />,
                   label: "Delete",
                   onClick: () => handleDeleteClient(client),
-                  variant: "outline" as const,
+                  variant: "outlined" as const,
                   className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
                 }
               ] : [])

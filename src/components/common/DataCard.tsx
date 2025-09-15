@@ -24,7 +24,7 @@ interface DataCardProps {
   icon?: React.ReactNode;
   badge?: {
     text: string;
-    variant?: "default" | "secondary" | "destructive" | "outlined";
+    variant?: "default" | "secondary" | "destructive" | "outline";
   };
   fields: DataField[];
   actions?: ActionButton[];
