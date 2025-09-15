@@ -6,6 +6,7 @@ import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2, Eye } from "luc
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import type { Sale } from "@/services/sales";
 import { SaleDetailsDialog } from "./SaleDetailsDialog";
+import { ControlledSaleDetailsDialog } from "./ControlledSaleDetailsDialog";
 import { BulkSalesActionsToolbar } from "./BulkSalesActionsToolbar";
 import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
@@ -27,6 +28,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
   const queryClient = useQueryClient();
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Sale>();
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
+  const [selectedSaleForDetails, setSelectedSaleForDetails] = useState<Sale | null>(null);
   const deleteSaleMutation = useDeleteSale();
 
   const isSelectionMode = userRole === 'super_admin';
@@ -194,34 +196,37 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     }
   ];
 
-  // Define actions
+  // Define actions - single edit button for super admin
   const actions = [
-    {
-      icon: <Eye className="h-4 w-4" />,
-      label: "Dettagli",
-      onClick: () => {}, // Required but not used when renderCustom is provided
-      renderCustom: (sale: Sale) => (
-        <SaleDetailsDialog 
-          sale={sale}
-          trigger={
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          }
-        />
-      )
-    },
-    ...(onEdit && onDelete ? [
+    ...(onEdit ? [
       {
         icon: <Edit2 className="h-4 w-4" />,
         label: "Modifica",
         onClick: onEdit,
         className: "hover:bg-amber-50 hover:text-amber-600"
-      },
+      }
+    ] : [
+      {
+        icon: <Eye className="h-4 w-4" />,
+        label: "Dettagli",
+        onClick: () => {}, // Required but not used when renderCustom is provided
+        renderCustom: (sale: Sale) => (
+          <SaleDetailsDialog 
+            sale={sale}
+            trigger={
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            }
+          />
+        )
+      }
+    ]),
+    ...(onDelete ? [
       {
         icon: <Trash2 className="h-4 w-4" />,
         label: "Elimina",
@@ -290,18 +295,16 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                 variant: getStatusColor(sale.status) as any
               }}
             headerActions={
-              <SaleDetailsDialog 
-                sale={sale} 
-                trigger={
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors border border-border/30 bg-background/50 backdrop-blur-sm shadow-sm"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                }
-              />
+              onEdit ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => onEdit(sale)}
+                  className="h-8 w-8 p-0 hover:bg-amber-50 hover:text-amber-600 transition-colors border border-border/30 bg-background/50 backdrop-blur-sm shadow-sm"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              ) : null
             }
             fields={[
               {
@@ -329,13 +332,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
               }
             ]}
             actions={[
-              ...(onEdit && onDelete ? [
+              ...(!onEdit ? [
                 {
-                  icon: <Edit2 className="h-3 w-3 mr-1" />,
-                  label: "Modifica",
-                  onClick: () => onEdit(sale),
-                  className: "hover:bg-amber-50 hover:text-amber-600 border-amber-200/50"
-                },
+                  icon: <Eye className="h-3 w-3 mr-1" />,
+                  label: "Dettagli",
+                  onClick: () => setSelectedSaleForDetails(sale),
+                  className: "hover:bg-blue-50 hover:text-blue-600 border-blue-200/50"
+                }
+              ] : []),
+              ...(onDelete ? [
                 {
                   icon: <Trash2 className="h-3 w-3 mr-1" />,
                   label: "Elimina",
@@ -360,6 +365,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         variant="destructive"
         confirmText="Delete"
       />
+
+      {/* Sale Details Dialog */}
+      {selectedSaleForDetails && (
+        <ControlledSaleDetailsDialog 
+          sale={selectedSaleForDetails}
+          open={true}
+          onClose={() => setSelectedSaleForDetails(null)}
+        />
+      )}
     </>
   );
 }
