@@ -5,6 +5,8 @@ import { ClientContactInfo } from "./ClientContactInfo";
 import { FormField } from "@/components/common/FormField";
 import { CLIENT_STATUS_OPTIONS } from "./types";
 import { useClientForm } from "./hooks/useClientForm";
+import { DraftIndicator } from "@/components/ui/draft-indicator";
+import { DraftRestoreDialog } from "@/components/ui/draft-restore-dialog";
 
 export function ClientForm({ 
   initialData, 
@@ -17,8 +19,22 @@ export function ClientForm({
     isSubmitting,
     updateField,
     handleSubmit,
-    getFieldError
+    getFieldError,
+    isDraftAvailable,
+    isAutoSaving,
+    lastSavedAt,
+    restoreDraft,
+    deleteDraft
   } = useClientForm({ initialData, onSubmit });
+
+  const [showDraftDialog, setShowDraftDialog] = React.useState(false);
+
+  // Check for draft on mount
+  React.useEffect(() => {
+    if (isDraftAvailable && !initialData) {
+      setShowDraftDialog(true);
+    }
+  }, [isDraftAvailable, initialData]);
 
   // Expose handleSubmit to parent components
   React.useEffect(() => {
@@ -30,9 +46,21 @@ export function ClientForm({
 
   return (
     <div className="space-y-6">
+      {/* Draft Indicator - Subtle positioning */}
+      <div className="flex justify-end">
+        <DraftIndicator
+          isAutoSaving={isAutoSaving}
+          lastSavedAt={lastSavedAt}
+          isDraftAvailable={isDraftAvailable}
+          onRestoreDraft={() => setShowDraftDialog(true)}
+          onClearDraft={deleteDraft}
+          className="opacity-75 hover:opacity-100 transition-opacity"
+        />
+      </div>
+
       {/* Business Information Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Client Information</h3>
+        <h3 className="text-lg font-medium">Informazioni Cliente</h3>
         <ClientBusinessInfo
           formData={formData}
           onFieldChange={updateField}
@@ -42,7 +70,7 @@ export function ClientForm({
 
       {/* Contact Information Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Contact Details</h3>
+        <h3 className="text-lg font-medium">Dettagli Contatto</h3>
         <ClientContactInfo
           formData={formData}
           onFieldChange={updateField}
@@ -52,16 +80,16 @@ export function ClientForm({
 
       {/* Status Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Client Status</h3>
+        <h3 className="text-lg font-medium">Stato Cliente</h3>
         <FormField
           type="select"
-          label="Status"
+          label="Stato"
           value={formData.status || 'active'}
           onChange={(value) => updateField('status', value)}
           options={CLIENT_STATUS_OPTIONS.map(option => ({ value: option.value, label: option.label }))}
           required
           error={getFieldError('status')}
-          description="Active clients can place orders and access services"
+          description="I clienti attivi possono effettuare ordini e accedere ai servizi"
         />
       </div>
 
@@ -71,6 +99,31 @@ export function ClientForm({
           <p className="text-sm text-destructive">{getFieldError('form')}</p>
         </div>
       )}
+
+      {/* Draft Restore Dialog */}
+      <DraftRestoreDialog
+        isOpen={showDraftDialog}
+        onOpenChange={setShowDraftDialog}
+        draft={isDraftAvailable ? { 
+          id: 'client-draft',
+          formType: 'client',
+          timestamp: Date.now(),
+          version: '1.0',
+          formData,
+          metadata: {
+            completionPercentage: 75, // Calculate based on filled fields
+            lastSavedField: 'email'
+          }
+        } : null}
+        onRestore={() => {
+          restoreDraft();
+          setShowDraftDialog(false);
+        }}
+        onDiscard={() => {
+          deleteDraft();
+          setShowDraftDialog(false);
+        }}
+      />
     </div>
   );
 }

@@ -2,13 +2,13 @@ import { z } from 'zod';
 
 export interface FormDraft {
   id: string;
-  formType: 'acquisition' | 'product' | 'client' | 'employee';
+  formType: 'acquisition' | 'product' | 'client' | 'employee' | 'sale';
   timestamp: number;
   version: string;
   formData: any;
   metadata: {
     completionPercentage: number;
-    lastSavedField: string;
+    lastSavedField?: string;
     estimatedTimeRemaining?: number;
   };
 }
@@ -224,6 +224,8 @@ export class AutoSaveDraftService {
         return ['name', 'type'];
       case 'employee':
         return ['name', 'email', 'role'];
+      case 'sale':
+        return ['items', 'formData.payment_method'];
       default:
         return [];
     }

@@ -26,36 +26,36 @@ export function DraftIndicator({
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 1) return 'ora';
+    if (diffMinutes < 60) return `${diffMinutes}m fa`;
     
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 24) return `${diffHours}h fa`;
     
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('it-IT');
   };
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-1.5 text-sm", className)}>
       {isAutoSaving && (
-        <Badge variant="secondary" className="animate-pulse">
-          <Save className="w-3 h-3 mr-1" />
-          Saving...
+        <Badge variant="secondary" className="animate-pulse h-6 px-2 text-xs">
+          <Save className="w-2.5 h-2.5 mr-1" />
+          Salvataggio...
         </Badge>
       )}
       
       {!isAutoSaving && lastSavedAt && (
-        <Badge variant="outline">
-          <Clock className="w-3 h-3 mr-1" />
-          Saved {formatLastSaved(lastSavedAt)}
+        <Badge variant="outline" className="h-6 px-2 text-xs border-muted-foreground/20">
+          <Clock className="w-2.5 h-2.5 mr-1" />
+          Salvato {formatLastSaved(lastSavedAt)}
         </Badge>
       )}
       
       {isDraftAvailable && !isAutoSaving && (
         <div className="flex items-center gap-1">
-          <Badge variant="default">
-            <AlertCircle className="w-3 h-3 mr-1" />
-            Draft available
+          <Badge variant="default" className="h-6 px-2 text-xs bg-accent/80 text-accent-foreground">
+            <AlertCircle className="w-2.5 h-2.5 mr-1" />
+            Bozza disponibile
           </Badge>
           
           {onRestoreDraft && (
@@ -63,8 +63,9 @@ export function DraftIndicator({
               size="sm"
               variant="outline"
               onClick={onRestoreDraft}
+              className="h-6 px-2 text-xs"
             >
-              Restore
+              Ripristina
             </Button>
           )}
           
@@ -73,8 +74,9 @@ export function DraftIndicator({
               size="sm"
               variant="ghost"
               onClick={onClearDraft}
+              className="h-6 px-2 text-xs"
             >
-              Clear
+              Cancella
             </Button>
           )}
         </div>

@@ -38,15 +38,17 @@ export function DraftRestoreDialog({
   const getFormTypeLabel = (formType: string) => {
     switch (formType) {
       case 'acquisition':
-        return 'Supplier Acquisition';
+        return 'Acquisizione Fornitore';
       case 'product':
-        return 'Product';
+        return 'Prodotto';
       case 'client':
-        return 'Client';
+        return 'Cliente';
       case 'employee':
-        return 'Employee';
+        return 'Dipendente';
+      case 'sale':
+        return 'Vendita';
       default:
-        return 'Form';
+        return 'Modulo';
     }
   };
 
@@ -56,30 +58,30 @@ export function DraftRestoreDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            Draft Found
+            Bozza Trovata
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                We found a saved draft of your {getFormTypeLabel(draft.formType).toLowerCase()} form. 
-                Would you like to restore it or start fresh?
+                È stata trovata una bozza salvata del modulo {getFormTypeLabel(draft.formType).toLowerCase()}. 
+                Vuoi ripristinarla o iniziare da capo?
               </p>
               
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Last saved: {formatDate(draft.timestamp)}
+                    Ultimo salvataggio: {formatDate(draft.timestamp)}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
-                    {draft.metadata.completionPercentage}% complete
+                    {draft.metadata.completionPercentage}% completato
                   </Badge>
                   {draft.metadata.lastSavedField && (
                     <span className="text-sm text-muted-foreground">
-                      Last field: {draft.metadata.lastSavedField}
+                      Ultimo campo: {draft.metadata.lastSavedField}
                     </span>
                   )}
                 </div>
@@ -90,10 +92,10 @@ export function DraftRestoreDialog({
         
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onDiscard}>
-            Start Fresh
+            Inizia da Capo
           </AlertDialogCancel>
           <AlertDialogAction onClick={onRestore}>
-            Restore Draft
+            Ripristina Bozza
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

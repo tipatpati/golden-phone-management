@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { ClientFormData } from "../types";
 import { useClientValidation } from "./useClientValidation";
 import { toast } from "@/components/ui/sonner";
-import { useSimpleDraft } from "@/hooks/useSimpleDraft";
+import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
 
 interface UseClientFormOptions {
   initialData?: Partial<ClientFormData>;
@@ -28,7 +28,24 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { validateForm, clearErrors, getFieldError, hasErrors } = useClientValidation();
-  const { hasDraft, loadDraft, clearDraft, onFormSubmitSuccess } = useSimpleDraft('client', formData, { enabled: enableDraftSaving });
+  const { 
+    isDraftAvailable, 
+    isAutoSaving, 
+    lastSavedAt, 
+    saveDraft, 
+    loadDraft, 
+    deleteDraft,
+    restoreDraft 
+  } = useAutoSaveDraft('client', formData, { 
+    enabled: enableDraftSaving,
+    debounceMs: 10000, // 10 seconds
+    onDraftSaved: () => {
+      // Silent save - no toast notification for auto-save
+    },
+    onError: (error) => {
+      console.error('Draft save error:', error);
+    }
+  });
 
   // Update form data when initial data changes
   useEffect(() => {
@@ -80,11 +97,19 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
     setIsSubmitting(true);
     try {
       await onSubmit(finalData);
-      onFormSubmitSuccess(); // Clear draft on successful submission
+      
+      // Success - clear form and show success message
+      clearErrors();
+      deleteDraft(); // Clear the draft after successful submission
+      
+      const displayName = getClientDisplayName();
+      toast.success(displayName ? `Client ${displayName} saved successfully` : "Client saved successfully");
+    } catch (error) {
+      toast.error("Failed to save client. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, validateForm, onSubmit]);
+  }, [formData, validateForm, onSubmit, clearErrors, deleteDraft, getClientDisplayName]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -112,9 +137,13 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
     getFieldError,
     hasErrors,
     getClientDisplayName,
-    // Draft methods
-    hasDraft,
+    // Enhanced draft functionality
+    isDraftAvailable,
+    isAutoSaving,
+    lastSavedAt,
+    saveDraft,
     loadDraft,
-    clearDraft
+    deleteDraft,
+    restoreDraft
   };
 }
