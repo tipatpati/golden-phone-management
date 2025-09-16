@@ -33,7 +33,7 @@ export function ProductUnitSelector({
   productCategory,
   productId
 }: ProductUnitSelectorProps) {
-  const [selectedUnits, setSelectedUnits] = useState<Set<number>>(new Set());
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [realLabels, setRealLabels] = useState<ThermalLabelData[]>([]);
 
@@ -121,11 +121,11 @@ export function ProductUnitSelector({
   }, [serialNumbers, searchTerm, realLabels, productName, productPrice, productCategory]);
 
   // Generate thermal labels from selected units using REAL data
-  const generateSelectedLabels = (selectedIndices: Set<number>): ThermalLabelData[] => {
-    return Array.from(selectedIndices).map(index => {
-      const unit = parsedUnits.find(u => u.id === index);
+  const generateSelectedLabels = (selectedSerials: Set<string>): ThermalLabelData[] => {
+    return Array.from(selectedSerials).map(serial => {
+      const unit = parsedUnits.find(u => u.serial === serial);
       if (!unit || !unit.realLabel) {
-        console.warn('No real label data for unit:', unit?.serial);
+        console.warn('No real label data for unit:', serial);
         return null;
       }
 
@@ -134,21 +134,21 @@ export function ProductUnitSelector({
     }).filter(Boolean) as ThermalLabelData[];
   };
 
-  const handleUnitToggle = (index: number) => {
+  const handleUnitToggle = (serial: string) => {
     const newSelected = new Set(selectedUnits);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
+    if (newSelected.has(serial)) {
+      newSelected.delete(serial);
     } else {
-      newSelected.add(index);
+      newSelected.add(serial);
     }
     setSelectedUnits(newSelected);
     onSelectionChange(generateSelectedLabels(newSelected));
   };
 
   const handleSelectAll = () => {
-    const allIndices = new Set(parsedUnits.map(unit => unit.id));
-    setSelectedUnits(allIndices);
-    onSelectionChange(generateSelectedLabels(allIndices));
+    const allSerials = new Set(parsedUnits.map(unit => unit.serial));
+    setSelectedUnits(allSerials);
+    onSelectionChange(generateSelectedLabels(allSerials));
   };
 
   const handleSelectNone = () => {
@@ -166,13 +166,13 @@ export function ProductUnitSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Select Units to Print ({selectedUnits.size}/{parsedUnits.length})</Label>
+        <Label className="text-sm font-medium">Select Units to Print ({selectedUnits.size}/{serialNumbers.length})</Label>
         <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleSelectAll}
-            disabled={selectedUnits.size === parsedUnits.length}
+            disabled={selectedUnits.size === serialNumbers.length}
           >
             Select All
           </Button>
@@ -210,16 +210,16 @@ export function ProductUnitSelector({
               <div
                 key={unit.id}
                 className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  selectedUnits.has(unit.id)
+                  selectedUnits.has(unit.serial)
                     ? "bg-primary/5 border-primary/20" 
                     : "hover:bg-muted/50"
                 }`}
-                onClick={() => handleUnitToggle(unit.id)}
+                onClick={() => handleUnitToggle(unit.serial)}
               >
                 <Checkbox
-                  id={`unit-${unit.id}`}
-                  checked={selectedUnits.has(unit.id)}
-                  onCheckedChange={() => handleUnitToggle(unit.id)}
+                  id={`unit-${unit.serial}`}
+                  checked={selectedUnits.has(unit.serial)}
+                  onCheckedChange={() => handleUnitToggle(unit.serial)}
                 />
                 
                 <div className="flex-1 space-y-1">
