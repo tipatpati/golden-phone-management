@@ -69,10 +69,16 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     items
   }), [form.watch(), items]);
 
-  // Auto-save draft functionality (minimal, non-intrusive)
+  // Auto-save draft functionality
   const autoSave = useAutoSaveDraft('acquisition', formDataForSave, {
-    enabled: false, // Disabled by default to reduce intrusiveness
-    debounceMs: 15000, // Save less frequently
+    enabled: true,
+    debounceMs: 10000, // 10 seconds
+    onDraftSaved: () => {
+      // Silent save - no toast notification for auto-save
+    },
+    onError: (error) => {
+      console.error('Acquisition draft save error:', error);
+    }
   });
 
   // Check for existing draft on mount
@@ -229,6 +235,18 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
   return (
     <div className="space-y-6">
+      {/* Draft Indicator - Top right, subtle */}
+      <div className="flex justify-end mb-4">
+        <DraftIndicator
+          isAutoSaving={autoSave.isAutoSaving}
+          lastSavedAt={autoSave.lastSavedAt}
+          isDraftAvailable={autoSave.isDraftAvailable}
+          onRestoreDraft={() => setShowDraftDialog(true)}
+          onClearDraft={autoSave.deleteAllDrafts}
+          className="opacity-60 hover:opacity-100 transition-opacity"
+        />
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Supplier Acquisition</CardTitle>
