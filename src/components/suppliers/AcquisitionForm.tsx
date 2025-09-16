@@ -10,9 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Package, PackagePlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAutoSaveDraft } from '@/hooks/useAutoSaveDraft';
-import { DraftIndicator } from '@/components/ui/draft-indicator';
-import { DraftRestoreDialog } from '@/components/ui/draft-restore-dialog';
+import { useSimpleDraft } from '@/hooks/useSimpleDraft';
+import { SimpleDraftButton } from '@/components/ui/simple-draft-button';
+import { SimpleDraftDialog } from '@/components/ui/simple-draft-dialog';
 import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
 import { NewProductItem } from './forms/NewProductItem';
@@ -69,43 +69,39 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     items
   }), [form.watch(), items]);
 
-  // Auto-save draft functionality
-  const autoSave = useAutoSaveDraft('acquisition', formDataForSave, {
-    enabled: true,
-    debounceMs: 10000, // 10 seconds
-    onDraftSaved: () => {
-      // Silent save - no toast notification for auto-save
-    },
-    onError: (error) => {
-      console.error('Acquisition draft save error:', error);
-    }
+  // Simple draft functionality
+  const draft = useSimpleDraft('acquisition', formDataForSave, {
+    autoSaveDelay: 10000, // 10 seconds
+    enabled: true
   });
 
   // Check for existing draft on mount
   useEffect(() => {
-    if (autoSave.isDraftAvailable) {
+    if (draft.hasDraft) {
       setShowDraftDialog(true);
     }
-  }, [autoSave.isDraftAvailable]);
+  }, [draft.hasDraft]);
 
   const handleRestoreDraft = () => {
-    const draft = autoSave.restoreDraft();
-    if (draft && draft.formData) {
+    const draftData = draft.loadDraft();
+    if (draftData) {
       // Restore form values
-      if (draft.formData.supplierId) form.setValue('supplierId', draft.formData.supplierId);
-      if (draft.formData.transactionDate) form.setValue('transactionDate', draft.formData.transactionDate);
-      if (draft.formData.notes) form.setValue('notes', draft.formData.notes);
+      if (draftData.supplierId) form.setValue('supplierId', draftData.supplierId);
+      if (draftData.transactionDate) form.setValue('transactionDate', draftData.transactionDate);
+      if (draftData.notes) form.setValue('notes', draftData.notes);
       
       // Restore items
-      if (draft.formData.items && Array.isArray(draft.formData.items)) {
-        setItems(draft.formData.items);
+      if (draftData.items && Array.isArray(draftData.items)) {
+        setItems(draftData.items);
       }
+      
+      toast.success('Draft restored successfully');
     }
     setShowDraftDialog(false);
   };
 
   const handleDiscardDraft = () => {
-    autoSave.deleteAllDrafts();
+    draft.clearDraft();
     setShowDraftDialog(false);
   };
 
@@ -220,7 +216,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       if (result.success) {
         toast.success('Supplier acquisition completed successfully');
         // Clear the draft after successful submission
-        autoSave.deleteAllDrafts();
+        draft.onFormSubmitSuccess();
         onSuccess();
       } else {
         toast.error(result.errors?.join(', ') || 'Failed to complete acquisition');
@@ -235,15 +231,12 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Draft Indicator - Top right, subtle */}
+      {/* Simple Draft Button - Top right */}
       <div className="flex justify-end mb-4">
-        <DraftIndicator
-          isAutoSaving={autoSave.isAutoSaving}
-          lastSavedAt={autoSave.lastSavedAt}
-          isDraftAvailable={autoSave.isDraftAvailable}
-          onRestoreDraft={() => setShowDraftDialog(true)}
-          onClearDraft={autoSave.deleteAllDrafts}
-          className="opacity-60 hover:opacity-100 transition-opacity"
+        <SimpleDraftButton
+          hasDraft={draft.hasDraft}
+          onRestore={() => setShowDraftDialog(true)}
+          onClear={draft.clearDraft}
         />
       </div>
 
@@ -371,12 +364,12 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         </CardContent>
       </Card>
 
-      <DraftRestoreDialog
+      <SimpleDraftDialog
         isOpen={showDraftDialog}
         onOpenChange={setShowDraftDialog}
-        draft={autoSave.loadDraft()}
         onRestore={handleRestoreDraft}
         onDiscard={handleDiscardDraft}
+        formType="acquisition"
       />
     </div>
   );
