@@ -36,6 +36,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [items, setItems] = useState<AcquisitionItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [hasCheckedInitialDraft, setHasCheckedInitialDraft] = useState(false);
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -75,12 +76,16 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     enabled: true
   });
 
-  // Check for existing draft on mount
+  // Check for existing draft only once on mount
   useEffect(() => {
-    if (draft.hasDraft) {
-      setShowDraftDialog(true);
+    if (!hasCheckedInitialDraft) {
+      const existingDraft = draft.loadDraft();
+      if (existingDraft) {
+        setShowDraftDialog(true);
+      }
+      setHasCheckedInitialDraft(true);
     }
-  }, [draft.hasDraft]);
+  }, []); // Empty dependency array - only run on mount
 
   const handleRestoreDraft = () => {
     const draftData = draft.loadDraft();
