@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Copy } from "lucide-react";
 import type { UnitEntryForm } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
@@ -69,6 +69,17 @@ export function UnitEntryForm({
 
   const updateEntry = (index: number, field: keyof UnitEntryForm, value: string | number | undefined) => {
     const updated = entries.map((e, i) => (i === index ? { ...e, [field]: value } : e));
+    setEntries(updated);
+    onStockChange?.(updated.filter(e => e.serial?.trim()).length);
+  };
+
+  const duplicateEntry = (index: number) => {
+    const entryToDuplicate = entries[index];
+    const newEntry: UnitEntryForm = {
+      ...entryToDuplicate,
+      serial: "", // Clear serial number for the duplicate
+    };
+    const updated = [...entries.slice(0, index + 1), newEntry, ...entries.slice(index + 1)];
     setEntries(updated);
     onStockChange?.(updated.filter(e => e.serial?.trim()).length);
   };
@@ -245,6 +256,16 @@ export function UnitEntryForm({
                       📊
                     </Button>
                   )}
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => duplicateEntry(index)} 
+                    className="h-8 w-8 p-0"
+                    title="Duplicate this unit"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
                   {entries.length > 1 && (
                     <Button 
                       type="button" 
@@ -252,6 +273,7 @@ export function UnitEntryForm({
                       size="sm" 
                       onClick={() => removeEntry(index)} 
                       className="h-8 w-8 p-0"
+                      title="Remove this unit"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
