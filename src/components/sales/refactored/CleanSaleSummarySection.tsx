@@ -154,18 +154,24 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
         
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotale:</span>
+            <span className="text-muted-foreground">Subtotale (senza IVA):</span>
             <span>€{subtotal.toFixed(2)}</span>
           </div>
           {discountAmount > 0 && (
-            <div className="flex justify-between text-destructive">
-              <span>Sconto:</span>
-              <span>-€{discountAmount.toFixed(2)}</span>
-            </div>
+            <>
+              <div className="flex justify-between text-destructive">
+                <span>Sconto:</span>
+                <span>-€{discountAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-medium">
+                <span>Subtotale scontato:</span>
+                <span>€{(subtotal - discountAmount).toFixed(2)}</span>
+              </div>
+            </>
           )}
           {taxAmount > 0 && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground">IVA:</span>
+              <span className="text-muted-foreground">IVA (22%):</span>
               <span>€{taxAmount.toFixed(2)}</span>
             </div>
           )}

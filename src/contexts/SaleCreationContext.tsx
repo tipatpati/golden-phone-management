@@ -91,21 +91,31 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
   
   // Prices include 22% VAT, so we need to extract the base price
   const totalWithVAT = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  const subtotal = totalWithVAT / 1.22; // Remove VAT to get base price
-  console.log('💰 Subtotal (excluding VAT):', subtotal, 'Total with VAT:', totalWithVAT);
+  const baseSubtotal = totalWithVAT / 1.22; // Remove VAT to get base price
+  console.log('💰 Base Subtotal (excluding VAT):', baseSubtotal, 'Total with VAT:', totalWithVAT);
   
+  // Apply discount to subtotal (before VAT)
   let discountAmount = 0;
   if (state.formData.discount_type && state.formData.discount_value > 0) {
     if (state.formData.discount_type === 'percentage') {
-      discountAmount = (subtotal * state.formData.discount_value) / 100;
+      discountAmount = (baseSubtotal * state.formData.discount_value) / 100;
     } else {
-      discountAmount = Math.min(state.formData.discount_value, subtotal);
+      discountAmount = Math.min(state.formData.discount_value, baseSubtotal);
     }
   }
 
-  const finalSubtotal = subtotal - discountAmount;
-  const taxAmount = finalSubtotal * 0.22; // 22% IVA
-  const totalAmount = finalSubtotal + taxAmount;
+  // Calculate final amounts after discount
+  const subtotalAfterDiscount = baseSubtotal - discountAmount;
+  const taxAmount = subtotalAfterDiscount * 0.22; // 22% IVA on discounted subtotal
+  const totalAmount = subtotalAfterDiscount + taxAmount;
+
+  console.log('💰 Discount applied to subtotal:', {
+    baseSubtotal: baseSubtotal.toFixed(2),
+    discountAmount: discountAmount.toFixed(2),
+    subtotalAfterDiscount: subtotalAfterDiscount.toFixed(2),
+    taxAmount: taxAmount.toFixed(2),
+    totalAmount: totalAmount.toFixed(2)
+  });
 
   // Validation
   const errors: string[] = [];
@@ -130,11 +140,9 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
 
   const isValid = errors.length === 0;
 
-  console.log('✅ Calculated totals:', { subtotal, discountAmount, taxAmount, totalAmount, isValid });
-
   return {
     ...state,
-    subtotal,
+    subtotal: baseSubtotal, // Original subtotal before discount
     discountAmount,
     taxAmount,
     totalAmount,
