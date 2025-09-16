@@ -71,7 +71,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
   // Simple draft functionality
   const draft = useSimpleDraft('acquisition', formDataForSave, {
-    autoSaveDelay: 10000, // 10 seconds
+    autoSaveDelay: 5000, // 5 seconds
     enabled: true
   });
 
