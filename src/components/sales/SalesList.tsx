@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2, Eye } from "lucide-react";
+import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2, Eye, Printer, Package, Euro, Clock, MapPin, Phone, Mail } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import type { Sale } from "@/services/sales";
 import { SaleDetailsDialog } from "./SaleDetailsDialog";
 import { ControlledSaleDetailsDialog } from "./ControlledSaleDetailsDialog";
+import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { BulkSalesActionsToolbar } from "./BulkSalesActionsToolbar";
 import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
@@ -29,6 +30,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Sale>();
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const [selectedSaleForDetails, setSelectedSaleForDetails] = useState<Sale | null>(null);
+  const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const deleteSaleMutation = useDeleteSale();
 
   const isSelectionMode = userRole === 'super_admin';
@@ -154,30 +156,88 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       )
     },
     {
+      key: 'client' as keyof Sale,
+      header: 'Cliente',
+      render: (value: any) => {
+        if (!value) return <span className="text-muted-foreground">N/A</span>;
+        const name = value.type === 'business' 
+          ? value.company_name 
+          : `${value.first_name || ''} ${value.last_name || ''}`.trim();
+        return (
+          <div className="space-y-1">
+            <div className="font-medium">{name || 'Cliente Anonimo'}</div>
+            {value.phone && (
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                {value.phone}
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       key: 'salesperson' as keyof Sale,
-      header: 'Salesperson',
-      render: (value: any) => typeof value === 'object' ? value.username || "Unknown" : value || "Unknown"
+      header: 'Venditore',
+      render: (value: any) => (
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground" />
+          {typeof value === 'object' ? value.username || "Unknown" : value || "Unknown"}
+        </div>
+      )
+    },
+    {
+      key: 'sale_items' as keyof Sale,
+      header: 'Prodotti',
+      render: (value: any[]) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-1">
+            <Package className="h-3 w-3 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {value?.length || 0} {value?.length === 1 ? 'prodotto' : 'prodotti'}
+            </span>
+          </div>
+          {value && value.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              {value.slice(0, 2).map((item, idx) => (
+                <div key={idx}>{item.product?.brand} {item.product?.model}</div>
+              ))}
+              {value.length > 2 && <div>+{value.length - 2} altri...</div>}
+            </div>
+          )}
+        </div>
+      )
     },
     {
       key: 'total_amount' as keyof Sale,
-      header: 'Amount',
+      header: 'Totale',
       align: 'right' as const,
       render: (value: number) => (
-        <div className="font-medium">€{value.toFixed(2)}</div>
+        <div className="space-y-1">
+          <div className="font-bold text-lg">€{value.toFixed(2)}</div>
+        </div>
       )
     },
     {
       key: 'payment_method' as keyof Sale,
-      header: 'Payment',
-      render: (value: string) => (
-        <Badge variant="outline">
-          {value.charAt(0).toUpperCase() + value.slice(1)}
-        </Badge>
+      header: 'Pagamento',
+      render: (value: string, sale: Sale) => (
+        <div className="space-y-1">
+          <Badge variant="outline" className="text-xs">
+            {value.charAt(0).toUpperCase() + value.slice(1)}
+          </Badge>
+          {value === 'hybrid' && (
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              {sale.cash_amount > 0 && <div>Contanti: €{sale.cash_amount.toFixed(2)}</div>}
+              {sale.card_amount > 0 && <div>Carta: €{sale.card_amount.toFixed(2)}</div>}
+            </div>
+          )}
+        </div>
       )
     },
     {
       key: 'status' as keyof Sale,
-      header: 'Status',
+      header: 'Stato',
       render: (value: string) => (
         <Badge variant={getStatusColor(value)}>
           {value.charAt(0).toUpperCase() + value.slice(1)}
@@ -186,18 +246,31 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     },
     {
       key: 'sale_date' as keyof Sale,
-      header: 'Data',
+      header: 'Data & Ora',
       align: 'right' as const,
       render: (value: string) => (
-        <div className="text-sm">
-          {format(new Date(value), "dd/MM/yyyy")}
+        <div className="text-sm space-y-1">
+          <div className="flex items-center gap-1">
+            <CalendarDays className="h-3 w-3 text-muted-foreground" />
+            {format(new Date(value), "dd/MM/yyyy")}
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3 text-muted-foreground" />
+            {format(new Date(value), "HH:mm")}
+          </div>
         </div>
       )
     }
   ];
 
-  // Define actions - single edit button for super admin
+  // Define actions - enhanced with print receipt
   const actions = [
+    {
+      icon: <Printer className="h-4 w-4" />,
+      label: "Stampa",
+      onClick: (sale: Sale) => setSelectedSaleForReceipt(sale),
+      className: "hover:bg-green-50 hover:text-green-600"
+    },
     ...(onEdit ? [
       {
         icon: <Edit2 className="h-4 w-4" />,
@@ -308,30 +381,110 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
             }
             fields={[
               {
-                label: "Amount",
-                value: <span className="text-base font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>,
-                className: "text-lg font-bold text-primary"
+                label: "Cliente",
+                value: (() => {
+                  const client = sale.client;
+                  if (!client) return <span className="text-muted-foreground">Cliente Anonimo</span>;
+                  const name = client.type === 'business' 
+                    ? client.company_name 
+                    : `${client.first_name || ''} ${client.last_name || ''}`.trim();
+                  return (
+                    <div className="space-y-1">
+                      <div className="font-medium">{name || 'Cliente Anonimo'}</div>
+                      {client.phone && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {client.phone}
+                        </div>
+                      )}
+                      {client.email && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {client.email}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
               },
               {
-                label: "Payment",
+                label: "Prodotti",
                 value: (
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-3 w-3 text-muted-foreground" />
-                    {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <Package className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        {sale.sale_items?.length || 0} {sale.sale_items?.length === 1 ? 'prodotto' : 'prodotti'}
+                      </span>
+                    </div>
+                    {sale.sale_items && sale.sale_items.length > 0 && (
+                      <div className="text-xs text-muted-foreground space-y-0.5">
+                        {sale.sale_items.slice(0, 2).map((item, idx) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>{item.product?.brand} {item.product?.model}</span>
+                            <span>€{item.total_price.toFixed(2)}</span>
+                          </div>
+                        ))}
+                        {sale.sale_items.length > 2 && <div>+{sale.sale_items.length - 2} altri prodotti...</div>}
+                      </div>
+                    )}
                   </div>
                 )
               },
               {
-                label: "Data",
+                label: "Totale",
+                value: <span className="text-base font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>,
+                className: "text-lg font-bold text-primary"
+              },
+              {
+                label: "Pagamento",
+                value: (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-3 w-3 text-muted-foreground" />
+                      {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
+                    </div>
+                    {sale.payment_method === 'hybrid' && (
+                      <div className="text-xs text-muted-foreground space-y-0.5">
+                        {sale.cash_amount > 0 && <div>Contanti: €{sale.cash_amount.toFixed(2)}</div>}
+                        {sale.card_amount > 0 && <div>Carta: €{sale.card_amount.toFixed(2)}</div>}
+                      </div>
+                    )}
+                  </div>
+                )
+              },
+              {
+                label: "Data & Ora",
+                value: (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-3 w-3 text-muted-foreground" />
+                      {format(new Date(sale.sale_date), "dd/MM/yyyy")}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      {format(new Date(sale.sale_date), "HH:mm")}
+                    </div>
+                  </div>
+                )
+              },
+              {
+                label: "Venditore",
                 value: (
                   <div className="flex items-center gap-2">
-                    <CalendarDays className="h-3 w-3 text-muted-foreground" />
-                    {format(new Date(sale.sale_date), "dd/MM/yyyy")}
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    {typeof sale.salesperson === 'object' ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown"}
                   </div>
                 )
               }
             ]}
             actions={[
+              {
+                icon: <Printer className="h-3 w-3 mr-1" />,
+                label: "Stampa",
+                onClick: () => setSelectedSaleForReceipt(sale),
+                className: "hover:bg-green-50 hover:text-green-600 border-green-200/50"
+              },
               ...(!onEdit ? [
                 {
                   icon: <Eye className="h-3 w-3 mr-1" />,
@@ -372,6 +525,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
           sale={selectedSaleForDetails}
           open={true}
           onClose={() => setSelectedSaleForDetails(null)}
+        />
+      )}
+
+      {/* Receipt Print Dialog */}
+      {selectedSaleForReceipt && (
+        <SaleReceiptDialog 
+          sale={selectedSaleForReceipt}
+          open={true}
+          onOpenChange={(open) => !open && setSelectedSaleForReceipt(null)}
         />
       )}
     </>
