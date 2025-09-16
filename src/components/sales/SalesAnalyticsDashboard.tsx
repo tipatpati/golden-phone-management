@@ -51,12 +51,25 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
     const totalSales = filteredSales.length;
     const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
     
-    // Payment method breakdown
+    // Payment method breakdown by count
     const paymentMethods = filteredSales.reduce((acc, sale) => {
       const method = sale.payment_method || 'unknown';
       acc[method] = (acc[method] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
+
+    // Payment method breakdown by total amounts
+    const paymentMethodTotals = filteredSales.reduce((acc, sale) => {
+      const method = sale.payment_method || 'unknown';
+      acc[method] = (acc[method] || 0) + (sale.total_amount || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Calculate specific payment totals
+    const cardPayments = (paymentMethodTotals['card'] || 0) + (paymentMethodTotals['credit_card'] || 0);
+    const cashPayments = paymentMethodTotals['cash'] || 0;
+    const hybridPayments = paymentMethodTotals['hybrid'] || 0;
+    const totalPayments = cardPayments + cashPayments + hybridPayments;
 
     // Top products
     const productSales = new Map<string, { name: string; quantity: number; revenue: number }>();
@@ -93,6 +106,11 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
       totalSales,
       avgSaleValue,
       paymentMethods,
+      paymentMethodTotals,
+      cardPayments,
+      cashPayments,
+      hybridPayments,
+      totalPayments,
       topProducts,
       statusBreakdown,
       dailySales,
@@ -209,6 +227,61 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
               </div>
               <p className="text-xs text-muted-foreground">
                 Clienti serviti
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Payment method breakdown */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagamenti Carta</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">€{analytics.cardPayments.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                Card e Credit Card
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagamenti Contanti</CardTitle>
+              <Euro className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">€{analytics.cashPayments.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                Solo contanti
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagamenti Ibridi</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">€{analytics.hybridPayments.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                Carta + Contanti
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Totale Globale</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">€{analytics.totalPayments.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                Tutti i pagamenti
               </p>
             </CardContent>
           </Card>
