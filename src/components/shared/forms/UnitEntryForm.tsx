@@ -53,7 +53,7 @@ export function UnitEntryForm({
     const newEntry: UnitEntryForm = {
       serial: "",
       battery_level: 0,
-      condition: 'used', // Default to 'used' as per requirement
+      condition: 'new', // Default to 'new' for acquisitions and new units
     };
     const updated = [...entries, newEntry];
     setEntries(updated);

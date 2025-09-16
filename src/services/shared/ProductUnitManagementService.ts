@@ -56,7 +56,7 @@ export class ProductUnitManagementService {
           color: entry.color,
           storage: entry.storage,
           ram: entry.ram,
-          condition: entry.condition ?? 'used', // Default to 'used' as specified
+          condition: entry.condition ?? 'new', // Default to 'new' for acquisitions
           price: entry.price ?? defaultPricing?.price,
           min_price: entry.min_price ?? defaultPricing?.min_price,
           max_price: entry.max_price ?? defaultPricing?.max_price,
