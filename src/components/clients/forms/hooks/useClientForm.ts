@@ -2,13 +2,15 @@ import { useState, useCallback, useEffect } from "react";
 import { ClientFormData } from "../types";
 import { useClientValidation } from "./useClientValidation";
 import { toast } from "@/components/ui/sonner";
+import { useSimpleDraft } from "@/hooks/useSimpleDraft";
 
 interface UseClientFormOptions {
   initialData?: Partial<ClientFormData>;
   onSubmit: (data: ClientFormData) => Promise<void>;
+  enableDraftSaving?: boolean;
 }
 
-export function useClientForm({ initialData, onSubmit }: UseClientFormOptions) {
+export function useClientForm({ initialData, onSubmit, enableDraftSaving = true }: UseClientFormOptions) {
   const [formData, setFormData] = useState<Partial<ClientFormData>>({
     type: 'individual',
     first_name: '',
@@ -26,6 +28,7 @@ export function useClientForm({ initialData, onSubmit }: UseClientFormOptions) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { validateForm, clearErrors, getFieldError, hasErrors } = useClientValidation();
+  const { hasDraft, loadDraft, clearDraft, onFormSubmitSuccess } = useSimpleDraft('client', formData, { enabled: enableDraftSaving });
 
   // Update form data when initial data changes
   useEffect(() => {
@@ -77,6 +80,7 @@ export function useClientForm({ initialData, onSubmit }: UseClientFormOptions) {
     setIsSubmitting(true);
     try {
       await onSubmit(finalData);
+      onFormSubmitSuccess(); // Clear draft on successful submission
     } finally {
       setIsSubmitting(false);
     }
@@ -107,6 +111,10 @@ export function useClientForm({ initialData, onSubmit }: UseClientFormOptions) {
     resetForm,
     getFieldError,
     hasErrors,
-    getClientDisplayName
+    getClientDisplayName,
+    // Draft methods
+    hasDraft,
+    loadDraft,
+    clearDraft
   };
 }
