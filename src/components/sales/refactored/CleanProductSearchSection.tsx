@@ -131,7 +131,7 @@ export function CleanProductSearchSection() {
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
-          placeholder="Cerca prodotti per brand, modello o codice..."
+          placeholder="Cerca prodotti per brand, modello, codice o ultime 4 cifre IMEI..."
           value={searchTerm}
           onChange={(e) => handleSearchInput(e.target.value)}
           className="pl-10 h-12 text-base bg-surface-container border-border/50 focus:border-primary"
