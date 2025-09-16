@@ -242,7 +242,7 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
             <CardContent>
               <div className="text-2xl font-bold">€{analytics.cardPayments.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                Card e Credit Card
+                {((analytics.cardPayments / analytics.totalRevenue) * 100).toFixed(1)}% del totale • {((analytics.paymentMethods['card'] || 0) + (analytics.paymentMethods['credit_card'] || 0))} transazioni
               </p>
             </CardContent>
           </Card>
@@ -255,7 +255,7 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
             <CardContent>
               <div className="text-2xl font-bold">€{analytics.cashPayments.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                Solo contanti
+                {((analytics.cashPayments / analytics.totalRevenue) * 100).toFixed(1)}% del totale • {analytics.paymentMethods['cash'] || 0} transazioni
               </p>
             </CardContent>
           </Card>
@@ -268,7 +268,7 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
             <CardContent>
               <div className="text-2xl font-bold">€{analytics.hybridPayments.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                Carta + Contanti
+                {((analytics.hybridPayments / analytics.totalRevenue) * 100).toFixed(1)}% del totale • {analytics.paymentMethods['hybrid'] || 0} transazioni
               </p>
             </CardContent>
           </Card>
@@ -279,9 +279,9 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">€{analytics.totalPayments.toFixed(2)}</div>
+              <div className="text-2xl font-bold">€{analytics.totalRevenue.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                Tutti i pagamenti
+                100% fatturato • {analytics.totalSales} transazioni totali
               </p>
             </CardContent>
           </Card>
