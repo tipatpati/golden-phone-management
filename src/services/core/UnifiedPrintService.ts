@@ -138,7 +138,7 @@ export class UnifiedPrintService implements IPrintService {
       color: #000;
       text-align: center;
       padding: 0.5mm 0;
-      margin-bottom: 0.5mm;
+      margin-bottom: 0;
       letter-spacing: 0.1mm;
       line-height: 1.0;
     }
