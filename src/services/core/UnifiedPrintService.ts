@@ -18,7 +18,7 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     /* Unified styles - WYSIWYG: same size for preview and print */
     @page {
-      size: 6cm 3cm landscape !important;
+      size: 6cm 3cm portrait !important;
       margin: 0mm !important;
       -webkit-print-color-adjust: exact !important;
       color-adjust: exact !important;
@@ -125,7 +125,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .serial-number {
-      font-size: 2mm;
+      font-size: 1.5mm;
       font-weight: 600;
       color: #000;
       text-align: center;
