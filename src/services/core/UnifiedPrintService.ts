@@ -94,7 +94,7 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.3mm;
+      gap: 0.4mm;
       min-height: 0;
       overflow: hidden;
     }
