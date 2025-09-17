@@ -18,7 +18,7 @@ export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
     /* Unified styles - WYSIWYG: same size for preview and print */
     @page {
-      size: 6cm 5cm portrait !important;
+      size: 6cm 3cm landscape !important;
       margin: 0mm !important;
       -webkit-print-color-adjust: exact !important;
       color-adjust: exact !important;
@@ -40,18 +40,18 @@ export class UnifiedPrintService implements IPrintService {
     
     .label-container {
       width: 6cm;
-      height: 5cm;
+      height: 3cm;
       margin: 0;
       padding: 0;
     }
     
     .thermal-label {
       width: 6cm;
-      height: 5cm;
+      height: 3cm;
       border: none;
       border-radius: 0;
       margin: 0;
-      padding: 2mm;
+      padding: 1.5mm;
       box-shadow: none;
       page-break-after: always;
       page-break-inside: avoid;
@@ -59,26 +59,26 @@ export class UnifiedPrintService implements IPrintService {
       flex-direction: column;
       justify-content: center;
       box-sizing: border-box;
-      font-size: 2.8mm;
-      gap: 1mm;
+      font-size: 2.2mm;
+      gap: 0.5mm;
       background: white;
       color: #000;
       text-align: center;
-      line-height: 1.1;
+      line-height: 1.0;
       font-family: system-ui, -apple-system, sans-serif;
       overflow: hidden;
     }
 
     .label-header {
-      min-height: 3mm;
-      border-bottom: 0.2mm solid #e5e5e5;
-      padding-bottom: 0.5mm;
-      margin-bottom: 1mm;
+      min-height: 2mm;
+      border-bottom: 0.1mm solid #e5e5e5;
+      padding-bottom: 0.3mm;
+      margin-bottom: 0.5mm;
       overflow: hidden;
     }
 
     .company-name {
-      font-size: 2.2mm;
+      font-size: 1.8mm;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
@@ -94,39 +94,38 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.5mm;
+      gap: 0.3mm;
       min-height: 0;
       overflow: hidden;
     }
 
     .product-name {
-      font-size: 4mm;
+      font-size: 3mm;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-transform: uppercase;
       letter-spacing: 0.1mm;
-      max-height: 15mm;
+      max-height: 8mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       word-break: break-word;
       hyphens: auto;
-      
     }
 
     .product-details {
-      font-size: 3mm;
+      font-size: 2.2mm;
       font-weight: 600;
-      margin-top: 0.5mm;
+      margin-top: 0.3mm;
       color: #333;
       line-height: 1.0;
     }
 
     .serial-number {
-      font-size: 2.5mm;
+      font-size: 2mm;
       font-weight: 600;
       color: #000;
       text-align: center;
@@ -134,13 +133,13 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .price {
-      font-size: 7mm;
+      font-size: 5mm;
       font-weight: 900;
       color: #000;
       text-align: center;
-      padding: 1mm 0;
-      margin-bottom: 1mm;
-      letter-spacing: 0.2mm;
+      padding: 0.5mm 0;
+      margin-bottom: 0.5mm;
+      letter-spacing: 0.1mm;
       line-height: 1.0;
     }
 
@@ -148,16 +147,16 @@ export class UnifiedPrintService implements IPrintService {
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 12mm;
-      max-height: 12mm;
+      min-height: 8mm;
+      max-height: 8mm;
       background: #ffffff;
-      padding: 1mm;
+      padding: 0.5mm;
       overflow: hidden;
     }
 
     .barcode-canvas {
-      max-width: 40mm;
-      height: 10mm;
+      max-width: 35mm;
+      height: 7mm;
       display: block;
     }
   `;
@@ -193,26 +192,26 @@ export class UnifiedPrintService implements IPrintService {
                const barcode = canvas.getAttribute('data-barcode');
                if (barcode && window.JsBarcode) {
                  try {
-                    // Unified barcode settings for WYSIWYG
-                    JsBarcode(canvas, barcode, {
-                      format: 'CODE128',
-                      width: 1.8,
-                      height: 28,
-                      displayValue: true,
-                      fontSize: 8,
-                      fontOptions: 'bold',
-                      font: 'Arial',
-                      textAlign: 'center',
-                      textPosition: 'bottom',
-                      textMargin: 2,
-                      margin: 2,
-                      background: '#ffffff',
-                      lineColor: '#000000',
-                      marginTop: 1,
-                      marginBottom: 1,
-                      marginLeft: 3,
-                      marginRight: 3
-                    });
+                     // Unified barcode settings for WYSIWYG - 6cm × 3cm optimized
+                     JsBarcode(canvas, barcode, {
+                       format: 'CODE128',
+                       width: 1.5,
+                       height: 20,
+                       displayValue: true,
+                       fontSize: 6,
+                       fontOptions: 'bold',
+                       font: 'Arial',
+                       textAlign: 'center',
+                       textPosition: 'bottom',
+                       textMargin: 1,
+                       margin: 1,
+                       background: '#ffffff',
+                       lineColor: '#000000',
+                       marginTop: 1,
+                       marginBottom: 1,
+                       marginLeft: 2,
+                       marginRight: 2
+                     });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
                  }
