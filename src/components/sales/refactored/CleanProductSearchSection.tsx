@@ -98,8 +98,8 @@ export function CleanProductSearchSection() {
       quantity: 1,
       unit_price: unitPrice,
       stock: 1,
-      min_price: product.min_price || 0,
-      max_price: product.max_price || 0,
+      min_price: unit.min_price || product.min_price || 0,
+      max_price: unit.max_price || product.max_price || 0,
       has_serial: true,
       serial_number: unit.serial_number || unit.barcode || '',
     });
