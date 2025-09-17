@@ -399,7 +399,8 @@ export class SupplierInventoryIntegrationService {
             color: entry.color,
             storage: entry.storage,
             ram: entry.ram,
-            battery_level: entry.battery_level
+            battery_level: entry.battery_level,
+            condition: entry.condition || 'used'
           });
         }
       });
@@ -506,6 +507,7 @@ export class SupplierInventoryIntegrationService {
         storage: entry.storage ? parseInt(entry.storage) : null,
         ram: entry.ram ? parseInt(entry.ram) : null,
         battery_level: entry.battery_level ? parseInt(entry.battery_level) : null,
+        condition: entry.condition || 'used',
         price: entry.price || defaultPrice,
         min_price: entry.min_price,
         max_price: entry.max_price,
