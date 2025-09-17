@@ -16,7 +16,7 @@ import { Services } from './Services';
 
 export class UnifiedPrintService implements IPrintService {
   private readonly THERMAL_LABEL_STYLES = `
-    /* Unified styles - WYSIWYG: same size for preview and print */
+    /* Zone-based thermal label styles - WYSIWYG 6cm × 3cm */
     @page {
       size: 6cm 3cm portrait !important;
       margin: 0mm !important;
@@ -49,31 +49,28 @@ export class UnifiedPrintService implements IPrintService {
       width: 6cm;
       height: 3cm;
       border: none;
-      border-radius: 0;
       margin: 0;
-      padding: 1.5mm;
+      padding: 0.8mm;
       box-shadow: none;
       page-break-after: always;
       page-break-inside: avoid;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       box-sizing: border-box;
-      font-size: 2.2mm;
-      gap: 0.5mm;
       background: white;
       color: #000;
       text-align: center;
-      line-height: 1.0;
       font-family: system-ui, -apple-system, sans-serif;
       overflow: hidden;
     }
 
+    /* Zone 1: Header - 10.6mm (0.4cm) */
     .label-header {
-      min-height: 2mm;
+      height: 4mm;
       border-bottom: 0.1mm solid #e5e5e5;
-      padding-bottom: 0.3mm;
-      margin-bottom: 0.5mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
     }
 
@@ -89,74 +86,76 @@ export class UnifiedPrintService implements IPrintService {
       text-overflow: ellipsis;
     }
 
+    /* Zone 2: Content - 18mm (1.8cm) */
     .product-info {
-      flex: 1;
+      height: 18mm;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      gap: 0.4mm;
-      min-height: 0;
+      justify-content: center;
+      gap: 0.5mm;
       overflow: hidden;
+      padding: 0.5mm 0;
     }
 
     .product-name {
-      font-size: 3mm;
-      font-weight: 800;
+      font-size: 3.7mm;
+      font-weight: 700;
       line-height: 1.0;
       color: #000;
       text-transform: uppercase;
       letter-spacing: 0.1mm;
-      max-height: 8mm;
+      max-height: 7.4mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       word-break: break-word;
-      hyphens: auto;
     }
 
     .product-details {
-      font-size: 2.2mm;
-      font-weight: 600;
-      margin-top: 0.3mm;
+      font-size: 2.6mm;
+      font-weight: 500;
       color: #333;
+      text-align: center;
       line-height: 1.0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .serial-number {
-      font-size: 1.5mm;
+      font-size: 2.1mm;
       font-weight: 600;
       color: #000;
       text-align: center;
       letter-spacing: 0.1mm;
+      line-height: 1.0;
     }
 
     .price {
-      font-size: 5mm;
-      font-weight: 900;
+      font-size: 4.7mm;
+      font-weight: 700;
       color: #000;
       text-align: center;
-      padding: 0.5mm 0;
-      margin-bottom: 0;
+      margin-top: 0.5mm;
       letter-spacing: 0.1mm;
       line-height: 1.0;
     }
 
+    /* Zone 3: Barcode - 8mm (0.8cm) with quiet zones */
     .barcode-container {
+      height: 8mm;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 8mm;
-      max-height: 8mm;
       background: #ffffff;
-      padding: 0.5mm;
       overflow: hidden;
     }
 
     .barcode-canvas {
-      max-width: 35mm;
-      height: 7mm;
+      max-width: 54.7mm; /* 5.5cm for barcode + quiet zones */
+      height: 7.4mm;
       display: block;
     }
   `;
@@ -192,26 +191,26 @@ export class UnifiedPrintService implements IPrintService {
                const barcode = canvas.getAttribute('data-barcode');
                if (barcode && window.JsBarcode) {
                  try {
-                     // Unified barcode settings for WYSIWYG - 6cm × 3cm optimized
-                     JsBarcode(canvas, barcode, {
-                       format: 'CODE128',
-                       width: 1.5,
-                       height: 20,
-                       displayValue: true,
-                       fontSize: 6,
-                       fontOptions: 'bold',
-                       font: 'Arial',
-                       textAlign: 'center',
-                       textPosition: 'bottom',
-                       textMargin: 1,
-                       margin: 1,
-                       background: '#ffffff',
-                       lineColor: '#000000',
-                       marginTop: 1,
-                       marginBottom: 1,
-                       marginLeft: 2,
-                       marginRight: 2
-                     });
+                      // Unified barcode settings matching preview exactly
+                      JsBarcode(canvas, barcode, {
+                        format: 'CODE128',
+                        width: 1.8,
+                        height: 40,
+                        displayValue: true,
+                        fontSize: 6,
+                        fontOptions: 'bold',
+                        font: 'Arial',
+                        textAlign: 'center',
+                        textPosition: 'bottom',
+                        textMargin: 2,
+                        margin: 4,
+                        background: '#ffffff',
+                        lineColor: '#000000',
+                        marginTop: 2,
+                        marginBottom: 2,
+                        marginLeft: 8,
+                        marginRight: 8
+                      });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
                  }
@@ -343,37 +342,41 @@ export class UnifiedPrintService implements IPrintService {
     
     return `
       <div class="thermal-label">
-        <!-- Header Section -->
+        <!-- Zone 1: Header -->
         <div class="label-header">
           ${formattedLabel.companyName ? `
             <div class="company-name">${this.escapeHtml(formattedLabel.companyName)}</div>
           ` : ''}
         </div>
 
-        <!-- Main Content Section -->
+        <!-- Zone 2: Content -->
         <div class="product-info">
-          <!-- Product Name with Storage/RAM/Battery - Primary focus -->
+          <!-- Product Name - 14px bold, max 2 lines -->
           <div class="product-name">
             ${this.escapeHtml(formattedLabel.productName)}
-            ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
-              <div class="product-details">
-                ${formattedLabel.storage || ''}${formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) ? ' • ' : ''}${formattedLabel.ram || ''}${formattedLabel.ram && formattedLabel.batteryLevel ? ' • ' : ''}${formattedLabel.batteryLevel || ''}
-              </div>
-            ` : ''}
           </div>
           
-          <!-- Serial Number Section -->
+          <!-- Specifications - 10px medium, single line with bullet separators -->
+          ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) ? `
+            <div class="product-details">
+              ${[formattedLabel.storage, formattedLabel.ram, formattedLabel.batteryLevel]
+                .filter(Boolean)
+                .join(' • ')}
+            </div>
+          ` : ''}
+          
+          <!-- Serial Number - 8px condensed -->
           ${formattedLabel.serialNumber ? `
             <div class="serial-number">${this.escapeHtml(formattedLabel.serialNumber)}</div>
           ` : ''}
+
+          <!-- Price - 18px bold, prominent -->
+          ${options.showPrice !== false && priceString ? `
+            <div class="price">${priceString}</div>
+          ` : ''}
         </div>
 
-        <!-- Price Section -->
-        ${options.showPrice !== false ? `
-          <div class="price">${priceString}</div>
-        ` : ''}
-
-        <!-- Barcode Section -->
+        <!-- Zone 3: Barcode with proper quiet zones -->
         ${formattedLabel.barcode ? `
           <div class="barcode-container">
             <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(formattedLabel.barcode)}"></canvas>

@@ -8,17 +8,24 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
   margin: 0,    // No margins
 };
 
-// Barcode generation settings optimized for thermal printing
+// Unified barcode generation settings for 6cm × 3cm thermal labels
+// Optimized for both scanner readability and WYSIWYG consistency
 export const BARCODE_CONFIG = {
   format: 'CODE128' as const,
-  width: 1.5,
-  height: 35,
+  width: 1.8,        // Optimized bar width for 6cm label
+  height: 40,        // Scanner-friendly height (10.5mm)
   displayValue: true,
-  fontSize: 8,
+  fontSize: 6,       // Compact text for 3cm height
+  fontOptions: 'bold' as const,
   font: 'Arial',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  margin: 2,
+  textMargin: 2,     // Minimal spacing for compact layout
+  margin: 4,         // Quiet zones for scanner compliance
   background: '#ffffff',
   lineColor: '#000000',
+  marginTop: 2,
+  marginBottom: 2,
+  marginLeft: 8,
+  marginRight: 8,
 } as const;

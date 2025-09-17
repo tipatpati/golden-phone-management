@@ -41,25 +41,25 @@ export function ThermalLabelPreview({
           ctx.clearRect(0, 0, displayWidth, displayHeight);
         }
         
-        // Generate barcode with proper settings
+        // Generate barcode with unified settings matching print service
         JsBarcode(canvas, label.barcode, {
           format: 'CODE128',
           width: 1.8,
-          height: 35,
+          height: 40,
           displayValue: true,
-          fontSize: 10,
+          fontSize: 6,
           fontOptions: 'bold',
           font: 'Arial',
           textAlign: 'center',
           textPosition: 'bottom',
-          textMargin: 4,
-          margin: 5,
+          textMargin: 2,
+          margin: 4,
           background: '#ffffff',
           lineColor: '#000000',
           marginTop: 2,
           marginBottom: 2,
-          marginLeft: 10,
-          marginRight: 10
+          marginLeft: 8,
+          marginRight: 8
         });
         
         logger.debug('Barcode generated successfully', { barcode: label.barcode }, 'ThermalLabelPreview');
@@ -112,127 +112,133 @@ export function ThermalLabelPreview({
     gap: '1px'
   };
   return <div style={labelStyle}>
-      {/* Header Section */}
+      {/* Zone 1: Header - 15px (0.4cm) */}
       <div style={{
-      minHeight: '16px',
-      borderBottom: '1px solid #e5e5e5',
-      paddingBottom: '1px',
-      marginBottom: '2px',
-      overflow: 'hidden'
-    }}>
-        {formattedLabel.companyName && <div style={{
-        fontSize: '8px',
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        color: 'hsl(var(--primary))',
-        letterSpacing: '0.5px',
-        lineHeight: '1.0',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
+        height: '15px',
+        borderBottom: '1px solid #e5e5e5',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden'
       }}>
+        {formattedLabel.companyName && (
+          <div style={{
+            fontSize: '7px',
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            color: '#000',
+            letterSpacing: '0.3px',
+            lineHeight: '1.0',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
             {formattedLabel.companyName}
-          </div>}
+          </div>
+        )}
       </div>
 
-      {/* Main Content Section */}
+      {/* Zone 2: Content - 68px (1.8cm) */}
       <div style={{
-      flex: '1',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      gap: '2px',
-      minHeight: '0',
-      overflow: 'hidden'
-    }}>
-        {/* Product Name with Storage/RAM - Primary focus */}
-        <div style={{
-        fontSize: '16px',
-        fontWeight: '800',
-        lineHeight: '1.0',
-        color: '#000',
-        textTransform: 'uppercase',
-        letterSpacing: '0.2px',
-        maxHeight: '50px',
+        height: '68px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: '2px',
         overflow: 'hidden',
-        display: '-webkit-box',
-        WebkitLineClamp: 3,
-        WebkitBoxOrient: 'vertical',
-        wordBreak: 'break-word',
-        hyphens: 'auto',
-        textAlign: 'center'
+        padding: '2px 0'
       }}>
+        {/* Product Name - 14px bold, max 2 lines */}
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '700',
+          lineHeight: '1.0',
+          color: '#000',
+          textTransform: 'uppercase',
+          letterSpacing: '0.2px',
+          maxHeight: '28px',
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          wordBreak: 'break-word',
+          textAlign: 'center'
+        }}>
           {formattedLabel.productName}
-          {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              marginTop: '1px',
-              color: '#333'
-            }}>
-              {formattedLabel.storage}
-              {formattedLabel.storage && (formattedLabel.ram || formattedLabel.batteryLevel) && ' • '}
-              {formattedLabel.ram}
-              {formattedLabel.ram && formattedLabel.batteryLevel && ' • '}
-              {formattedLabel.batteryLevel}
-            </div>
-          )}
         </div>
         
-        {/* Serial Number Section */}
-        {formattedLabel.serialNumber && <div style={{
-        fontSize: '10px',
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-        marginTop: '2px',
-        letterSpacing: '0.1px'
-      }}>
-          {formattedLabel.serialNumber}
-        </div>}
+        {/* Specifications - 10px medium, single line with bullet separators */}
+        {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
+          <div style={{
+            fontSize: '10px',
+            fontWeight: '500',
+            color: '#333',
+            textAlign: 'center',
+            lineHeight: '1.0',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {[formattedLabel.storage, formattedLabel.ram, formattedLabel.batteryLevel]
+              .filter(Boolean)
+              .join(' • ')}
+          </div>
+        )}
+        
+        {/* Serial Number - 8px condensed */}
+        {formattedLabel.serialNumber && (
+          <div style={{
+            fontSize: '8px',
+            fontWeight: '600',
+            color: '#000',
+            textAlign: 'center',
+            letterSpacing: '0.1px',
+            lineHeight: '1.0'
+          }}>
+            {formattedLabel.serialNumber}
+          </div>
+        )}
+
+        {/* Price - 18px bold, prominent */}
+        {options.includePrice && (
+          <div style={{
+            fontSize: '18px',
+            fontWeight: '700',
+            color: '#000',
+            textAlign: 'center',
+            marginTop: '2px',
+            letterSpacing: '0.2px',
+            lineHeight: '1.0'
+          }}>
+            {(() => {
+              const maxPrice = (label as any).maxPrice;
+              return (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') 
+                ? `€${maxPrice.toFixed(2)}` 
+                : '';
+            })()}
+          </div>
+        )}
       </div>
 
-      {/* Price Section */}
-      {options.includePrice && <div style={{
-      fontSize: '24px',
-      fontWeight: '900',
-      color: '#000',
-      textAlign: 'center',
-      padding: '2px 0',
-      borderTop: '2px solid #000',
-      marginBottom: '2px',
-      letterSpacing: '0.3px',
-      lineHeight: '1.0'
-    }}>
-          {(() => {
-            // Only show maxPrice, leave blank if not available
-            const maxPrice = (label as any).maxPrice;
-            return (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') 
-              ? `€${maxPrice.toFixed(2)}` 
-              : '';
-          })()}
-        </div>}
-
-      {/* Barcode Section */}
-      {formattedLabel.barcode && <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '55px',
-      maxHeight: '55px',
-      backgroundColor: '#ffffff',
-      padding: '2px',
-      overflow: 'hidden'
-    }}>
+      {/* Zone 3: Barcode - 30px (0.8cm) with proper quiet zones */}
+      {formattedLabel.barcode && (
+        <div style={{
+          height: '30px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#ffffff',
+          overflow: 'hidden'
+        }}>
           <canvas 
             ref={canvasRef} 
             style={{
-              maxWidth: '200px',
-              height: '50px',
+              maxWidth: '207px', // 5.5cm for barcode + quiet zones
+              height: '28px',
               display: 'block'
             }} 
           />
-        </div>}
-
+        </div>
+      )}
     </div>;
 }
