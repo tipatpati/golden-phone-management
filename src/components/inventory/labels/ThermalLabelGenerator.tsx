@@ -148,7 +148,7 @@ export function ThermalLabelGenerator({
             Professional Thermal Label Generator
           </DialogTitle>
           <DialogDescription className="space-y-2">
-            <div>6cm × 5cm landscape format at 203 DPI for professional thermal printers</div>
+            <div>6cm × 3cm landscape format at 96 DPI for professional thermal printers</div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">
                 {labelStats.totalLabels} total labels

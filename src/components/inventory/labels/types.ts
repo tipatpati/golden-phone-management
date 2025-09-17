@@ -3,8 +3,8 @@ export type { ThermalLabelData, ThermalLabelOptions } from "@/services/labels/ty
 
 
 export interface ThermalPrintSettings {
-  width: number;   // 6cm in pixels at 203 DPI ≈ 472px (landscape)
-  height: number;  // 5cm in pixels at 203 DPI ≈ 400px (landscape)
+  width: number;   // 6cm in pixels at 96 DPI ≈ 227px (landscape)
+  height: number;  // 3cm in pixels at 96 DPI ≈ 113px (landscape)
   dpi: number;
   margin: number;
 }

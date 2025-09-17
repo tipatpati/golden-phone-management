@@ -89,10 +89,10 @@ export function ThermalLabelPreview({
     }
   }, [label.barcode, options.includeBarcode]);
 
-  // Professional thermal label styling - 6cm × 5cm landscape (227px × 189px)
+  // Professional thermal label styling - 6cm × 3cm landscape (227px × 113px)
   const labelStyle = {
     width: '227px',   // 6cm
-    height: '189px',  // 5cm
+    height: '113px',  // 3cm
     border: '2px solid hsl(var(--border))',
     borderRadius: '4px',
     padding: '3px',
