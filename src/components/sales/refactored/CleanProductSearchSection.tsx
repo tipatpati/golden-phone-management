@@ -165,6 +165,7 @@ export function CleanProductSearchSection() {
                         Stock: {product.stock || 0}
                       </Badge>
                     )}
+                    {/* Only show selling prices, never purchase price for sales */}
                     {(product.max_price || product.price) && (
                       <span className="text-sm text-muted-foreground">
                         €{(product.max_price || product.price).toFixed(2)}
@@ -206,6 +207,7 @@ export function CleanProductSearchSection() {
                           <span className="font-mono text-xs truncate block">
                             {unit.serial_number || unit.barcode}
                           </span>
+                          {/* Only show selling prices, never purchase price for sales */}
                           {(unit.max_price || unit.price) && (
                             <span className="text-muted-foreground">
                               €{(unit.max_price || unit.price).toFixed(2)}
