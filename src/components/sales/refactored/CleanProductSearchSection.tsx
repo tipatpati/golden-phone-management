@@ -165,9 +165,14 @@ export function CleanProductSearchSection() {
                         Stock: {product.stock || 0}
                       </Badge>
                     )}
-                    {product.price && (
+                    {(product.max_price || product.price) && (
                       <span className="text-sm text-muted-foreground">
-                        €{product.price.toFixed(2)}
+                        €{(product.max_price || product.price).toFixed(2)}
+                        {product.min_price && product.max_price && product.min_price !== product.max_price && (
+                          <span className="text-xs ml-1">
+                            (da €{product.min_price.toFixed(2)})
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>
@@ -201,9 +206,14 @@ export function CleanProductSearchSection() {
                           <span className="font-mono text-xs truncate block">
                             {unit.serial_number || unit.barcode}
                           </span>
-                          {unit.price && (
+                          {(unit.max_price || unit.price) && (
                             <span className="text-muted-foreground">
-                              €{unit.price.toFixed(2)}
+                              €{(unit.max_price || unit.price).toFixed(2)}
+                              {unit.min_price && unit.max_price && unit.min_price !== unit.max_price && (
+                                <span className="text-xs ml-1">
+                                  (da €{unit.min_price.toFixed(2)})
+                                </span>
+                              )}
                             </span>
                           )}
                         </div>

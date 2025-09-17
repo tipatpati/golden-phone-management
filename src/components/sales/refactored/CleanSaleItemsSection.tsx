@@ -167,9 +167,10 @@ export function CleanSaleItemsSection() {
                     <Input
                       type="text"
                       value={item.serial_number || ''}
-                      onChange={(e) => handleUpdateSerial(item.product_id, e.target.value)}
                       placeholder="Numero seriale"
                       className="h-8 text-sm font-mono"
+                      readOnly
+                      disabled
                     />
                   ) : (
                     <span className="text-xs text-muted-foreground">-</span>
