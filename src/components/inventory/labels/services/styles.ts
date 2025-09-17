@@ -141,7 +141,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
 
     .thermal-label {
       width: 227px;  /* 6cm */
-      height: 113.5px; /* 5cm */
+      height: 113px; /* 3cm */
       border: 1px solid #ddd;
       padding: 3px;
       background: white;

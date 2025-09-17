@@ -3,7 +3,7 @@ import { ThermalPrintSettings } from "../types";
 // Centralized configuration for thermal label printing
 export const PRINT_SETTINGS: ThermalPrintSettings = {
   width: 227,   // 6cm at 96 DPI (6cm * 37.8 pixels/cm)
-  height: 189,  // 5cm at 96 DPI (5cm * 37.8 pixels/cm)
+  height: 113,  // 3cm at 96 DPI (3cm * 37.8 pixels/cm)
   dpi: 96,      // Standard browser DPI
   margin: 0,    // No margins
 };
