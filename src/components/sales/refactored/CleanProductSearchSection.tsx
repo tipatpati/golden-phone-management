@@ -48,13 +48,8 @@ export function CleanProductSearchSection() {
       return;
     }
 
-    // Determine unit price based on user role and pricing
-    let unitPrice = 0;
-    if (user.user_metadata?.role === 'super_admin' && product.price) {
-      unitPrice = product.price;
-    } else {
-      unitPrice = product.price || product.min_price || 0;
-    }
+    // Use max selling price for sales (no purchase price)
+    let unitPrice = product.max_price || product.price || 0;
 
     if (unitPrice <= 0) {
       toast.error('Prezzo del prodotto non disponibile');
@@ -85,12 +80,8 @@ export function CleanProductSearchSection() {
   const handleUnitSelect = (product: Product, unit: any) => {
     if (!user) return;
 
-    let unitPrice = 0;
-    if (user.user_metadata?.role === 'super_admin' && unit.purchase_price) {
-      unitPrice = unit.purchase_price;
-    } else {
-      unitPrice = unit.price || product.min_price || 0;
-    }
+    // Use max selling price for sales (no purchase price)
+    let unitPrice = unit.max_price || unit.price || product.max_price || product.price || 0;
 
     if (unitPrice <= 0) {
       toast.error('Prezzo dell\'unità non disponibile');
