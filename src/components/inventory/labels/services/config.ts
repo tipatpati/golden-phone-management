@@ -12,7 +12,7 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 // Optimized for both scanner readability and WYSIWYG consistency
 export const BARCODE_CONFIG = {
   format: 'CODE128' as const,
-  width: 1.8,        // Optimized bar width for 6cm label
+  width: 1.4,        // Optimized bar width for 6cm label
   height: 50,        // Scanner-friendly height with space for text
   displayValue: true,
   fontSize: 6,       // Compact text for 3cm height

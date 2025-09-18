@@ -19,7 +19,7 @@ export function ThermalLabelPreview({
     if (options.includeBarcode && label.barcode) {
       try {
         // Generate high-quality SVG barcode for crisp preview
-        const svgMarkup = BarcodeRenderer.generatePreview(label.barcode);
+        const svgMarkup = BarcodeRenderer.generateThermalPrint(label.barcode);
         setBarcodeMarkup(svgMarkup);
       } catch (error) {
         console.error('Failed to generate barcode:', error);
