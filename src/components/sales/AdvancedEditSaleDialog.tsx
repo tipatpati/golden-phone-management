@@ -90,25 +90,43 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
 
   const handleSubmit = async () => {
     try {
-      const updateData: Partial<CreateSaleData> = {
-        client_id: clientId || undefined,
-        salesperson_id: salespersonId,
-        status: status as any,
-        payment_method: paymentMethod as any,
-        payment_type: paymentType as any,
-        cash_amount: cashAmount,
-        card_amount: cardAmount,
-        bank_transfer_amount: bankTransferAmount,
-        discount_amount: discountAmountCalc,
-        discount_percentage: discountPercentage,
-        notes,
-        sale_items: saleItems.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          serial_number: item.serial_number
-        }))
-      };
+      // Build optimized update data - only include fields that actually changed
+      const updateData: Partial<CreateSaleData> = {};
+      
+      // Only include changed fields
+      if (clientId !== (sale.client_id || "")) updateData.client_id = clientId || undefined;
+      if (salespersonId !== sale.salesperson_id) updateData.salesperson_id = salespersonId;
+      if (status !== sale.status) updateData.status = status as any;
+      if (paymentMethod !== sale.payment_method) updateData.payment_method = paymentMethod as any;
+      if (paymentType !== (sale.payment_type || "single")) updateData.payment_type = paymentType as any;
+      if (cashAmount !== (sale.cash_amount || 0)) updateData.cash_amount = cashAmount;
+      if (cardAmount !== (sale.card_amount || 0)) updateData.card_amount = cardAmount;
+      if (bankTransferAmount !== (sale.bank_transfer_amount || 0)) updateData.bank_transfer_amount = bankTransferAmount;
+      if (discountAmountCalc !== (sale.discount_amount || 0)) updateData.discount_amount = discountAmountCalc;
+      if (discountPercentage !== (sale.discount_percentage || 0)) updateData.discount_percentage = discountPercentage;
+      if (notes !== (sale.notes || "")) updateData.notes = notes;
+      
+      // Only include sale_items if they actually changed
+      const originalItems = sale.sale_items || [];
+      const currentItems = saleItems.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        serial_number: item.serial_number
+      }));
+      
+      if (JSON.stringify(originalItems) !== JSON.stringify(currentItems)) {
+        updateData.sale_items = currentItems;
+      }
+
+      // If no changes detected, show a message
+      if (Object.keys(updateData).length === 0) {
+        toast({
+          title: "No changes detected",
+          description: "No modifications were made to the sale.",
+        });
+        return;
+      }
 
       await updateSale.mutateAsync({
         id: sale.id,

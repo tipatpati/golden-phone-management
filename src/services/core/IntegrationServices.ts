@@ -352,9 +352,30 @@ export class SalesInventoryIntegration {
     originalSale: any, 
     updatedSaleData: Partial<CreateSaleData>
   ): Promise<void> {
+    // Enhanced validation: Check if items belong to this sale to avoid conflicts
+    const originalItems = originalSale.sale_items || [];
+    const updatedItems = updatedSaleData.sale_items || [];
+    
+    // Filter out items that already belong to this sale from validation
+    const itemsToValidate = updatedItems.filter(item => {
+      if (!item.serial_number) return true; // Non-serialized items always need validation
+      
+      // Check if this serial number was already in the original sale
+      const wasInOriginalSale = originalItems.some(
+        orig => orig.serial_number === item.serial_number && orig.product_id === item.product_id
+      );
+      
+      return !wasInOriginalSale; // Only validate items not already in this sale
+    });
+    
+    // Only run validation if there are actually new items to validate
+    if (itemsToValidate.length === 0) {
+      return; // No validation needed - all items already belong to this sale
+    }
+    
     const result = await EnhancedSalesInventoryIntegration.validateInventoryForSaleUpdateWithTransaction(
       originalSale, 
-      updatedSaleData
+      { ...updatedSaleData, sale_items: itemsToValidate }
     );
     
     // Auto-commit for legacy compatibility

@@ -90,9 +90,18 @@ export const useUpdateSale = () => {
       // Get original sale for validation
       const originalSale = queryClient.getQueryData(['sales', id]);
       
-      // Validate inventory impact of changes
+      // Smart validation: Only validate inventory if sale_items actually changed
       if (originalSale && data.sale_items) {
-        await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSale, data);
+        const originalSaleTyped = originalSale as Sale;
+        const originalItems = originalSaleTyped.sale_items || [];
+        const newItems = data.sale_items || [];
+        
+        // Check if sale items actually changed (not just payment/client/notes)
+        const itemsChanged = JSON.stringify(originalItems) !== JSON.stringify(newItems);
+        
+        if (itemsChanged) {
+          await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSaleTyped, data);
+        }
       }
       
       return salesApiService.update(id, data);
