@@ -182,7 +182,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       render: (value: any) => (
         <div className="flex items-center gap-2">
           <User className="h-4 w-4 text-muted-foreground" />
-          {typeof value === 'object' ? value.username || "Unknown" : value || "Unknown"}
+          {typeof value === 'object' && value ? value.username || "Unknown" : value || "Unknown"}
         </div>
       )
     },
@@ -361,7 +361,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
             <DataCard
               key={sale.id}
               title={`Sale #${sale.sale_number}`}
-              subtitle={typeof sale.salesperson === 'object' ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson"}
+              subtitle={(typeof sale.salesperson === 'object' && sale.salesperson ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson") as string}
               icon={<Receipt className="h-5 w-5 text-primary" />}
               badge={{
                 text: sale.status.charAt(0).toUpperCase() + sale.status.slice(1),
@@ -473,7 +473,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                 value: (
                   <div className="flex items-center gap-2">
                     <User className="h-3 w-3 text-muted-foreground" />
-                    {typeof sale.salesperson === 'object' ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown"}
+                    {(typeof sale.salesperson === 'object' && sale.salesperson ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown") as string}
                   </div>
                 )
               }
