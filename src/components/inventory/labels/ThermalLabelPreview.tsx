@@ -95,21 +95,21 @@ export function ThermalLabelPreview({
     height: '113px',  // 3cm
     border: '2px solid hsl(var(--border))',
     borderRadius: '4px',
-    padding: '3px',
+    padding: '2px',
     margin: '8px',
-    fontSize: '8px',
+    fontSize: '6px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'flex-start',
     textAlign: 'center' as const,
-    lineHeight: '1.1',
+    lineHeight: '1.0',
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
     boxShadow: 'var(--elevation-2)',
     position: 'relative' as const,
-    gap: '1px'
+    gap: '0.5px'
   };
   return <div style={labelStyle}>
       {/* Zone 1: Header - 15px (0.4cm) */}
@@ -123,11 +123,11 @@ export function ThermalLabelPreview({
       }}>
         {formattedLabel.companyName && (
           <div style={{
-            fontSize: '7px',
-            fontWeight: '700',
+            fontSize: '5px',
+            fontWeight: '600',
             textTransform: 'uppercase',
             color: '#000',
-            letterSpacing: '0.3px',
+            letterSpacing: '0.2px',
             lineHeight: '1.0',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -148,15 +148,15 @@ export function ThermalLabelPreview({
         overflow: 'hidden',
         padding: '2px 0'
       }}>
-        {/* Product Name - 14px bold, max 2 lines */}
+        {/* Product Name - 11px bold, max 2 lines */}
         <div style={{
-          fontSize: '14px',
+          fontSize: '11px',
           fontWeight: '700',
           lineHeight: '1.0',
           color: '#000',
           textTransform: 'uppercase',
-          letterSpacing: '0.2px',
-          maxHeight: '28px',
+          letterSpacing: '0.1px',
+          maxHeight: '22px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -167,10 +167,10 @@ export function ThermalLabelPreview({
           {formattedLabel.productName}
         </div>
         
-        {/* Specifications - 10px medium, single line with bullet separators */}
+        {/* Specifications - 8px medium, single line with bullet separators */}
         {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
           <div style={{
-            fontSize: '10px',
+            fontSize: '8px',
             fontWeight: '500',
             color: '#333',
             textAlign: 'center',
@@ -185,10 +185,10 @@ export function ThermalLabelPreview({
           </div>
         )}
         
-        {/* Serial Number - 8px condensed */}
+        {/* Serial Number - 6px condensed */}
         {formattedLabel.serialNumber && (
           <div style={{
-            fontSize: '8px',
+            fontSize: '6px',
             fontWeight: '600',
             color: '#000',
             textAlign: 'center',
@@ -199,15 +199,15 @@ export function ThermalLabelPreview({
           </div>
         )}
 
-        {/* Price - 18px bold, prominent */}
+        {/* Price - 14px bold, prominent */}
         {options.includePrice && (
           <div style={{
-            fontSize: '18px',
+            fontSize: '14px',
             fontWeight: '700',
             color: '#000',
             textAlign: 'center',
-            marginTop: '2px',
-            letterSpacing: '0.2px',
+            marginTop: '1px',
+            letterSpacing: '0.1px',
             lineHeight: '1.0'
           }}>
             {(() => {
