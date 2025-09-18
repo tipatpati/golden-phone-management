@@ -12,6 +12,7 @@ import type {
 } from '../shared/interfaces/IPrintService';
 import { logger } from '@/utils/logger';
 import { formatLabelElements } from '@/components/inventory/labels/services/labelDataFormatter';
+import { BarcodeRenderer } from '@/components/inventory/labels/services/BarcodeRenderer';
 import { Services } from './Services';
 
 export class UnifiedPrintService implements IPrintService {
@@ -151,9 +152,10 @@ export class UnifiedPrintService implements IPrintService {
       align-items: center;
       background: #ffffff;
       overflow: hidden;
+      margin-top: 0.5mm;
     }
 
-    .barcode-canvas {
+    .barcode-svg {
       max-width: 54.7mm; /* 5.5cm for barcode + quiet zones */
       height: 7.4mm;
       display: block;
@@ -179,69 +181,10 @@ export class UnifiedPrintService implements IPrintService {
       <head>
         <meta charset="UTF-8">
         <title>Thermal Labels</title>
-        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.1/dist/JsBarcode.all.min.js"></script>
         <style>${this.THERMAL_LABEL_STYLES}</style>
       </head>
       <body>
         <div class="label-container">${labelsHTML}</div>
-        <script>
-           function generateBarcodes() {
-             const canvases = document.querySelectorAll('.barcode-canvas');
-             canvases.forEach(canvas => {
-               const barcode = canvas.getAttribute('data-barcode');
-               if (barcode && window.JsBarcode) {
-                 try {
-                   // High-DPI scaling for crisp print quality
-                   const scale = window.devicePixelRatio || 1;
-                   const originalWidth = canvas.width;
-                   const originalHeight = canvas.height;
-                   
-                   canvas.width = originalWidth * scale;
-                   canvas.height = originalHeight * scale;
-                   canvas.style.width = originalWidth + 'px';
-                   canvas.style.height = originalHeight + 'px';
-                   
-                   const ctx = canvas.getContext('2d');
-                   ctx.scale(scale, scale);
-                   ctx.imageSmoothingEnabled = false;
-                   
-                    // Use same barcode settings as preview for consistency
-                    JsBarcode(canvas, barcode, {
-                      format: 'CODE128',
-                      width: 1.8,
-                      height: 40,
-                      displayValue: true,
-                      fontSize: 6,
-                      fontOptions: 'bold',
-                      font: 'Arial',
-                      textAlign: 'center',
-                      textPosition: 'bottom',
-                      textMargin: 2,
-                      margin: 4,
-                      background: '#ffffff',
-                      lineColor: '#000000',
-                      marginTop: 2,
-                      marginBottom: 2,
-                      marginLeft: 8,
-                      marginRight: 8
-                    });
-                 } catch (error) {
-                   console.error('Barcode generation failed:', error);
-                   // Draw error indicator
-                   const ctx = canvas.getContext('2d');
-                   ctx.fillStyle = '#ff0000';
-                   ctx.font = '8px Arial';
-                   ctx.textAlign = 'center';
-                   ctx.fillText('ERROR', canvas.width / 2, canvas.height / 2);
-                 }
-               }
-             });
-           }
-            
-            window.addEventListener('load', generateBarcodes);
-            // Regenerate on print for best quality
-            window.addEventListener('beforeprint', generateBarcodes);
-        </script>
       </body>
       </html>
     `;
@@ -401,7 +344,7 @@ export class UnifiedPrintService implements IPrintService {
         <!-- Zone 3: Barcode with proper quiet zones -->
         ${formattedLabel.barcode ? `
           <div class="barcode-container">
-            <canvas class="barcode-canvas" data-barcode="${this.escapeHtml(formattedLabel.barcode)}"></canvas>
+            ${this.generateBarcodeForPrint(formattedLabel.barcode)}
           </div>
         ` : ''}
       </div>
@@ -575,6 +518,28 @@ export class UnifiedPrintService implements IPrintService {
   /**
    * Escape HTML special characters for security
    */
+  /**
+   * Generate SVG barcode for print (unified with preview)
+   */
+  private generateBarcodeForPrint(barcode: string): string {
+    try {
+      return BarcodeRenderer.generateThermalPrint(barcode);
+    } catch (error) {
+      console.error('Failed to generate barcode for print:', error);
+      return `
+        <svg width="200" height="50" xmlns="http://www.w3.org/2000/svg" class="barcode-svg">
+          <rect width="200" height="50" fill="#ffebee" stroke="#f44336" stroke-width="1"/>
+          <text x="100" y="20" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">
+            Barcode Error
+          </text>
+          <text x="100" y="35" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
+            ${barcode}
+          </text>
+        </svg>
+      `;
+    }
+  }
+
   private escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;

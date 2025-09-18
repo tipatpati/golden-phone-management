@@ -103,7 +103,8 @@ export class BarcodeRenderer {
     return this.generateSVG(value, {
       quality: 'print',
       displayValue: true,
-      fontSize: 8
+      fontSize: 6,
+      height: 40
     });
   }
 
@@ -114,7 +115,8 @@ export class BarcodeRenderer {
     return this.generateSVG(value, {
       quality: 'high',
       displayValue: true,
-      fontSize: 7
+      fontSize: 6,
+      height: 40
     });
   }
 
