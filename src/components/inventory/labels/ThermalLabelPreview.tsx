@@ -51,16 +51,16 @@ export function ThermalLabelPreview({
     height: '113px',  // 3cm at 96 DPI (matches PRINT_SETTINGS)
     border: '2px solid hsl(var(--border))',
     borderRadius: '4px',
-    padding: '3px',   // Consistent with print service (0.8mm ≈ 3px)
+    padding: '2px',   // Reduced padding for more space
     margin: '8px',
-    fontSize: '8px',
+    fontSize: '7px',  // Smaller base font
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '1.0', // Tighter line height to match print
+    lineHeight: '0.9', // Tighter line height
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -71,16 +71,16 @@ export function ThermalLabelPreview({
       {/* Header Section */}
       {options.includeCompany && formattedLabel.companyName && (
         <div style={{
-          fontSize: '7px',
+          fontSize: '6px',
           fontWeight: '700',
           textTransform: 'uppercase',
           color: '#000',
-          letterSpacing: '0.3px',
-          lineHeight: '1.0',
+          letterSpacing: '0.2px',
+          lineHeight: '0.9',
           textAlign: 'center',
           borderBottom: '1px solid #e5e5e5',
-          paddingBottom: '2px',
-          marginBottom: '2px'
+          paddingBottom: '1px',
+          marginBottom: '1px'
         }}>
           {formattedLabel.companyName}
         </div>
@@ -96,14 +96,14 @@ export function ThermalLabelPreview({
       }}>
         {/* Product Name */}
         <div style={{
-          fontSize: '11px',
+          fontSize: '9px',
           fontWeight: '700',
-          lineHeight: '1.0',
+          lineHeight: '0.9',
           color: '#000',
           textTransform: 'uppercase',
-          letterSpacing: '0.2px',
+          letterSpacing: '0.1px',
           textAlign: 'center',
-          maxHeight: '22px',
+          maxHeight: '18px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -116,11 +116,11 @@ export function ThermalLabelPreview({
         {/* Specifications */}
         {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
           <div style={{
-            fontSize: '8px',
+            fontSize: '6px',
             fontWeight: '500',
             color: '#555',
             textAlign: 'center',
-            lineHeight: '1.0'
+            lineHeight: '0.9'
           }}>
             {[formattedLabel.storage, formattedLabel.ram, formattedLabel.batteryLevel]
               .filter(Boolean)
@@ -131,12 +131,12 @@ export function ThermalLabelPreview({
         {/* Serial Number */}
         {formattedLabel.serialNumber && (
           <div style={{
-            fontSize: '7px',
+            fontSize: '6px',
             fontWeight: '600',
             color: '#000',
             textAlign: 'center',
             letterSpacing: '0.1px',
-            lineHeight: '1.0',
+            lineHeight: '0.9',
             marginTop: '1px'
           }}>
             SN: {formattedLabel.serialNumber}
@@ -146,13 +146,13 @@ export function ThermalLabelPreview({
         {/* Price */}
         {options.includePrice && (
           <div style={{
-            fontSize: '14px',
+            fontSize: '11px',
             fontWeight: '700',
             color: '#000',
             textAlign: 'center',
-            marginTop: '2px',
-            letterSpacing: '0.2px',
-            lineHeight: '1.0'
+            marginTop: '1px',
+            letterSpacing: '0.1px',
+            lineHeight: '0.9'
           }}>
             {(() => {
               const maxPrice = (label as any).maxPrice;
@@ -167,18 +167,18 @@ export function ThermalLabelPreview({
       {/* Phase 3: Barcode Section - matches print service exactly */}
       {options.includeBarcode && formattedLabel.barcode && barcodeMarkup && (
         <div style={{
-          height: '45px',           // 12mm converted to px (matches print CSS)
+          height: '35px',           // Reduced height for better fit
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ffffff',
           overflow: 'hidden',
-          marginTop: '2px'          // 0.5mm spacing
+          marginTop: '1px'          // Minimal spacing
         }}>
           <div 
             style={{
-              maxWidth: '207px',      // 5.5cm for barcode + quiet zones  
-              height: '38px',         // 10mm height
+              maxWidth: '215px',      // Use more width for barcode
+              height: '30px',         // Reduced height
               display: 'block'
             }}
             dangerouslySetInnerHTML={{ __html: barcodeMarkup }}

@@ -26,17 +26,17 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 export const BARCODE_CONFIG: BarcodeConfig = {
   // Core barcode settings
   format: 'CODE128' as const,
-  width: 1.8,           // Optimal bar width for 6cm thermal labels
-  height: 36,           // Perfect height for 3cm labels with text
+  width: 1.4,           // Reduced bar width for better fit
+  height: 28,           // Reduced height for 3cm labels
   displayValue: true,
   
   // Typography optimized for thermal printing
-  fontSize: 8,          // Readable on thermal printers
+  fontSize: 6,          // Smaller font for compact labels
   fontOptions: 'bold' as const,
   font: 'Arial, sans-serif',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  textMargin: 2,        // Tight spacing for compact labels
+  textMargin: 1,        // Minimal spacing for compact labels
   
   // Quiet zones for scanner compliance (ISO/IEC 15417)
   margin: 6,            // Minimum quiet zone
@@ -52,22 +52,22 @@ export const BARCODE_CONFIG: BarcodeConfig = {
   // Quality settings for different contexts
   quality: {
     preview: {
-      width: 1.6,
-      height: 32,
-      fontSize: 7,
-      margin: 6,       // Standard margin for preview
+      width: 1.4,
+      height: 28,
+      fontSize: 6,
+      margin: 4,       // Reduced margin for preview
     },
     print: {
-      width: 2.0,      // Higher resolution for crisp printing
-      height: 40,      // Extra height for better scanning
-      fontSize: 8,
-      margin: 6,       // Standard margin for print
+      width: 1.6,      // Slightly higher for crisp printing
+      height: 32,      // Reduced height for better fit
+      fontSize: 7,
+      margin: 4,       // Reduced margin for print
     },
     thermal: {
-      width: 1.8,      // Optimized for thermal printers
-      height: 36,
-      fontSize: 8,
-      margin: 4,       // Reduced margin for compact thermal labels
+      width: 1.4,      // Optimized for thermal printers
+      height: 28,
+      fontSize: 6,
+      margin: 3,       // Minimal margin for compact thermal labels
     }
   }
 } as const;
