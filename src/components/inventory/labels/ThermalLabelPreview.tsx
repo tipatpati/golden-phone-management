@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 import { formatLabelElements } from "./services/labelDataFormatter";
 import { BarcodeRenderer } from "./services/BarcodeRenderer";
+import { PRINT_SETTINGS } from "./services/config";
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
@@ -44,26 +45,25 @@ export function ThermalLabelPreview({
     }
   }, [options.includeBarcode, label.barcode]);
 
-  // Phase 3: WYSIWYG thermal label styling - exact 6cm × 3cm dimensions
-  // Matches UnifiedPrintService exactly for perfect preview consistency
+  // Phase 3: WYSIWYG thermal label styling - exact 6cm × 3cm dimensions using config
   const labelStyle = {
-    width: '227px',   // 6cm at 96 DPI (matches PRINT_SETTINGS)
-    height: '113px',  // 3cm at 96 DPI (matches PRINT_SETTINGS)
-    border: '2px solid hsl(var(--border))',
-    borderRadius: '4px',
-    padding: '2px',   // Reduced padding for more space
-    margin: '8px',
-    fontSize: '7px',  // Smaller base font
+    width: `${PRINT_SETTINGS.width}px`,
+    height: `${PRINT_SETTINGS.height}px`,
+    border: '1px solid hsl(var(--border))',
+    borderRadius: '2px',
+    padding: '1px',   // Minimal padding for max space
+    margin: '4px',
+    fontSize: '5px',  // Reduced base font
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '0.9', // Tighter line height
+    lineHeight: '0.85', // Tighter line height
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
     position: 'relative' as const
   };
   return (
@@ -71,16 +71,16 @@ export function ThermalLabelPreview({
       {/* Header Section */}
       {options.includeCompany && formattedLabel.companyName && (
         <div style={{
-          fontSize: '6px',
+          fontSize: '5px',
           fontWeight: '700',
           textTransform: 'uppercase',
           color: '#000',
-          letterSpacing: '0.2px',
-          lineHeight: '0.9',
+          letterSpacing: '0.1px',
+          lineHeight: '0.85',
           textAlign: 'center',
           borderBottom: '1px solid #e5e5e5',
-          paddingBottom: '1px',
-          marginBottom: '1px'
+          paddingBottom: '0.5px',
+          marginBottom: '0.5px'
         }}>
           {formattedLabel.companyName}
         </div>
@@ -92,18 +92,18 @@ export function ThermalLabelPreview({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        gap: '2px'
+        gap: '1px'
       }}>
         {/* Product Name */}
         <div style={{
-          fontSize: '9px',
+          fontSize: '7px',
           fontWeight: '700',
-          lineHeight: '0.9',
+          lineHeight: '0.85',
           color: '#000',
           textTransform: 'uppercase',
-          letterSpacing: '0.1px',
+          letterSpacing: '0.05px',
           textAlign: 'center',
-          maxHeight: '18px',
+          maxHeight: '14px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -116,11 +116,11 @@ export function ThermalLabelPreview({
         {/* Specifications */}
         {(formattedLabel.storage || formattedLabel.ram || formattedLabel.batteryLevel) && (
           <div style={{
-            fontSize: '6px',
+            fontSize: '5px',
             fontWeight: '500',
             color: '#555',
             textAlign: 'center',
-            lineHeight: '0.9'
+            lineHeight: '0.85'
           }}>
             {[formattedLabel.storage, formattedLabel.ram, formattedLabel.batteryLevel]
               .filter(Boolean)
@@ -131,13 +131,13 @@ export function ThermalLabelPreview({
         {/* Serial Number */}
         {formattedLabel.serialNumber && (
           <div style={{
-            fontSize: '6px',
+            fontSize: '5px',
             fontWeight: '600',
             color: '#000',
             textAlign: 'center',
-            letterSpacing: '0.1px',
-            lineHeight: '0.9',
-            marginTop: '1px'
+            letterSpacing: '0.05px',
+            lineHeight: '0.85',
+            marginTop: '0.5px'
           }}>
             SN: {formattedLabel.serialNumber}
           </div>
@@ -146,13 +146,13 @@ export function ThermalLabelPreview({
         {/* Price */}
         {options.includePrice && (
           <div style={{
-            fontSize: '11px',
+            fontSize: '8px',
             fontWeight: '700',
             color: '#000',
             textAlign: 'center',
-            marginTop: '1px',
-            letterSpacing: '0.1px',
-            lineHeight: '0.9'
+            marginTop: '0.5px',
+            letterSpacing: '0.05px',
+            lineHeight: '0.85'
           }}>
             {(() => {
               const maxPrice = (label as any).maxPrice;
@@ -164,21 +164,21 @@ export function ThermalLabelPreview({
         )}
       </div>
 
-      {/* Phase 3: Barcode Section - matches print service exactly */}
+      {/* Phase 3: Barcode Section - optimized for 6cm x 3cm */}
       {options.includeBarcode && formattedLabel.barcode && barcodeMarkup && (
         <div style={{
-          height: '35px',           // Reduced height for better fit
+          height: '25px',           // Further reduced height
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ffffff',
           overflow: 'hidden',
-          marginTop: '1px'          // Minimal spacing
+          marginTop: '0.5px'        // Minimal spacing
         }}>
           <div 
             style={{
-              maxWidth: '215px',      // Use more width for barcode
-              height: '30px',         // Reduced height
+              maxWidth: `${PRINT_SETTINGS.width - 12}px`, // Use config width minus margins
+              height: '22px',         // Reduced height for better fit
               display: 'block'
             }}
             dangerouslySetInnerHTML={{ __html: barcodeMarkup }}
