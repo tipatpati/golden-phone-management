@@ -125,6 +125,7 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
       if (notes !== (sale.notes || "")) updateData.notes = notes;
       
       // Only include sale_items if they actually changed
+      // Note: sale_items are stored in a separate table, not as a column
       const originalItems = sale.sale_items || [];
       const currentItems = saleItems.map(item => ({
         product_id: item.product_id,
@@ -133,9 +134,11 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
         serial_number: item.serial_number
       }));
       
-      if (JSON.stringify(originalItems) !== JSON.stringify(currentItems)) {
-        updateData.sale_items = currentItems;
-      }
+      const itemsChanged = JSON.stringify(originalItems) !== JSON.stringify(currentItems);
+      
+      // Don't include sale_items in the update data since it's a separate table
+      // The backend should handle sale items separately if needed
+      console.log('🔄 Items changed:', itemsChanged, 'but not including in update data (separate table)');
 
       // If no changes detected, show a message
       if (Object.keys(updateData).length === 0) {

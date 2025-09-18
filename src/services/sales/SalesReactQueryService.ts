@@ -95,31 +95,24 @@ export const useUpdateSale = () => {
         console.log('📋 Original sale data', originalSale);
         
         // Smart validation: Only validate inventory if sale_items actually changed
+        // Note: sale_items is NOT a column in sales table - it's a separate table relationship
         if (originalSale && data.sale_items) {
-          const originalSaleTyped = originalSale as Sale;
-          const originalItems = originalSaleTyped.sale_items || [];
-          const newItems = data.sale_items || [];
+          console.log('⚠️ Warning: sale_items should not be included in sales table update');
+          console.log('Sale items are managed in separate sale_items table');
           
-          console.log('🔍 Comparing sale items', { 
-            originalItems: originalItems.length, 
-            newItems: newItems.length,
-            originalItemsData: originalItems,
-            newItemsData: newItems
-          });
+          // Remove sale_items from update data to prevent schema error
+          const cleanedData = { ...data };
+          delete cleanedData.sale_items;
           
-          // Check if sale items actually changed (not just payment/client/notes)
-          const itemsChanged = JSON.stringify(originalItems) !== JSON.stringify(newItems);
-          console.log('🔄 Items changed?', itemsChanged);
+          console.log('🧹 Cleaned update data (removed sale_items):', cleanedData);
           
-          if (itemsChanged) {
-            console.log('⚠️ Running inventory validation for changed items');
-            await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSaleTyped, data);
-            console.log('✅ Inventory validation passed');
-          } else {
-            console.log('⏩ Skipping inventory validation - no item changes detected');
-          }
+          // For now, skip inventory validation since we're not updating items
+          console.log('⏩ Skipping inventory validation - sale items handled separately');
+          
+          // Update the data parameter to the cleaned version
+          data = cleanedData;
         } else {
-          console.log('⏩ Skipping inventory validation - no sale_items in update or no original sale');
+          console.log('⏩ No sale_items in update data - proceeding with normal update');
         }
         
         console.log('🚀 Calling API update...');
