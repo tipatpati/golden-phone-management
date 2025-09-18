@@ -302,7 +302,7 @@ export function UnitEntryForm({
                 <div>
                   <Label className="text-xs font-medium mb-1 block">Condition</Label>
                   <Select 
-                    value={entry.condition || 'new'} 
+                    value={entry.condition || 'used'} 
                     onValueChange={(value) => updateEntry(index, 'condition', value as 'new' | 'used')}
                   >
                     <SelectTrigger className="text-sm h-10">

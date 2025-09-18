@@ -379,15 +379,6 @@ export function ProductDetailsDialog({
                             
                             {/* Unit Specifications */}
                             <div className="flex flex-wrap gap-3 text-xs">
-                              {unit.condition && (
-                                <span className={`px-2 py-1 rounded ${
-                                  unit.condition === 'new' 
-                                    ? 'bg-emerald-100 text-emerald-800' 
-                                    : 'bg-amber-100 text-amber-800'
-                                }`}>
-                                  {unit.condition === 'new' ? 'New' : 'Used'}
-                                </span>
-                              )}
                               {unit.color && (
                                 <span className="bg-primary/10 text-primary px-2 py-1 rounded">
                                   {unit.color}
