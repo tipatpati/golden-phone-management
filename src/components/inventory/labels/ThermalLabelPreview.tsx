@@ -47,7 +47,7 @@ export function ThermalLabelPreview({
           width: 1.8,
           height: 40,
           displayValue: true,
-          fontSize: 6,
+          fontSize: 7,
           fontOptions: 'bold',
           font: 'Arial',
           textAlign: 'center',
@@ -112,9 +112,9 @@ export function ThermalLabelPreview({
     gap: '1px'
   };
   return <div style={labelStyle}>
-      {/* Zone 1: Header - 15px (0.4cm) */}
+      {/* Zone 1: Header - 18px (0.5cm) */}
       <div style={{
-        height: '15px',
+        height: '18px',
         borderBottom: '1px solid #e5e5e5',
         display: 'flex',
         alignItems: 'center',
@@ -123,11 +123,11 @@ export function ThermalLabelPreview({
       }}>
         {formattedLabel.companyName && (
           <div style={{
-            fontSize: '7px',
+            fontSize: '8px',
             fontWeight: '700',
             textTransform: 'uppercase',
             color: '#000',
-            letterSpacing: '0.3px',
+            letterSpacing: '0.4px',
             lineHeight: '1.0',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -138,25 +138,25 @@ export function ThermalLabelPreview({
         )}
       </div>
 
-      {/* Zone 2: Content - 68px (1.8cm) */}
+      {/* Zone 2: Content - 65px (1.7cm) */}
       <div style={{
-        height: '68px',
+        height: '65px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        gap: '2px',
+        gap: '3px',
         overflow: 'hidden',
-        padding: '2px 0'
+        padding: '3px 0'
       }}>
-        {/* Product Name - 14px bold, max 2 lines */}
+        {/* Product Name - 12px bold, max 2 lines */}
         <div style={{
-          fontSize: '14px',
+          fontSize: '12px',
           fontWeight: '700',
-          lineHeight: '1.0',
+          lineHeight: '1.1',
           color: '#000',
           textTransform: 'uppercase',
-          letterSpacing: '0.2px',
-          maxHeight: '28px',
+          letterSpacing: '0.3px',
+          maxHeight: '26px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -185,29 +185,29 @@ export function ThermalLabelPreview({
           </div>
         )}
         
-        {/* Serial Number - 8px condensed */}
+        {/* Serial Number - 9px condensed */}
         {formattedLabel.serialNumber && (
           <div style={{
-            fontSize: '8px',
+            fontSize: '9px',
             fontWeight: '600',
             color: '#000',
             textAlign: 'center',
-            letterSpacing: '0.1px',
+            letterSpacing: '0.2px',
             lineHeight: '1.0'
           }}>
             {formattedLabel.serialNumber}
           </div>
         )}
 
-        {/* Price - 18px bold, prominent */}
+        {/* Price - 16px bold, prominent */}
         {options.includePrice && (
           <div style={{
-            fontSize: '18px',
+            fontSize: '16px',
             fontWeight: '700',
             color: '#000',
             textAlign: 'center',
             marginTop: '2px',
-            letterSpacing: '0.2px',
+            letterSpacing: '0.3px',
             lineHeight: '1.0'
           }}>
             {(() => {
