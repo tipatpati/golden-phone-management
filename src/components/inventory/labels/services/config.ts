@@ -13,14 +13,14 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 export const BARCODE_CONFIG = {
   format: 'CODE128' as const,
   width: 1.8,        // Optimized bar width for 6cm label
-  height: 40,        // Scanner-friendly height (10.5mm)
+  height: 50,        // Scanner-friendly height with space for text
   displayValue: true,
   fontSize: 6,       // Compact text for 3cm height
   fontOptions: 'bold' as const,
   font: 'Arial',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  textMargin: 2,     // Minimal spacing for compact layout
+  textMargin: 4,     // Adequate spacing for text visibility
   margin: 4,         // Quiet zones for scanner compliance
   background: '#ffffff',
   lineColor: '#000000',

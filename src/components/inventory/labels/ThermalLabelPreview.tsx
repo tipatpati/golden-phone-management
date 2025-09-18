@@ -167,7 +167,7 @@ export function ThermalLabelPreview({
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ffffff',
-          height: '50px'
+          height: '65px'
         }}>
           <div 
             style={{
