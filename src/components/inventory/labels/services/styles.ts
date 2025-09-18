@@ -28,7 +28,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         width: 6cm !important;
         height: 3cm !important;
         margin: 0 !important;
-        padding: 3px !important;
+        padding: 4px !important;
         border: none !important;
         background: white !important;
         box-sizing: border-box !important;
@@ -38,62 +38,81 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
         justify-content: space-between !important;
         font-family: Arial, sans-serif !important;
         overflow: hidden !important;
-        gap: 1px !important;
-      }
-
-      .product-name {
-        font-size: 16px !important;
-        line-height: 1.0 !important;
-        margin-bottom: 1px !important;
-        font-weight: 800 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.2px !important;
-        max-height: 50px !important;
-        overflow: hidden !important;
-        display: -webkit-box !important;
-        -webkit-line-clamp: 3 !important;
-        -webkit-box-orient: vertical !important;
-        word-break: break-word !important;
-        text-align: center !important;
-      }
-
-      .product-specs {
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        margin-top: 1px !important;
-        color: #333 !important;
-        text-align: center !important;
-      }
-
-      .serial-section {
-        font-size: 10px !important;
-        font-weight: 600 !important;
-        color: #000 !important;
-        text-align: center !important;
-        margin-top: 2px !important;
-        letter-spacing: 0.1px !important;
       }
 
       .company-header {
-        font-size: 8px !important;
+        font-size: 7px !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
         color: #000 !important;
-        letter-spacing: 0.5px !important;
+        letter-spacing: 0.3px !important;
         line-height: 1.0 !important;
+        text-align: center !important;
+        border-bottom: 1px solid #e5e5e5 !important;
+        padding-bottom: 2px !important;
+        margin-bottom: 2px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
       }
 
+      .label-content {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 2px !important;
+      }
+
+      .product-name {
+        font-size: 11px !important;
+        line-height: 1.0 !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.2px !important;
+        color: #000 !important;
+        text-align: center !important;
+        max-height: 22px !important;
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        word-break: break-word !important;
+      }
+
+      .product-specs {
+        font-size: 8px !important;
+        font-weight: 500 !important;
+        color: #555 !important;
+        text-align: center !important;
+        line-height: 1.0 !important;
+      }
+
+      .serial-section {
+        font-size: 7px !important;
+        font-weight: 600 !important;
+        color: #000 !important;
+        text-align: center !important;
+        letter-spacing: 0.1px !important;
+        line-height: 1.0 !important;
+        margin-top: 1px !important;
+      }
+
+      .price-section {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #000 !important;
+        text-align: center !important;
+        margin-top: 2px !important;
+        letter-spacing: 0.2px !important;
+        line-height: 1.0 !important;
+      }
+
       .barcode-container {
-        margin: 0 !important;
-        padding: 2px !important;
+        margin-top: 2px !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        min-height: 55px !important;
-        max-height: 55px !important;
         background-color: #ffffff !important;
       }
 

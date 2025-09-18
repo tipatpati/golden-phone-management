@@ -102,6 +102,7 @@ export function SupplierAcquisitionPrintDialog({
       onOpenChange={onOpenChange}
       labels={thermalLabels}
       companyName={companyName}
+      allowUnitSelection={true}
     />
   );
 }
