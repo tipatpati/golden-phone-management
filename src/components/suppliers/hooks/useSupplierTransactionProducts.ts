@@ -149,56 +149,6 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             .filter(unit => unit.serial_number && unit.status !== 'sold')
             .map(unit => unit.serial_number);
 
-          // Extract specifications from units or transaction details for fallbacks
-          let extractedStorage: number | undefined;
-          let extractedRam: number | undefined;
-
-          if (productUnitsForProduct.length > 0) {
-            // Use the most common storage/RAM values from units
-            const storageValues = productUnitsForProduct
-              .map(unit => unit.storage)
-              .filter(storage => storage != null);
-            const ramValues = productUnitsForProduct
-              .map(unit => unit.ram)
-              .filter(ram => ram != null);
-
-            if (storageValues.length > 0) {
-              extractedStorage = storageValues[0]; // Use first valid storage
-            }
-            if (ramValues.length > 0) {
-              extractedRam = ramValues[0]; // Use first valid RAM
-            }
-          }
-
-          // Fallback to unit_details if units are missing specs
-          if (!extractedStorage || !extractedRam) {
-            for (const item of transactionItems) {
-              if (item.unit_details && typeof item.unit_details === 'object') {
-                const unitDetails = item.unit_details as any;
-                if (unitDetails.entries && Array.isArray(unitDetails.entries)) {
-                  for (const entry of unitDetails.entries) {
-                    if (!extractedStorage && entry.storage) {
-                      extractedStorage = entry.storage;
-                    }
-                    if (!extractedRam && entry.ram) {
-                      extractedRam = entry.ram;
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          logger.info('Extracted specifications for product', {
-            productId: product.id,
-            brand: product.brand,
-            model: product.model,
-            unitsCount: productUnitsForProduct.length,
-            extractedStorage,
-            extractedRam,
-            serialCount: serialNumbers.length
-          }, 'useSupplierTransactionProducts');
-
           const transformedProduct: Product = {
             id: product.id,
             brand: product.brand,
@@ -208,10 +158,7 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             year: product.year,
             has_serial: product.has_serial,
             category: product.categories ? { name: product.categories.name } : undefined,
-            // Include extracted specifications for label service fallbacks
-            storage: extractedStorage,
-            ram: extractedRam,
-            // Include product units for unit-specific labeling
+            // Include product units for unit-specific labeling (storage/ram come from units)
             units: productUnitsForProduct,
             // Legacy compatibility for existing label system
             serial_numbers: serialNumbers.length > 0 ? serialNumbers : undefined
