@@ -3,6 +3,7 @@ import { ThermalLabelGenerator, useThermalLabels } from "@/components/inventory/
 import { useSupplierTransactionProducts } from "../hooks/useSupplierTransactionProducts";
 import { mapProductsForLabels } from "@/utils/mapProductForLabels";
 import { logger } from "@/utils/logger";
+import { showErrorToast } from "@/components/ui/error-toast";
 
 interface SupplierTransaction {
   id: string;
@@ -62,10 +63,35 @@ export function SupplierAcquisitionPrintDialog({
     }
   }, [open, transactions, eligibleTransactions, transactionProducts, thermalLabels]);
 
-  // Show error state if there's an error fetching products
-  if (productsError) {
-    logger.error('Failed to load supplier transaction products', productsError, 'SupplierAcquisitionPrintDialog');
-  }
+  // Handle error states and sold transactions
+  React.useEffect(() => {
+    if (productsError) {
+      logger.error('Failed to load supplier transaction products', productsError, 'SupplierAcquisitionPrintDialog');
+      showErrorToast({
+        title: 'Error Loading Products',
+        description: 'Unable to load transaction products for labeling. Please try again.',
+        type: 'error'
+      });
+      onOpenChange(false);
+    }
+  }, [productsError, onOpenChange]);
+
+  // Check if all products have been sold (no available units for labels)
+  React.useEffect(() => {
+    if (open && !productsLoading && !productsError && transactionProducts.length === 0 && eligibleTransactions.length > 0) {
+      logger.warn('No available products for labeling - all units may be sold', {
+        transactionIds,
+        eligibleTransactions: eligibleTransactions.length
+      }, 'SupplierAcquisitionPrintDialog');
+      
+      showErrorToast({
+        title: 'Cannot Generate Labels',
+        description: 'All units from the selected transactions have been sold and cannot be labeled.',
+        type: 'warning'
+      });
+      onOpenChange(false);
+    }
+  }, [open, productsLoading, productsError, transactionProducts.length, eligibleTransactions.length, transactionIds, onOpenChange]);
 
   // Determine company name from supplier (use first supplier for consistency)
   const companyName = eligibleTransactions.length > 0 && eligibleTransactions[0].suppliers?.name 

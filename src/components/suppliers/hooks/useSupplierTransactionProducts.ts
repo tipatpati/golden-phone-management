@@ -144,9 +144,23 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             )
           );
 
-          // Extract serial numbers for legacy compatibility
-          const serialNumbers = productUnitsForProduct
-            .filter(unit => unit.serial_number && unit.status !== 'sold')
+          // Check if all units are sold - if so, skip this product to prevent infinite loops
+          const availableUnits = productUnitsForProduct.filter(unit => unit.status !== 'sold');
+          const allUnitsSold = productUnitsForProduct.length > 0 && availableUnits.length === 0;
+
+          if (allUnitsSold) {
+            logger.warn('Skipping product with all units sold', { 
+              productId: product.id, 
+              brand: product.brand, 
+              model: product.model,
+              totalUnits: productUnitsForProduct.length 
+            }, 'useSupplierTransactionProducts');
+            return; // Skip this product entirely
+          }
+
+          // Extract serial numbers for legacy compatibility (only for non-sold units)
+          const serialNumbers = availableUnits
+            .filter(unit => unit.serial_number)
             .map(unit => unit.serial_number);
 
           const transformedProduct: Product = {
@@ -158,8 +172,8 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             year: product.year,
             has_serial: product.has_serial,
             category: product.categories ? { name: product.categories.name } : undefined,
-            // Include product units for unit-specific labeling (storage/ram come from units)
-            units: productUnitsForProduct,
+            // Include only available units for unit-specific labeling
+            units: availableUnits,
             // Legacy compatibility for existing label system
             serial_numbers: serialNumbers.length > 0 ? serialNumbers : undefined
           };
@@ -170,7 +184,8 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
         logger.info('Successfully transformed supplier transaction data for labels', {
           originalTransactionItems: transactionItems.length,
           transformedProducts: transformedProducts.length,
-          totalUnits: productUnits.length
+          totalUnits: productUnits.length,
+          availableProducts: transformedProducts.length
         }, 'useSupplierTransactionProducts');
 
         return transformedProducts;
@@ -182,5 +197,7 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
     },
     enabled: enabledTransactionIds.length > 0,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false, // Prevent infinite retries on sold transactions
+    refetchOnWindowFocus: false, // Prevent refetch that might trigger loops
   });
 }
