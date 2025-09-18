@@ -87,24 +87,55 @@ export const useUpdateSale = () => {
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CreateSaleData> }) => {
-      // Get original sale for validation
-      const originalSale = queryClient.getQueryData(['sales', id]);
+      console.log('🔄 Starting sale update process', { saleId: id, updateData: data });
       
-      // Smart validation: Only validate inventory if sale_items actually changed
-      if (originalSale && data.sale_items) {
-        const originalSaleTyped = originalSale as Sale;
-        const originalItems = originalSaleTyped.sale_items || [];
-        const newItems = data.sale_items || [];
+      try {
+        // Get original sale for validation
+        const originalSale = queryClient.getQueryData(['sales', id]);
+        console.log('📋 Original sale data', originalSale);
         
-        // Check if sale items actually changed (not just payment/client/notes)
-        const itemsChanged = JSON.stringify(originalItems) !== JSON.stringify(newItems);
-        
-        if (itemsChanged) {
-          await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSaleTyped, data);
+        // Smart validation: Only validate inventory if sale_items actually changed
+        if (originalSale && data.sale_items) {
+          const originalSaleTyped = originalSale as Sale;
+          const originalItems = originalSaleTyped.sale_items || [];
+          const newItems = data.sale_items || [];
+          
+          console.log('🔍 Comparing sale items', { 
+            originalItems: originalItems.length, 
+            newItems: newItems.length,
+            originalItemsData: originalItems,
+            newItemsData: newItems
+          });
+          
+          // Check if sale items actually changed (not just payment/client/notes)
+          const itemsChanged = JSON.stringify(originalItems) !== JSON.stringify(newItems);
+          console.log('🔄 Items changed?', itemsChanged);
+          
+          if (itemsChanged) {
+            console.log('⚠️ Running inventory validation for changed items');
+            await SalesInventoryIntegration.validateInventoryForSaleUpdate(originalSaleTyped, data);
+            console.log('✅ Inventory validation passed');
+          } else {
+            console.log('⏩ Skipping inventory validation - no item changes detected');
+          }
+        } else {
+          console.log('⏩ Skipping inventory validation - no sale_items in update or no original sale');
         }
+        
+        console.log('🚀 Calling API update...');
+        const result = await salesApiService.update(id, data);
+        console.log('✅ API update successful', result);
+        return result;
+        
+      } catch (error) {
+        console.error('❌ Sale update error:', error);
+        console.error('Error details:', {
+          message: error?.message,
+          stack: error?.stack,
+          cause: error?.cause
+        });
+        throw error;
       }
-      
-      return salesApiService.update(id, data);
     },
     onSuccess: (result, { id, data }) => {
       // Emit sale updated event

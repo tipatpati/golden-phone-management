@@ -89,9 +89,27 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
   const totalAmount = taxableAmount + taxAmount;
 
   const handleSubmit = async () => {
+    console.log('🔄 Starting sale update submission');
+    
     try {
       // Build optimized update data - only include fields that actually changed
       const updateData: Partial<CreateSaleData> = {};
+      
+      console.log('📊 Current form values:', {
+        clientId, salespersonId, status, paymentMethod, paymentType,
+        cashAmount, cardAmount, bankTransferAmount, discountAmountCalc, 
+        discountPercentage, notes, saleItemsCount: saleItems.length
+      });
+      
+      console.log('📋 Original sale values:', {
+        originalClientId: sale.client_id,
+        originalStatus: sale.status,
+        originalPaymentMethod: sale.payment_method,
+        originalPaymentType: sale.payment_type,
+        originalCashAmount: sale.cash_amount,
+        originalCardAmount: sale.card_amount,
+        originalSaleItemsCount: sale.sale_items?.length || 0
+      });
       
       // Only include changed fields
       if (clientId !== (sale.client_id || "")) updateData.client_id = clientId || undefined;
@@ -128,10 +146,14 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
         return;
       }
 
+      console.log('📤 Final update data to send:', updateData);
+
       await updateSale.mutateAsync({
         id: sale.id,
         data: updateData
       });
+      
+      console.log('✅ Sale update completed successfully');
       
       // Force immediate refresh
       queryClient.invalidateQueries({ queryKey: ['sales'] });
@@ -147,10 +169,16 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
       
       onSuccess?.();
     } catch (error) {
-      console.error('Error updating sale:', error);
+      console.error('❌ Sale update failed in dialog:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        updateData: error?.updateData || 'Not available'
+      });
+      
       toast({
         title: "Error updating sale",
-        description: "Please try again or contact support.",
+        description: error?.message || "Please try again or contact support.",
         variant: "destructive",
       });
     }
