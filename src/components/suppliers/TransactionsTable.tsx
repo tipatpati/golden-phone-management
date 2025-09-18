@@ -3,13 +3,14 @@ import { DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Eye, Edit, Trash2 } from "lucide-react";
+import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
 import { AdvancedTransactionFilters } from "./AdvancedTransactionFilters";
 import { TransactionSummaryStats } from "./TransactionSummaryStats";
+import { SupplierAcquisitionPrintDialog } from "./dialogs/SupplierAcquisitionPrintDialog";
 import type { TransactionSearchFilters, SupplierTransaction } from "@/services/suppliers/types";
 
 interface TransactionsTableProps {
@@ -32,6 +33,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const resetFilters = () => {
     setFilters({ searchTerm: "" });
@@ -126,6 +128,16 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       },
     },
     {
+      icon: <Printer className="h-4 w-4" />,
+      label: "Print Labels",
+      onClick: (transaction: SupplierTransaction) => {
+        setSelectedTransaction(transaction);
+        setShowPrintDialog(true);
+      },
+      disabled: (transaction: SupplierTransaction) => 
+        transaction.type !== "purchase" || transaction.status !== "completed",
+    },
+    {
       icon: <Trash2 className="h-4 w-4" />,
       label: "Delete",
       onClick: (transaction: SupplierTransaction) => {
@@ -205,8 +217,19 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
               <Badge variant="outline">
                 {selectedIds.length} selected
               </Badge>
-              <Button size="sm" variant="outline">
-                Bulk Actions
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => setShowPrintDialog(true)}
+                disabled={
+                  !selectedIds.some(id => {
+                    const transaction = transactions?.find(t => t.id === id);
+                    return transaction?.type === "purchase" && transaction?.status === "completed";
+                  })
+                }
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Print Labels
               </Button>
             </div>
           )}
@@ -274,6 +297,19 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
                 onClick={(e) => { 
                   e.preventDefault(); 
                   e.stopPropagation(); 
+                  setSelectedTransaction(transaction); 
+                  setShowPrintDialog(true); 
+                }}
+                disabled={transaction.type !== "purchase" || transaction.status !== "completed"}
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
                   console.log('Transaction Delete clicked:', transaction.id);
                   setSelectedTransaction(transaction); 
                   setShowDeleteDialog(true); 
@@ -303,6 +339,18 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         transaction={selectedTransaction}
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
+      />
+
+      <SupplierAcquisitionPrintDialog
+        transactions={
+          selectedIds.length > 0 
+            ? (transactions || []).filter(t => selectedIds.includes(t.id))
+            : selectedTransaction 
+            ? [selectedTransaction]
+            : []
+        }
+        open={showPrintDialog}
+        onOpenChange={setShowPrintDialog}
       />
     </div>
   );

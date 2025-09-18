@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Printer } from "lucide-react";
+import { SupplierAcquisitionPrintDialog } from "./dialogs/SupplierAcquisitionPrintDialog";
 
 interface SupplierTransaction {
   id: string;
@@ -35,7 +39,11 @@ export function TransactionDetailsDialog({
   open,
   onOpenChange,
 }: TransactionDetailsDialogProps) {
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  
   if (!transaction) return null;
+
+  const canPrintLabels = transaction.type === "purchase" && transaction.status === "completed";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -142,7 +150,25 @@ export function TransactionDetailsDialog({
             </div>
           )}
         </div>
+        
+        {canPrintLabels && (
+          <DialogFooter>
+            <Button 
+              onClick={() => setShowPrintDialog(true)}
+              className="w-full"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print Labels
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
+      
+      <SupplierAcquisitionPrintDialog
+        transactions={[transaction]}
+        open={showPrintDialog}
+        onOpenChange={setShowPrintDialog}
+      />
     </Dialog>
   );
 }
