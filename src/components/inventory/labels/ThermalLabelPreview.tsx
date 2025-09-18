@@ -1,9 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import JsBarcode from "jsbarcode";
+import React, { useEffect, useState } from "react";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
-import { formatLabelElements, getBarcodeConfig } from "./services/labelDataFormatter";
+import { formatLabelElements } from "./services/labelDataFormatter";
 import { BarcodeRenderer } from "./services/BarcodeRenderer";
-import { logger } from "@/utils/logger";
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
@@ -14,63 +12,33 @@ export function ThermalLabelPreview({
   label,
   options
 }: ThermalLabelPreviewProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [barcodeMarkup, setBarcodeMarkup] = useState<string>('');
   const formattedLabel = formatLabelElements(label, options);
-  const barcodeConfig = getBarcodeConfig();
 
   useEffect(() => {
-    if (canvasRef.current && options.includeBarcode && label.barcode) {
+    if (options.includeBarcode && label.barcode) {
       try {
-        logger.debug('Generating barcode for thermal label', { barcode: label.barcode }, 'ThermalLabelPreview');
-        
-        // Use high-quality barcode renderer for crisp preview
-        const highQualityCanvas = BarcodeRenderer.generateCanvas(label.barcode, {
-          width: 200,
-          height: 50,
-          quality: 'high',
-          displayValue: true,
-          fontSize: 7
-        });
-        
-        // Copy the high-quality canvas to our ref
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          canvas.width = highQualityCanvas.width;
-          canvas.height = highQualityCanvas.height;
-          canvas.style.width = highQualityCanvas.style.width;
-          canvas.style.height = highQualityCanvas.style.height;
-          
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(highQualityCanvas, 0, 0);
-        }
-        
-        logger.debug('High-quality barcode generated successfully', { barcode: label.barcode }, 'ThermalLabelPreview');
+        // Generate high-quality SVG barcode for crisp preview
+        const svgMarkup = BarcodeRenderer.generatePreview(label.barcode);
+        setBarcodeMarkup(svgMarkup);
       } catch (error) {
-        logger.error('Barcode generation failed', { barcode: label.barcode, error }, 'ThermalLabelPreview');
-        
-        // Fallback: Draw error message on canvas
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (ctx && canvas) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#ff0000';
-          ctx.font = '12px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Barcode Error', canvas.width / 2, canvas.height / 2);
-          ctx.fillStyle = '#000000';
-          ctx.font = '10px Arial';
-          ctx.fillText(label.barcode || 'No barcode', canvas.width / 2, canvas.height / 2 + 15);
-        }
+        console.error('Failed to generate barcode:', error);
+        setBarcodeMarkup(`
+          <svg width="200" height="60" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="60" fill="#ffebee" stroke="#f44336" stroke-width="1"/>
+            <text x="100" y="25" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">
+              Barcode Error
+            </text>
+            <text x="100" y="40" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
+              ${label.barcode}
+            </text>
+          </svg>
+        `);
       }
     } else {
-      logger.debug('Barcode not rendered', {
-        hasCanvas: !!canvasRef.current,
-        includeBarcode: options.includeBarcode,
-        barcode: label.barcode
-      }, 'ThermalLabelPreview');
+      setBarcodeMarkup('');
     }
-  }, [label.barcode, options.includeBarcode]);
+  }, [options.includeBarcode, label.barcode]);
 
   // Professional thermal label styling - 6cm × 3cm landscape (227px × 113px)
   const labelStyle = {
@@ -192,21 +160,21 @@ export function ThermalLabelPreview({
       </div>
 
       {/* Barcode Section */}
-      {options.includeBarcode && formattedLabel.barcode && (
+      {options.includeBarcode && formattedLabel.barcode && barcodeMarkup && (
         <div style={{
           marginTop: '2px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          height: '50px'
         }}>
-          <canvas 
-            ref={canvasRef} 
+          <div 
             style={{
               maxWidth: '200px',
-              height: '25px',
               display: 'block'
-            }} 
+            }}
+            dangerouslySetInnerHTML={{ __html: barcodeMarkup }}
           />
         </div>
       )}

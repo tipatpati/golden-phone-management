@@ -205,26 +205,26 @@ export class UnifiedPrintService implements IPrintService {
                    ctx.scale(scale, scale);
                    ctx.imageSmoothingEnabled = false;
                    
-                   // Enhanced barcode settings for thermal printing
-                   JsBarcode(canvas, barcode, {
-                     format: 'CODE128',
-                     width: 2.0,  // Slightly wider for better print quality
-                     height: 45,  // Slightly taller for scanner readability
-                     displayValue: true,
-                     fontSize: 7,
-                     fontOptions: 'bold',
-                     font: 'Arial',
-                     textAlign: 'center',
-                     textPosition: 'bottom',
-                     textMargin: 3,
-                     margin: 5,
-                     background: '#ffffff',
-                     lineColor: '#000000',
-                     marginTop: 2,
-                     marginBottom: 2,
-                     marginLeft: 8,
-                     marginRight: 8
-                   });
+                    // Use same barcode settings as preview for consistency
+                    JsBarcode(canvas, barcode, {
+                      format: 'CODE128',
+                      width: 1.8,
+                      height: 40,
+                      displayValue: true,
+                      fontSize: 6,
+                      fontOptions: 'bold',
+                      font: 'Arial',
+                      textAlign: 'center',
+                      textPosition: 'bottom',
+                      textMargin: 2,
+                      margin: 4,
+                      background: '#ffffff',
+                      lineColor: '#000000',
+                      marginTop: 2,
+                      marginBottom: 2,
+                      marginLeft: 8,
+                      marginRight: 8
+                    });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
                    // Draw error indicator
