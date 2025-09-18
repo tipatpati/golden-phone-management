@@ -191,34 +191,56 @@ export class UnifiedPrintService implements IPrintService {
                const barcode = canvas.getAttribute('data-barcode');
                if (barcode && window.JsBarcode) {
                  try {
-                      // Unified barcode settings matching preview exactly
-                      JsBarcode(canvas, barcode, {
-                        format: 'CODE128',
-                        width: 1.8,
-                        height: 40,
-                        displayValue: true,
-                        fontSize: 6,
-                        fontOptions: 'bold',
-                        font: 'Arial',
-                        textAlign: 'center',
-                        textPosition: 'bottom',
-                        textMargin: 2,
-                        margin: 4,
-                        background: '#ffffff',
-                        lineColor: '#000000',
-                        marginTop: 2,
-                        marginBottom: 2,
-                        marginLeft: 8,
-                        marginRight: 8
-                      });
+                   // High-DPI scaling for crisp print quality
+                   const scale = window.devicePixelRatio || 1;
+                   const originalWidth = canvas.width;
+                   const originalHeight = canvas.height;
+                   
+                   canvas.width = originalWidth * scale;
+                   canvas.height = originalHeight * scale;
+                   canvas.style.width = originalWidth + 'px';
+                   canvas.style.height = originalHeight + 'px';
+                   
+                   const ctx = canvas.getContext('2d');
+                   ctx.scale(scale, scale);
+                   ctx.imageSmoothingEnabled = false;
+                   
+                   // Enhanced barcode settings for thermal printing
+                   JsBarcode(canvas, barcode, {
+                     format: 'CODE128',
+                     width: 2.0,  // Slightly wider for better print quality
+                     height: 45,  // Slightly taller for scanner readability
+                     displayValue: true,
+                     fontSize: 7,
+                     fontOptions: 'bold',
+                     font: 'Arial',
+                     textAlign: 'center',
+                     textPosition: 'bottom',
+                     textMargin: 3,
+                     margin: 5,
+                     background: '#ffffff',
+                     lineColor: '#000000',
+                     marginTop: 2,
+                     marginBottom: 2,
+                     marginLeft: 8,
+                     marginRight: 8
+                   });
                  } catch (error) {
                    console.error('Barcode generation failed:', error);
+                   // Draw error indicator
+                   const ctx = canvas.getContext('2d');
+                   ctx.fillStyle = '#ff0000';
+                   ctx.font = '8px Arial';
+                   ctx.textAlign = 'center';
+                   ctx.fillText('ERROR', canvas.width / 2, canvas.height / 2);
                  }
                }
              });
            }
             
             window.addEventListener('load', generateBarcodes);
+            // Regenerate on print for best quality
+            window.addEventListener('beforeprint', generateBarcodes);
         </script>
       </body>
       </html>

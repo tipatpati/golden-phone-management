@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import JsBarcode from "jsbarcode";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
 import { formatLabelElements, getBarcodeConfig } from "./services/labelDataFormatter";
+import { BarcodeRenderer } from "./services/BarcodeRenderer";
 import { logger } from "@/utils/logger";
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
@@ -22,47 +23,29 @@ export function ThermalLabelPreview({
       try {
         logger.debug('Generating barcode for thermal label', { barcode: label.barcode }, 'ThermalLabelPreview');
         
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        
-        // Set canvas dimensions for better rendering
-        const dpr = window.devicePixelRatio || 1;
-        const displayWidth = 200;
-        const displayHeight = 50;
-        
-        canvas.width = displayWidth * dpr;
-        canvas.height = displayHeight * dpr;
-        canvas.style.width = displayWidth + 'px';
-        canvas.style.height = displayHeight + 'px';
-        
-        // Scale context for high DPI displays
-        if (ctx) {
-          ctx.scale(dpr, dpr);
-          ctx.clearRect(0, 0, displayWidth, displayHeight);
-        }
-        
-        // Generate barcode with unified settings matching print service
-        JsBarcode(canvas, label.barcode, {
-          format: 'CODE128',
-          width: 1.8,
-          height: 40,
+        // Use high-quality barcode renderer for crisp preview
+        const highQualityCanvas = BarcodeRenderer.generateCanvas(label.barcode, {
+          width: 200,
+          height: 50,
+          quality: 'high',
           displayValue: true,
-          fontSize: 7,
-          fontOptions: 'bold',
-          font: 'Arial',
-          textAlign: 'center',
-          textPosition: 'bottom',
-          textMargin: 2,
-          margin: 4,
-          background: '#ffffff',
-          lineColor: '#000000',
-          marginTop: 2,
-          marginBottom: 2,
-          marginLeft: 8,
-          marginRight: 8
+          fontSize: 7
         });
         
-        logger.debug('Barcode generated successfully', { barcode: label.barcode }, 'ThermalLabelPreview');
+        // Copy the high-quality canvas to our ref
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          canvas.width = highQualityCanvas.width;
+          canvas.height = highQualityCanvas.height;
+          canvas.style.width = highQualityCanvas.style.width;
+          canvas.style.height = highQualityCanvas.style.height;
+          
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(highQualityCanvas, 0, 0);
+        }
+        
+        logger.debug('High-quality barcode generated successfully', { barcode: label.barcode }, 'ThermalLabelPreview');
       } catch (error) {
         logger.error('Barcode generation failed', { barcode: label.barcode, error }, 'ThermalLabelPreview');
         

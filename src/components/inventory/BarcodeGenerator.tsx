@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import JsBarcode from 'jsbarcode';
+import { BarcodeRenderer } from './labels/services/BarcodeRenderer';
 
 interface BarcodeGeneratorProps {
   value: string;
@@ -23,22 +24,23 @@ export function BarcodeGenerator({
   useEffect(() => {
     if (canvasRef.current && value) {
       try {
-        // Force CODE128 format for professional barcode system
-        JsBarcode(canvasRef.current, value, {
-          format: 'CODE128',
+        // High-quality barcode generation with proper scaling
+        const canvas = BarcodeRenderer.generateCanvas(value, {
           width,
           height,
           displayValue,
-          fontSize: 14,
-          fontOptions: 'bold',
-          font: 'Arial',
-          textAlign: 'center',
-          textPosition: 'bottom',
-          textMargin: 6,
-          margin: 8,
-          background: '#ffffff',
-          lineColor: '#000000'
+          quality: 'high'
         });
+        
+        // Replace current canvas content
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          canvasRef.current.width = canvas.width;
+          canvasRef.current.height = canvas.height;
+          canvasRef.current.style.width = canvas.style.width;
+          canvasRef.current.style.height = canvas.style.height;
+          ctx.drawImage(canvas, 0, 0);
+        }
       } catch (error) {
         console.error('Failed to generate CODE128 barcode:', error);
         
