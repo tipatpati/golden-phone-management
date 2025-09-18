@@ -93,10 +93,8 @@ export function SupplierAcquisitionPrintDialog({
     }
   }, [open, productsLoading, productsError, transactionProducts.length, eligibleTransactions.length, transactionIds, onOpenChange]);
 
-  // Determine company name from supplier (use first supplier for consistency)
-  const companyName = eligibleTransactions.length > 0 && eligibleTransactions[0].suppliers?.name 
-    ? `Acquired from ${eligibleTransactions[0].suppliers.name}`
-    : "GOLDEN PHONE SRL";
+  // Use consistent company name like inventory labels
+  const companyName = "GOLDEN PHONE SRL";
 
   return (
     <ThermalLabelGenerator
