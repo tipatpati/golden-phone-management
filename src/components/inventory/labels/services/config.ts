@@ -1,31 +1,73 @@
-import { ThermalPrintSettings } from "../types";
+import type { ThermalPrintSettings, BarcodeConfig } from "@/services/labels/types";
 
-// Centralized configuration for thermal label printing
+/**
+ * Phase 1: Unified Configuration for Thermal Labels
+ * Single source of truth for all barcode and label settings
+ * Ensures WYSIWYG consistency between preview and print
+ */
+
+// Standard thermal label dimensions in millimeters (real-world units)
+export const THERMAL_LABEL_DIMENSIONS = {
+  width: 60,     // 6cm width
+  height: 30,    // 3cm height
+  dpi: 203,      // Standard thermal printer DPI (8 dots/mm)
+} as const;
+
+// Convert to pixels for browser rendering (96 DPI standard)
 export const PRINT_SETTINGS: ThermalPrintSettings = {
-  width: 227,   // 6cm at 96 DPI (6cm * 37.8 pixels/cm)
-  height: 113,  // 3cm at 96 DPI (3cm * 37.8 pixels/cm)
-  dpi: 96,      // Standard browser DPI
-  margin: 0,    // No margins
+  width: Math.round(THERMAL_LABEL_DIMENSIONS.width * 96 / 25.4),  // 227px
+  height: Math.round(THERMAL_LABEL_DIMENSIONS.height * 96 / 25.4), // 113px
+  dpi: 96,
+  margin: 0,
 };
 
-// Unified barcode generation settings for 6cm × 3cm thermal labels
-// Optimized for both scanner readability and WYSIWYG consistency
-export const BARCODE_CONFIG = {
+// Phase 2: Enhanced Barcode Configuration
+// Optimized for thermal printing with consistent quality across all contexts
+export const BARCODE_CONFIG: BarcodeConfig = {
+  // Core barcode settings
   format: 'CODE128' as const,
-  width: 1.4,        // Optimized bar width for 6cm label
-  height: 50,        // Scanner-friendly height with space for text
+  width: 1.8,           // Optimal bar width for 6cm thermal labels
+  height: 36,           // Perfect height for 3cm labels with text
   displayValue: true,
-  fontSize: 6,       // Compact text for 3cm height
+  
+  // Typography optimized for thermal printing
+  fontSize: 8,          // Readable on thermal printers
   fontOptions: 'bold' as const,
-  font: 'Arial',
+  font: 'Arial, sans-serif',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  textMargin: 4,     // Adequate spacing for text visibility
-  margin: 4,         // Quiet zones for scanner compliance
-  background: '#ffffff',
-  lineColor: '#000000',
+  textMargin: 2,        // Tight spacing for compact labels
+  
+  // Quiet zones for scanner compliance (ISO/IEC 15417)
+  margin: 6,            // Minimum quiet zone
   marginTop: 2,
   marginBottom: 2,
-  marginLeft: 8,
-  marginRight: 8,
+  marginLeft: 6,        // Left quiet zone
+  marginRight: 6,       // Right quiet zone
+  
+  // High contrast for thermal printing
+  background: '#ffffff',
+  lineColor: '#000000',
+  
+  // Quality settings for different contexts
+  quality: {
+    preview: {
+      width: 1.6,
+      height: 32,
+      fontSize: 7,
+      margin: 6,       // Standard margin for preview
+    },
+    print: {
+      width: 2.0,      // Higher resolution for crisp printing
+      height: 40,      // Extra height for better scanning
+      fontSize: 8,
+      margin: 6,       // Standard margin for print
+    },
+    thermal: {
+      width: 1.8,      // Optimized for thermal printers
+      height: 36,
+      fontSize: 8,
+      margin: 4,       // Reduced margin for compact thermal labels
+    }
+  }
 } as const;

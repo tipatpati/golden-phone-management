@@ -29,7 +29,7 @@ export function BarcodeGenerator({
           width,
           height,
           displayValue,
-          quality: 'high'
+          context: 'preview'
         });
         
         // Replace current canvas content

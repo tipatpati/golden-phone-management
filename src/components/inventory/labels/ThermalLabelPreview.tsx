@@ -18,18 +18,22 @@ export function ThermalLabelPreview({
   useEffect(() => {
     if (options.includeBarcode && label.barcode) {
       try {
-        // Generate high-quality SVG barcode for crisp preview
-        const svgMarkup = BarcodeRenderer.generateThermalPrint(label.barcode);
+        console.log(`🖨️ ThermalLabelPreview: Generating barcode for preview: ${label.barcode}`);
+        
+        // Phase 3: Use preview-optimized barcode that matches thermal output
+        const svgMarkup = BarcodeRenderer.generatePreview(label.barcode);
         setBarcodeMarkup(svgMarkup);
+        
+        console.log(`✅ ThermalLabelPreview: Barcode generated successfully`);
       } catch (error) {
-        console.error('Failed to generate barcode:', error);
+        console.error('❌ ThermalLabelPreview: Failed to generate barcode:', error);
         setBarcodeMarkup(`
-          <svg width="200" height="60" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="60" fill="#ffebee" stroke="#f44336" stroke-width="1"/>
-            <text x="100" y="25" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">
+          <svg width="200" height="50" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="50" fill="#ffebee" stroke="#f44336" stroke-width="1"/>
+            <text x="100" y="20" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">
               Barcode Error
             </text>
-            <text x="100" y="40" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
+            <text x="100" y="35" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
               ${label.barcode}
             </text>
           </svg>
@@ -40,13 +44,14 @@ export function ThermalLabelPreview({
     }
   }, [options.includeBarcode, label.barcode]);
 
-  // Professional thermal label styling - 6cm × 3cm landscape (227px × 113px)
+  // Phase 3: WYSIWYG thermal label styling - exact 6cm × 3cm dimensions
+  // Matches UnifiedPrintService exactly for perfect preview consistency
   const labelStyle = {
-    width: '227px',   // 6cm
-    height: '113px',  // 3cm
+    width: '227px',   // 6cm at 96 DPI (matches PRINT_SETTINGS)
+    height: '113px',  // 3cm at 96 DPI (matches PRINT_SETTINGS)
     border: '2px solid hsl(var(--border))',
     borderRadius: '4px',
-    padding: '4px',
+    padding: '3px',   // Consistent with print service (0.8mm ≈ 3px)
     margin: '8px',
     fontSize: '8px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -55,10 +60,10 @@ export function ThermalLabelPreview({
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '1.1',
+    lineHeight: '1.0', // Tighter line height to match print
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
-    boxShadow: 'var(--elevation-2)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     position: 'relative' as const
   };
   return (
@@ -159,19 +164,21 @@ export function ThermalLabelPreview({
         )}
       </div>
 
-      {/* Barcode Section */}
+      {/* Phase 3: Barcode Section - matches print service exactly */}
       {options.includeBarcode && formattedLabel.barcode && barcodeMarkup && (
         <div style={{
-          marginTop: '2px',
+          height: '45px',           // 12mm converted to px (matches print CSS)
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ffffff',
-          height: '65px'
+          overflow: 'hidden',
+          marginTop: '2px'          // 0.5mm spacing
         }}>
           <div 
             style={{
-              maxWidth: '200px',
+              maxWidth: '207px',      // 5.5cm for barcode + quiet zones  
+              height: '38px',         // 10mm height
               display: 'block'
             }}
             dangerouslySetInnerHTML={{ __html: barcodeMarkup }}

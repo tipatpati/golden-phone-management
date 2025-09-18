@@ -1,3 +1,8 @@
+/**
+ * Phase 1: Unified Types for Thermal Label System
+ * Provides type safety and consistency across all label components
+ */
+
 export interface ThermalLabelData {
   productName: string;
   serialNumber?: string;
@@ -56,4 +61,57 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
+}
+
+/**
+ * Enhanced type definitions for thermal printing system
+ */
+export interface ThermalPrintSettings {
+  width: number;
+  height: number;
+  dpi: number;
+  margin: number;
+}
+
+/**
+ * Barcode quality contexts for different use cases
+ */
+export type BarcodeQualityContext = 'preview' | 'print' | 'thermal';
+
+/**
+ * Barcode configuration for specific quality context
+ */
+export interface BarcodeQualityConfig {
+  width: number;
+  height: number;
+  fontSize: number;
+  margin: number;
+}
+
+/**
+ * Complete barcode configuration with all quality contexts
+ */
+export interface BarcodeConfig {
+  format: 'CODE128';
+  width: number;
+  height: number;
+  displayValue: boolean;
+  fontSize: number;
+  fontOptions: 'bold';
+  font: string;
+  textAlign: 'center';
+  textPosition: 'bottom';
+  textMargin: number;
+  margin: number;
+  marginTop: number;
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+  background: string;
+  lineColor: string;
+  quality: {
+    preview: BarcodeQualityConfig;
+    print: BarcodeQualityConfig;
+    thermal: BarcodeQualityConfig;
+  };
 }

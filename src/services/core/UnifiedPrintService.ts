@@ -160,6 +160,14 @@ export class UnifiedPrintService implements IPrintService {
       height: 10mm;
       display: block;
     }
+    
+    /* Phase 4: Enhanced print quality optimizations */
+    .thermal-label * {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
   `;
 
   /**
