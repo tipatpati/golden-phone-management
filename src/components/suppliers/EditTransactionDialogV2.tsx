@@ -64,6 +64,75 @@ export function EditTransactionDialogV2({
   const [itemUnitEntries, setItemUnitEntries] = useState<Record<number, UnitEntryFormType[]>>({});
   const [editingUnits, setEditingUnits] = useState<Record<number, boolean>>({});
 
+  // CRITICAL: All useCallback hooks MUST be defined here before any conditional logic
+  const updateItem = useCallback((index: number, field: keyof EditableTransactionItemType, value: any) => {
+    if (!Array.isArray(products)) {
+      console.warn('Products array not available for updateItem');
+      return;
+    }
+    
+    setItems((prev) => {
+      const copy = [...prev];
+      (copy[index] as any)[field] = value;
+      
+      // Auto-populate unit_cost with product default price when product is selected
+      if (field === 'product_id' && value) {
+        const product = products.find(p => p.id === value);
+        if (product?.price && copy[index].unit_cost === 0) {
+          copy[index].unit_cost = product.price;
+        }
+      }
+      
+      return copy;
+    });
+
+    // Load units when product changes for serialized products (moved to useEffect)
+    if (field === 'product_id' && value) {
+      const product = products.find(p => p.id === value);
+      if (product?.has_serial) {
+        // Trigger async loading via useEffect by updating a dependency
+        setProductUnits(prev => ({ ...prev, [value]: [] })); // Initialize empty array to trigger loading
+      }
+    }
+
+    // Update unit entries when quantity changes for serialized products
+    if (field === 'quantity' && typeof value === 'number') {
+      const item = items[index];
+      const product = products.find(p => p.id === item.product_id);
+      if (product?.has_serial) {
+        const units = productUnits[item.product_id] || [];
+        const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
+          const unit = units[i];
+          return {
+            serial: unit?.serial_number || '',
+            battery_level: unit?.battery_level,
+            color: unit?.color,
+            storage: unit?.storage,
+            ram: unit?.ram,
+            price: unit?.purchase_price || unit?.price || item.unit_cost,
+            min_price: unit?.min_price,
+            max_price: unit?.max_price
+          };
+        });
+        setItemUnitEntries(prev => ({ ...prev, [index]: newEntries }));
+      }
+    }
+  }, [products, items, productUnits]);
+
+  const calculateItemTotal = useCallback((item: EditableTransactionItemType, index: number) => {
+    if (!Array.isArray(products)) {
+      return item.quantity * item.unit_cost;
+    }
+    
+    const product = products.find(p => p.id === item.product_id);
+    if (product?.has_serial && itemUnitEntries[index]?.length) {
+      // Use individual unit prices for serialized products, fallback to default if no price
+      return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
+    }
+    // Use quantity * unit_cost for non-serialized products
+    return item.quantity * item.unit_cost;
+  }, [products, itemUnitEntries]);
+
   // Load transaction data
   useEffect(() => {
     if (transaction) {
@@ -270,59 +339,6 @@ export function EditTransactionDialogV2({
     }
   };
 
-  const updateItem = useCallback((index: number, field: keyof EditableTransactionItemType, value: any) => {
-    if (!Array.isArray(products)) {
-      console.warn('Products array not available for updateItem');
-      return;
-    }
-    
-    setItems((prev) => {
-      const copy = [...prev];
-      (copy[index] as any)[field] = value;
-      
-      // Auto-populate unit_cost with product default price when product is selected
-      if (field === 'product_id' && value) {
-        const product = products.find(p => p.id === value);
-        if (product?.price && copy[index].unit_cost === 0) {
-          copy[index].unit_cost = product.price;
-        }
-      }
-      
-      return copy;
-    });
-
-    // Load units when product changes for serialized products (moved to useEffect)
-    if (field === 'product_id' && value) {
-      const product = products.find(p => p.id === value);
-      if (product?.has_serial) {
-        // Trigger async loading via useEffect by updating a dependency
-        setProductUnits(prev => ({ ...prev, [value]: [] })); // Initialize empty array to trigger loading
-      }
-    }
-
-    // Update unit entries when quantity changes for serialized products
-    if (field === 'quantity' && typeof value === 'number') {
-      const item = items[index];
-      const product = products.find(p => p.id === item.product_id);
-      if (product?.has_serial) {
-        const units = productUnits[item.product_id] || [];
-        const newEntries: UnitEntryFormType[] = Array.from({ length: value }, (_, i) => {
-          const unit = units[i];
-          return {
-            serial: unit?.serial_number || '',
-            battery_level: unit?.battery_level,
-            color: unit?.color,
-            storage: unit?.storage,
-            ram: unit?.ram,
-            price: unit?.purchase_price || unit?.price || item.unit_cost,
-            min_price: unit?.min_price,
-            max_price: unit?.max_price
-          };
-        });
-        setItemUnitEntries(prev => ({ ...prev, [index]: newEntries }));
-      }
-    }
-  }, [products, items, productUnits]);
 
   const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
     console.log('🔄 Updating unit entries for item', itemIndex, 'with', entries.length, 'entries');
@@ -346,19 +362,6 @@ export function EditTransactionDialogV2({
     }));
   };
 
-  const calculateItemTotal = useCallback((item: EditableTransactionItemType, index: number) => {
-    if (!Array.isArray(products)) {
-      return item.quantity * item.unit_cost;
-    }
-    
-    const product = products.find(p => p.id === item.product_id);
-    if (product?.has_serial && itemUnitEntries[index]?.length) {
-      // Use individual unit prices for serialized products, fallback to default if no price
-      return itemUnitEntries[index].reduce((sum, entry) => sum + (entry.price || item.unit_cost), 0);
-    }
-    // Use quantity * unit_cost for non-serialized products
-    return item.quantity * item.unit_cost;
-  }, [products, itemUnitEntries]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
