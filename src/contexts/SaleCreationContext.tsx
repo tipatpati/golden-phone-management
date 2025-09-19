@@ -159,18 +159,28 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     case 'ADD_ITEM': {
       console.log('➕ ADD_ITEM - New item:', action.payload);
       
-      const existingItemIndex = state.items.findIndex(item => item.product_id === action.payload.product_id);
+      // For serialized products, check by serial number; for non-serialized, check by product_id
+      const existingItemIndex = action.payload.has_serial 
+        ? state.items.findIndex(item => 
+            item.product_id === action.payload.product_id && 
+            item.serial_number === action.payload.serial_number
+          )
+        : state.items.findIndex(item => 
+            item.product_id === action.payload.product_id && 
+            !item.has_serial
+          );
+      
       let newItems: SaleItem[];
       
       if (existingItemIndex >= 0) {
-        // For serialized products, don't increase quantity, just show warning
+        // If exact same item exists (same product + serial for serialized, or same product for non-serialized)
         const existingItem = state.items[existingItemIndex];
         if (existingItem.has_serial) {
-          console.log('⚠️ Cannot add more serialized items');
-          return state; // Return unchanged state
+          console.log('⚠️ Cannot add duplicate serialized item with same serial number:', action.payload.serial_number);
+          return state; // Return unchanged state - same unit already added
         }
         
-        console.log('📈 Updating existing item quantity');
+        console.log('📈 Updating existing non-serialized item quantity');
         const enforcedQuantity = getEnforcedQuantity(existingItem.has_serial || false, action.payload.quantity);
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
@@ -328,8 +338,7 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
   const addItem = useCallback((item: SaleItem) => {
     console.log('➕ Adding item:', item);
     dispatch({ type: 'ADD_ITEM', payload: item });
-    toast({ title: 'Prodotto aggiunto', description: `${item.product_name} aggiunto alla vendita` });
-  }, [toast]);
+  }, []);
 
   const updateItem = useCallback((productId: string, updates: Partial<SaleItem>) => {
     console.log('🔄 Updating item:', productId, updates);

@@ -13,7 +13,7 @@ export function CleanProductSearchSection() {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { addItem } = useSaleCreation();
+  const { addItem, state } = useSaleCreation();
   const { user } = useAuth();
 
   const performSearch = async (query: string) => {
@@ -80,6 +80,18 @@ export function CleanProductSearchSection() {
   const handleUnitSelect = (product: Product, unit: any) => {
     if (!user) return;
 
+    // Check if this specific unit (by serial number) is already added
+    const serialNumber = unit.serial_number || unit.barcode || '';
+    const isAlreadyAdded = state.items.some(item => 
+      item.product_id === product.id && 
+      item.serial_number === serialNumber
+    );
+
+    if (isAlreadyAdded) {
+      toast.error('Questa unità è già stata aggiunta alla vendita');
+      return;
+    }
+
     // Use max selling price for sales (no purchase price)
     let unitPrice = unit.max_price || unit.price || product.max_price || product.price || 0;
 
@@ -101,7 +113,7 @@ export function CleanProductSearchSection() {
       min_price: unit.min_price || product.min_price || 0,
       max_price: unit.max_price || product.max_price || 0,
       has_serial: true,
-      serial_number: unit.serial_number || unit.barcode || '',
+      serial_number: serialNumber,
     });
 
     setSearchTerm('');
@@ -198,37 +210,56 @@ export function CleanProductSearchSection() {
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground mb-2">Unità disponibili:</p>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {product.product_units.map((unit: any) => (
-                      <div
-                        key={unit.id}
-                        className="flex items-center justify-between p-2 bg-surface border border-border/20 rounded text-sm"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <span className="font-mono text-xs truncate block">
-                            {unit.serial_number || unit.barcode}
-                          </span>
-                          {/* Only show selling prices, never purchase price for sales */}
-                          {(unit.max_price || unit.price) && (
-                            <span className="text-muted-foreground">
-                              €{(unit.max_price || unit.price).toFixed(2)}
-                              {unit.min_price && unit.max_price && unit.min_price !== unit.max_price && (
-                                <span className="text-xs ml-1">
-                                  (da €{unit.min_price.toFixed(2)})
-                                </span>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          onClick={() => handleUnitSelect(product, unit)}
-                          size="sm"
-                          variant="outline"
-                          className="ml-2 shrink-0"
+                    {(() => {
+                      const availableUnits = product.product_units.filter((unit: any) => {
+                        // Filter out units that are already added to the sale
+                        const serialNumber = unit.serial_number || unit.barcode || '';
+                        return !state.items.some(item => 
+                          item.product_id === product.id && 
+                          item.serial_number === serialNumber
+                        );
+                      });
+
+                      if (availableUnits.length === 0) {
+                        return (
+                          <div className="text-center py-4 text-muted-foreground text-sm">
+                            Tutte le unità sono già state aggiunte alla vendita
+                          </div>
+                        );
+                      }
+
+                      return availableUnits.map((unit: any) => (
+                        <div
+                          key={unit.id}
+                          className="flex items-center justify-between p-2 bg-surface border border-border/20 rounded text-sm"
                         >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-mono text-xs truncate block">
+                              {unit.serial_number || unit.barcode}
+                            </span>
+                            {/* Only show selling prices, never purchase price for sales */}
+                            {(unit.max_price || unit.price) && (
+                              <span className="text-muted-foreground">
+                                €{(unit.max_price || unit.price).toFixed(2)}
+                                {unit.min_price && unit.max_price && unit.min_price !== unit.max_price && (
+                                  <span className="text-xs ml-1">
+                                    (da €{unit.min_price.toFixed(2)})
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => handleUnitSelect(product, unit)}
+                            size="sm"
+                            variant="outline"
+                            className="ml-2 shrink-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
