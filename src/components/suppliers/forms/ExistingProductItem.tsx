@@ -13,6 +13,7 @@ interface ExistingProductItemProps {
   item: AcquisitionItem;
   index: number;
   products: any[];
+  selectedSupplierId?: string;
   onRemove: () => void;
   onUpdateItem: (updates: Partial<AcquisitionItem>) => void;
   onUpdateUnitEntries: (unitEntries: UnitEntryFormType[]) => void;
@@ -22,6 +23,7 @@ export function ExistingProductItem({
   item,
   index,
   products,
+  selectedSupplierId,
   onRemove,
   onUpdateItem,
   onUpdateUnitEntries
@@ -101,6 +103,7 @@ export function ExistingProductItem({
             <UnitManagementSection
               item={item}
               index={index}
+              selectedSupplierId={selectedSupplierId}
               onUpdateUnitEntries={onUpdateUnitEntries}
               isExistingProduct={true}
             />

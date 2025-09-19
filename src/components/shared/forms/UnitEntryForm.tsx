@@ -31,6 +31,7 @@ interface UnitEntryFormProps {
   showPricingTemplates?: boolean; // To show/hide pricing template selector
   enablePricingPreview?: boolean; // To enable preview mode for pricing templates
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
+  preselectedSupplierId?: string; // When supplier is already selected from parent form
 }
 
 export function UnitEntryForm({ 
@@ -44,7 +45,8 @@ export function UnitEntryForm({
   showBarcodeActions = false,
   showPricingTemplates = false,
   enablePricingPreview = false,
-  onDefaultPricesUpdate
+  onDefaultPricesUpdate,
+  preselectedSupplierId
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
@@ -57,7 +59,7 @@ export function UnitEntryForm({
       serial: "",
       battery_level: 0,
       condition: 'new', // Default to 'new' for acquisitions and new units
-      supplier_id: undefined, // User must select supplier
+      supplier_id: preselectedSupplierId || undefined, // Auto-assign if available
     };
     const updated = [...entries, newEntry];
     setEntries(updated);
@@ -378,22 +380,33 @@ export function UnitEntryForm({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-medium mb-1 block">Supplier *</Label>
-                  <Select 
-                    value={entry.supplier_id || ''} 
-                    onValueChange={(value) => updateEntry(index, 'supplier_id', value || undefined)}
-                  >
-                    <SelectTrigger className="text-sm h-10">
-                      <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {suppliers.map(supplier => (
-                        <SelectItem key={supplier.id} value={supplier.id} className="hover:bg-muted">
-                          {supplier.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs font-medium mb-1 block">
+                    Supplier {!preselectedSupplierId && '*'}
+                  </Label>
+                  {preselectedSupplierId ? (
+                    <div className="text-sm px-3 py-2 bg-muted/50 rounded border text-muted-foreground">
+                      {(() => {
+                        const supplier = suppliers.find((s: any) => s.id === preselectedSupplierId);
+                        return supplier ? `📦 ${supplier.name}` : 'Selected from form';
+                      })()}
+                    </div>
+                  ) : (
+                    <Select 
+                      value={entry.supplier_id || ''} 
+                      onValueChange={(value) => updateEntry(index, 'supplier_id', value || undefined)}
+                    >
+                      <SelectTrigger className="text-sm h-10">
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {suppliers.map(supplier => (
+                          <SelectItem key={supplier.id} value={supplier.id} className="hover:bg-muted">
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 

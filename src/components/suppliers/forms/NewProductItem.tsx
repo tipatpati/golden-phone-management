@@ -14,6 +14,7 @@ interface NewProductItemProps {
   index: number;
   uniqueBrands: string[];
   uniqueModels: string[];
+  selectedSupplierId?: string;
   onRemove: () => void;
   onUpdateProductData: (productData: Partial<ProductFormData>) => void;
   onUpdateUnitEntries: (unitEntries: UnitEntryFormType[]) => void;
@@ -24,6 +25,7 @@ export function NewProductItem({
   index,
   uniqueBrands,
   uniqueModels,
+  selectedSupplierId,
   onRemove,
   onUpdateProductData,
   onUpdateUnitEntries
@@ -65,6 +67,7 @@ export function NewProductItem({
           <UnitManagementSection
             item={item}
             index={index}
+            selectedSupplierId={selectedSupplierId}
             onUpdateUnitEntries={onUpdateUnitEntries}
             onUpdateProductData={onUpdateProductData}
           />

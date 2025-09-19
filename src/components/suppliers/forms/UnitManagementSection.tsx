@@ -10,6 +10,7 @@ import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/serv
 interface UnitManagementSectionProps {
   item: AcquisitionItem;
   index: number;
+  selectedSupplierId?: string;
   onUpdateUnitEntries: (unitEntries: UnitEntryFormType[]) => void;
   onUpdateProductData?: (productData: Partial<ProductFormData>) => void;
   isExistingProduct?: boolean;
@@ -18,6 +19,7 @@ interface UnitManagementSectionProps {
 export function UnitManagementSection({
   item,
   index,
+  selectedSupplierId,
   onUpdateUnitEntries,
   onUpdateProductData,
   isExistingProduct = false
@@ -44,8 +46,18 @@ export function UnitManagementSection({
       <CollapsibleContent className="space-y-4">
         {/* Unit Entry Form */}
         <UnitEntryForm
-          entries={item.unitEntries}
-          setEntries={onUpdateUnitEntries}
+          entries={item.unitEntries.map(entry => ({
+            ...entry,
+            supplier_id: entry.supplier_id || selectedSupplierId
+          }))}
+          setEntries={(entries) => {
+            // Auto-assign supplier ID to new entries
+            const updatedEntries = entries.map(entry => ({
+              ...entry,
+              supplier_id: entry.supplier_id || selectedSupplierId
+            }));
+            onUpdateUnitEntries(updatedEntries);
+          }}
           onStockChange={(stock) => {
             if (isExistingProduct) {
               // For existing products, update quantity
@@ -59,6 +71,7 @@ export function UnitManagementSection({
           showPricing={true}
           showPricingTemplates={true}
           enablePricingPreview={true}
+          preselectedSupplierId={selectedSupplierId}
         />
 
         {/* Barcode Management Toggle */}

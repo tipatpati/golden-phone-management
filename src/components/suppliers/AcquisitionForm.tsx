@@ -37,6 +37,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [hasCheckedInitialDraft, setHasCheckedInitialDraft] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -171,22 +172,28 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const updateUnitEntries = useCallback((index: number, unitEntries: UnitEntryFormType[]) => {
     setItems(prev => prev.map((item, i) => {
       if (i === index) {
+        // Auto-assign supplier to all unit entries
+        const updatedUnitEntries = unitEntries.map(entry => ({
+          ...entry,
+          supplier_id: selectedSupplierId || entry.supplier_id
+        }));
+        
         // Calculate average unit cost from individual unit entries
-        const validUnits = unitEntries.filter(unit => unit.price && unit.price > 0);
+        const validUnits = updatedUnitEntries.filter(unit => unit.price && unit.price > 0);
         const calculatedUnitCost = validUnits.length > 0 
           ? validUnits.reduce((sum, unit) => sum + (unit.price || 0), 0) / validUnits.length
           : item.unitCost;
         
         return { 
           ...item, 
-          unitEntries, 
-          quantity: unitEntries.length,
+          unitEntries: updatedUnitEntries, 
+          quantity: updatedUnitEntries.length,
           unitCost: calculatedUnitCost
         };
       }
       return item;
     }));
-  }, []);
+  }, [selectedSupplierId]);
 
   const calculateTotal = useCallback(() => {
     return items.reduce((total, item) => {
@@ -275,7 +282,10 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="supplierId">Supplier</Label>
-                <Select onValueChange={(value) => form.setValue('supplierId', value)}>
+                <Select onValueChange={(value) => {
+                  form.setValue('supplierId', value);
+                  setSelectedSupplierId(value);
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
@@ -302,8 +312,17 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                 {form.formState.errors.transactionDate && (
                   <p className="text-sm text-red-500">{form.formState.errors.transactionDate.message}</p>
                 )}
+                </div>
               </div>
-            </div>
+              
+              {/* Supplier Auto-Assignment Notice */}
+              {selectedSupplierId && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-sm text-blue-800">
+                    <span className="font-medium">📦 Auto-Assignment:</span> All units will be automatically assigned to the selected supplier above.
+                  </div>
+                </div>
+              )}
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -347,6 +366,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                     index={index}
                     uniqueBrands={uniqueBrands}
                     uniqueModels={uniqueModels}
+                    selectedSupplierId={selectedSupplierId}
                     onRemove={() => removeItem(index)}
                     onUpdateProductData={(productData) => updateProductData(index, productData)}
                     onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
@@ -357,6 +377,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                     item={item}
                     index={index}
                     products={products}
+                    selectedSupplierId={selectedSupplierId}
                     onRemove={() => removeItem(index)}
                     onUpdateItem={(updates) => updateItem(index, updates)}
                     onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
