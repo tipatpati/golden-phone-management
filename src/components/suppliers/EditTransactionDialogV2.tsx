@@ -47,7 +47,7 @@ export function EditTransactionDialogV2({
   const { userRole } = useAuth();
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: suppliers = [], isLoading: suppliersLoading, error: suppliersError } = useSuppliers();
-  const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || "");
+  const { data: existingItems, isLoading: loadingItems } = useSupplierTransactionItems(transaction?.id || null);
   const { toast } = useToast();
   const updateTx = useUpdateSupplierTransaction();
   const replaceItems = useReplaceSupplierTransactionItems();
