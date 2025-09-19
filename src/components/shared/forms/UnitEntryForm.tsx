@@ -16,6 +16,8 @@ import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 import { useBarcodeService } from "@/components/shared/useBarcodeService";
 import { StoragePricingTemplateSelector } from "@/components/pricing/StoragePricingTemplateSelector";
+import { useSuppliers } from "@/services";
+import type { Supplier } from "@/services/suppliers/types";
 
 interface UnitEntryFormProps {
   entries: UnitEntryForm[];
@@ -46,6 +48,7 @@ export function UnitEntryForm({
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
+  const { data: suppliers = [] } = useSuppliers() as { data: Supplier[] };
   const [pendingPricingChanges, setPendingPricingChanges] = useState<UnitEntryForm[]>([]);
   const [pendingTemplateName, setPendingTemplateName] = useState<string>('');
   
@@ -54,6 +57,7 @@ export function UnitEntryForm({
       serial: "",
       battery_level: 0,
       condition: 'new', // Default to 'new' for acquisitions and new units
+      supplier_id: undefined, // User must select supplier
     };
     const updated = [...entries, newEntry];
     setEntries(updated);
@@ -298,7 +302,7 @@ export function UnitEntryForm({
               </div>
 
               {/* Device attributes - Responsive grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
                 <div>
                   <Label className="text-xs font-medium mb-1 block">Condition</Label>
                   <Select 
@@ -371,6 +375,25 @@ export function UnitEntryForm({
                     placeholder="8"
                     className="text-sm h-10"
                   />
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium mb-1 block">Supplier *</Label>
+                  <Select 
+                    value={entry.supplier_id || ''} 
+                    onValueChange={(value) => updateEntry(index, 'supplier_id', value || undefined)}
+                  >
+                    <SelectTrigger className="text-sm h-10">
+                      <SelectValue placeholder="Select supplier" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {suppliers.map(supplier => (
+                        <SelectItem key={supplier.id} value={supplier.id} className="hover:bg-muted">
+                          {supplier.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

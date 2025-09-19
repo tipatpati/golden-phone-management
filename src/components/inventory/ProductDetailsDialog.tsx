@@ -29,6 +29,7 @@ import type { ProductUnit } from "@/services/inventory/types";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 import { ProductHistoryView } from "./ProductHistoryView";
 import { supabase } from "@/integrations/supabase/client";
+import { useSuppliers } from "@/services";
 
 interface Product {
   id: string;
@@ -70,6 +71,9 @@ export function ProductDetailsDialog({
   const [unitPricingOpen, setUnitPricingOpen] = useState(false);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(product);
+  
+  // Fetch suppliers for display in unit badges
+  const { data: suppliers = [] } = useSuppliers();
 
   // Refresh product data when dialog opens to get latest pricing
   useEffect(() => {
@@ -406,6 +410,14 @@ export function ProductDetailsDialog({
                               {unit.battery_level !== null && unit.battery_level !== undefined && (
                                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
                                   Battery: {unit.battery_level}%
+                                </span>
+                              )}
+                              {unit.supplier_id && (
+                                <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                                  {(() => {
+                                    const supplier = (suppliers as any[])?.find((s: any) => s.id === unit.supplier_id);
+                                    return supplier ? `📦 ${supplier.name}` : `📦 ${unit.supplier_id.slice(0, 8)}...`;
+                                  })()}
                                 </span>
                               )}
                             </div>

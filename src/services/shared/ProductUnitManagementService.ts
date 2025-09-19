@@ -60,6 +60,7 @@ export class ProductUnitManagementService {
           price: entry.price ?? defaultPricing?.price,
           min_price: entry.min_price ?? defaultPricing?.min_price,
           max_price: entry.max_price ?? defaultPricing?.max_price,
+          supplier_id: entry.supplier_id || metadata?.supplierId,
           status: 'available'
         };
 
@@ -264,6 +265,10 @@ export class ProductUnitManagementService {
       if (!entry.serial?.trim()) {
         errors.push('Serial number is required');
         continue;
+      }
+
+      if (!entry.supplier_id?.trim()) {
+        errors.push(`Supplier is required for ${entry.serial || 'unit'}`);
       }
 
       if (serials.has(entry.serial)) {

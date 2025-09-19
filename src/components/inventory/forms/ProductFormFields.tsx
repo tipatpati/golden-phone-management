@@ -207,16 +207,24 @@ export function ProductFormFields({
         error={getFieldError('description')}
       />
 
-      {/* Supplier Field */}
-      <FormField
-        label="Supplier"
-        type="input"
-        value={formData.supplier || ''}
-        onChange={(value) => onFieldChange('supplier', value)}
-        placeholder="Supplier name"
-        className="md:col-span-2"
-        error={getFieldError('supplier')}
-      />
+      {/* Legacy Supplier Field - For Reference Only */}
+      <div className="md:col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">📋 Legacy Supplier Field</h4>
+        <div className="text-xs text-gray-800 space-y-1">
+          <p><strong>Note:</strong> This field is for reference only and not linked to the database.</p>
+          <p><strong>⚡ For serialized products:</strong> Set suppliers individually for each unit below.</p>
+          <p><strong>📦 For bulk products:</strong> This field can be used for general supplier reference.</p>
+        </div>
+        <FormField
+          label="Reference Supplier (Optional)"
+          type="input"
+          value={formData.supplier || ''}
+          onChange={(value) => onFieldChange('supplier', value)}
+          placeholder="Supplier name for reference"
+          className="mt-3"
+          error={getFieldError('supplier')}
+        />
+      </div>
 
       {/* Barcode Field - Only for products without serial numbers */}
       {!formData.has_serial && (

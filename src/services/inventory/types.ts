@@ -90,6 +90,7 @@ export interface UnitEntryForm {
   storage?: number;
   ram?: number;
   condition?: 'new' | 'used';
+  supplier_id?: string;
 }
 
 // ============================================
