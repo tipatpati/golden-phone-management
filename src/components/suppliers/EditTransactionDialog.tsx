@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
-import { useUpdateSupplierTransaction, useReplaceSupplierTransactionItems, EditableTransactionItem, useSupplierTransactionItems } from "@/services/useSupplierTransactions";
+import { useUpdateSupplierTransaction, useReplaceSupplierTransactionItems, EditableTransactionItem } from "@/services/useSupplierTransactions";
 import { useToast } from "@/hooks/use-toast";
 
 interface SupplierTransaction {
