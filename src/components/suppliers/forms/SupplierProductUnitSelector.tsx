@@ -214,7 +214,7 @@ export function SupplierProductUnitSelector({
       </div>
 
       {/* Product Groups */}
-      <ScrollArea className="max-h-96 border rounded-lg">
+      <ScrollArea className="h-96 border rounded-lg">
         <div className="p-4 space-y-4">
           {Array.from(unitsByProduct.entries()).map(([productKey, productUnits]) => {
             if (productUnits.length === 0) return null;
