@@ -51,11 +51,7 @@ export class SoldProductsTrackingService {
   static async getSoldUnitsForProduct(productId: string, filters?: SoldProductsFilters) {
     let query = supabase
       .from('sold_product_units')
-      .select(`
-        *,
-        sales!inner(sale_number, payment_method, sale_date),
-        products!inner(brand, model)
-      `)
+      .select('*')
       .eq('product_id', productId);
 
     if (filters?.customer_name) {
@@ -144,11 +140,7 @@ export class SoldProductsTrackingService {
   static async searchSoldProducts(filters: SoldProductsFilters) {
     let query = supabase
       .from('sold_product_units')
-      .select(`
-        *,
-        products!inner(brand, model, category_id),
-        sales!inner(sale_number, payment_method, sale_date, total_amount)
-      `);
+      .select('*');
 
     if (filters.product_id) {
       query = query.eq('product_id', filters.product_id);
@@ -196,12 +188,7 @@ export class SoldProductsTrackingService {
   static async getProfitAnalysis(productId?: string) {
     let query = supabase
       .from('sold_product_units')
-      .select(`
-        sold_price,
-        original_purchase_price,
-        sold_at,
-        products!inner(brand, model)
-      `);
+      .select('sold_price, original_purchase_price, sold_at');
 
     if (productId) {
       query = query.eq('product_id', productId);
@@ -226,11 +213,7 @@ export class SoldProductsTrackingService {
   static async getCustomerPurchaseHistory(customerName: string) {
     const { data, error } = await supabase
       .from('sold_product_units')
-      .select(`
-        *,
-        products!inner(brand, model),
-        sales!inner(sale_number, sale_date, total_amount)
-      `)
+      .select('*')
       .ilike('customer_name', `%${customerName}%`)
       .order('sold_at', { ascending: false });
 
