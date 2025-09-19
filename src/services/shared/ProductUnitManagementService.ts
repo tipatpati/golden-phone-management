@@ -127,16 +127,22 @@ export class ProductUnitManagementService {
   /**
    * Get all units for a product with role-based purchase price filtering
    */
-  static async getUnitsForProduct(productId: string, userRole?: UserRole | null): Promise<ProductUnit[]> {
+  static async getUnitsForProduct(productId: string, userRole?: UserRole | null, includeAllStatuses = false): Promise<ProductUnit[]> {
     try {
       // Use role-aware select to automatically filter purchase prices
       const selectFields = userRole ? createRoleAwareSelect(userRole) : '*';
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('product_units')
         .select(selectFields)
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+        .eq('product_id', productId);
+      
+      // By default, only return available units unless explicitly requested
+      if (!includeAllStatuses) {
+        query = query.eq('status', 'available');
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
         throw InventoryError.createDatabaseError('getUnitsForProduct', error, { productId });

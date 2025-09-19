@@ -140,8 +140,8 @@ export function EditProductDialog({
       // If product has serial numbers, create/update product units with RAM and storage data
       if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
         // Get existing units for this product - EXCLUDE sold units from editing
-        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
-        const availableUnits = existingUnits.filter(unit => unit.status !== 'sold');
+        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id, undefined, true);
+        const availableUnits = existingUnits.filter(unit => unit.status === 'available');
         
         // Get current serials - use them directly
         const currentSerials = data.serial_numbers || [];

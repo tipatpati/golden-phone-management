@@ -47,7 +47,7 @@ class ProductUnitCoordinatorClass {
 
     try {
       // Get existing units
-      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
+      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId, undefined, true); // Get all units for processing
       const existingSerials = new Set(existingUnits.map(u => u.serial_number));
       
       const newEntries = unitFormData.filter(e => e.serial?.trim() && !existingSerials.has(e.serial));
@@ -207,7 +207,7 @@ class ProductUnitCoordinatorClass {
       }
 
       // Get units using unified service
-      const units = await ProductUnitManagementService.getUnitsForProduct(productId);
+      const units = await ProductUnitManagementService.getUnitsForProduct(productId, undefined, false); // Only available units
       
       // Convert to form data format for UI consistency
       const unitEntries: UnitFormData[] = units.map(unit => ({
@@ -254,7 +254,7 @@ class ProductUnitCoordinatorClass {
       const errors: string[] = [];
 
       // Get all existing units for this product
-      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId);
+      const existingUnits = await ProductUnitManagementService.getUnitsForProduct(productId, undefined, true); // Get all units for barcode generation
       
       for (const unit of units) {
         if (!unit.serial?.trim()) {
