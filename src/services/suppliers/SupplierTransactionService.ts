@@ -37,7 +37,7 @@ export const supplierTransactionApi = {
           name
         )
       `)
-      .order("transaction_date", { ascending: false });
+      .order("created_at", { ascending: false });
 
     // Apply filters
     if (filters.searchTerm) {

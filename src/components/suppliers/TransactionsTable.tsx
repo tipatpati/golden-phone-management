@@ -100,6 +100,16 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       ),
     },
     {
+      key: "created_at" as keyof SupplierTransaction,
+      header: "Created",
+      render: (value: string) => (
+        <div className="text-sm">
+          <div>{new Date(value).toLocaleDateString()}</div>
+          <div className="text-muted-foreground">{new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      ),
+    },
+    {
       key: "status" as keyof SupplierTransaction,
       header: "Status",
       render: (value: string) => (
@@ -263,6 +273,9 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>Amount: €{transaction.total_amount.toFixed(2)}</div>
               <div>Date: {new Date(transaction.transaction_date).toLocaleDateString()}</div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Created: {new Date(transaction.created_at).toLocaleDateString()} at {new Date(transaction.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
             <div className="flex gap-2 pt-2">
               <Button 
