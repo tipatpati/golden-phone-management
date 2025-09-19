@@ -536,7 +536,10 @@ export function ProductDetailsDialog({
                 </Button>
               )}
               {onEdit && (
-                <Button onClick={() => onEdit(product)}>
+                <Button 
+                  onClick={() => onEdit(product)}
+                  disabled={product.has_serial && product.stock === 0}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Product
                 </Button>

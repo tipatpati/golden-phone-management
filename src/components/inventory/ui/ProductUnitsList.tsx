@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Eye, Edit, Trash2 } from "lucide-react";
 import type { ProductUnit } from "@/services/inventory/types";
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,10 +135,26 @@ export function ProductUnitsList({ units, onEdit, onDelete, onView }: ProductUni
                 </Button>
               )}
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={() => onEdit(unit)}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => onEdit(unit)}
+                        disabled={unit.status !== 'available'}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </TooltipTrigger>
+                    {unit.status !== 'available' && (
+                      <TooltipContent>
+                        <p>Only available units can be edited</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               )}
               {onDelete && userRole === 'super_admin' && (
                 <Button variant="destructive" size="sm" onClick={() => onDelete(unit)}>
