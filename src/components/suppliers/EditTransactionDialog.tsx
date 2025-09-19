@@ -85,6 +85,7 @@ export function EditTransactionDialog({
     });
   };
 
+  // Legacy barcode parsing - kept for backward compatibility only
   const parseBarcodes = (text: string) =>
     text
       .split(/\n|,/) // split by comma or newline
@@ -239,14 +240,27 @@ export function EditTransactionDialog({
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-xs">Unit barcodes (optional)</Label>
-                    <Textarea
-                      placeholder="Enter barcodes separated by comma or new line (e.g. GPMSU000001, GPMSU000002)"
-                      value={(item.unit_barcodes || []).join("\n")}
-                      onChange={(e) => updateItem(index, "unit_barcodes", parseBarcodes(e.target.value))}
-                      rows={2}
-                    />
+                  {/* Unit Management with Universal Barcode Service */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Unit Management</Label>
+                    <div className="p-3 bg-muted/30 rounded-md">
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Barcodes are now automatically generated using the Universal Barcode Service.
+                        Unit barcodes will be created when the transaction is completed.
+                      </div>
+                      {item.unit_barcodes && item.unit_barcodes.length > 0 && (
+                        <div className="text-xs">
+                          <span className="font-medium">Legacy barcodes:</span>
+                          <div className="mt-1 space-x-1">
+                            {item.unit_barcodes.map((barcode, idx) => (
+                              <span key={idx} className="inline-block px-2 py-1 bg-background rounded text-xs font-mono">
+                                {barcode}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

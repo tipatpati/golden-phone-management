@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { BarcodePreview } from '@/components/inventory/forms/BarcodePreview';
-import { UniversalBarcodeManager } from '@/components/shared/UniversalBarcodeManager';
+import { UnifiedSupplierBarcodeManager } from './UnifiedSupplierBarcodeManager';
 import { logger } from '@/utils/logger';
 import type { AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 
@@ -18,7 +17,6 @@ export function BarcodeManagementSection({
 }: BarcodeManagementSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [unitBarcodes, setUnitBarcodes] = useState<Record<string, string>>({});
-  const [productBarcode, setProductBarcode] = useState<string>('');
 
   const productData = item.productData || { brand: 'Unknown', model: 'Unknown' };
 
@@ -32,25 +30,22 @@ export function BarcodeManagementSection({
       </CollapsibleTrigger>
       
       <CollapsibleContent className="space-y-4">
-        {/* Barcode Preview */}
-        <BarcodePreview
-          unitEntries={item.unitEntries}
-          hasSerial={'has_serial' in productData ? productData.has_serial || false : false}
-          productBarcode={productBarcode}
-        />
-        
-        {/* Universal Barcode Manager */}
-        <UniversalBarcodeManager
+        {/* Unified Supplier Barcode Manager */}
+        <UnifiedSupplierBarcodeManager
+          productId={item.productId}
           productBrand={productData.brand || 'Unknown'}
           productModel={productData.model || 'Unknown'}
           units={item.unitEntries}
-          source="supplier"
-          showPrintButton={true}
           onBarcodeGenerated={(serial, barcode) => {
             setUnitBarcodes(prev => ({ ...prev, [serial]: barcode }));
+            logger.info('Barcode generated for supplier unit', { serial, barcode }, 'BarcodeManagementSection');
           }}
           onPrintCompleted={(printedUnits) => {
-            logger.info('Printed labels for units', { printedUnits }, 'BarcodeManagementSection');
+            logger.info('Printed thermal labels for supplier units', { 
+              printedUnits,
+              productBrand: productData.brand,
+              productModel: productData.model
+            }, 'BarcodeManagementSection');
           }}
         />
       </CollapsibleContent>

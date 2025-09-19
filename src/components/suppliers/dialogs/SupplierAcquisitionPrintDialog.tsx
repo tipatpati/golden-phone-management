@@ -1,7 +1,7 @@
 import React from "react";
-import { ThermalLabelGenerator, useThermalLabels } from "@/components/inventory/labels";
+import { ThermalLabelGenerator } from "@/components/inventory/labels/ThermalLabelGenerator";
 import { useSupplierTransactionProducts } from "../hooks/useSupplierTransactionProducts";
-import { mapProductsForLabels } from "@/utils/mapProductForLabels";
+import { useUnifiedSupplierLabels } from "../hooks/useUnifiedSupplierLabels";
 import { logger } from "@/utils/logger";
 import { showErrorToast } from "@/components/ui/error-toast";
 
@@ -44,24 +44,29 @@ export function SupplierAcquisitionPrintDialog({
     error: productsError 
   } = useSupplierTransactionProducts(transactionIds);
 
-  // Transform products to standardized format using the same utility as inventory
-  const mappedProducts = mapProductsForLabels(transactionProducts);
-  
-  // Use the same thermal labels hook as inventory for consistent barcode generation
-  const thermalLabels = useThermalLabels(mappedProducts);
+  // Use the new unified supplier labels hook for professional barcode management
+  const { data: thermalLabels = [], isLoading: labelsLoading } = useUnifiedSupplierLabels(
+    transactionProducts,
+    {
+      useMasterBarcode: false,
+      includePrice: true,
+      includeCategory: true
+    }
+  );
 
   // Log for debugging
   React.useEffect(() => {
     if (open) {
-      logger.info('Supplier acquisition print dialog opened', {
+      logger.info('Unified supplier acquisition print dialog opened', {
         totalTransactions: transactions.length,
         eligibleTransactions: eligibleTransactions.length,
         transactionIds,
         productsCount: transactionProducts.length,
-        labelsCount: thermalLabels.length
+        labelsCount: thermalLabels.length,
+        labelsLoading
       }, 'SupplierAcquisitionPrintDialog');
     }
-  }, [open, transactions, eligibleTransactions, transactionProducts, thermalLabels]);
+  }, [open, transactions, eligibleTransactions, transactionProducts, thermalLabels, labelsLoading]);
 
   // Handle error states and sold transactions
   React.useEffect(() => {
@@ -96,13 +101,15 @@ export function SupplierAcquisitionPrintDialog({
   // Use consistent company name like inventory labels
   const companyName = "GOLDEN PHONE SRL";
 
+  // Show loading state internally if needed
+  const totalLoading = isLoading || productsLoading || labelsLoading;
+
   return (
     <ThermalLabelGenerator
       open={open}
       onOpenChange={onOpenChange}
       labels={thermalLabels}
       companyName={companyName}
-      allowUnitSelection={true}
     />
   );
 }
