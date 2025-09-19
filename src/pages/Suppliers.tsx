@@ -9,7 +9,8 @@ import { NotificationCenter } from "@/components/suppliers/NotificationCenter";
 import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
-import { Search, Plus, Building2, Receipt, Mail, Loader2, ShoppingCart } from "lucide-react";
+import { OrphanedUnitsRecoveryDialog } from "@/components/suppliers/OrphanedUnitsRecoveryDialog";
+import { Search, Plus, Building2, Receipt, Mail, Loader2, ShoppingCart, Package2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
@@ -22,6 +23,7 @@ const Suppliers = () => {
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
+  const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
 
   // Enable real-time updates
@@ -156,6 +158,16 @@ const Suppliers = () => {
                     <span className="sm:hidden">Acquire</span>
                   </Button>
                   <Button 
+                    variant="outline"
+                    onClick={() => setShowRecoveryDialog(true)}
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    <Package2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Recover Units</span>
+                    <span className="sm:hidden">Recover</span>
+                  </Button>
+                  <Button 
                     onClick={() => setShowNewTransaction(true)}
                     className="flex items-center gap-2 text-xs sm:text-sm"
                     size="sm"
@@ -208,6 +220,15 @@ const Suppliers = () => {
           />
         </DialogContent>
       </Dialog>
+
+      <OrphanedUnitsRecoveryDialog
+        open={showRecoveryDialog}
+        onClose={() => setShowRecoveryDialog(false)}
+        onSuccess={() => {
+          setShowRecoveryDialog(false);
+          toast.success('Units recovered successfully');
+        }}
+      />
 
     </div>
   );

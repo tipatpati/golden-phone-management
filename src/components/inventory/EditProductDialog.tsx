@@ -139,12 +139,13 @@ export function EditProductDialog({
       
       // If product has serial numbers, create/update product units with RAM and storage data
       if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
-        // Get existing units for this product
+        // Get existing units for this product - EXCLUDE sold units from editing
         const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        const availableUnits = existingUnits.filter(unit => unit.status !== 'sold');
         
         // Get current serials - use them directly
         const currentSerials = data.serial_numbers || [];
-        const unitsToDelete = existingUnits.filter(unit => 
+        const unitsToDelete = availableUnits.filter(unit => 
           !currentSerials.includes(unit.serial_number)
         );
         
@@ -153,8 +154,8 @@ export function EditProductDialog({
           await ProductUnitManagementService.updateUnitStatus(unit.id, 'damaged');
         }
         
-        // Create units for new serial numbers using unified service
-        const existingSerials = existingUnits.map(unit => unit.serial_number);
+        // Create units for new serial numbers using unified service - only consider available units
+        const existingSerials = availableUnits.map(unit => unit.serial_number);
         const newUnitEntries = data.unit_entries?.filter(entry => 
           !existingSerials.includes(entry.serial)
         ) || [];
@@ -172,7 +173,7 @@ export function EditProductDialog({
           logger.info(`Created ${newUnitEntries.length} new product units with default pricing`, {}, 'EditProductDialog');
         }
         
-        // Update pricing for existing units if unit_entries have pricing changes
+        // Update pricing for existing units if unit_entries have pricing changes - only available units
         const existingUnitEntries = data.unit_entries?.filter(entry => 
           existingSerials.includes(entry.serial)
         ) || [];
