@@ -28,6 +28,7 @@ import { ProductUnitManagementService } from "@/services/shared/ProductUnitManag
 import type { ProductUnit } from "@/services/inventory/types";
 import { UnitPricingDialog } from "./UnitPricingDialog";
 import { ProductHistoryView } from "./ProductHistoryView";
+import { SoldProductsHistoryTab } from "./SoldProductsHistoryTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useSuppliers } from "@/services";
 
@@ -200,7 +201,7 @@ export function ProductDetailsDialog({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               Details
@@ -208,6 +209,10 @@ export function ProductDetailsDialog({
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               History
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="flex items-center gap-2">
+              <Euro className="h-4 w-4" />
+              Sales
             </TabsTrigger>
           </TabsList>
 
@@ -543,6 +548,14 @@ export function ProductDetailsDialog({
             <ProductHistoryView 
               productId={currentProduct.id}
               productUnits={productUnits.map(u => ({ id: u.id, serial_number: u.serial_number }))}
+            />
+          </TabsContent>
+
+          <TabsContent value="sales">
+            <SoldProductsHistoryTab 
+              productId={currentProduct.id}
+              productBrand={currentProduct.brand}
+              productModel={currentProduct.model}
             />
           </TabsContent>
         </Tabs>

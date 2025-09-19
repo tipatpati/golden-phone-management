@@ -1206,40 +1206,58 @@ export type Database = {
         Row: {
           barcode: string | null
           created_at: string
+          customer_name: string | null
           id: string
+          original_purchase_price: number | null
+          payment_method: string | null
           product_id: string
           product_unit_id: string
           sale_id: string
           sale_item_id: string
+          sale_number: string | null
+          salesperson_name: string | null
           serial_number: string
           sold_at: string
           sold_price: number
+          supplier_name: string | null
           updated_at: string
         }
         Insert: {
           barcode?: string | null
           created_at?: string
+          customer_name?: string | null
           id?: string
+          original_purchase_price?: number | null
+          payment_method?: string | null
           product_id: string
           product_unit_id: string
           sale_id: string
           sale_item_id: string
+          sale_number?: string | null
+          salesperson_name?: string | null
           serial_number: string
           sold_at?: string
           sold_price: number
+          supplier_name?: string | null
           updated_at?: string
         }
         Update: {
           barcode?: string | null
           created_at?: string
+          customer_name?: string | null
           id?: string
+          original_purchase_price?: number | null
+          payment_method?: string | null
           product_id?: string
           product_unit_id?: string
           sale_id?: string
           sale_item_id?: string
+          sale_number?: string | null
+          salesperson_name?: string | null
           serial_number?: string
           sold_at?: string
           sold_price?: number
+          supplier_name?: string | null
           updated_at?: string
         }
         Relationships: []

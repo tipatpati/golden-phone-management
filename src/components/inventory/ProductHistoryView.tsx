@@ -11,7 +11,9 @@ import {
   Clock,
   User,
   Package,
-  Euro
+  Euro,
+  DollarSign,
+  X
 } from "lucide-react";
 import { InventoryManagementService } from "@/services/inventory/InventoryManagementService";
 import type { Tables } from "@/integrations/supabase/types";
@@ -63,6 +65,10 @@ export function ProductHistoryView({ productId, productUnits = [] }: ProductHist
         return <Edit className="h-4 w-4 text-blue-600" />;
       case 'delete':
         return <Trash2 className="h-4 w-4 text-red-600" />;
+      case 'sold':
+        return <DollarSign className="h-4 w-4 text-emerald-600" />;
+      case 'sale_cancelled':
+        return <X className="h-4 w-4 text-orange-600" />;
       default:
         return <History className="h-4 w-4 text-gray-600" />;
     }
@@ -76,6 +82,10 @@ export function ProductHistoryView({ productId, productUnits = [] }: ProductHist
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'delete':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'sold':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'sale_cancelled':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
