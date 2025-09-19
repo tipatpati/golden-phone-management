@@ -150,14 +150,14 @@ export function AdvancedTransactionFilters({
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Supplier</Label>
                 <Select
-                  value={filters.supplier_id || ''}
-                  onValueChange={(value) => updateFilter("supplier_id", value || undefined)}
+                  value={filters.supplier_id || 'all'}
+                  onValueChange={(value) => updateFilter("supplier_id", value === 'all' ? undefined : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All suppliers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Suppliers</SelectItem>
+                    <SelectItem value="all">All Suppliers</SelectItem>
                     {Array.isArray(suppliers) && suppliers.map((supplier) => (
                       <SelectItem key={supplier.id} value={supplier.id}>
                         {supplier.name}

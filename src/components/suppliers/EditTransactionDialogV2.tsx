@@ -179,7 +179,7 @@ export function EditTransactionDialogV2({
     };
 
     loadProductUnits();
-  }, [productUnits, items]);
+  }, [items]); // Removed productUnits from dependency array to prevent infinite loop
 
   // Calculate total using useMemo
   const total = useMemo(() => {
