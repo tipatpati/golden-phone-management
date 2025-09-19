@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -181,8 +181,12 @@ export function EditTransactionDialogV2({
     loadProductUnits();
   }, [items]); // Removed productUnits from dependency array to prevent infinite loop
 
-  // Calculate total using useMemo
+  // Calculate total using useMemo - Add safety checks for products array
   const total = useMemo(() => {
+    if (!Array.isArray(products) || products.length === 0) {
+      return 0;
+    }
+    
     return items.reduce((sum, item, index) => {
       const product = products.find(p => p.id === item.product_id);
       if (product?.has_serial && itemUnitEntries[index]?.length) {
@@ -266,7 +270,12 @@ export function EditTransactionDialogV2({
     }
   };
 
-  const updateItem = (index: number, field: keyof EditableTransactionItemType, value: any) => {
+  const updateItem = useCallback((index: number, field: keyof EditableTransactionItemType, value: any) => {
+    if (!Array.isArray(products)) {
+      console.warn('Products array not available for updateItem');
+      return;
+    }
+    
     setItems((prev) => {
       const copy = [...prev];
       (copy[index] as any)[field] = value;
@@ -313,7 +322,7 @@ export function EditTransactionDialogV2({
         setItemUnitEntries(prev => ({ ...prev, [index]: newEntries }));
       }
     }
-  };
+  }, [products, items, productUnits]);
 
   const updateUnitEntries = (itemIndex: number, entries: UnitEntryFormType[]) => {
     console.log('🔄 Updating unit entries for item', itemIndex, 'with', entries.length, 'entries');
@@ -337,7 +346,11 @@ export function EditTransactionDialogV2({
     }));
   };
 
-  const calculateItemTotal = (item: EditableTransactionItemType, index: number) => {
+  const calculateItemTotal = useCallback((item: EditableTransactionItemType, index: number) => {
+    if (!Array.isArray(products)) {
+      return item.quantity * item.unit_cost;
+    }
+    
     const product = products.find(p => p.id === item.product_id);
     if (product?.has_serial && itemUnitEntries[index]?.length) {
       // Use individual unit prices for serialized products, fallback to default if no price
@@ -345,7 +358,7 @@ export function EditTransactionDialogV2({
     }
     // Use quantity * unit_cost for non-serialized products
     return item.quantity * item.unit_cost;
-  };
+  }, [products, itemUnitEntries]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

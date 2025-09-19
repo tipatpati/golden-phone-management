@@ -210,6 +210,12 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     }
 
     setIsSubmitting(true);
+    
+    // Show progress toast for better UX
+    const progressToast = toast.loading(`Processing acquisition with ${items.length} items...`, {
+      duration: 60000 // 60 second timeout
+    });
+    
     try {
       const result = await supplierAcquisitionService.createAcquisition({
         supplierId: data.supplierId,
@@ -218,17 +224,32 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         notes: data.notes
       });
 
+      // Dismiss progress toast
+      toast.dismiss(progressToast);
+
       if (result.success) {
-        toast.success('Supplier acquisition completed successfully');
+        toast.success(`Supplier acquisition completed successfully! Created ${result.productIds.length} products and ${result.unitIds.length} units.`, {
+          duration: 5000
+        });
         // Clear the draft after successful submission
         draft.onFormSubmitSuccess();
         onSuccess();
       } else {
-        toast.error(result.errors?.join(', ') || 'Failed to complete acquisition');
+        toast.error(`Acquisition failed: ${result.errors?.join(', ') || 'Unknown error'}`, {
+          duration: 8000
+        });
       }
     } catch (error) {
       console.error('Acquisition failed:', error);
-      toast.error('Failed to complete acquisition');
+      
+      // Dismiss progress toast
+      toast.dismiss(progressToast);
+      
+      // Show detailed error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Acquisition failed: ${errorMessage}`, {
+        duration: 8000
+      });
     } finally {
       setIsSubmitting(false);
     }

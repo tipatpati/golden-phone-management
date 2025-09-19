@@ -56,111 +56,14 @@ class SupplierAcquisitionService {
         itemCount: data.items.length
       });
 
-      // Validate supplier exists and is active
-      const supplier = await this.validateSupplier(data.supplierId);
-      if (!supplier) {
-        throw new Error('Supplier not found or inactive');
-      }
-
-      // Pre-validate all items to prevent partial failures
-      await this.validateAcquisitionItems(data.items);
-
-      let totalAmount = 0;
-      const transactionItems = [];
-
-      // Process each acquisition item with enhanced error handling
-      for (const [index, item] of data.items.entries()) {
-        logger.info(`📦 Processing item ${index + 1}/${data.items.length}`, {
-          transactionId,
-          item: {
-            productId: item.productId,
-            createsNew: item.createsNewProduct,
-            quantity: item.quantity,
-            unitCost: item.unitCost,
-            unitEntriesCount: item.unitEntries?.length || 0
-          }
-        });
-
-        const itemResult = await this.processAcquisitionItem(
-          transactionId,
-          data.supplierId,
-          item
-        );
-        
-        // Validate item processing results
-        if (itemResult.totalCost === 0 && item.unitCost > 0) {
-          logger.warn('⚠️  Item total cost is 0 despite positive unit cost', {
-            transactionId,
-            item: { unitCost: item.unitCost, quantity: item.quantity }
-          });
-        }
-
-        result.productIds.push(...itemResult.productIds);
-        result.unitIds.push(...itemResult.unitIds);
-        totalAmount += itemResult.totalCost;
-        transactionItems.push(itemResult.transactionItem);
-
-        logger.info(`✅ Item ${index + 1} processed successfully`, {
-          transactionId,
-          totalCost: itemResult.totalCost,
-          unitsCreated: itemResult.unitIds.length
-        });
-      }
-
-      logger.info('💰 Calculated transaction total', {
-        transactionId,
-        totalAmount,
-        itemCount: transactionItems.length
+      // Add timeout protection to prevent stuck processing
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Acquisition processing timeout - operation took longer than 60 seconds'));
+        }, 60000); // 60 seconds timeout
       });
 
-      // Create supplier transaction record with integrity validation
-      const supplierTransactionId = await this.createSupplierTransaction(
-        transactionId,
-        data.supplierId,
-        totalAmount,
-        data.transactionDate,
-        data.notes
-      );
-
-      // Create transaction items with data consistency checks
-      await this.createTransactionItems(
-        transactionId,
-        supplierTransactionId,
-        transactionItems
-      );
-
-      // Final integrity check before commit
-      await this.validateTransactionIntegrity(supplierTransactionId, result);
-
-      // Commit the transaction
-      await transactionCoordinator.commitTransaction(transactionId);
-
-      result.success = true;
-      result.transactionId = supplierTransactionId;
-
-      // Emit events for cache invalidation and UI updates
-      eventBus.emit({
-        type: 'supplier_acquisition_completed',
-        module: 'inventory',
-        operation: 'create',
-        entityId: supplierTransactionId,
-        data: {
-          supplierId: data.supplierId,
-          productIds: result.productIds,
-          unitIds: result.unitIds,
-          totalAmount
-        },
-        metadata: {
-          timestamp: Date.now()
-        }
-      });
-
-      logger.info('🎉 Supplier acquisition completed successfully', {
-        transactionId: supplierTransactionId,
-        productsCreated: result.productIds.length,
-        unitsCreated: result.unitIds.length,
-        totalAmount
-      });
+      await this.processAllAcquisitionItems(transactionId, data, result);
 
     } catch (error) {
       logger.error('❌ Supplier acquisition failed', { error, transactionId });
@@ -178,6 +81,118 @@ class SupplierAcquisitionService {
     }
 
     return result;
+  }
+
+  private async processAllAcquisitionItems(
+    transactionId: string,
+    data: SupplierAcquisitionData,
+    result: AcquisitionResult
+  ): Promise<void> {
+    // Validate supplier exists and is active
+    const supplier = await this.validateSupplier(data.supplierId);
+    if (!supplier) {
+      throw new Error('Supplier not found or inactive');
+    }
+
+    // Pre-validate all items to prevent partial failures
+    await this.validateAcquisitionItems(data.items);
+
+    let totalAmount = 0;
+    const transactionItems = [];
+
+    // Process each acquisition item with enhanced error handling
+    for (const [index, item] of data.items.entries()) {
+      logger.info(`📦 Processing item ${index + 1}/${data.items.length}`, {
+        transactionId,
+        item: {
+          productId: item.productId,
+          createsNew: item.createsNewProduct,
+          quantity: item.quantity,
+          unitCost: item.unitCost,
+          unitEntriesCount: item.unitEntries?.length || 0
+        }
+      });
+
+      const itemResult = await this.processAcquisitionItem(
+        transactionId,
+        data.supplierId,
+        item
+      );
+      
+      // Validate item processing results
+      if (itemResult.totalCost === 0 && item.unitCost > 0) {
+        logger.warn('⚠️  Item total cost is 0 despite positive unit cost', {
+          transactionId,
+          item: { unitCost: item.unitCost, quantity: item.quantity }
+        });
+      }
+
+      result.productIds.push(...itemResult.productIds);
+      result.unitIds.push(...itemResult.unitIds);
+      totalAmount += itemResult.totalCost;
+      transactionItems.push(itemResult.transactionItem);
+
+      logger.info(`✅ Item ${index + 1} processed successfully`, {
+        transactionId,
+        totalCost: itemResult.totalCost,
+        unitsCreated: itemResult.unitIds.length
+      });
+    }
+
+    logger.info('💰 Calculated transaction total', {
+      transactionId,
+      totalAmount,
+      itemCount: transactionItems.length
+    });
+
+    // Create supplier transaction record with integrity validation
+    const supplierTransactionId = await this.createSupplierTransaction(
+      transactionId,
+      data.supplierId,
+      totalAmount,
+      data.transactionDate,
+      data.notes
+    );
+
+    // Create transaction items with data consistency checks
+    await this.createTransactionItems(
+      transactionId,
+      supplierTransactionId,
+      transactionItems
+    );
+
+    // Final integrity check before commit
+    await this.validateTransactionIntegrity(supplierTransactionId, result);
+
+    // Commit the transaction
+    await transactionCoordinator.commitTransaction(transactionId);
+
+    result.success = true;
+    result.transactionId = supplierTransactionId;
+
+    // Emit events for cache invalidation and UI updates
+    eventBus.emit({
+      type: 'supplier_acquisition_completed',
+      module: 'inventory',
+      operation: 'create',
+      entityId: supplierTransactionId,
+      data: {
+        supplierId: data.supplierId,
+        productIds: result.productIds,
+        unitIds: result.unitIds,
+        totalAmount
+      },
+      metadata: {
+        timestamp: Date.now()
+      }
+    });
+
+    logger.info('🎉 Supplier acquisition completed successfully', {
+      transactionId: supplierTransactionId,
+      productsCreated: result.productIds.length,
+      unitsCreated: result.unitIds.length,
+      totalAmount
+    });
   }
 
   private async validateSupplier(supplierId: string): Promise<Supplier | null> {

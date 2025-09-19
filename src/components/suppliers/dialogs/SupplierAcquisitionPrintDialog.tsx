@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ThermalLabelGenerator } from "@/components/inventory/labels/ThermalLabelGenerator";
 import { SupplierProductUnitSelector } from "../forms/SupplierProductUnitSelector";
 import { useSupplierTransactionProducts } from "../hooks/useSupplierTransactionProducts";
@@ -67,10 +67,15 @@ export function SupplierAcquisitionPrintDialog({
     product.units && product.units.length > 0
   );
 
-  // Handle dialog opening logic
+  // Handle dialog opening logic - Memoize expensive calculations
+  const dialogState = useMemo(() => ({
+    hasSerializedProducts,
+    labelsCount: thermalLabels.length
+  }), [hasSerializedProducts, thermalLabels.length]);
+
   useEffect(() => {
     if (open) {
-      if (hasSerializedProducts) {
+      if (dialogState.hasSerializedProducts) {
         setShowUnitSelector(true);
         setShowPrintDialog(false);
       } else {
@@ -83,14 +88,14 @@ export function SupplierAcquisitionPrintDialog({
       setShowPrintDialog(false);
       setSelectedLabels([]);
     }
-  }, [open, hasSerializedProducts, thermalLabels]);
+  }, [open, dialogState.hasSerializedProducts, thermalLabels]);
 
   const handleUnitSelectionComplete = () => {
     setShowUnitSelector(false);
     setShowPrintDialog(true);
   };
 
-  // Log for debugging
+  // Log for debugging - Only log when dialog opens, not on every render
   React.useEffect(() => {
     if (open) {
       logger.info('Unified supplier acquisition print dialog opened', {
@@ -102,7 +107,7 @@ export function SupplierAcquisitionPrintDialog({
         labelsLoading
       }, 'SupplierAcquisitionPrintDialog');
     }
-  }, [open, transactions, eligibleTransactions, transactionProducts, thermalLabels, labelsLoading]);
+  }, [open]); // Simplified dependencies to prevent excessive logging
 
   // Handle error states and sold transactions
   React.useEffect(() => {
