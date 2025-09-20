@@ -27,6 +27,7 @@ interface ThermalLabelGeneratorProps {
   productCategory?: string;
   productId?: string; // Add productId for real data fetching
   allowUnitSelection?: boolean;
+  isSupplierLabel?: boolean;
 }
 
 export function ThermalLabelGenerator({
@@ -42,7 +43,8 @@ export function ThermalLabelGenerator({
   productBarcode = "",
   productCategory = "",
   productId, // Accept productId
-  allowUnitSelection = false
+  allowUnitSelection = false,
+  isSupplierLabel = false
 }: ThermalLabelGeneratorProps) {
   const [options, setOptions] = useState<ThermalLabelOptions>({
     copies: 1,
@@ -103,7 +105,7 @@ export function ThermalLabelGenerator({
   }, [currentLabels, options.copies]);
 
   const handlePrint = async () => {
-    await printLabels(currentLabels, { ...options, companyName });
+    await printLabels(currentLabels, { ...options, companyName, isSupplierLabel });
     // Close dialog after print attempt
     setTimeout(() => onOpenChange(false), 1000);
       // Close dialog after successful print
@@ -362,7 +364,7 @@ export function ThermalLabelGenerator({
                       <div key={index}>
                         <ThermalLabelPreview
                           label={label}
-                          options={{ ...options, companyName }}
+                          options={{ ...options, companyName, isSupplierLabel }}
                         />
                         {currentLabels.length > 1 && (
                           <p className="text-xs text-muted-foreground mt-1 text-center">

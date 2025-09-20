@@ -25,6 +25,7 @@ export interface ThermalLabelOptions {
   includeCategory: boolean;
   format: "standard" | "compact";
   useMasterBarcode?: boolean;
+  isSupplierLabel?: boolean;
 }
 
 export interface ProductForLabels {

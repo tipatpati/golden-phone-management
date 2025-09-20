@@ -25,17 +25,30 @@ export interface FormattedLabelElements {
  */
 export function formatLabelElements(
   label: ThermalLabelData,
-  options: ThermalLabelOptions & { companyName?: string }
+  options: ThermalLabelOptions & { companyName?: string; isSupplierLabel?: boolean }
 ): FormattedLabelElements {
   logger.debug('formatLabelElements input', { label, options }, 'labelDataFormatter');
   
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
+  // For supplier labels, prioritize maxPrice (selling price) over price (purchase price)
+  let displayPrice: string | null = null;
+  if (options.includePrice) {
+    if (options.isSupplierLabel) {
+      // Supplier labels: ONLY show selling price (maxPrice), never purchase price
+      displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null;
+    } else {
+      // Regular inventory labels: show maxPrice if available, otherwise price
+      displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : 
+                   typeof label.price === 'number' ? formatPrice(label.price) : null;
+    }
+  }
+  
   const formatted = {
     productName,
     serialNumber: label.serialNumber ? formatSerialNumber(label.serialNumber) : null,
-    price: options.includePrice && typeof label.price === 'number' ? formatPrice(label.price) : null,
+    price: displayPrice,
     maxPrice: options.includePrice && typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null,
     companyName: options.includeCompany && options.companyName?.trim() ? formatCompanyName(options.companyName) : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,

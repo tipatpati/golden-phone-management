@@ -191,6 +191,7 @@ export function SupplierAcquisitionPrintDialog({
         labels={selectedLabels.length > 0 ? selectedLabels : thermalLabels}
         companyName={companyName}
         allowUnitSelection={false}
+        isSupplierLabel={true}
       />
     </>
   );

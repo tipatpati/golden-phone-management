@@ -7,6 +7,7 @@ interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
     companyName?: string;
+    isSupplierLabel?: boolean;
   };
 }
 export function ThermalLabelPreview({
@@ -144,7 +145,7 @@ export function ThermalLabelPreview({
         )}
 
         {/* Price */}
-        {options.includePrice && (formattedLabel.maxPrice || formattedLabel.price) && (
+        {options.includePrice && formattedLabel.price && (
           <div style={{
             fontSize: '8px',
             fontWeight: '700',
@@ -154,7 +155,7 @@ export function ThermalLabelPreview({
             letterSpacing: '0.05px',
             lineHeight: '0.85'
           }}>
-            {formattedLabel.maxPrice || formattedLabel.price}
+            {formattedLabel.price}
           </div>
         )}
       </div>
