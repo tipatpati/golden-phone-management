@@ -32,14 +32,11 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // Enhanced price logic - prioritize maxPrice for thermal labels
-  const displayPrice = label.maxPrice || label.price;
-  
   const formatted = {
     productName,
     serialNumber: label.serialNumber ? formatSerialNumber(label.serialNumber) : null,
-    price: options.includePrice && typeof displayPrice === 'number' ? formatPrice(displayPrice) : null,
-    maxPrice: label.maxPrice && typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null,
+    price: options.includePrice && typeof label.price === 'number' ? formatPrice(label.price) : null,
+    maxPrice: options.includePrice && typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null,
     companyName: options.includeCompany && options.companyName?.trim() ? formatCompanyName(options.companyName) : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,
     barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,
