@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { ThermalLabelGenerator } from "@/components/inventory/labels/ThermalLabelGenerator";
-import { SupplierProductUnitSelector } from "../forms/SupplierProductUnitSelector";
-import { useSupplierTransactionProducts } from "../hooks/useSupplierTransactionProducts";
-import { useUnifiedSupplierLabels } from "../hooks/useUnifiedSupplierLabels";
-import { logger } from "@/utils/logger";
-import { showErrorToast } from "@/components/ui/error-toast";
+import React from "react";
+import { SimpleThermalLabelPrint } from "../components/SimpleThermalLabelPrint";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import type { ThermalLabelData } from "@/services/labels/types";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, Package } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 interface SupplierTransaction {
   id: string;
@@ -34,165 +31,55 @@ export function SupplierAcquisitionPrintDialog({
   transactions,
   isLoading = false
 }: SupplierAcquisitionPrintDialogProps) {
-  const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>([]);
-  const [showUnitSelector, setShowUnitSelector] = useState(false);
-  const [showPrintDialog, setShowPrintDialog] = useState(false);
-
+  
   // Filter for completed purchase transactions only
   const eligibleTransactions = transactions.filter(
     transaction => transaction.type === "purchase" && transaction.status === "completed"
   );
 
   const transactionIds = eligibleTransactions.map(t => t.id);
-  
-  // Fetch and transform transaction products for label printing
-  const { 
-    data: transactionProducts = [], 
-    isLoading: productsLoading, 
-    error: productsError 
-  } = useSupplierTransactionProducts(transactionIds);
-
-  // Use the new unified supplier labels hook for professional barcode management
-  const { data: thermalLabels = [], isLoading: labelsLoading } = useUnifiedSupplierLabels(
-    transactionProducts,
-    {
-      useMasterBarcode: false,
-      includePrice: true,
-      includeCategory: true
-    }
-  );
-
-  // Determine if we should show unit selection
-  const hasSerializedProducts = transactionProducts.some(product => 
-    product.units && product.units.length > 0
-  );
-
-  // Handle dialog opening logic - Memoize expensive calculations
-  const dialogState = useMemo(() => ({
-    hasSerializedProducts,
-    labelsCount: thermalLabels.length
-  }), [hasSerializedProducts, thermalLabels.length]);
-
-  useEffect(() => {
-    if (open) {
-      if (dialogState.hasSerializedProducts) {
-        setShowUnitSelector(true);
-        setShowPrintDialog(false);
-      } else {
-        setSelectedLabels(thermalLabels);
-        setShowUnitSelector(false);
-        setShowPrintDialog(true);
-      }
-    } else {
-      setShowUnitSelector(false);
-      setShowPrintDialog(false);
-      setSelectedLabels([]);
-    }
-  }, [open, dialogState.hasSerializedProducts, thermalLabels]);
-
-  const handleUnitSelectionComplete = () => {
-    setShowUnitSelector(false);
-    setShowPrintDialog(true);
-  };
-
-  // Log for debugging - Only log when dialog opens, not on every render
-  React.useEffect(() => {
-    if (open) {
-      logger.info('Unified supplier acquisition print dialog opened', {
-        totalTransactions: transactions.length,
-        eligibleTransactions: eligibleTransactions.length,
-        transactionIds,
-        productsCount: transactionProducts.length,
-        labelsCount: thermalLabels.length,
-        labelsLoading
-      }, 'SupplierAcquisitionPrintDialog');
-    }
-  }, [open]); // Simplified dependencies to prevent excessive logging
-
-  // Handle error states and sold transactions
-  React.useEffect(() => {
-    if (productsError) {
-      logger.error('Failed to load supplier transaction products', productsError, 'SupplierAcquisitionPrintDialog');
-      showErrorToast({
-        title: 'Error Loading Products',
-        description: 'Unable to load transaction products for labeling. Please try again.',
-        type: 'error'
-      });
-      onOpenChange(false);
-    }
-  }, [productsError, onOpenChange]);
-
-  // Check if all products have been sold (no available units for labels)
-  React.useEffect(() => {
-    if (open && !productsLoading && !productsError && transactionProducts.length === 0 && eligibleTransactions.length > 0) {
-      logger.warn('No available products for labeling - all units may be sold', {
-        transactionIds,
-        eligibleTransactions: eligibleTransactions.length
-      }, 'SupplierAcquisitionPrintDialog');
-      
-      showErrorToast({
-        title: 'Cannot Generate Labels',
-        description: 'All units from the selected transactions have been sold and cannot be labeled.',
-        type: 'warning'
-      });
-      onOpenChange(false);
-    }
-  }, [open, productsLoading, productsError, transactionProducts.length, eligibleTransactions.length, transactionIds, onOpenChange]);
-
-  // Use consistent company name like inventory labels
   const companyName = "GOLDEN PHONE SRL";
-
-  // Show loading state internally if needed
-  const totalLoading = isLoading || productsLoading || labelsLoading;
+  
+  logger.info('Simplified SupplierAcquisitionPrintDialog initialized', {
+    transactionIds,
+    companyName
+  });
 
   return (
-    <>
-      {/* Unit Selection Dialog */}
-      <Dialog open={showUnitSelector} onOpenChange={(open) => {
-        if (!open) {
-          onOpenChange(false);
-        }
-      }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Select Units for Label Printing</DialogTitle>
-          </DialogHeader>
-          
-          <SupplierProductUnitSelector
-            products={transactionProducts}
-            onSelectionChange={setSelectedLabels}
-          />
-          
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUnitSelectionComplete}
-              disabled={selectedLabels.length === 0}
-            >
-              Print {selectedLabels.length} Labels
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Supplier Acquisition - Thermal Labels
+            <Badge variant="outline">{transactionIds.length} transactions</Badge>
+          </DialogTitle>
+        </DialogHeader>
 
-      {/* Print Dialog */}
-      <ThermalLabelGenerator
-        open={showPrintDialog}
-        onOpenChange={(open) => {
-          if (!open) {
-            onOpenChange(false);
-          }
-        }}
-        labels={selectedLabels.length > 0 ? selectedLabels : thermalLabels}
-        companyName={companyName}
-        allowUnitSelection={false}
-        isSupplierLabel={true}
-      />
-    </>
+        <div className="space-y-4">
+          {/* Status Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-600">
+                <CheckCircle className="h-5 w-5" />
+                Ready for Printing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Thermal labels will be generated for all serialized products from the selected transactions.
+                Each label will display product info, serial number, and maximum selling price.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Simple Thermal Label Print Component */}
+          <SimpleThermalLabelPrint 
+            transactionIds={transactionIds}
+            companyName={companyName}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

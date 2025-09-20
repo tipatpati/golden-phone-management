@@ -14,3 +14,5 @@ export { BarcodeManagementSection } from './forms/BarcodeManagementSection';
 // Hooks
 export { useSupplierTransactionProducts } from './hooks/useSupplierTransactionProducts';
 export { useUnifiedSupplierLabels } from './hooks/useUnifiedSupplierLabels';
+export { useSimpleThermalLabels } from './hooks/useSimpleThermalLabels';
+export { SimpleThermalLabelPrint } from './components/SimpleThermalLabelPrint';

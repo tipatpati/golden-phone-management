@@ -136,26 +136,12 @@ export function useUnifiedSupplierLabels(
                 ram: unit.ram
               };
 
-              // CRITICAL DEBUG: Full unit data before label creation
-              console.log('🔍 UNIT DATA FOR LABEL GENERATION:', {
+              // CLEANED UP: Simple logging without complex debug output
+              console.log('✅ SIMPLIFIED SUPPLIER LABEL:', {
                 productName: `${product.brand} ${product.model}`,
                 serialNumber: unit.serial_number,
-                unit_max_price: unit.max_price,
-                unit_price: unit.price,
-                unit_min_price: unit.min_price,
-                unit_object: unit,
-                will_use_price: unit.max_price || 0
+                price: unit.max_price || unit.price || 0
               });
-
-              // DEBUG: Log what price is being used for labels
-              logger.debug('Supplier label price debug', {
-                productName: label.productName,
-                serialNumber: label.serialNumber,
-                unit_max_price: unit.max_price,
-                unit_price: unit.price,
-                unit_min_price: unit.min_price,
-                final_label_price: label.price
-              }, 'useUnifiedSupplierLabels');
 
               labels.push(label);
             }
