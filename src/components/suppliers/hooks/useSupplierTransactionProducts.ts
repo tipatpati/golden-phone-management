@@ -180,11 +180,11 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             const transactionCost = transactionCostMap.get(unit.id);
             const enhancedUnit = {
               ...unit,
-              // Preserve original unit pricing as base/min price
+              // Preserve original unit pricing - don't override with transaction cost
               price: unit.price,
               min_price: unit.min_price,
-              // Use transaction cost as max selling price when available
-              max_price: transactionCost || unit.max_price
+              // Always preserve the unit's original max_price (selling price)
+              max_price: unit.max_price
             };
 
             // DEBUG: Log transaction cost mapping
