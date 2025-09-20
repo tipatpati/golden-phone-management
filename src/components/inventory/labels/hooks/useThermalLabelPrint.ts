@@ -59,11 +59,18 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
 
   // Helper function to convert component options to service options
   const convertOptions = (options: ComponentLabelOptions & { companyName?: string }): ServiceLabelOptions => {
+    console.log('🔄 useThermalLabelPrint: Converting options:', {
+      includePrice: options.includePrice,
+      isSupplierLabel: options.isSupplierLabel,
+      companyName: options.companyName
+    });
+    
     return {
       copies: options.copies || 1,
       companyName: options.companyName,
       showPrice: options.includePrice,
-      showSerial: true
+      showSerial: true,
+      isSupplierLabel: options.isSupplierLabel // CRITICAL: Pass through the supplier flag
     };
   };
 

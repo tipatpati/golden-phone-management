@@ -38,6 +38,7 @@ export interface ThermalLabelOptions extends PrintOptions {
   showSerial?: boolean;
   labelSize?: '6x5cm' | '6x4cm' | '5x3cm';
   dpi?: 203 | 300;
+  isSupplierLabel?: boolean;
 }
 
 export interface PrintResult {

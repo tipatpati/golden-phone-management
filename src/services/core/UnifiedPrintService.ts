@@ -287,12 +287,20 @@ export class UnifiedPrintService implements IPrintService {
       serialNumber: label.serial,
       barcode: label.barcode,
       price: label.price,
+      maxPrice: label.maxPrice, // CRITICAL: Pass maxPrice to formatter
       category: undefined,
       color: label.color,
       batteryLevel: label.batteryLevel, // Now properly typed
       storage: label.storage ? parseInt(label.storage.replace(/\D/g, '')) || undefined : undefined,
       ram: label.ram ? parseInt(label.ram.replace(/\D/g, '')) || undefined : undefined
     };
+    
+    console.log('🖨️ UnifiedPrintService: Label data before formatting:', {
+      productName: componentLabel.productName,
+      price: componentLabel.price,
+      maxPrice: componentLabel.maxPrice,
+      isSupplierLabel: options.isSupplierLabel
+    });
     
     const componentOptions = {
       copies: options.copies || 1,
@@ -301,11 +309,19 @@ export class UnifiedPrintService implements IPrintService {
       includeCompany: !!options.companyName,
       includeCategory: false,
       format: "standard" as const,
-      companyName: options.companyName
+      companyName: options.companyName,
+      isSupplierLabel: options.isSupplierLabel // CRITICAL: Pass isSupplierLabel to formatter
     };
     
     // Use the same formatter as the preview to ensure consistency
     const formattedLabel = formatLabelElements(componentLabel, componentOptions);
+    
+    console.log('🖨️ UnifiedPrintService: Formatted label result:', {
+      productName: formattedLabel.productName,
+      price: formattedLabel.price,
+      maxPrice: formattedLabel.maxPrice,
+      priceDisplayed: formattedLabel.price || 'NO PRICE'
+    });
     
     // Use formatted price from the same formatter as preview
     const priceString = formattedLabel.price || '';
