@@ -144,7 +144,7 @@ export function ThermalLabelPreview({
         )}
 
         {/* Price */}
-        {options.includePrice && (
+        {options.includePrice && formattedLabel.maxPrice && (
           <div style={{
             fontSize: '8px',
             fontWeight: '700',
@@ -154,12 +154,7 @@ export function ThermalLabelPreview({
             letterSpacing: '0.05px',
             lineHeight: '0.85'
           }}>
-            {(() => {
-              const maxPrice = (label as any).maxPrice;
-              return (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') 
-                ? `€${maxPrice.toFixed(2)}` 
-                : '';
-            })()}
+            {formattedLabel.maxPrice}
           </div>
         )}
       </div>

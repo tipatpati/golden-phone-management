@@ -307,11 +307,8 @@ export class UnifiedPrintService implements IPrintService {
     // Use the same formatter as the preview to ensure consistency
     const formattedLabel = formatLabelElements(componentLabel, componentOptions);
     
-    // Only use maxPrice, leave blank if not available
-    const maxPrice = label.maxPrice;
-    const priceString = (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') 
-      ? `€${maxPrice.toFixed(2)}` 
-      : '';
+    // Use formatted price from the same formatter as preview
+    const priceString = formattedLabel.maxPrice || '';
     
     return `
       <div class="thermal-label">
