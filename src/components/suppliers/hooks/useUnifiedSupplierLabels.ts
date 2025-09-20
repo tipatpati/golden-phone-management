@@ -126,6 +126,17 @@ export function useUnifiedSupplierLabels(
                 ram: unit.ram
               };
 
+              // DEBUG: Log price data flow for supplier labels
+              logger.debug('Created supplier label data', {
+                productName: label.productName,
+                serialNumber: label.serialNumber,
+                unit_price: unit.price,
+                unit_max_price: unit.max_price,
+                label_price: label.price,
+                label_maxPrice: label.maxPrice,
+                includePrice
+              }, 'useUnifiedSupplierLabels');
+
               labels.push(label);
             }
           } else {

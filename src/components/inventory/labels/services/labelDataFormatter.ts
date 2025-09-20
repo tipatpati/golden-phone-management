@@ -38,6 +38,16 @@ export function formatLabelElements(
     if (options.isSupplierLabel) {
       // Supplier labels: ONLY show selling price (maxPrice), never purchase price
       displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null;
+      
+      // DEBUG: Log supplier label pricing decision
+      logger.debug('Supplier label pricing decision', {
+        productName: label.productName,
+        serialNumber: label.serialNumber,
+        labelMaxPrice: label.maxPrice,
+        labelPrice: label.price,
+        displayPrice,
+        isSupplierLabel: options.isSupplierLabel
+      }, 'labelDataFormatter');
     } else {
       // Regular inventory labels: show maxPrice if available, otherwise price
       displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : 
