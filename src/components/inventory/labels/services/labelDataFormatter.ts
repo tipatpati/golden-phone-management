@@ -32,34 +32,16 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // For supplier labels, prioritize maxPrice (selling price) over price (purchase price)
-  let displayPrice: string | null = null;
-  if (options.includePrice) {
-    if (options.isSupplierLabel) {
-      // Supplier labels: ONLY show selling price (maxPrice), never purchase price
-      displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null;
-      
-      // DEBUG: Log supplier label pricing decision
-      logger.debug('Supplier label pricing decision', {
-        productName: label.productName,
-        serialNumber: label.serialNumber,
-        labelMaxPrice: label.maxPrice,
-        labelPrice: label.price,
-        displayPrice,
-        isSupplierLabel: options.isSupplierLabel
-      }, 'labelDataFormatter');
-    } else {
-      // Regular inventory labels: show maxPrice if available, otherwise price
-      displayPrice = typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : 
-                   typeof label.price === 'number' ? formatPrice(label.price) : null;
-    }
-  }
+  // Simple price display - just use the price field if includePrice is enabled
+  const displayPrice = options.includePrice && typeof label.price === 'number' && label.price > 0 
+    ? formatPrice(label.price) 
+    : null;
   
   const formatted = {
     productName,
     serialNumber: label.serialNumber ? formatSerialNumber(label.serialNumber) : null,
     price: displayPrice,
-    maxPrice: options.includePrice && typeof label.maxPrice === 'number' ? formatPrice(label.maxPrice) : null,
+    maxPrice: null, // Simplified: no longer used
     companyName: options.includeCompany && options.companyName?.trim() ? formatCompanyName(options.companyName) : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,
     barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,

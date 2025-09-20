@@ -116,26 +116,13 @@ export function useUnifiedSupplierLabels(
                 productName: `${product.brand} ${product.model}`,
                 serialNumber: unit.serial_number,
                 barcode: barcode || `TEMP-${Date.now()}`,
-                price: includePrice ? (unit.price ?? product.price) : product.price,
-                maxPrice: unit.max_price,
-                minPrice: unit.min_price,
+                price: unit.max_price || 0, // Use selling price directly
                 category: includeCategory ? product.category?.name : undefined,
                 color: unit.color,
                 batteryLevel: unit.battery_level,
                 storage: unit.storage,
                 ram: unit.ram
               };
-
-              // DEBUG: Log price data flow for supplier labels
-              logger.debug('Created supplier label data', {
-                productName: label.productName,
-                serialNumber: label.serialNumber,
-                unit_price: unit.price,
-                unit_max_price: unit.max_price,
-                label_price: label.price,
-                label_maxPrice: label.maxPrice,
-                includePrice
-              }, 'useUnifiedSupplierLabels');
 
               labels.push(label);
             }
@@ -144,7 +131,7 @@ export function useUnifiedSupplierLabels(
             const label: ThermalLabelData = {
               productName: `${product.brand} ${product.model}`,
               barcode: product.barcode || `PROD-${product.id.slice(-8)}`,
-              price: product.price,
+              price: product.price, // For non-serialized products, use base price
               category: includeCategory ? product.category?.name : undefined
             };
 
