@@ -81,7 +81,7 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           product_id
         `)
         .in('id', allUnitIds)
-        .eq('status', 'in_stock');
+        .eq('status', 'available');
 
       if (unitsError) {
         logger.error('Failed to fetch product units', unitsError);
