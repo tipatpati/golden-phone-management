@@ -4,7 +4,10 @@
  */
 
 export interface ThermalLabelData {
+  id?: string;
   productName: string;
+  brand?: string;
+  model?: string;
   serialNumber?: string;
   barcode: string;
   price: number;

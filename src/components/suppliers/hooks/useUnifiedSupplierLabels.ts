@@ -55,8 +55,7 @@ export function useUnifiedSupplierLabels(
       products?.map(p => p.id).join(','),
       useMasterBarcode,
       includePrice,
-      includeCategory,
-      Date.now() // Force cache bust to ensure fresh data
+      includeCategory
     ],
     queryFn: async (): Promise<ThermalLabelData[]> => {
       if (!products || products.length === 0) {
@@ -112,13 +111,17 @@ export function useUnifiedSupplierLabels(
                 barcode = product.barcode;
               }
 
-              // Create thermal label data with explicit price verification
+              // Create thermal label data with required fields for print service
               const finalPrice = unit.max_price || unit.price || 0;
               const label: ThermalLabelData = {
+                id: `${product.id}-${unit.serial_number || Date.now()}`,
                 productName: `${product.brand} ${product.model}`,
+                brand: product.brand,
+                model: product.model,
                 serialNumber: unit.serial_number,
                 barcode: barcode || `TEMP-${Date.now()}`,
-                price: finalPrice, // Explicit price fallback chain
+                price: finalPrice,
+                maxPrice: unit.max_price,
                 category: includeCategory ? product.category?.name : undefined,
                 color: unit.color,
                 batteryLevel: unit.battery_level,
@@ -178,8 +181,8 @@ export function useUnifiedSupplierLabels(
       return labels;
     },
     enabled: products && products.length > 0,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache results
+    staleTime: 1000 * 30, // 30 seconds cache for fresh price data
+    gcTime: 1000 * 60 * 2, // 2 minutes garbage collection
     retry: 2
   });
 }
