@@ -163,6 +163,31 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             .filter(unit => unit.serial_number)
             .map(unit => unit.serial_number);
 
+          // Create transaction cost mapping for proper pricing
+          const transactionCostMap = new Map<string, number>();
+          transactionItems.forEach(item => {
+            if (item.product_unit_ids && Array.isArray(item.product_unit_ids)) {
+              item.product_unit_ids.forEach((unitId: string) => {
+                if (item.unit_cost) {
+                  transactionCostMap.set(unitId, item.unit_cost);
+                }
+              });
+            }
+          });
+
+          // Enhance units with transaction pricing data
+          const enhancedUnits = availableUnits.map(unit => {
+            const transactionCost = transactionCostMap.get(unit.id);
+            return {
+              ...unit,
+              // Preserve original unit pricing as base/min price
+              price: unit.price,
+              min_price: unit.min_price,
+              // Use transaction cost as max selling price when available
+              max_price: transactionCost || unit.max_price
+            };
+          });
+
           const transformedProduct: Product = {
             id: product.id,
             brand: product.brand,
@@ -172,8 +197,8 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             year: product.year,
             has_serial: product.has_serial,
             category: product.categories ? { name: product.categories.name } : undefined,
-            // Include only available units for unit-specific labeling
-            units: availableUnits,
+            // Include enhanced units with transaction pricing
+            units: enhancedUnits,
             // Legacy compatibility for existing label system
             serial_numbers: serialNumbers.length > 0 ? serialNumbers : undefined
           };
