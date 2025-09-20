@@ -111,8 +111,15 @@ export function useUnifiedSupplierLabels(
                 barcode = product.barcode;
               }
 
-              // Create thermal label data with required fields for print service
-              const finalPrice = unit.max_price || unit.price || 0;
+              // SIMPLIFIED: Direct price assignment for supplier labels
+              console.log('💰 SIMPLIFIED PRICE LOGIC:', {
+                productName: `${product.brand} ${product.model}`,
+                serialNumber: unit.serial_number,
+                unit_price: unit.price,
+                unit_max_price: unit.max_price,
+                will_use_max_price: unit.max_price || 0
+              });
+              
               const label: ThermalLabelData = {
                 id: `${product.id}-${unit.serial_number || Date.now()}`,
                 productName: `${product.brand} ${product.model}`,
@@ -120,8 +127,8 @@ export function useUnifiedSupplierLabels(
                 model: product.model,
                 serialNumber: unit.serial_number,
                 barcode: barcode || `TEMP-${Date.now()}`,
-                price: finalPrice,
-                maxPrice: unit.max_price,
+                price: unit.max_price || unit.price || 0, // SIMPLE: Use max_price directly
+                maxPrice: unit.max_price, // Keep for reference
                 category: includeCategory ? product.category?.name : undefined,
                 color: unit.color,
                 batteryLevel: unit.battery_level,

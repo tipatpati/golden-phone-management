@@ -32,13 +32,17 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // Enhanced price display - prioritize maxPrice for supplier labels
-  const priceToDisplay = options.isSupplierLabel && label.maxPrice 
-    ? label.maxPrice 
-    : label.price;
-    
-  const displayPrice = options.includePrice && typeof priceToDisplay === 'number' && priceToDisplay > 0 
-    ? formatPrice(priceToDisplay) 
+  // SIMPLIFIED: Just format the price that was passed in
+  console.log('🎯 SIMPLIFIED FORMATTER:', {
+    productName: label.productName,
+    inputPrice: label.price,
+    maxPrice: label.maxPrice,
+    isSupplierLabel: options.isSupplierLabel,
+    willDisplay: label.price
+  });
+  
+  const displayPrice = options.includePrice && typeof label.price === 'number' && label.price > 0 
+    ? formatPrice(label.price) 
     : null;
   
   const formatted = {
