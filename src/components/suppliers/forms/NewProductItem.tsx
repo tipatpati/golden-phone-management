@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
 import { UnitManagementSection } from './UnitManagementSection';
+import { ItemValidationIndicator } from '../components/ItemValidationIndicator';
 import type { AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
+import type { ItemValidationSummary } from '../hooks/useAcquisitionValidation';
 
 interface NewProductItemProps {
   item: AcquisitionItem;
@@ -18,6 +20,8 @@ interface NewProductItemProps {
   onRemove: () => void;
   onUpdateProductData: (productData: Partial<ProductFormData>) => void;
   onUpdateUnitEntries: (unitEntries: UnitEntryFormType[]) => void;
+  validationSummary?: ItemValidationSummary;
+  getFieldError: (field: string) => string | undefined;
 }
 
 export function NewProductItem({
@@ -28,14 +32,21 @@ export function NewProductItem({
   selectedSupplierId,
   onRemove,
   onUpdateProductData,
-  onUpdateUnitEntries
+  onUpdateUnitEntries,
+  validationSummary,
+  getFieldError
 }: NewProductItemProps) {
   const productData = item.productData!;
 
   return (
-    <Card>
+    <Card id={`acquisition-item-${index}`} className={validationSummary && !validationSummary.isValid ? 'border-destructive/50' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">New Product #{index + 1}</CardTitle>
+        <div className="flex items-center gap-3">
+          <CardTitle className="text-base">New Product #{index + 1}</CardTitle>
+          {validationSummary && (
+            <ItemValidationIndicator summary={validationSummary} itemIndex={index} />
+          )}
+        </div>
         <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
           <Trash2 className="w-4 h-4" />
         </Button>
@@ -45,7 +56,7 @@ export function NewProductItem({
         <ProductFormFields
           formData={productData}
           onFieldChange={(field, value) => onUpdateProductData({ [field]: value })}
-          getFieldError={() => undefined}
+          getFieldError={(field) => getFieldError(`productData.${field}`)}
           uniqueBrands={uniqueBrands}
           uniqueModels={uniqueModels}
         />
@@ -64,25 +75,34 @@ export function NewProductItem({
 
         {/* Unit Management */}
         {productData.has_serial && (
-          <UnitManagementSection
-            item={item}
-            index={index}
-            selectedSupplierId={selectedSupplierId}
-            onUpdateUnitEntries={onUpdateUnitEntries}
-            onUpdateProductData={onUpdateProductData}
-          />
+          <div id={`item-${index}-unit-management`}>
+            <UnitManagementSection
+              item={item}
+              index={index}
+              selectedSupplierId={selectedSupplierId}
+              onUpdateUnitEntries={onUpdateUnitEntries}
+              onUpdateProductData={onUpdateProductData}
+              getFieldError={getFieldError}
+            />
+          </div>
         )}
 
         {/* Simple Pricing Display */}
         <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
           <div className="text-sm">
             <span className="font-medium">Quantity:</span> {item.quantity}
+            {getFieldError('quantity') && (
+              <div className="text-xs text-destructive mt-1">{getFieldError('quantity')}</div>
+            )}
           </div>
           <div className="text-sm">
-            <span className="font-medium">Unit Cost:</span> ${item.unitCost?.toFixed(2) || '0.00'}
+            <span className="font-medium">Unit Cost:</span> €{item.unitCost?.toFixed(2) || '0.00'}
+            {getFieldError('unitCost') && (
+              <div className="text-xs text-destructive mt-1">{getFieldError('unitCost')}</div>
+            )}
           </div>
           <div className="text-sm font-medium">
-            <span>Total:</span> ${(item.quantity * (item.unitCost || 0)).toFixed(2)}
+            <span>Total:</span> €{(item.quantity * (item.unitCost || 0)).toFixed(2)}
           </div>
         </div>
       </CardContent>

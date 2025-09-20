@@ -14,6 +14,7 @@ interface UnitManagementSectionProps {
   onUpdateUnitEntries: (unitEntries: UnitEntryFormType[]) => void;
   onUpdateProductData?: (productData: Partial<ProductFormData>) => void;
   isExistingProduct?: boolean;
+  getFieldError?: (field: string) => string | undefined;
 }
 
 export function UnitManagementSection({
@@ -22,7 +23,8 @@ export function UnitManagementSection({
   selectedSupplierId,
   onUpdateUnitEntries,
   onUpdateProductData,
-  isExistingProduct = false
+  isExistingProduct = false,
+  getFieldError
 }: UnitManagementSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [showBarcodes, setShowBarcodes] = useState(false);
@@ -73,6 +75,13 @@ export function UnitManagementSection({
           enablePricingPreview={true}
           preselectedSupplierId={selectedSupplierId}
         />
+        
+        {/* Show unit entry validation errors */}
+        {getFieldError && getFieldError('unitEntries') && (
+          <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive">{getFieldError('unitEntries')}</p>
+          </div>
+        )}
 
         {/* Barcode Management Toggle */}
         {item.unitEntries.length > 0 && (
@@ -105,7 +114,7 @@ export function UnitManagementSection({
               </div>
               <div className="flex justify-between">
                 <span>Total from individual pricing:</span>
-                <span>${item.unitEntries.reduce((sum, u) => sum + (u.price || 0), 0).toFixed(2)}</span>
+                <span>€{item.unitEntries.reduce((sum, u) => sum + (u.price || 0), 0).toFixed(2)}</span>
               </div>
             </div>
           </div>

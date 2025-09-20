@@ -17,6 +17,8 @@ import { useSuppliers } from '@/services/suppliers/SuppliersReactQueryService';
 import { useProducts } from '@/hooks/useInventory';
 import { NewProductItem } from './forms/NewProductItem';
 import { ExistingProductItem } from './forms/ExistingProductItem';
+import { ValidationErrorSummary } from './components/ValidationErrorSummary';
+import { useAcquisitionValidation } from './hooks/useAcquisitionValidation';
 import { supplierAcquisitionService, type AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { ProductFormData, UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 
@@ -38,9 +40,11 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [hasCheckedInitialDraft, setHasCheckedInitialDraft] = useState(false);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
+  const [validationSummary, setValidationSummary] = useState<any>(null);
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
+  const validation = useAcquisitionValidation();
 
   // Extract unique brands and models for autocomplete
   const { uniqueBrands, uniqueModels } = useMemo(() => {
@@ -157,7 +161,22 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   }, []);
 
   const updateItem = useCallback((index: number, updates: Partial<AcquisitionItem>) => {
-    setItems(prev => prev.map((item, i) => i === index ? { ...item, ...updates } : item));
+    setItems(prev => {
+      const newItems = prev.map((item, i) => i === index ? { ...item, ...updates } : item);
+      
+      // Auto-calculate quantities for serialized products
+      if (updates.unitEntries || (updates.productData && 'has_serial' in updates.productData)) {
+        const updatedItem = newItems[index];
+        if (updatedItem.createsNewProduct && updatedItem.productData?.has_serial) {
+          newItems[index] = {
+            ...updatedItem,
+            quantity: updatedItem.unitEntries?.length || 0
+          };
+        }
+      }
+      
+      return newItems;
+    });
   }, []);
 
   const updateProductData = useCallback((index: number, productData: Partial<ProductFormData>) => {
@@ -195,6 +214,17 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     }));
   }, [selectedSupplierId]);
 
+  // Auto-validate items when they change
+  useEffect(() => {
+    if (items.length > 0) {
+      const summary = validation.validateAllItems(items);
+      setValidationSummary(summary);
+    } else {
+      validation.clearErrors();
+      setValidationSummary(null);
+    }
+  }, [items, validation]);
+
   const calculateTotal = useCallback(() => {
     return items.reduce((total, item) => {
       // Check if item has individual unit pricing
@@ -213,6 +243,14 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const onSubmit = async (data: AcquisitionFormData) => {
     if (items.length === 0) {
       toast.error('Please add at least one item to the acquisition');
+      return;
+    }
+
+    // Validate all items before submission
+    const summary = validation.validateAllItems(items);
+    if (!summary.isValid) {
+      toast.error(`Please fix ${summary.totalErrors} validation error${summary.totalErrors !== 1 ? 's' : ''} before submitting`);
+      validation.scrollToFirstError();
       return;
     }
 
@@ -278,7 +316,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
           <CardTitle>Supplier Acquisition</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form id="acquisition-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="supplierId">Supplier</Label>
@@ -358,6 +396,20 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                 </div>
               </div>
 
+              {/* Validation Summary */}
+              {items.length > 0 && validationSummary && (
+                <ValidationErrorSummary
+                  isValid={validationSummary.isValid}
+                  totalErrors={validationSummary.totalErrors}
+                  hasRequiredFieldErrors={validationSummary.hasRequiredFieldErrors}
+                  hasPricingErrors={validationSummary.hasPricingErrors}
+                  hasSerialErrors={validationSummary.hasSerialErrors}
+                  errors={validationSummary.errors}
+                  onScrollToFirstError={validation.scrollToFirstError}
+                  itemCount={items.length}
+                />
+              )}
+
               {items.map((item, index) => 
                 item.createsNewProduct ? (
                   <NewProductItem
@@ -370,6 +422,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                     onRemove={() => removeItem(index)}
                     onUpdateProductData={(productData) => updateProductData(index, productData)}
                     onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
+                    validationSummary={validationSummary?.itemSummaries[index]}
+                    getFieldError={(field) => validation.getFieldError(index, field)}
                   />
                 ) : (
                   <ExistingProductItem
@@ -381,6 +435,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
                     onRemove={() => removeItem(index)}
                     onUpdateItem={(updates) => updateItem(index, updates)}
                     onUpdateUnitEntries={(unitEntries) => updateUnitEntries(index, unitEntries)}
+                    validationSummary={validationSummary?.itemSummaries[index]}
+                    getFieldError={(field) => validation.getFieldError(index, field)}
                   />
                 )
               )}
@@ -402,7 +458,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
               </div>
               <Button 
                 type="submit" 
-                disabled={isSubmitting || items.length === 0}
+                disabled={isSubmitting || items.length === 0 || (validationSummary && !validationSummary.isValid)}
+                className={validationSummary && !validationSummary.isValid ? 'opacity-50 cursor-not-allowed' : ''}
               >
                 {isSubmitting ? 'Processing...' : 'Complete Acquisition'}
               </Button>
