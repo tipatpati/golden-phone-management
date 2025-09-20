@@ -297,6 +297,41 @@ export function SimpleThermalLabelPrint({
             gap: 2px;
           }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+        <script>
+          window.addEventListener('load', function() {
+            const barcodeCanvases = document.querySelectorAll('.barcode-canvas');
+            barcodeCanvases.forEach(function(canvas) {
+              const barcodeValue = canvas.getAttribute('data-barcode');
+              if (barcodeValue) {
+                try {
+                  JsBarcode(canvas, barcodeValue, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 40,
+                    displayValue: true,
+                    fontSize: 8,
+                    fontOptions: "bold",
+                    font: "Arial",
+                    textAlign: "center",
+                    textPosition: "bottom",
+                    textMargin: 2,
+                    margin: 2,
+                    background: "#ffffff",
+                    lineColor: "#000000"
+                  });
+                } catch (error) {
+                  console.error('Barcode generation failed:', error);
+                  const ctx = canvas.getContext('2d');
+                  ctx.fillStyle = '#ff0000';
+                  ctx.font = '8px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('Barcode Error', canvas.width / 2, canvas.height / 2);
+                }
+              }
+            });
+          });
+        </script>
       </head>
       <body>
         ${labelElements}
