@@ -32,16 +32,20 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // Simple price display - just use the price field if includePrice is enabled
-  const displayPrice = options.includePrice && typeof label.price === 'number' && label.price > 0 
-    ? formatPrice(label.price) 
+  // Enhanced price display - prioritize maxPrice for supplier labels
+  const priceToDisplay = options.isSupplierLabel && label.maxPrice 
+    ? label.maxPrice 
+    : label.price;
+    
+  const displayPrice = options.includePrice && typeof priceToDisplay === 'number' && priceToDisplay > 0 
+    ? formatPrice(priceToDisplay) 
     : null;
   
   const formatted = {
     productName,
     serialNumber: label.serialNumber ? formatSerialNumber(label.serialNumber) : null,
     price: displayPrice,
-    maxPrice: null, // Simplified: no longer used
+    maxPrice: options.isSupplierLabel && label.maxPrice ? formatPrice(label.maxPrice) : null,
     companyName: options.includeCompany && options.companyName?.trim() ? formatCompanyName(options.companyName) : null,
     category: options.includeCategory && label.category?.trim() ? label.category : null,
     barcode: options.includeBarcode && label.barcode?.trim() ? label.barcode : null,
