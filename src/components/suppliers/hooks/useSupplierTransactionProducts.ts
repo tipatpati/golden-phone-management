@@ -178,7 +178,7 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
           // Enhance units with transaction pricing data
           const enhancedUnits = availableUnits.map(unit => {
             const transactionCost = transactionCostMap.get(unit.id);
-            return {
+            const enhancedUnit = {
               ...unit,
               // Preserve original unit pricing as base/min price
               price: unit.price,
@@ -186,6 +186,17 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
               // Use transaction cost as max selling price when available
               max_price: transactionCost || unit.max_price
             };
+            
+            // Debug logging for max_price assignment
+            logger.info('Enhanced unit with transaction pricing', {
+              unitId: unit.id,
+              serialNumber: unit.serial_number,
+              originalMaxPrice: unit.max_price,
+              transactionCost,
+              finalMaxPrice: enhancedUnit.max_price
+            }, 'useSupplierTransactionProducts');
+            
+            return enhancedUnit;
           });
 
           const transformedProduct: Product = {
