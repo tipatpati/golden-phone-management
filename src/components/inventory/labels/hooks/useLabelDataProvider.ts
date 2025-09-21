@@ -38,22 +38,20 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   const [refreshKey, setRefreshKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Debug logging
-  console.log("🔍 useLabelDataProvider - Config received:", {
-    source: config.source,
-    productsCount: config.source === 'inventory' ? config.products?.length : 'N/A',
-    transactionIds: config.source === 'supplier' ? config.transactionIds?.length : 'N/A',
-    products: config.source === 'inventory' ? config.products : null
-  });
+  // Check if products already have units data (direct use case)
+  const hasPreloadedUnits = config.source === 'inventory' && 
+    (config as InventoryLabelConfig).products.length > 0 && 
+    (config as InventoryLabelConfig).products.some(p => p.units && p.units.length > 0);
 
   // For supplier labels
   const supplierQuery = useSimpleThermalLabels(
     config.source === 'supplier' ? config.transactionIds : []
   );
 
-  // For inventory labels - extract product IDs
-  const inventoryProductIds = config.source === 'inventory' ? config.products.map(p => p.id).filter(Boolean) : [];
-  console.log("🔍 Extracted product IDs:", inventoryProductIds);
+  // For inventory labels - only extract product IDs if we need to re-query
+  const inventoryProductIds = (config.source === 'inventory' && !hasPreloadedUnits) 
+    ? (config as InventoryLabelConfig).products.map(p => p.id).filter(Boolean) 
+    : [];
   const inventoryQuery = useSimpleInventoryLabels(inventoryProductIds);
 
   const refresh = useCallback(() => {
@@ -81,18 +79,47 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   // Handle inventory labels
   useEffect(() => {
     if (config.source === 'inventory') {
-      console.log("🔍 Inventory query state:", {
-        isLoading: inventoryQuery.isLoading,
-        error: inventoryQuery.error,
-        dataLength: inventoryQuery.data?.length,
-        data: inventoryQuery.data
-      });
+      // If products already have units, use them directly
+      if (hasPreloadedUnits) {
+        setIsLoading(false);
+        setError(null);
+        
+        const directLabels: ThermalLabelData[] = [];
+        
+        (config as InventoryLabelConfig).products.forEach(product => {
+          if (product.units && product.units.length > 0) {
+            product.units.forEach(unit => {
+              if (unit.status !== 'sold') {
+                directLabels.push({
+                  id: unit.id,
+                  productName: `${product.brand} ${product.model}`,
+                  brand: product.brand,
+                  model: product.model,
+                  serialNumber: unit.serial_number,
+                  barcode: unit.barcode || product.barcode,
+                  price: unit.price || product.price,
+                  maxPrice: unit.max_price || product.max_price,
+                  minPrice: unit.min_price || product.min_price,
+                  category: product.category?.name,
+                  color: unit.color,
+                  batteryLevel: unit.battery_level,
+                  storage: unit.storage || product.storage,
+                  ram: unit.ram || product.ram
+                });
+              }
+            });
+          }
+        });
+        
+        setLabels(directLabels);
+        return;
+      }
       
+      // Fallback to database query approach
       setIsLoading(inventoryQuery.isLoading);
       setError(inventoryQuery.error);
       
       if (inventoryQuery.data) {
-        // Convert SimpleInventoryLabelData to ThermalLabelData
         const convertedLabels = inventoryQuery.data.map(label => ({
           id: label.id,
           productName: label.productName,
@@ -109,14 +136,12 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           storage: label.storage,
           ram: label.ram
         }));
-        console.log("🔍 Converted labels:", convertedLabels);
         setLabels(convertedLabels);
       } else {
-        console.log("🔍 No inventory data, setting empty labels");
         setLabels([]);
       }
     }
-  }, [config.source, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
+  }, [config.source, config.source === 'inventory' ? (config as InventoryLabelConfig).products : [], hasPreloadedUnits, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
 
   // Handle supplier labels
   useEffect(() => {
