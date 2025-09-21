@@ -59,8 +59,8 @@ export function UnifiedInventoryLabels({
   return (
     <>
       <Button onClick={handleOpenGenerator} className={buttonClassName}>
-        <Printer className="h-4 w-4 mr-2" />
-        {buttonText || defaultButtonText}
+        <Printer className={`h-4 w-4 ${buttonText !== undefined && buttonText !== "" ? "mr-2" : ""}`} />
+        {buttonText !== undefined ? buttonText : defaultButtonText}
       </Button>
 
       <ThermalLabelGenerator
