@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ThermalLabelGenerator } from "./ThermalLabelGenerator";
-import { useSimpleInventoryLabels } from "./hooks/useSimpleInventoryLabels";
+import { useLabelDataProvider } from "./hooks/useLabelDataProvider";
 import { Printer } from "lucide-react";
 
 interface UnifiedInventoryLabelsProps {
@@ -26,16 +26,17 @@ export function UnifiedInventoryLabels({
 }: UnifiedInventoryLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
-  // Extract product IDs for the query
-  const productIds = products.map(p => p.id).filter(Boolean);
-  
-  const labelsQuery = useSimpleInventoryLabels(productIds);
+  const labelDataProvider = useLabelDataProvider({
+    source: 'inventory',
+    products,
+    useMasterBarcode
+  });
 
   const handleOpenGenerator = () => {
     setIsGeneratorOpen(true);
   };
 
-  if (labelsQuery.isLoading) {
+  if (labelDataProvider.isLoading) {
     return (
       <Button disabled className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
@@ -44,7 +45,7 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  if (labelsQuery.error || !labelsQuery.data || labelsQuery.data.length === 0) {
+  if (labelDataProvider.error || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
     return (
       <Button disabled variant="outline" className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
@@ -53,25 +54,7 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  // Convert to ThermalLabelData format
-  const thermalLabels = labelsQuery.data.map(label => ({
-    id: label.id,
-    productName: label.productName,
-    brand: label.brand,
-    model: label.model,
-    serialNumber: label.serial,
-    barcode: label.barcode,
-    price: label.price,
-    maxPrice: label.maxPrice,
-    minPrice: undefined,
-    category: undefined,
-    color: label.color,
-    batteryLevel: label.batteryLevel,
-    storage: label.storage,
-    ram: label.ram
-  }));
-
-  const defaultButtonText = `Print ${thermalLabels.length} Thermal Labels`;
+  const defaultButtonText = `Print ${labelDataProvider.labels.length} Thermal Labels`;
 
   return (
     <>
@@ -84,7 +67,7 @@ export function UnifiedInventoryLabels({
         open={isGeneratorOpen}
         onOpenChange={setIsGeneratorOpen}
         labelSource="inventory"
-        labels={thermalLabels}
+        dataProvider={labelDataProvider}
         companyName={companyName}
         isSupplierLabel={false}
         allowUnitSelection={true}

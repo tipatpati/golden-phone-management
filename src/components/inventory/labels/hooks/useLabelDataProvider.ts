@@ -5,8 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ThermalLabelData } from "../types";
-import { ThermalLabelDataService } from "@/services/labels/ThermalLabelDataService";
-import { mapProductsForLabels } from "@/utils/mapProductForLabels";
+import { useSimpleInventoryLabels } from "./useSimpleInventoryLabels";
 import { useSimpleThermalLabels } from "@/components/suppliers/hooks/useSimpleThermalLabels";
 import { logger } from "@/utils/logger";
 
@@ -44,6 +43,10 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     config.source === 'supplier' ? config.transactionIds : []
   );
 
+  // For inventory labels - extract product IDs
+  const inventoryProductIds = config.source === 'inventory' ? config.products.map(p => p.id).filter(Boolean) : [];
+  const inventoryQuery = useSimpleInventoryLabels(inventoryProductIds);
+
   const refresh = useCallback(() => {
     setRetryCount(0);
     setError(null);
@@ -66,62 +69,36 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     }));
   }, []);
 
+  // Handle inventory labels
   useEffect(() => {
-    const generateLabels = async () => {
-      if (config.source === 'inventory') {
-        if (config.products.length === 0) {
-          setLabels([]);
-          return;
-        }
-
-        const maxRetries = 3;
-        const retryDelay = 1000 * Math.pow(2, retryCount);
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-          logger.info('Generating inventory labels', { productCount: config.products.length }, 'useLabelDataProvider');
-          
-          const standardizedProducts = mapProductsForLabels(config.products);
-          const result = await ThermalLabelDataService.generateLabelsForProducts(
-            standardizedProducts,
-            { useMasterBarcode: config.useMasterBarcode }
-          );
-
-          if (result.errors.length > 0) {
-            logger.error('Label generation errors', { errors: result.errors }, 'useLabelDataProvider');
-          }
-          
-          setLabels(result.labels);
-          setRetryCount(0); // Reset on success
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to generate labels');
-          logger.error('Label generation failed', error, 'useLabelDataProvider');
-          
-          // Check if this is a network error that might benefit from retry
-          const isNetworkError = error.message.includes('Failed to fetch') || 
-                                error.message.includes('network') || 
-                                error.message.includes('timeout');
-          
-          if (isNetworkError && retryCount < maxRetries) {
-            logger.warn(`Retrying label generation (attempt ${retryCount + 1}/${maxRetries + 1})`, { delay: retryDelay }, 'useLabelDataProvider');
-            setTimeout(() => {
-              setRetryCount(prev => prev + 1);
-            }, retryDelay);
-            return;
-          }
-          
-          setError(error);
-          setLabels([]);
-        } finally {
-          setIsLoading(false);
-        }
+    if (config.source === 'inventory') {
+      setIsLoading(inventoryQuery.isLoading);
+      setError(inventoryQuery.error);
+      
+      if (inventoryQuery.data) {
+        // Convert SimpleInventoryLabelData to ThermalLabelData
+        const convertedLabels = inventoryQuery.data.map(label => ({
+          id: label.id,
+          productName: label.productName,
+          brand: label.brand,
+          model: label.model,
+          serialNumber: label.serial,
+          barcode: label.barcode,
+          price: label.price,
+          maxPrice: label.maxPrice,
+          minPrice: undefined,
+          category: undefined,
+          color: label.color,
+          batteryLevel: label.batteryLevel,
+          storage: label.storage,
+          ram: label.ram
+        }));
+        setLabels(convertedLabels);
+      } else {
+        setLabels([]);
       }
-    };
-
-    generateLabels();
-  }, [config, refreshKey, retryCount]);
+    }
+  }, [config.source, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
 
   // Handle supplier labels
   useEffect(() => {
