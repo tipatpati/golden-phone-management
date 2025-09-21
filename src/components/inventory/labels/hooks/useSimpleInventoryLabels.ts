@@ -90,24 +90,22 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         const productUnits = units?.filter(unit => unit.product_id === product.id) || [];
 
         if (productUnits.length > 0) {
-          // Create labels for each unit
+          // Create labels for each unit (with or without serial numbers)
           for (const unit of productUnits) {
-            if (unit.serial_number) {
-              labels.push({
-                id: `${product.id}-${unit.id}`,
-                productName: `${product.brand} ${product.model}`,
-                brand: product.brand,
-                model: product.model,
-                price: unit.max_price || product.max_price || product.price || 0,
-                maxPrice: unit.max_price || product.max_price,
-                barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-                serial: unit.serial_number,
-                color: unit.color,
-                storage: unit.storage,
-                ram: unit.ram,
-                batteryLevel: unit.battery_level
-              });
-            }
+            labels.push({
+              id: `${product.id}-${unit.id}`,
+              productName: `${product.brand} ${product.model}`,
+              brand: product.brand,
+              model: product.model,
+              price: unit.max_price || product.max_price || product.price || 0,
+              maxPrice: unit.max_price || product.max_price,
+              barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
+              serial: unit.serial_number || `UNIT-${unit.id}`,
+              color: unit.color,
+              storage: unit.storage,
+              ram: unit.ram,
+              batteryLevel: unit.battery_level
+            });
           }
         } else {
           // Create generic product labels based on stock
