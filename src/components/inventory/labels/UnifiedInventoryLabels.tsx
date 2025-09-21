@@ -32,19 +32,8 @@ export function UnifiedInventoryLabels({
     useMasterBarcode
   });
 
-  const handleOpenGenerator = async () => {
+  const handleOpenGenerator = () => {
     setIsGeneratorOpen(true);
-    
-    // Show success toast when labels are available
-    if (labelProvider.labels.length > 0) {
-      const { showErrorToast } = await import('@/components/ui/error-toast');
-      showErrorToast({
-        title: 'Print labels ready',
-        description: `${labelProvider.labels.length} thermal labels prepared`,
-        type: 'success',
-        duration: 2000
-      });
-    }
   };
 
   if (labelProvider.isLoading) {
@@ -56,20 +45,7 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  if (labelProvider.error) {
-    return (
-      <Button 
-        onClick={labelProvider.refresh} 
-        variant="outline" 
-        className={buttonClassName}
-      >
-        <Printer className="h-4 w-4 mr-2" />
-        Retry Print Labels
-      </Button>
-    );
-  }
-
-  if (labelProvider.labels.length === 0) {
+  if (labelProvider.error || labelProvider.labels.length === 0) {
     return (
       <Button disabled variant="outline" className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
@@ -83,8 +59,8 @@ export function UnifiedInventoryLabels({
   return (
     <>
       <Button onClick={handleOpenGenerator} className={buttonClassName}>
-        <Printer className={`h-4 w-4 ${buttonText !== undefined ? 'mr-2' : ''}`} />
-        {buttonText !== undefined ? buttonText : defaultButtonText}
+        <Printer className="h-4 w-4 mr-2" />
+        {buttonText || defaultButtonText}
       </Button>
 
       <ThermalLabelGenerator
