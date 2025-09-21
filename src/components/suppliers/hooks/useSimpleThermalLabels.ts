@@ -16,6 +16,9 @@ export interface SimpleLabelData {
   barcode: string;
   brand: string;
   model: string;
+  storage?: number;
+  ram?: number;
+  batteryLevel?: number;
 }
 
 /**
@@ -78,7 +81,10 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           barcode,
           status,
           max_price,
-          product_id
+          product_id,
+          storage,
+          ram,
+          battery_level
         `)
         .in('id', allUnitIds)
         .eq('status', 'available');
@@ -111,7 +117,10 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
             maxPrice: unit.max_price || product.max_price || 0,
             barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
             brand: product.brand,
-            model: product.model
+            model: product.model,
+            storage: unit.storage,
+            ram: unit.ram,
+            batteryLevel: unit.battery_level
           });
         }
       }
