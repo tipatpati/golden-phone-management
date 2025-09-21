@@ -16,7 +16,7 @@ import { ThermalLabelData, ThermalLabelOptions } from "./types";
 interface ThermalLabelGeneratorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  labels: ThermalLabelData[];
+  labels?: ThermalLabelData[];
   companyName?: string;
   productSerialNumbers?: string[];
   productName?: string;
@@ -25,15 +25,23 @@ interface ThermalLabelGeneratorProps {
   productMinPrice?: number;
   productBarcode?: string;
   productCategory?: string;
-  productId?: string; // Add productId for real data fetching
+  productId?: string;
   allowUnitSelection?: boolean;
   isSupplierLabel?: boolean;
+  // New unified interface props
+  labelSource?: 'inventory' | 'supplier';
+  dataProvider?: {
+    labels: ThermalLabelData[];
+    isLoading: boolean;
+    error: Error | null;
+    refresh: () => void;
+  };
 }
 
 export function ThermalLabelGenerator({
   open,
   onOpenChange,
-  labels,
+  labels = [],
   companyName = "GOLDEN PHONE SRL",
   productSerialNumbers = [],
   productName = "",
@@ -42,9 +50,11 @@ export function ThermalLabelGenerator({
   productMinPrice,
   productBarcode = "",
   productCategory = "",
-  productId, // Accept productId
+  productId,
   allowUnitSelection = false,
-  isSupplierLabel = false
+  isSupplierLabel = false,
+  labelSource = 'inventory',
+  dataProvider
 }: ThermalLabelGeneratorProps) {
   const [options, setOptions] = useState<ThermalLabelOptions>({
     copies: 1,
@@ -57,13 +67,18 @@ export function ThermalLabelGenerator({
   });
   const [showPreview, setShowPreview] = useState(false);
   const [showBarcodeFixTool, setShowBarcodeFixTool] = useState(false);
-  const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>(labels);
+  const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>([]);
+  
+  // Determine the source of labels
+  const activeLabels = dataProvider?.labels || labels;
+  const isLoading = dataProvider?.isLoading || false;
+  const error = dataProvider?.error || null;
 
   // Update selected labels when props change OR generate default labels for bulk products
   React.useEffect(() => {
     if (!allowUnitSelection) {
-      if (labels.length > 0) {
-        setSelectedLabels(labels);
+      if (activeLabels.length > 0) {
+        setSelectedLabels(activeLabels);
       } else if (productName && productPrice >= 0) {
         // Generate default labels for bulk products (products without serial numbers)
         const defaultLabels: ThermalLabelData[] = Array(1).fill(null).map((_, index) => ({
@@ -82,12 +97,12 @@ export function ThermalLabelGenerator({
         console.log('🏷️ Generated default thermal labels for bulk product:', productName);
       }
     }
-  }, [labels, allowUnitSelection, productName, productPrice, productBarcode, productMaxPrice, productCategory]);
+  }, [activeLabels, allowUnitSelection, productName, productPrice, productBarcode, productMaxPrice, productCategory]);
 
   const { printState, printLabels } = useThermalLabelPrint();
 
   // Use selected labels for calculations
-  const currentLabels = allowUnitSelection ? selectedLabels : labels;
+  const currentLabels = allowUnitSelection ? selectedLabels : activeLabels;
   
   // Memoized calculations for performance
   const labelStats = useMemo(() => {
@@ -147,7 +162,7 @@ export function ThermalLabelGenerator({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
-            Professional Thermal Label Generator
+            {labelSource === 'supplier' ? 'Supplier' : 'Professional'} Thermal Label Generator
           </DialogTitle>
           <DialogDescription className="space-y-2">
             <div>6cm × 3cm landscape format at 96 DPI for professional thermal printers</div>
