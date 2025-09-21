@@ -132,32 +132,33 @@ export function ThermalLabelGenerator({
     const productMap = new Map();
     
     labels.forEach(label => {
-      const productKey = `${label.productName}_${label.price}`;
+      if (!label.serialNumber) return; // Skip labels without serial numbers
+      
+      // Use productName as key to group by actual product
+      const productKey = label.productName;
       
       if (!productMap.has(productKey)) {
+        const nameParts = label.productName.split(' ');
         productMap.set(productKey, {
           id: productKey,
-          brand: label.productName.split(' ')[0] || 'Unknown',
-          model: label.productName.split(' ').slice(1).join(' ') || 'Unknown',
+          brand: nameParts[0] || 'Unknown',
+          model: nameParts.slice(1).join(' ') || 'Unknown',
           price: label.price || 0,
-          category: label.category ? { name: label.category } : undefined,
           units: []
         });
       }
       
       const product = productMap.get(productKey);
-      if (label.serialNumber) {
-        product.units.push({
-          id: `${productKey}_${label.serialNumber}`,
-          serial_number: label.serialNumber,
-          barcode: label.barcode,
-          price: label.price,
-          storage: label.storage,
-          ram: label.ram,
-          color: label.color,
-          battery_level: label.batteryLevel
-        });
-      }
+      product.units.push({
+        id: label.id,
+        serial_number: label.serialNumber,
+        barcode: label.barcode,
+        price: label.price,
+        storage: label.storage,
+        ram: label.ram,
+        color: label.color,
+        battery_level: label.batteryLevel
+      });
     });
     
     return Array.from(productMap.values());

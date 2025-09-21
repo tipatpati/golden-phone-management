@@ -52,13 +52,14 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     return supplierLabels.map(label => ({
       id: label.id,
       productName: label.productName,
-      serialNumber: label.serialNumber,
+      serialNumber: label.serial, // Fix: use 'serial' from SimpleLabelData
       barcode: label.barcode,
-      price: label.maxPrice,
+      price: label.maxPrice || label.price,
       maxPrice: label.maxPrice,
       storage: label.storage,
       ram: label.ram,
-      batteryLevel: label.batteryLevel
+      batteryLevel: label.batteryLevel,
+      color: label.color
     }));
   }, []);
 
