@@ -26,17 +26,27 @@ export function UnifiedInventoryLabels({
 }: UnifiedInventoryLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
+  // Validate that we have products with actual data
+  const hasValidProducts = products && products.length > 0;
+  const hasAvailableUnits = hasValidProducts && products.some(p => 
+    p.units && p.units.length > 0 && p.units.some(u => u.status !== 'sold')
+  );
+  
   const labelDataProvider = useLabelDataProvider({
     source: 'inventory',
-    products,
+    products: hasValidProducts ? products : [],
     useMasterBarcode
   });
 
   const handleOpenGenerator = () => {
-    setIsGeneratorOpen(true);
+    // Only open if we have labels available
+    if (labelDataProvider.labels && labelDataProvider.labels.length > 0) {
+      setIsGeneratorOpen(true);
+    }
   };
 
-  if (labelDataProvider.isLoading) {
+  // Show loading state while data is being processed
+  if (!hasValidProducts || labelDataProvider.isLoading) {
     return (
       <Button disabled className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
@@ -45,11 +55,18 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  if (labelDataProvider.error || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
+  // Show error or no data state
+  if (labelDataProvider.error || !hasAvailableUnits || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
+    const errorMessage = labelDataProvider.error 
+      ? "Error Loading Labels" 
+      : !hasAvailableUnits 
+        ? "No Available Units" 
+        : "No Labels Available";
+        
     return (
       <Button disabled variant="outline" className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
-        No Labels Available
+        {errorMessage}
       </Button>
     );
   }

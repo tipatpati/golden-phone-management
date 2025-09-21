@@ -79,6 +79,16 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   // Handle inventory labels
   useEffect(() => {
     if (config.source === 'inventory') {
+      const inventoryProducts = (config as InventoryLabelConfig).products;
+      
+      // Validate that we have products data
+      if (!inventoryProducts || inventoryProducts.length === 0) {
+        setIsLoading(false);
+        setError(null);
+        setLabels([]);
+        return;
+      }
+      
       // If products already have units, use them directly
       if (hasPreloadedUnits) {
         setIsLoading(false);
@@ -86,10 +96,17 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
         
         const directLabels: ThermalLabelData[] = [];
         
-        (config as InventoryLabelConfig).products.forEach(product => {
+        inventoryProducts.forEach(product => {
+          // Validate product has required fields
+          if (!product.brand || !product.model) {
+            console.warn('Product missing required fields:', product);
+            return;
+          }
+          
           if (product.units && product.units.length > 0) {
             product.units.forEach(unit => {
-              if (unit.status !== 'sold') {
+              // Only include units that are available for sale
+              if (unit.status !== 'sold' && unit.serial_number) {
                 directLabels.push({
                   id: unit.id,
                   productName: `${product.brand} ${product.model}`,
@@ -111,6 +128,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           }
         });
         
+        console.log(`Generated ${directLabels.length} labels from preloaded units`);
         setLabels(directLabels);
         return;
       }
