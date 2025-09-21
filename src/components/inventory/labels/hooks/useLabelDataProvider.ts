@@ -38,6 +38,14 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   const [refreshKey, setRefreshKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
 
+  // Debug logging
+  console.log("🔍 useLabelDataProvider - Config received:", {
+    source: config.source,
+    productsCount: config.source === 'inventory' ? config.products?.length : 'N/A',
+    transactionIds: config.source === 'supplier' ? config.transactionIds?.length : 'N/A',
+    products: config.source === 'inventory' ? config.products : null
+  });
+
   // For supplier labels
   const supplierQuery = useSimpleThermalLabels(
     config.source === 'supplier' ? config.transactionIds : []
@@ -45,6 +53,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
 
   // For inventory labels - extract product IDs
   const inventoryProductIds = config.source === 'inventory' ? config.products.map(p => p.id).filter(Boolean) : [];
+  console.log("🔍 Extracted product IDs:", inventoryProductIds);
   const inventoryQuery = useSimpleInventoryLabels(inventoryProductIds);
 
   const refresh = useCallback(() => {
@@ -72,6 +81,13 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   // Handle inventory labels
   useEffect(() => {
     if (config.source === 'inventory') {
+      console.log("🔍 Inventory query state:", {
+        isLoading: inventoryQuery.isLoading,
+        error: inventoryQuery.error,
+        dataLength: inventoryQuery.data?.length,
+        data: inventoryQuery.data
+      });
+      
       setIsLoading(inventoryQuery.isLoading);
       setError(inventoryQuery.error);
       
@@ -93,8 +109,10 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           storage: label.storage,
           ram: label.ram
         }));
+        console.log("🔍 Converted labels:", convertedLabels);
         setLabels(convertedLabels);
       } else {
+        console.log("🔍 No inventory data, setting empty labels");
         setLabels([]);
       }
     }
@@ -103,17 +121,33 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   // Handle supplier labels
   useEffect(() => {
     if (config.source === 'supplier') {
+      console.log("🔍 Supplier query state:", {
+        isLoading: supplierQuery.isLoading,
+        error: supplierQuery.error,
+        dataLength: supplierQuery.data?.length,
+        data: supplierQuery.data
+      });
+      
       setIsLoading(supplierQuery.isLoading);
       setError(supplierQuery.error);
       
       if (supplierQuery.data) {
         const convertedLabels = convertSupplierLabels(supplierQuery.data);
+        console.log("🔍 Converted supplier labels:", convertedLabels);
         setLabels(convertedLabels);
       } else {
+        console.log("🔍 No supplier data, setting empty labels");
         setLabels([]);
       }
     }
   }, [config.source, supplierQuery.data, supplierQuery.isLoading, supplierQuery.error, convertSupplierLabels]);
+
+  console.log("🔍 Final useLabelDataProvider result:", {
+    labelsCount: labels.length,
+    labels: labels,
+    isLoading,
+    error
+  });
 
   return {
     labels,
