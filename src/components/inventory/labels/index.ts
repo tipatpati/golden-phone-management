@@ -2,7 +2,7 @@
 export { ThermalLabelGenerator } from './ThermalLabelGenerator';
 export { ThermalLabelPreview } from './ThermalLabelPreview';
 export { UnifiedInventoryLabels } from './UnifiedInventoryLabels';
-export { useThermalLabels } from './hooks/useThermalLabels';
+// useThermalLabels has been deprecated in favor of useLabelDataProvider
 export { useThermalLabelPrint } from './hooks/useThermalLabelPrint';
 export { useLabelDataProvider } from './hooks/useLabelDataProvider';
 export type { LabelSource, LabelDataConfig } from './hooks/useLabelDataProvider';

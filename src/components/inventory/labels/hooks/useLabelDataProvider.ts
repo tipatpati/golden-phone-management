@@ -37,6 +37,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
 
   // For supplier labels
   const supplierQuery = useSimpleThermalLabels(
@@ -44,6 +45,8 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   );
 
   const refresh = useCallback(() => {
+    setRetryCount(0);
+    setError(null);
     setRefreshKey(prev => prev + 1);
   }, []);
 
@@ -71,6 +74,9 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           return;
         }
 
+        const maxRetries = 3;
+        const retryDelay = 1000 * Math.pow(2, retryCount);
+
         setIsLoading(true);
         setError(null);
 
@@ -88,9 +94,24 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           }
           
           setLabels(result.labels);
+          setRetryCount(0); // Reset on success
         } catch (err) {
           const error = err instanceof Error ? err : new Error('Failed to generate labels');
           logger.error('Label generation failed', error, 'useLabelDataProvider');
+          
+          // Check if this is a network error that might benefit from retry
+          const isNetworkError = error.message.includes('Failed to fetch') || 
+                                error.message.includes('network') || 
+                                error.message.includes('timeout');
+          
+          if (isNetworkError && retryCount < maxRetries) {
+            logger.warn(`Retrying label generation (attempt ${retryCount + 1}/${maxRetries + 1})`, { delay: retryDelay }, 'useLabelDataProvider');
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, retryDelay);
+            return;
+          }
+          
           setError(error);
           setLabels([]);
         } finally {
@@ -100,7 +121,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     };
 
     generateLabels();
-  }, [config, refreshKey]);
+  }, [config, refreshKey, retryCount]);
 
   // Handle supplier labels
   useEffect(() => {

@@ -125,35 +125,62 @@ export class ProductUnitManagementService {
   }
 
   /**
-   * Get all units for a product with role-based purchase price filtering
+   * Get all units for a product with role-based purchase price filtering and retry logic
    */
   static async getUnitsForProduct(productId: string, userRole?: UserRole | null, includeAllStatuses = false): Promise<ProductUnit[]> {
-    try {
-      // Use role-aware select to automatically filter purchase prices
-      const selectFields = userRole ? createRoleAwareSelect(userRole) : '*';
-      
-      let query = supabase
-        .from('product_units')
-        .select(selectFields)
-        .eq('product_id', productId);
-      
-      // By default, only return available units unless explicitly requested
-      if (!includeAllStatuses) {
-        query = query.eq('status', 'available');
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+    const maxRetries = 3;
+    let attempt = 0;
+    
+    while (attempt <= maxRetries) {
+      try {
+        // Use role-aware select to automatically filter purchase prices
+        const selectFields = userRole ? createRoleAwareSelect(userRole) : '*';
+        
+        let query = supabase
+          .from('product_units')
+          .select(selectFields)
+          .eq('product_id', productId);
+        
+        // By default, only return available units unless explicitly requested
+        if (!includeAllStatuses) {
+          query = query.eq('status', 'available');
+        }
+        
+        const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error) {
-        throw InventoryError.createDatabaseError('getUnitsForProduct', error, { productId });
-      }
+        if (error) {
+          // Check if this is a transient network error
+          const isNetworkError = error.message?.includes('Failed to fetch') || 
+                                error.message?.includes('network') || 
+                                error.message?.includes('timeout');
+          
+          if (isNetworkError && attempt < maxRetries) {
+            attempt++;
+            const delay = 1000 * Math.pow(2, attempt - 1); // Exponential backoff
+            console.warn(`Database query failed (attempt ${attempt}/${maxRetries + 1}), retrying in ${delay}ms...`, error);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          throw InventoryError.createDatabaseError('getUnitsForProduct', error, { productId, attempt });
+        }
 
-      // Additional client-side sanitization as a safety net
-      const units = (data || []) as any[];
-      return userRole ? sanitizePurchasePriceArray(units as ProductUnit[], userRole) : (units as ProductUnit[]);
-    } catch (error) {
-      throw handleInventoryError(error);
+        // Additional client-side sanitization as a safety net
+        const units = (data || []) as any[];
+        return userRole ? sanitizePurchasePriceArray(units as ProductUnit[], userRole) : (units as ProductUnit[]);
+      } catch (error) {
+        if (attempt === maxRetries) {
+          throw handleInventoryError(error);
+        }
+        attempt++;
+        const delay = 1000 * Math.pow(2, attempt - 1);
+        console.warn(`Database operation failed (attempt ${attempt}/${maxRetries + 1}), retrying in ${delay}ms...`, error);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
+    
+    // This should never be reached, but TypeScript requires it
+    throw new Error('Max retries exceeded');
   }
 
   /**
