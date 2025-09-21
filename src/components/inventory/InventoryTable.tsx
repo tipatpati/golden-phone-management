@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   Table, 
   TableBody, 
@@ -25,9 +24,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
-import { ThermalLabelGenerator } from "./labels";
+import { UnifiedInventoryLabels } from "./labels/UnifiedInventoryLabels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
-import { logger } from '@/utils/logger';
+
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
@@ -89,46 +88,11 @@ export function InventoryTable({
   onEdit,
   onDelete
 }: InventoryTableProps) {
-  const [printDialogOpen, setPrintDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   
   // Use products passed from parent - no double data fetching
   const productList = Array.isArray(products) ? products : [];
-
-  const handlePrintLabels = async (product: Product) => {
-    try {
-      // Fetch latest product units data to ensure barcodes are up to date
-      const { data: units, error } = await supabase
-        .from('product_units')
-        .select('*')
-        .eq('product_id', product.id);
-
-      if (error) {
-        console.error('Failed to fetch latest units:', error);
-        setSelectedProduct(product);
-      } else {
-        // Update product with latest units data and convert to expected format
-        const latestSerialNumbers = units?.map(unit => unit.serial_number) || [];
-        const updatedProduct = {
-          ...product,
-          units: units || [],
-          serial_numbers: latestSerialNumbers
-        };
-        logger.info('Print button: Units found', { 
-          unitsCount: units?.length || 0, 
-          product: `${product.brand} ${product.model}` 
-        }, 'InventoryTable');
-        setSelectedProduct(updatedProduct);
-      }
-    } catch (error) {
-      console.error('Error syncing product data:', error);
-      setSelectedProduct(product);
-    }
-    
-    setPrintDialogOpen(true);
-  };
 
   const handleRowClick = (product: Product) => {
     setSelectedProductForDetails(product);
@@ -368,17 +332,14 @@ export function InventoryTable({
                     >
                       <Info className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePrintLabels(product);
-                      }}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <UnifiedInventoryLabels
+                        products={[product]}
+                        companyName="GOLDEN PHONE SRL"
+                        buttonText=""
+                        buttonClassName="h-8 w-8 p-0"
+                      />
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -411,27 +372,6 @@ export function InventoryTable({
       </Table>
     </div>
     
-    {selectedProduct && (
-      <ThermalLabelGenerator
-        open={printDialogOpen}
-        onOpenChange={setPrintDialogOpen}
-        labels={[]} // Start with empty labels when using unit selection
-        allowUnitSelection={selectedProduct.units && selectedProduct.units.length > 0}
-        productId={selectedProduct.id} // Pass productId for real data fetching
-        productSerialNumbers={selectedProduct.units?.map(unit => unit.serial_number) || selectedProduct.serial_numbers || []}
-        productName={(() => {
-          const cleanBrand = selectedProduct.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-          const cleanModel = selectedProduct.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
-          return formatProductName({ brand: cleanBrand, model: cleanModel });
-        })()}
-        productPrice={selectedProduct.price || 0}
-        productMaxPrice={selectedProduct.max_price}
-        productMinPrice={selectedProduct.min_price}
-        productBarcode={selectedProduct.barcode}
-        productCategory={selectedProduct.category?.name}
-        companyName="GOLDEN PHONE SRL"
-      />
-    )}
 
     <ProductDetailsDialog
       product={selectedProductForDetails}
@@ -443,7 +383,7 @@ export function InventoryTable({
       }}
       onPrint={(product) => {
         setDetailsDialogOpen(false);
-        handlePrintLabels(product);
+        // The UnifiedInventoryLabels component handles printing directly
       }}
     />
     </>
