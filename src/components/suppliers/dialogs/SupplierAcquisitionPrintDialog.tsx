@@ -1,5 +1,5 @@
 import React from "react";
-import { SimpleThermalLabelPrint } from "../components/SimpleThermalLabelPrint";
+import { UnifiedSupplierLabels } from "../components/UnifiedSupplierLabels";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,7 +74,7 @@ export function SupplierAcquisitionPrintDialog({
           </Card>
 
           {/* Simple Thermal Label Print Component */}
-          <SimpleThermalLabelPrint 
+          <UnifiedSupplierLabels 
             transactionIds={transactionIds}
             companyName={companyName}
           />

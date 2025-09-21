@@ -11,11 +11,13 @@ import { logger } from "@/utils/logger";
 export interface SimpleLabelData {
   id: string;
   productName: string;
-  serialNumber: string;
-  maxPrice: number;
-  barcode: string;
   brand: string;
   model: string;
+  price: number;
+  maxPrice?: number;
+  barcode: string;
+  serial?: string;
+  color?: string;
   storage?: number;
   ram?: number;
   batteryLevel?: number;
@@ -73,7 +75,7 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
       });
 
       
-      const { data: units, error: unitsError } = await supabase
+       const { data: units, error: unitsError } = await supabase
         .from('product_units')
         .select(`
           id,
@@ -84,7 +86,8 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           product_id,
           storage,
           ram,
-          battery_level
+          battery_level,
+          color
         `)
         .in('id', allUnitIds)
         .eq('status', 'available');
@@ -113,11 +116,13 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           labels.push({
             id: `${product.id}-${unit.id}`,
             productName: `${product.brand} ${product.model}`,
-            serialNumber: unit.serial_number,
-            maxPrice: unit.max_price || product.max_price || 0,
-            barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
             brand: product.brand,
             model: product.model,
+            price: unit.max_price || product.max_price || 0, // Use max_price as the selling price
+            maxPrice: unit.max_price || product.max_price,
+            barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
+            serial: unit.serial_number,
+            color: unit.color,
             storage: unit.storage,
             ram: unit.ram,
             batteryLevel: unit.battery_level
