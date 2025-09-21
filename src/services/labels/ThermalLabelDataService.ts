@@ -114,9 +114,24 @@ export class ThermalLabelDataService {
       // PHASE 1: Comprehensive unit+barcode fetching with cross-module validation
       console.log(`📦 Fetching units for product ${product.id} with comprehensive barcode data...`);
       
-      // Fetch units with barcodes from all sources (inventory + supplier modules)
-      const units = await ProductUnitManagementService.getUnitsForProduct(product.id);
-      console.log(`✅ Found ${units.length} units from ProductUnitManagementService`);
+      // Fetch units with retry logic and error handling
+      let units: ProductUnit[] = [];
+      try {
+        units = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        console.log(`✅ Found ${units.length} units from ProductUnitManagementService`);
+      } catch (error: any) {
+        console.error(`❌ Failed to fetch units for product ${product.id}:`, error);
+        errors.push(`Failed to fetch units for ${cleanBrand} ${cleanModel}: ${error.message || 'Database connection error'}`);
+        
+        // Return early with error
+        return {
+          success: false,
+          labels,
+          errors,
+          warnings,
+          stats: { totalProducts: 1, totalLabels: 0, unitsWithBarcodes, unitsMissingBarcodes, genericLabels: 0 }
+        };
+      }
       
       // PHASE 3: Use BarcodeAuthority as single source of truth
       const barcodeAuthority = Services.getBarcodeAuthority();
