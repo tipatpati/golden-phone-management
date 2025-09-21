@@ -61,6 +61,7 @@ export function UnifiedSupplierLabels({
         dataProvider={labelProvider}
         companyName={companyName}
         isSupplierLabel={true}
+        allowUnitSelection={true}
       />
     </>
   );
