@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Printer, Eye, History, AlertCircle, Wrench } from "lucide-react";
 import { ThermalLabelPreview } from "./ThermalLabelPreview";
 import { ProductUnitSelector } from "./ProductUnitSelector";
+import { SupplierProductUnitSelector } from "@/components/suppliers/forms/SupplierProductUnitSelector";
 import { BarcodeFixTool } from "@/components/inventory/admin/BarcodeFixTool";
 import { useThermalLabelPrint } from "./hooks/useThermalLabelPrint";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
@@ -126,6 +127,42 @@ export function ThermalLabelGenerator({
       // Close dialog after successful print
   };
 
+  // Helper function to extract supplier products from labels for unit selection
+  const extractSupplierProductsFromLabels = (labels: ThermalLabelData[]) => {
+    const productMap = new Map();
+    
+    labels.forEach(label => {
+      const productKey = `${label.productName}_${label.price}`;
+      
+      if (!productMap.has(productKey)) {
+        productMap.set(productKey, {
+          id: productKey,
+          brand: label.productName.split(' ')[0] || 'Unknown',
+          model: label.productName.split(' ').slice(1).join(' ') || 'Unknown',
+          price: label.price || 0,
+          category: label.category ? { name: label.category } : undefined,
+          units: []
+        });
+      }
+      
+      const product = productMap.get(productKey);
+      if (label.serialNumber) {
+        product.units.push({
+          id: `${productKey}_${label.serialNumber}`,
+          serial_number: label.serialNumber,
+          barcode: label.barcode,
+          price: label.price,
+          storage: label.storage,
+          ram: label.ram,
+          color: label.color,
+          battery_level: label.batteryLevel
+        });
+      }
+    });
+    
+    return Array.from(productMap.values());
+  };
+
   const updateOption = <K extends keyof ThermalLabelOptions>(
     key: K,
     value: ThermalLabelOptions[K]
@@ -185,7 +222,14 @@ export function ThermalLabelGenerator({
 
         <div className="grid grid-cols-1 gap-6">
           {/* Unit Selection Panel (if enabled) */}
-          {allowUnitSelection && productSerialNumbers.length > 0 && (
+          {allowUnitSelection && labelSource === 'supplier' && activeLabels.length > 0 && (
+            <SupplierProductUnitSelector
+              products={extractSupplierProductsFromLabels(activeLabels)}
+              onSelectionChange={setSelectedLabels}
+            />
+          )}
+          
+          {allowUnitSelection && labelSource === 'inventory' && productSerialNumbers.length > 0 && (
             <ProductUnitSelector
               serialNumbers={productSerialNumbers}
               onSelectionChange={setSelectedLabels}
