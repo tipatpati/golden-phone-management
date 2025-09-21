@@ -1,6 +1,6 @@
 import React from "react";
-import { ThermalLabelGenerator, useThermalLabels } from "../labels";
-import { mapProductsForLabels } from "@/utils/mapProductForLabels";
+import { UnifiedInventoryLabels } from "../labels/UnifiedInventoryLabels";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ProductUnit {
   id: string;
@@ -47,18 +47,17 @@ export function BulkPrintDialog({
   products,
   isLoading = false
 }: BulkPrintDialogProps) {
-  // Transform products to standardized format using units as primary source
-  const mappedProducts = mapProductsForLabels(products);
-  
-  // Use the enhanced useThermalLabels hook for consistent barcode generation
-  const thermalLabels = useThermalLabels(mappedProducts);
+  if (!open) return null;
 
   return (
-    <ThermalLabelGenerator
-      open={open}
-      onOpenChange={onOpenChange}
-      labels={thermalLabels}
-      companyName="GOLDEN PHONE SRL"
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl">
+        <UnifiedInventoryLabels
+          products={products}
+          companyName="GOLDEN PHONE SRL"
+          buttonText="Generate and Print Labels"
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
