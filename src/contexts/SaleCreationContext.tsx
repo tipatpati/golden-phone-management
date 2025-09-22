@@ -32,6 +32,7 @@ export interface SaleFormData {
   discount_type?: 'percentage' | 'amount' | null;
   discount_value: number;
   notes: string;
+  vat_included: boolean;
 }
 
 interface SaleCreationState {
@@ -72,7 +73,8 @@ const initialState: SaleCreationState = {
     bank_transfer_amount: 0,
     discount_type: null,
     discount_value: 0,
-    notes: ''
+    notes: '',
+    vat_included: true
   },
   selectedClient: null,
   stockCache: new Map(),
@@ -87,17 +89,31 @@ const initialState: SaleCreationState = {
 
 // Helper function to calculate totals
 function calculateTotals(state: SaleCreationState): SaleCreationState {
-  console.log('🧮 Calculating totals for items:', state.items.length);
+  console.log('🧮 Calculating totals for items:', state.items.length, 'VAT included:', state.formData.vat_included);
   
-  // Prices include 22% VAT, so we need to extract the base price
-  const totalWithVAT = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  const baseSubtotal = totalWithVAT / 1.22; // Remove VAT to get base price
-  console.log('💰 Base Subtotal (excluding VAT):', baseSubtotal, 'Total with VAT:', totalWithVAT);
+  const itemsTotal = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  
+  let baseSubtotal: number;
+  let taxAmount: number;
+  let totalBeforeDiscount: number;
+  
+  if (state.formData.vat_included) {
+    // Prices include 22% VAT - extract base price
+    baseSubtotal = itemsTotal / 1.22;
+    taxAmount = baseSubtotal * 0.22;
+    totalBeforeDiscount = itemsTotal;
+  } else {
+    // Prices exclude VAT - add VAT
+    baseSubtotal = itemsTotal;
+    taxAmount = baseSubtotal * 0.22;
+    totalBeforeDiscount = baseSubtotal + taxAmount;
+  }
+  
+  console.log('💰 Calculation mode:', state.formData.vat_included ? 'VAT Included' : 'VAT Excluded');
+  console.log('💰 Base Subtotal:', baseSubtotal, 'Tax:', taxAmount, 'Total before discount:', totalBeforeDiscount);
   
   let discountAmount = 0;
   let subtotalAfterDiscount = baseSubtotal;
-  let taxAmount = baseSubtotal * 0.22; // 22% IVA
-  let totalBeforeDiscount = subtotalAfterDiscount + taxAmount;
   let totalAmount = totalBeforeDiscount;
 
   // Apply discount based on type

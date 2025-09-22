@@ -16,6 +16,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { ClientSelector } from '../ClientSelector';
+import { VATModeSelector } from '../VATModeSelector';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,6 +62,10 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
 
   const handleClientSelect = (client: any) => {
     updateFormData({ client_id: client?.id });
+  };
+
+  const handleVATModeChange = (vatIncluded: boolean) => {
+    updateFormData({ vat_included: vatIncluded });
   };
 
   const handleSubmit = async () => {
@@ -182,6 +187,15 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
         </Card>
       )}
 
+      {/* VAT Mode Selector */}
+      {items.length > 0 && (
+        <VATModeSelector
+          vatIncluded={formData.vat_included}
+          onVATModeChange={handleVATModeChange}
+          disabled={false}
+        />
+      )}
+
       {/* Notes */}
       <Card>
         <CardHeader>
@@ -229,26 +243,31 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Subtotale:</span>
+                <span>Subtotale {formData.vat_included ? '(senza IVA)' : '(base)'}:</span>
                 <span>€{subtotal.toFixed(2)}</span>
               </div>
-              
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span>Sconto:</span>
-                  <span>-€{discountAmount.toFixed(2)}</span>
-                </div>
-              )}
               
               <div className="flex justify-between text-sm">
                 <span>IVA (22%):</span>
                 <span>€{taxAmount.toFixed(2)}</span>
               </div>
               
+              <div className="flex justify-between text-sm">
+                <span>Totale {formData.discount_type === 'amount' ? '(prima sconto)' : ''}:</span>
+                <span>€{(subtotal + taxAmount).toFixed(2)}</span>
+              </div>
+              
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Sconto {formData.discount_type === 'percentage' ? '(su subtotale)' : '(su totale)'}:</span>
+                  <span>-€{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              
               <Separator />
               
               <div className="flex justify-between text-lg font-bold">
-                <span>TOTALE:</span>
+                <span>TOTALE FINALE:</span>
                 <span>€{totalAmount.toFixed(2)}</span>
               </div>
             </div>

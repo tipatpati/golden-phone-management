@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { VATModeSelector } from '../VATModeSelector';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +33,10 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
   const handleNotesChange = (notes: string) => {
     updateFormData({ notes });
+  };
+
+  const handleVATModeChange = (vatIncluded: boolean) => {
+    updateFormData({ vat_included: vatIncluded });
   };
 
   const handleSubmit = async () => {
@@ -76,6 +81,13 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
   return (
     <div className="space-y-6">
+      {/* VAT Mode Selector */}
+      <VATModeSelector
+        vatIncluded={formData.vat_included}
+        onVATModeChange={handleVATModeChange}
+        disabled={items.length > 0}
+      />
+
       {/* Discount Section */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -154,30 +166,28 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
         
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotale (senza IVA):</span>
+            <span className="text-muted-foreground">
+              Subtotale {formData.vat_included ? '(senza IVA)' : '(base)'}:
+            </span>
             <span>€{subtotal.toFixed(2)}</span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">IVA (22%):</span>
+            <span>€{taxAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Totale {formData.discount_type === 'amount' ? '(prima sconto)' : ''}:</span>
+            <span>€{(subtotal + taxAmount).toFixed(2)}</span>
+          </div>
           {discountAmount > 0 && (
-            <>
-              <div className="flex justify-between text-destructive">
-                <span>Sconto:</span>
-                <span>-€{discountAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Subtotale scontato:</span>
-                <span>€{(subtotal - discountAmount).toFixed(2)}</span>
-              </div>
-            </>
-          )}
-          {taxAmount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">IVA (22%):</span>
-              <span>€{taxAmount.toFixed(2)}</span>
+            <div className="flex justify-between text-destructive">
+              <span>Sconto {formData.discount_type === 'percentage' ? '(su subtotale)' : '(su totale)'}:</span>
+              <span>-€{discountAmount.toFixed(2)}</span>
             </div>
           )}
           <div className="border-t border-border/30 pt-2 mt-2">
             <div className="flex justify-between font-bold text-base">
-              <span>Totale:</span>
+              <span>Totale finale:</span>
               <span className="text-primary">€{totalAmount.toFixed(2)}</span>
             </div>
           </div>

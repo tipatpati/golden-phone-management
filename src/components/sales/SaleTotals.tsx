@@ -15,6 +15,7 @@ type SaleTotalsProps = {
   finalSubtotal?: number;
   taxAmount?: number;
   totalAmount?: number;
+  vatIncluded?: boolean;
 };
 
 export function SaleTotals({ 
@@ -22,15 +23,16 @@ export function SaleTotals({
   discountAmount = 0,
   finalSubtotal,
   taxAmount,
-  totalAmount
+  totalAmount,
+  vatIncluded = true
 }: SaleTotalsProps) {
   if (saleItems.length === 0) {
     return null;
   }
 
-  // Prices include 22% VAT, so we need to extract the base price
-  const totalWithVAT = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const originalSubtotal = totalWithVAT / 1.22; // Remove VAT to get base price
+  // Calculate subtotal based on VAT mode
+  const itemsTotal = saleItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const originalSubtotal = vatIncluded ? itemsTotal / 1.22 : itemsTotal;
   
   // Use provided values or calculate defaults
   const computedFinalSubtotal = finalSubtotal ?? originalSubtotal;
@@ -41,7 +43,7 @@ export function SaleTotals({
   return (
     <div className="border-t pt-4 space-y-2">
       <div className="flex justify-between">
-        <span>Subtotale:</span>
+        <span>Subtotale {vatIncluded ? '(senza IVA)' : '(base)'}:</span>
         <span>€{originalSubtotal.toFixed(2)}</span>
       </div>
       
