@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { VATModeSelector } from '../VATModeSelector';
+import { VATDebugPanel } from '../VATDebugPanel';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +49,15 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
     setIsSubmitting(true);
     try {
+      // Debug VAT state at submission time
+      console.log('🚀 CREATING SALE WITH VAT STATE:', {
+        formData_vat_included: formData.vat_included,
+        context_state_vat: state.formData.vat_included,
+        subtotal,
+        taxAmount,
+        totalAmount
+      });
+      
       const saleData = {
         salesperson_id: user.id,
         client_id: formData.client_id,
@@ -73,6 +83,8 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
         })),
       };
 
+      console.log('📤 FINAL SALE DATA BEING SENT:', saleData);
+
       const newSale = await createSale.mutateAsync(saleData);
       toast.success('Vendita creata con successo!');
       onSaleComplete?.(newSale);
@@ -86,6 +98,9 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
   return (
     <div className="space-y-6">
+      {/* Debug Panel - Temporary for testing */}
+      <VATDebugPanel />
+      
       {/* VAT Mode Selector */}
       <VATModeSelector
         vatIncluded={formData.vat_included}

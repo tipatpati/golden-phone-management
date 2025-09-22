@@ -260,6 +260,16 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       console.log('📝 Reducer UPDATE_FORM_DATA - payload:', action.payload, 'current formData:', state.formData);
       const newFormData = { ...state.formData, ...action.payload };
       console.log('📝 Reducer UPDATE_FORM_DATA - newFormData:', newFormData);
+      
+      // Special logging for VAT changes
+      if (action.payload.vat_included !== undefined) {
+        console.log('💰 VAT MODE CHANGE IN CONTEXT:', {
+          oldValue: state.formData.vat_included,
+          newValue: action.payload.vat_included,
+          finalValue: newFormData.vat_included
+        });
+      }
+      
       const newState = { ...state, formData: newFormData };
       return calculateTotals(newState);
     }

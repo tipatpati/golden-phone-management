@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { ClientSelector } from '../ClientSelector';
 import { VATModeSelector } from '../VATModeSelector';
+import { VATDebugPanel } from '../VATDebugPanel';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -91,6 +92,15 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
     }
 
     try {
+      // Debug VAT state at submission time
+      console.log('🚀 CREATING SALE WITH VAT STATE (SaleSummarySection):', {
+        formData_vat_included: formData.vat_included,
+        context_state_vat: state.formData.vat_included,
+        subtotal,
+        taxAmount,
+        totalAmount
+      });
+      
       const saleData = {
         client_id: formData.client_id,
         salesperson_id: user.id,
@@ -119,6 +129,8 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
         }))
       };
 
+      console.log('📤 FINAL SALE DATA BEING SENT (SaleSummarySection):', saleData);
+
       const result = await createSale.mutateAsync(saleData as any);
       toast({ title: 'Successo', description: 'Vendita creata con successo!' });
       resetSale();
@@ -135,6 +147,9 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
 
   return (
     <div className="space-y-6">
+      {/* Debug Panel - Temporary for testing */}
+      <VATDebugPanel />
+      
       {/* Client Selection */}
       <Card>
         <CardHeader>

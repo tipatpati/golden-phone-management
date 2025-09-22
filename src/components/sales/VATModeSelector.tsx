@@ -11,7 +11,7 @@ interface VATModeSelectorProps {
 }
 
 export function VATModeSelector({ vatIncluded, onVATModeChange, disabled, id = 'vat-mode' }: VATModeSelectorProps) {
-  console.log('🎛️ VATModeSelector render - vatIncluded:', vatIncluded, 'disabled:', disabled);
+  console.log('🎛️ VATModeSelector render - vatIncluded:', vatIncluded, 'disabled:', disabled, 'id:', id);
   return (
     <div className="border border-border/30 rounded-lg bg-surface-container p-4">
       <div className="flex items-center justify-between">
@@ -40,7 +40,7 @@ export function VATModeSelector({ vatIncluded, onVATModeChange, disabled, id = '
             id={id}
             checked={vatIncluded}
             onCheckedChange={(checked) => {
-              console.log('🎛️ Switch onCheckedChange - checked:', checked);
+              console.log('🎛️ Switch onCheckedChange - checked:', checked, 'id:', id);
               onVATModeChange(checked);
             }}
             disabled={disabled}
