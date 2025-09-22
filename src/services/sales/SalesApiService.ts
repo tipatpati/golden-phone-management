@@ -72,6 +72,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         subtotal: Math.round(subtotal * 100) / 100,
         tax_amount: Math.round(taxAmount * 100) / 100,
         total_amount: Math.round(totalAmount * 100) / 100,
+        vat_included: saleData.vat_included !== false, // default to true for backward compatibility
         notes: saleData.notes || '',
       };
 

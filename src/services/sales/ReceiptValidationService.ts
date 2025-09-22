@@ -47,13 +47,29 @@ export class ReceiptValidationService {
       return sum + (item.quantity * item.unit_price);
     }, 0);
 
-    // Since prices include 22% VAT, extract base price
-    const originalSubtotal = itemsTotal; // Total with VAT included
-    const subtotalWithoutVAT = itemsTotal / 1.22; // Remove 22% VAT to get base price
+    // Handle VAT calculation based on sale's vat_included flag
+    const vatIncluded = sale.vat_included !== false; // default to true for backward compatibility
+    const originalSubtotal = itemsTotal;
+    let subtotalWithoutVAT: number;
+    let vatAmount: number;
+    
+    if (vatIncluded) {
+      // Prices include 22% VAT, extract base price
+      subtotalWithoutVAT = itemsTotal / 1.22; // Remove 22% VAT to get base price
+    } else {
+      // Prices are VAT-excluded
+      subtotalWithoutVAT = itemsTotal;
+    }
     
     const discountAmount = Number(sale.discount_amount) || 0;
     const finalSubtotal = subtotalWithoutVAT - discountAmount;
-    const vatAmount = finalSubtotal * 0.22; // 22% IVA
+    
+    if (vatIncluded) {
+      vatAmount = finalSubtotal * 0.22; // 22% IVA
+    } else {
+      vatAmount = 0; // No VAT
+    }
+    
     const finalTotal = finalSubtotal + vatAmount;
 
     // Validation checks

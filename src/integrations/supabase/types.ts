@@ -1112,6 +1112,7 @@ export type Database = {
           tax_amount: number
           total_amount: number
           updated_at: string
+          vat_included: boolean
         }
         Insert: {
           bank_transfer_amount?: number | null
@@ -1133,6 +1134,7 @@ export type Database = {
           tax_amount?: number
           total_amount?: number
           updated_at?: string
+          vat_included?: boolean
         }
         Update: {
           bank_transfer_amount?: number | null
@@ -1154,6 +1156,7 @@ export type Database = {
           tax_amount?: number
           total_amount?: number
           updated_at?: string
+          vat_included?: boolean
         }
         Relationships: [
           {

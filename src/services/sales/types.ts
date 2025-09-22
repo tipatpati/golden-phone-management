@@ -14,6 +14,7 @@ export type Sale = {
   subtotal: number;
   tax_amount: number;
   total_amount: number;
+  vat_included?: boolean;
   notes?: string;
   sale_date: string;
   created_at: string;
