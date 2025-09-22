@@ -4,6 +4,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
 import { FormField } from "@/components/common/FormField";
+import { VATModeSelector } from "@/components/sales/VATModeSelector";
 import { Edit } from "lucide-react";
 import { useUpdateSale, type Sale } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
   const [status, setStatus] = useState(sale.status);
   const [paymentMethod, setPaymentMethod] = useState(sale.payment_method);
   const [notes, setNotes] = useState(sale.notes || "");
+  const [vatIncluded, setVatIncluded] = useState((sale as any).vat_included ?? true);
   const queryClient = useQueryClient();
 
   const updateSale = useUpdateSale();
@@ -36,8 +38,9 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
         data: {
           status: status as any,
           payment_method: paymentMethod as any,
-          notes
-        }
+          notes,
+          vat_included: vatIncluded
+        } as any
       });
       
       // Force immediate refresh
@@ -96,6 +99,11 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
               { value: "bank_transfer", label: "Bank Transfer" },
               { value: "other", label: "Other" }
             ]}
+          />
+
+          <VATModeSelector
+            vatIncluded={vatIncluded}
+            onVATModeChange={setVatIncluded}
           />
 
           <FormField
