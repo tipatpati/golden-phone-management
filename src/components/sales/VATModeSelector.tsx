@@ -8,9 +8,11 @@ interface VATModeSelectorProps {
   vatIncluded: boolean;
   onVATModeChange: (included: boolean) => void;
   disabled?: boolean;
+  id?: string;
 }
 
-export function VATModeSelector({ vatIncluded, onVATModeChange, disabled }: VATModeSelectorProps) {
+export function VATModeSelector({ vatIncluded, onVATModeChange, disabled, id = 'vat-mode' }: VATModeSelectorProps) {
+  console.log('🎛️ VATModeSelector render - vatIncluded:', vatIncluded, 'disabled:', disabled);
   return (
     <Card className="bg-surface-container border-border/30">
       <CardContent className="p-4">
@@ -31,15 +33,18 @@ export function VATModeSelector({ vatIncluded, onVATModeChange, disabled }: VATM
           </div>
           <div className="flex items-center gap-2">
             <Label 
-              htmlFor="vat-mode" 
+              htmlFor={id} 
               className="text-xs text-muted-foreground"
             >
               {vatIncluded ? 'Inclusa' : 'Esclusa'}
             </Label>
             <Switch
-              id="vat-mode"
+              id={id}
               checked={vatIncluded}
-              onCheckedChange={onVATModeChange}
+              onCheckedChange={(checked) => {
+                console.log('🎛️ Switch onCheckedChange - checked:', checked);
+                onVATModeChange(checked);
+              }}
               disabled={disabled}
             />
           </div>

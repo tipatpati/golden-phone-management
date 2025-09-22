@@ -36,6 +36,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
   };
 
   const handleVATModeChange = (vatIncluded: boolean) => {
+    console.log('🔄 CleanSaleSummarySection - handleVATModeChange:', vatIncluded);
     updateFormData({ vat_included: vatIncluded });
   };
 
@@ -86,6 +87,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
         vatIncluded={formData.vat_included}
         onVATModeChange={handleVATModeChange}
         disabled={items.length > 0}
+        id="vat-mode-clean"
       />
 
       {/* Discount Section */}

@@ -104,6 +104,7 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
           <VATModeSelector
             vatIncluded={vatIncluded}
             onVATModeChange={setVatIncluded}
+            id="vat-mode-edit"
           />
 
           <FormField

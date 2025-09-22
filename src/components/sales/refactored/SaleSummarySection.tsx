@@ -65,6 +65,7 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
   };
 
   const handleVATModeChange = (vatIncluded: boolean) => {
+    console.log('🔄 SaleSummarySection - handleVATModeChange:', vatIncluded);
     updateFormData({ vat_included: vatIncluded });
   };
 
@@ -193,6 +194,7 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
           vatIncluded={formData.vat_included}
           onVATModeChange={handleVATModeChange}
           disabled={false}
+          id="vat-mode-summary"
         />
       )}
 

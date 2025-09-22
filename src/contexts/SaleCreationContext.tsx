@@ -257,7 +257,9 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     }
 
     case 'UPDATE_FORM_DATA': {
+      console.log('📝 Reducer UPDATE_FORM_DATA - payload:', action.payload, 'current formData:', state.formData);
       const newFormData = { ...state.formData, ...action.payload };
+      console.log('📝 Reducer UPDATE_FORM_DATA - newFormData:', newFormData);
       const newState = { ...state, formData: newFormData };
       return calculateTotals(newState);
     }
