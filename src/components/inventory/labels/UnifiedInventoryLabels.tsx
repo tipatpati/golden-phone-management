@@ -27,18 +27,8 @@ export function UnifiedInventoryLabels({
 }: UnifiedInventoryLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
-  // Enhanced validation with proper type checking
+  // Simple validation - trust the label data provider
   const hasValidProducts = products && products.length > 0;
-  
-  // Check for available units with proper field mapping
-  const hasAvailableUnits = hasValidProducts && products.some(p => {
-    // Handle both 'units' and legacy 'product_units' fields from database
-    const units = p.units || p.product_units || [];
-    return units.length > 0 && units.some((u: any) => u.status !== 'sold');
-  });
-  
-  // Additional validation for bulk products without units
-  const hasBulkProducts = hasValidProducts && products.some(p => !p.has_serial && (p.stock || 0) > 0);
   
   const labelDataProvider = useLabelDataProvider({
     source: 'inventory',
@@ -63,18 +53,22 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  // Enhanced error handling with proper validation
-  if (labelDataProvider.error || (!hasAvailableUnits && !hasBulkProducts) || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
-    const errorMessage = labelDataProvider.error 
-      ? "Error Loading Labels" 
-      : (!hasAvailableUnits && !hasBulkProducts)
-        ? "No Available Products" 
-        : "No Labels Available";
-        
+  // Simple error handling - trust the label data provider
+  if (labelDataProvider.error) {
     return (
       <Button disabled variant="outline" className={buttonClassName}>
         <Printer className="h-4 w-4 mr-2" />
-        {errorMessage}
+        Error Loading Labels
+      </Button>
+    );
+  }
+
+  // If no labels available, show disabled state
+  if (!labelDataProvider.labels || labelDataProvider.labels.length === 0) {
+    return (
+      <Button disabled variant="outline" className={buttonClassName}>
+        <Printer className="h-4 w-4 mr-2" />
+        No Labels Available
       </Button>
     );
   }
