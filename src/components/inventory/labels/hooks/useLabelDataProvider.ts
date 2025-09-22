@@ -8,12 +8,18 @@ import { ThermalLabelData } from "../types";
 import { useSimpleInventoryLabels } from "./useSimpleInventoryLabels";
 import { useSimpleThermalLabels } from "@/components/suppliers/hooks/useSimpleThermalLabels";
 import { logger } from "@/utils/logger";
+import type { Product, ProductUnit } from "@/services/inventory/types";
 
 export type LabelSource = 'inventory' | 'supplier';
 
+// Properly typed product interface with units
+interface ProductWithUnits extends Product {
+  units: ProductUnit[];
+}
+
 interface InventoryLabelConfig {
   source: 'inventory';
-  products: any[];
+  products: ProductWithUnits[];
   useMasterBarcode?: boolean;
 }
 
@@ -40,8 +46,8 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
 
   // Check if products already have units data (direct use case)
   const hasPreloadedUnits = config.source === 'inventory' && 
-    (config as InventoryLabelConfig).products.length > 0 && 
-    (config as InventoryLabelConfig).products.some(p => p.units && p.units.length > 0);
+    config.products.length > 0 && 
+    config.products.some(p => p.units && p.units.length > 0);
 
   // For supplier labels
   const supplierQuery = useSimpleThermalLabels(
@@ -50,7 +56,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
 
   // For inventory labels - only extract product IDs if we need to re-query
   const inventoryProductIds = (config.source === 'inventory' && !hasPreloadedUnits) 
-    ? (config as InventoryLabelConfig).products.map(p => p.id).filter(Boolean) 
+    ? config.products.map(p => p.id).filter(Boolean) 
     : [];
   const inventoryQuery = useSimpleInventoryLabels(inventoryProductIds);
 
@@ -79,7 +85,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   // Handle inventory labels
   useEffect(() => {
     if (config.source === 'inventory') {
-      const inventoryProducts = (config as InventoryLabelConfig).products;
+      const inventoryProducts = config.products;
       
       // Validate that we have products data
       if (!inventoryProducts || inventoryProducts.length === 0) {
@@ -125,15 +131,15 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
                   brand: product.brand,
                   model: product.model,
                   serialNumber: unit.serial_number || '', // Allow empty serial for bulk products
-                  barcode: unit.barcode || product.barcode,
-                  price: unit.price || product.price,
+                  barcode: unit.barcode || product.barcode || '',
+                  price: unit.price || product.price || 0,
                   maxPrice: unit.max_price || product.max_price,
                   minPrice: unit.min_price || product.min_price,
                   category: product.category?.name,
                   color: unit.color,
                   batteryLevel: unit.battery_level,
-                  storage: unit.storage || product.storage,
-                  ram: unit.ram || product.ram
+                  storage: unit.storage,
+                  ram: unit.ram
                 });
                 productLabelsGenerated++;
               } else {
@@ -178,7 +184,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
         setLabels([]);
       }
     }
-  }, [config.source, config.source === 'inventory' ? (config as InventoryLabelConfig).products : [], hasPreloadedUnits, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
+  }, [config.source, config.source === 'inventory' ? config.products : [], hasPreloadedUnits, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
 
   // Handle supplier labels
   useEffect(() => {
