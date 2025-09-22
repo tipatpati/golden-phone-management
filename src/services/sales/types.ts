@@ -62,6 +62,10 @@ export type CreateSaleData = {
   bank_transfer_amount?: number;
   discount_amount?: number;
   discount_percentage?: number;
+  subtotal?: number;
+  tax_amount?: number;
+  total_amount?: number;
+  vat_included?: boolean;
   notes?: string;
   sale_items: {
     product_id: string;

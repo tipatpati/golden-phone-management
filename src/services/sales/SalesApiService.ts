@@ -44,14 +44,17 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
       // Generate sale number
       const saleNumber = await this.generateSaleNumber();
       
-      // Calculate totals - prices include 22% VAT, so we need to extract the base price
-      const totalWithVAT = saleData.sale_items.reduce(
-        (sum, item) => sum + (item.quantity * item.unit_price), 
-        0
-      );
-      const subtotal = totalWithVAT / 1.22; // Remove VAT to get base price
-      const taxAmount = subtotal * 0.22; // 22% VAT
-      const totalAmount = subtotal + taxAmount;
+      // Use calculated totals from frontend if provided, otherwise calculate here
+      const subtotal = saleData.subtotal ?? (() => {
+        const totalWithVAT = saleData.sale_items.reduce(
+          (sum, item) => sum + (item.quantity * item.unit_price), 
+          0
+        );
+        return saleData.vat_included !== false ? totalWithVAT / 1.22 : totalWithVAT;
+      })();
+      
+      const taxAmount = saleData.tax_amount ?? (saleData.vat_included !== false ? subtotal * 0.22 : 0);
+      const totalAmount = saleData.total_amount ?? (subtotal + taxAmount);
 
       // Prepare sale data
       const saleToInsert = {
@@ -66,9 +69,9 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         bank_transfer_amount: saleData.bank_transfer_amount || 0,
         discount_amount: saleData.discount_amount || 0,
         discount_percentage: saleData.discount_percentage || 0,
-        subtotal: subtotal,
-        tax_amount: taxAmount,
-        total_amount: totalAmount,
+        subtotal: Math.round(subtotal * 100) / 100,
+        tax_amount: Math.round(taxAmount * 100) / 100,
+        total_amount: Math.round(totalAmount * 100) / 100,
         notes: saleData.notes || '',
       };
 

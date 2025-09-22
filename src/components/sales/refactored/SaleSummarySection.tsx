@@ -104,6 +104,10 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
                              (formData.payment_method === 'bank_transfer' ? totalAmount : 0),
         discount_amount: discountAmount,
         discount_percentage: formData.discount_type === 'percentage' ? formData.discount_value : 0,
+        subtotal: subtotal,
+        tax_amount: taxAmount,
+        total_amount: totalAmount,
+        vat_included: formData.vat_included,
         notes: formData.notes,
         sale_items: items.map(item => ({
           product_id: item.product_id,

@@ -58,6 +58,10 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
         bank_transfer_amount: formData.bank_transfer_amount || 0,
         discount_amount: discountAmount,
         discount_percentage: formData.discount_type === 'percentage' ? formData.discount_value : undefined,
+        subtotal: subtotal,
+        tax_amount: taxAmount,
+        total_amount: totalAmount,
+        vat_included: formData.vat_included,
         notes: formData.notes || '',
         sale_items: items.map(item => ({
           product_id: item.product_id,
