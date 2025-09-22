@@ -26,40 +26,13 @@ import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { UnifiedInventoryLabels } from "./labels/UnifiedInventoryLabels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import type { Product as UnifiedProduct } from "@/services/inventory/types";
 
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
 
-interface Product {
-  id: string;
-  brand: string;
-  model: string;
-  year?: number;
-  category?: { id: number; name: string };
-  price?: number;      // Optional default price
-  min_price?: number;  // Optional default min price  
-  max_price?: number;  // Optional default max price
-  stock: number;
-  threshold: number;
-  description?: string;
-  supplier?: string;
-  barcode?: string;
-  has_serial: boolean;
-  serial_numbers?: string[];
-  units?: Array<{
-    id: string;
-    serial_number: string;
-    barcode?: string;
-    color?: string;
-    storage?: number;
-    ram?: number;
-    battery_level?: number;
-    status: string;
-    price?: number;
-    min_price?: number;
-    max_price?: number;
-  }>;
-}
+// Use the unified Product type instead of local interface
+type Product = UnifiedProduct;
 
 interface InventoryTableProps {
   products: Product[];
@@ -114,7 +87,7 @@ export function InventoryTable({
     }
   };
 
-  const getStockStatus = (stock: number, threshold: number) => {
+  const getStockStatus = (stock: number = 0, threshold: number = 0) => {
     if (stock === 0) {
       return { label: 'Out of Stock', color: 'bg-red-100 text-red-800 border-red-200' };
     } else if (stock <= threshold) {
@@ -374,12 +347,12 @@ export function InventoryTable({
     
 
     <ProductDetailsDialog
-      product={selectedProductForDetails}
+      product={selectedProductForDetails as any}
       open={detailsDialogOpen}
       onOpenChange={setDetailsDialogOpen}
       onEdit={(product) => {
         setDetailsDialogOpen(false);
-        onEdit(product);
+        onEdit(product as Product);
       }}
       onPrint={(product) => {
         setDetailsDialogOpen(false);

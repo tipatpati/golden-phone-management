@@ -5,7 +5,7 @@
 
 export interface BaseUnit {
   id?: string;
-  product_id: string;
+  product_id?: string; // Optional for compatibility
   serial_number: string;
   barcode?: string;
   color?: string;
@@ -18,8 +18,8 @@ export interface BaseUnit {
   purchase_price?: number;
   purchase_date?: string;
   supplier_id?: string;
-  condition?: 'new' | 'used';
-  status?: 'available' | 'sold' | 'damaged' | 'repair' | 'reserved';
+  condition?: 'new' | 'used' | string;
+  status?: 'available' | 'sold' | 'damaged' | 'repair' | 'reserved' | string;
   created_at?: string;
   updated_at?: string;
 }

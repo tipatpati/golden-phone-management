@@ -19,7 +19,7 @@ interface ProductWithUnits extends Product {
 
 interface InventoryLabelConfig {
   source: 'inventory';
-  products: ProductWithUnits[];
+  products: Product[];
   useMasterBarcode?: boolean;
 }
 
@@ -44,10 +44,13 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   const [refreshKey, setRefreshKey] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Check if products already have units data (direct use case)
+  // Check if products already have units data (direct use case) 
   const hasPreloadedUnits = config.source === 'inventory' && 
     config.products.length > 0 && 
-    config.products.some(p => p.units && p.units.length > 0);
+    config.products.some(p => {
+      const units = p.units || p.product_units || [];
+      return units.length > 0;
+    });
 
   // For supplier labels
   const supplierQuery = useSimpleThermalLabels(
@@ -109,11 +112,13 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
             return;
           }
           
-          if (product.units && product.units.length > 0) {
-            console.log(`🔍 Processing ${product.units.length} units for product ${product.brand} ${product.model}`);
+          // Handle both 'units' and 'product_units' fields for compatibility
+          const units = product.units || product.product_units || [];
+          if (units.length > 0) {
+            console.log(`🔍 Processing ${units.length} units for product ${product.brand} ${product.model}`);
             
             let productLabelsGenerated = 0;
-            product.units.forEach((unit, unitIndex) => {
+            units.forEach((unit, unitIndex) => {
               console.log(`🔍 Unit ${unitIndex + 1}:`, {
                 id: unit.id,
                 status: unit.status,

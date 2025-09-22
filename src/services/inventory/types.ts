@@ -14,7 +14,7 @@ export interface Product extends BaseEntity {
   brand: string;
   model: string;
   year?: number;
-  category_id: number;
+  category_id?: number;
   category?: {
     id: number;
     name: string;
@@ -23,32 +23,36 @@ export interface Product extends BaseEntity {
   price?: number;
   min_price?: number;
   max_price?: number;
-  stock: number;
-  threshold: number;
+  stock?: number;
+  threshold?: number;
   description?: string;
-  has_serial: boolean;
+  has_serial?: boolean;
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
+  // Support both field names for compatibility
+  units?: ProductUnit[];
   product_units?: ProductUnit[];
+  storage?: number;
+  ram?: number;
 }
 
 export interface ProductUnit extends BaseEntity {
-  product_id: string;
+  product_id?: string; // Optional for compatibility
   serial_number: string;
   barcode?: string;
   battery_level?: number;
   color?: string;
   storage?: number;
   ram?: number;
-  condition: 'new' | 'used';
+  condition?: 'new' | 'used' | string; // Allow string for database compatibility
   price?: number;
   min_price?: number;
   max_price?: number;
   purchase_price?: number;
   purchase_date?: string;
   supplier_id?: string;
-  status: 'available' | 'sold' | 'reserved' | 'damaged';
+  status?: 'available' | 'sold' | 'reserved' | 'damaged' | string; // Allow string for database compatibility
 }
 
 export interface Category {
@@ -100,7 +104,9 @@ export interface UnitEntryForm {
 export type CreateProductData = Omit<Product, keyof BaseEntity | 'category' | 'category_name'>;
 export type UpdateProductData = Partial<CreateProductData>;
 
-export type CreateProductUnitData = Omit<ProductUnit, keyof BaseEntity>;
+export type CreateProductUnitData = Omit<ProductUnit, keyof BaseEntity> & { 
+  product_id: string; // Ensure product_id is required for database operations
+};
 export type UpdateProductUnitData = Partial<CreateProductUnitData>;
 
 // ============================================

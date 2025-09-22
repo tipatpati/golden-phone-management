@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { ThermalLabelGenerator } from "./ThermalLabelGenerator";
 import { useLabelDataProvider } from "./hooks/useLabelDataProvider";
 import { Printer } from "lucide-react";
+import type { Product } from "@/services/inventory/types";
 
 interface UnifiedInventoryLabelsProps {
-  products: any[];
+  products: Product[];
   companyName?: string;
   useMasterBarcode?: boolean;
   buttonText?: string;
@@ -26,11 +27,18 @@ export function UnifiedInventoryLabels({
 }: UnifiedInventoryLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
-  // Validate that we have products with actual data
+  // Enhanced validation with proper type checking
   const hasValidProducts = products && products.length > 0;
-  const hasAvailableUnits = hasValidProducts && products.some(p => 
-    p.units && p.units.length > 0 && p.units.some(u => u.status !== 'sold')
-  );
+  
+  // Check for available units with proper field mapping
+  const hasAvailableUnits = hasValidProducts && products.some(p => {
+    // Handle both 'units' and legacy 'product_units' fields from database
+    const units = p.units || p.product_units || [];
+    return units.length > 0 && units.some((u: any) => u.status !== 'sold');
+  });
+  
+  // Additional validation for bulk products without units
+  const hasBulkProducts = hasValidProducts && products.some(p => !p.has_serial && (p.stock || 0) > 0);
   
   const labelDataProvider = useLabelDataProvider({
     source: 'inventory',
@@ -55,12 +63,12 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  // Show error or no data state
-  if (labelDataProvider.error || !hasAvailableUnits || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
+  // Enhanced error handling with proper validation
+  if (labelDataProvider.error || (!hasAvailableUnits && !hasBulkProducts) || !labelDataProvider.labels || labelDataProvider.labels.length === 0) {
     const errorMessage = labelDataProvider.error 
       ? "Error Loading Labels" 
-      : !hasAvailableUnits 
-        ? "No Available Units" 
+      : (!hasAvailableUnits && !hasBulkProducts)
+        ? "No Available Products" 
         : "No Labels Available";
         
     return (

@@ -1,38 +1,7 @@
 import React from "react";
 import { UnifiedInventoryLabels } from "../labels/UnifiedInventoryLabels";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-interface ProductUnit {
-  id: string;
-  serial_number: string;
-  barcode?: string;
-  price?: number;
-  min_price?: number;
-  max_price?: number;
-  storage?: number;
-  ram?: number;
-  color?: string;
-  battery_level?: number;
-  status?: string;
-}
-
-interface Product {
-  id: string;
-  brand: string;
-  model: string;
-  price: number;
-  stock?: number;
-  barcode?: string;
-  category?: { name: string };
-  year?: number;
-  storage?: number;
-  ram?: number;
-  has_serial?: boolean;
-  // Primary data source for serialized products
-  units?: ProductUnit[];
-  // Legacy compatibility
-  serial_numbers?: string[];
-}
+import type { Product } from "@/services/inventory/types";
 
 interface BulkPrintDialogProps {
   open: boolean;

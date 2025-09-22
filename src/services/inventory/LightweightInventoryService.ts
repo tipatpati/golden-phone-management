@@ -30,7 +30,7 @@ class LightweightInventoryService {
           id,
           name
         ),
-        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
+        units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .order('brand', { ascending: true })
       .order('model', { ascending: true });
@@ -78,7 +78,7 @@ class LightweightInventoryService {
           id,
           name
         ),
-        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
+        units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
 
@@ -114,7 +114,7 @@ class LightweightInventoryService {
           id,
           name
         ),
-        units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
+        units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
 
