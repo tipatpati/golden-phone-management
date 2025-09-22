@@ -189,14 +189,12 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
       )}
 
       {/* VAT Mode Selector */}
-      {items.length > 0 && (
-        <VATModeSelector
-          vatIncluded={formData.vat_included}
-          onVATModeChange={handleVATModeChange}
-          disabled={false}
-          id="vat-mode-summary"
-        />
-      )}
+      <VATModeSelector
+        vatIncluded={formData.vat_included}
+        onVATModeChange={handleVATModeChange}
+        disabled={false}
+        id="vat-mode-summary"
+      />
 
       {/* Notes */}
       <Card>

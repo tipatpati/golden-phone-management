@@ -86,7 +86,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
       <VATModeSelector
         vatIncluded={formData.vat_included}
         onVATModeChange={handleVATModeChange}
-        disabled={items.length > 0}
+        disabled={false}
         id="vat-mode-clean"
       />
 

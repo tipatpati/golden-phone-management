@@ -105,11 +105,15 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
             ]}
           />
 
-          <VATModeSelector
-            vatIncluded={vatIncluded}
-            onVATModeChange={setVatIncluded}
-            id="vat-mode-edit"
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Modalità IVA</label>
+            <VATModeSelector
+              vatIncluded={vatIncluded}
+              onVATModeChange={setVatIncluded}
+              disabled={false}
+              id="vat-mode-edit"
+            />
+          </div>
 
           <FormField
             label="Notes"
