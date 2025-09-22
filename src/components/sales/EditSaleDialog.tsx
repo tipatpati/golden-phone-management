@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BaseDialog } from "@/components/common/BaseDialog";
@@ -25,6 +25,10 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
   const queryClient = useQueryClient();
 
   const updateSale = useUpdateSale();
+
+  useEffect(() => {
+    console.log('🔍 EditSaleDialog - vatIncluded:', vatIncluded, 'userRole:', userRole);
+  }, [vatIncluded, userRole]);
 
   // Only show for super admins
   if (userRole !== 'super_admin') {
