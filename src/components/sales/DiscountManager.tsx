@@ -7,19 +7,21 @@ import { X } from "lucide-react";
 
 interface DiscountManagerProps {
   subtotal: number;
+  total: number; // Total after tax, for amount discount validation
   discountType: 'percentage' | 'amount' | null;
   discountValue: number;
   onDiscountChange: (type: 'percentage' | 'amount' | null, value: number) => void;
 }
 
 export function DiscountManager({ 
-  subtotal, 
+  subtotal,
+  total,
   discountType, 
   discountValue, 
   onDiscountChange 
 }: DiscountManagerProps) {
   const maxDiscountPercentage = 50; // 50% max discount
-  const maxDiscountAmount = subtotal * 0.8; // Max 80% of subtotal
+  const maxDiscountAmount = total * 0.8; // Max 80% of total (for amount discounts)
 
   const discountAmount = discountType === 'percentage' 
     ? (subtotal * discountValue) / 100
@@ -109,10 +111,10 @@ export function DiscountManager({
             </div>
             <div className="text-xs text-muted-foreground space-y-1">
               {discountType === 'percentage' && (
-                <p>Massimo {maxDiscountPercentage}% (€{((subtotal * maxDiscountPercentage) / 100).toFixed(2)})</p>
+                <p>Massimo {maxDiscountPercentage}% (€{((subtotal * maxDiscountPercentage) / 100).toFixed(2)}) - applicato al subtotale</p>
               )}
               {discountType === 'amount' && (
-                <p>Massimo €{maxDiscountAmount.toFixed(2)}</p>
+                <p>Massimo €{maxDiscountAmount.toFixed(2)} - applicato al totale finale</p>
               )}
             </div>
           </div>
@@ -126,8 +128,12 @@ export function DiscountManager({
             <span className="text-lg font-bold text-orange-800">-€{discountAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center mt-1">
-            <span className="text-sm text-orange-700">Nuovo Totale:</span>
-            <span className="text-lg font-bold text-green-700">€{(subtotal - discountAmount).toFixed(2)}</span>
+            <span className="text-sm text-orange-700">
+              {discountType === 'percentage' ? 'Nuovo Subtotale:' : 'Nuovo Totale:'}
+            </span>
+            <span className="text-lg font-bold text-green-700">
+              €{(discountType === 'percentage' ? (subtotal - discountAmount) : (total - discountAmount)).toFixed(2)}
+            </span>
           </div>
         </div>
       )}

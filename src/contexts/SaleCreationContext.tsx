@@ -94,22 +94,33 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
   const baseSubtotal = totalWithVAT / 1.22; // Remove VAT to get base price
   console.log('💰 Base Subtotal (excluding VAT):', baseSubtotal, 'Total with VAT:', totalWithVAT);
   
-  // Apply discount to subtotal (before VAT)
   let discountAmount = 0;
+  let subtotalAfterDiscount = baseSubtotal;
+  let taxAmount = baseSubtotal * 0.22; // 22% IVA
+  let totalBeforeDiscount = subtotalAfterDiscount + taxAmount;
+  let totalAmount = totalBeforeDiscount;
+
+  // Apply discount based on type
   if (state.formData.discount_type && state.formData.discount_value > 0) {
     if (state.formData.discount_type === 'percentage') {
+      // Percentage discounts: Apply to subtotal (before VAT)
       discountAmount = (baseSubtotal * state.formData.discount_value) / 100;
+      subtotalAfterDiscount = baseSubtotal - discountAmount;
+      taxAmount = subtotalAfterDiscount * 0.22; // Recalculate tax on discounted subtotal
+      totalAmount = subtotalAfterDiscount + taxAmount;
     } else {
-      discountAmount = Math.min(state.formData.discount_value, baseSubtotal);
+      // Euro amount discounts: Apply to total (after VAT)
+      discountAmount = Math.min(state.formData.discount_value, totalBeforeDiscount);
+      totalAmount = totalBeforeDiscount - discountAmount;
+      // Keep original subtotal and tax amounts for display
+      subtotalAfterDiscount = baseSubtotal;
+      taxAmount = baseSubtotal * 0.22;
     }
   }
 
-  // Calculate final amounts after discount
-  const subtotalAfterDiscount = baseSubtotal - discountAmount;
-  const taxAmount = subtotalAfterDiscount * 0.22; // 22% IVA on discounted subtotal
-  const totalAmount = subtotalAfterDiscount + taxAmount;
-
-  console.log('💰 Discount applied to subtotal:', {
+  console.log('💰 Discount calculation:', {
+    discountType: state.formData.discount_type,
+    discountValue: state.formData.discount_value,
     baseSubtotal: baseSubtotal.toFixed(2),
     discountAmount: discountAmount.toFixed(2),
     subtotalAfterDiscount: subtotalAfterDiscount.toFixed(2),
@@ -136,6 +147,11 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
     if (Math.abs(totalPaid - totalAmount) > 0.01) {
       errors.push('Il pagamento ibrido deve corrispondere al totale');
     }
+  }
+
+  // Discount validation - max amount based on discount type
+  if (state.formData.discount_type === 'amount' && state.formData.discount_value > totalBeforeDiscount) {
+    errors.push('Lo sconto non può essere superiore al totale');
   }
 
   const isValid = errors.length === 0;
