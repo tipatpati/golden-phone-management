@@ -104,15 +104,27 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           }
           
           if (product.units && product.units.length > 0) {
-            product.units.forEach(unit => {
-              // Only include units that are available for sale
-              if (unit.status !== 'sold' && unit.serial_number) {
+            console.log(`🔍 Processing ${product.units.length} units for product ${product.brand} ${product.model}`);
+            
+            let productLabelsGenerated = 0;
+            product.units.forEach((unit, unitIndex) => {
+              console.log(`🔍 Unit ${unitIndex + 1}:`, {
+                id: unit.id,
+                status: unit.status,
+                hasSerial: !!unit.serial_number,
+                serialNumber: unit.serial_number,
+                hasBarcode: !!unit.barcode,
+                hasPrice: !!unit.price
+              });
+              
+              // Include all available units, even those without serial numbers (for bulk products)
+              if (unit.status !== 'sold') {
                 directLabels.push({
                   id: unit.id,
                   productName: `${product.brand} ${product.model}`,
                   brand: product.brand,
                   model: product.model,
-                  serialNumber: unit.serial_number,
+                  serialNumber: unit.serial_number || '', // Allow empty serial for bulk products
                   barcode: unit.barcode || product.barcode,
                   price: unit.price || product.price,
                   maxPrice: unit.max_price || product.max_price,
@@ -123,8 +135,15 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
                   storage: unit.storage || product.storage,
                   ram: unit.ram || product.ram
                 });
+                productLabelsGenerated++;
+              } else {
+                console.log(`🚫 Skipping sold unit: ${unit.serial_number || unit.id}`);
               }
             });
+            
+            console.log(`✅ Generated ${productLabelsGenerated} labels for product ${product.brand} ${product.model}`);
+          } else {
+            console.log(`⚠️ Product ${product.brand} ${product.model} has no units array or empty units`);
           }
         });
         
