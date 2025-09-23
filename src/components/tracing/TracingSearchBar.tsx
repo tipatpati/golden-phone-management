@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Scan, X } from 'lucide-react';
 import { useSerialSuggestions } from '@/hooks/useProductTrace';
+import { useDropdownPortal } from '@/hooks/useDropdownPortal';
 import { cn } from '@/lib/utils';
 
 interface TracingSearchBarProps {
@@ -23,6 +25,7 @@ export function TracingSearchBar({
   const [showSuggestions, setShowSuggestions] = useState(false);
   
   const { data: suggestions = [], isLoading: suggestionsLoading } = useSerialSuggestions(query);
+  const { triggerRef, position } = useDropdownPortal({ isOpen: showSuggestions });
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -56,7 +59,7 @@ export function TracingSearchBar({
 
   return (
     <div className={cn("relative w-full max-w-2xl", className)}>
-      <div className="relative">
+      <div className="relative" ref={triggerRef}>
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           value={query}
@@ -97,9 +100,16 @@ export function TracingSearchBar({
         </div>
       </div>
 
-      {/* Suggestions dropdown */}
-      {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto">
+      {/* Suggestions dropdown - rendered in portal */}
+      {showSuggestions && createPortal(
+        <div 
+          className="fixed bg-background border rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto"
+          style={{
+            top: position.top,
+            left: position.left,
+            width: position.width,
+          }}
+        >
           {suggestionsLoading ? (
             <div className="p-3 text-center text-muted-foreground">
               <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
@@ -107,7 +117,7 @@ export function TracingSearchBar({
             </div>
           ) : suggestions.length > 0 ? (
             <>
-              <div className="p-2 text-xs text-muted-foreground border-b">
+              <div className="p-2 text-xs font-medium text-foreground border-b bg-muted/50">
                 Serial Number Suggestions
               </div>
               {suggestions.map((suggestion, index) => (
@@ -128,7 +138,8 @@ export function TracingSearchBar({
               No matching serial numbers found
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Quick tips */}
