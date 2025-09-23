@@ -129,7 +129,7 @@ export function SupplierProductsDialog({
             Error loading products: {error.message}
           </div>
         ) : (
-          <ScrollArea className="flex-1 h-[calc(90vh-200px)]">
+          <ScrollArea className="flex-1 h-[calc(90vh-65 vw)]">
             {/* Statistics Cards */}
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
