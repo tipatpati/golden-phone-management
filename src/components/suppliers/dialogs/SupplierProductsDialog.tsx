@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { SuppliersApiService } from "@/services/suppliers/SuppliersApiService";
 import { LoadingState } from "@/components/common";
+import { formatCurrencySimple } from "@/utils/currency";
 import type { Supplier } from "@/services/suppliers/types";
 
 interface SupplierProduct {
@@ -59,9 +60,6 @@ interface SupplierProductsDialogProps {
 }
 
 const suppliersApi = new SuppliersApiService();
-
-const formatCurrency = (amount?: number) => 
-  amount !== undefined ? `€${amount.toFixed(2)}` : 'N/A';
 
 const formatDate = (dateString?: string) => 
   dateString ? new Date(dateString).toLocaleDateString() : 'N/A';
@@ -154,7 +152,7 @@ export function SupplierProductsDialog({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
+                    <div className="text-2xl font-bold">{formatCurrencySimple(stats.totalValue)}</div>
                   </CardContent>
                 </Card>
 
@@ -239,7 +237,7 @@ export function SupplierProductsDialog({
                             {product.barcode || '-'}
                           </TableCell>
                           <TableCell>
-                            {formatCurrency(product.purchase_price)}
+                            {product.purchase_price !== null ? formatCurrencySimple(product.purchase_price) : 'N/A'}
                           </TableCell>
                           <TableCell>
                             {formatDate(product.purchase_date)}
@@ -306,7 +304,7 @@ export function SupplierProductsDialog({
                         
                         <div className="flex items-center gap-2">
                           <Euro className="h-4 w-4" />
-                          <span>{formatCurrency(product.purchase_price)}</span>
+                          <span>{product.purchase_price !== null ? formatCurrencySimple(product.purchase_price) : 'N/A'}</span>
                         </div>
                         
                         <div className="flex items-center gap-2">
