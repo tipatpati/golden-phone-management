@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Package, 
   Euro, 
@@ -128,7 +129,7 @@ export function SupplierProductsDialog({
             Error loading products: {error.message}
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden">
+          <ScrollArea className="flex-1 h-[calc(90vh-200px)]">
             {/* Statistics Cards */}
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -327,7 +328,7 @@ export function SupplierProductsDialog({
                 ))}
               </div>
             </div>
-          </div>
+          </ScrollArea>
         )}
       </DialogContent>
     </Dialog>
