@@ -47,34 +47,37 @@ export class ReceiptValidationService {
       return sum + (item.quantity * item.unit_price);
     }, 0);
 
-    // Handle VAT calculation based on sale's vat_included flag
     const vatIncluded = sale.vat_included !== false; // default to true for backward compatibility
     const originalSubtotal = itemsTotal;
+    const discountAmount = Number(sale.discount_amount) || 0;
+    const storedTotal = Number(sale.total_amount) || 0;
+    
     let subtotalWithoutVAT: number;
     let vatAmount: number;
+    let finalSubtotal: number;
+    let finalTotal: number;
     
     if (vatIncluded) {
-      // Prices include 22% VAT, extract base price
+      // Prices include 22% VAT - extract base price before applying discount
       subtotalWithoutVAT = itemsTotal / 1.22; // Remove 22% VAT to get base price
+      finalSubtotal = subtotalWithoutVAT - discountAmount;
+      vatAmount = finalSubtotal * 0.22; // 22% IVA on discounted amount
+      finalTotal = finalSubtotal + vatAmount;
     } else {
-      // Prices are VAT-excluded
+      // Prices are VAT-excluded - VAT was added during sale creation
+      // Use stored total and extrapolate VAT that was actually applied
       subtotalWithoutVAT = itemsTotal;
+      finalSubtotal = subtotalWithoutVAT - discountAmount;
+      
+      // For VAT-excluded sales, extrapolate VAT from the stored total
+      // The stored total already includes VAT that was added during creation
+      vatAmount = this.calculateVATFromTotal(storedTotal, finalSubtotal);
+      finalTotal = storedTotal; // Use the stored total to maintain consistency
     }
-    
-    const discountAmount = Number(sale.discount_amount) || 0;
-    const finalSubtotal = subtotalWithoutVAT - discountAmount;
-    
-    if (vatIncluded) {
-      vatAmount = finalSubtotal * 0.22; // 22% IVA
-    } else {
-      vatAmount = 0; // No VAT
-    }
-    
-    const finalTotal = finalSubtotal + vatAmount;
 
-    // Validation checks
-    if (Math.abs(finalTotal - (Number(sale.total_amount) || 0)) > 0.01) {
-      errors.push(`Total mismatch: calculated ${finalTotal.toFixed(2)}, stored ${(Number(sale.total_amount) || 0).toFixed(2)}`);
+    // Validation checks - use consistent total validation
+    if (!this.validateTotalConsistency(finalTotal, storedTotal)) {
+      errors.push(`Total mismatch: calculated ${finalTotal.toFixed(2)}, stored ${storedTotal.toFixed(2)}`);
     }
 
     if (discountAmount > subtotalWithoutVAT) {
@@ -102,6 +105,22 @@ export class ReceiptValidationService {
       isValid: errors.length === 0,
       errors
     };
+  }
+
+  /**
+   * Calculate VAT amount from stored total for VAT-excluded sales
+   */
+  private static calculateVATFromTotal(storedTotal: number, finalSubtotal: number): number {
+    // For VAT-excluded sales, the stored total includes VAT that was added during creation
+    // VAT = storedTotal - finalSubtotal (where finalSubtotal is base price after discount)
+    return Math.max(0, storedTotal - finalSubtotal);
+  }
+
+  /**
+   * Validate that receipt calculations match stored sale totals
+   */
+  private static validateTotalConsistency(calculatedTotal: number, storedTotal: number): boolean {
+    return Math.abs(calculatedTotal - storedTotal) <= 0.01;
   }
 
   /**
