@@ -99,7 +99,7 @@ export function TracingSearchBar({
 
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-[9999] max-h-60 overflow-y-auto">
           {suggestionsLoading ? (
             <div className="p-3 text-center text-muted-foreground">
               <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
