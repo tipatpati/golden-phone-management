@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { 
   Package, 
   Euro, 
@@ -111,7 +111,7 @@ export function SupplierProductsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-scroll flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -129,10 +129,10 @@ export function SupplierProductsDialog({
             Error loading products: {error.message}
           </div>
         ) : (
-          <ScrollArea className="flex-1 h-[calc(90vh-65 vw)]">
+          <div className="flex-1 overflow-y-auto space-y-4">
             {/* Statistics Cards */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -183,10 +183,10 @@ export function SupplierProductsDialog({
               </div>
             )}
 
-            <Separator className="my-4" />
+            <Separator />
 
             {/* Search */}
-            <div className="relative mb-4">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by serial, brand, model, or barcode..."
@@ -197,7 +197,7 @@ export function SupplierProductsDialog({
             </div>
 
             {/* Products Table */}
-            <div className="flex-1 overflow-auto">
+            <div className="overflow-auto">
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   {searchTerm ? 'No products match your search' : 'No products found for this supplier'}
@@ -328,7 +328,7 @@ export function SupplierProductsDialog({
                 ))}
               </div>
             </div>
-          </ScrollArea>
+          </div>
         )}
       </DialogContent>
     </Dialog>
