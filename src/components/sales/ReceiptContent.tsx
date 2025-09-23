@@ -141,14 +141,16 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
             <span>{ReceiptDataService.formatAmount(receiptData.totals.finalSubtotal)}</span>
           </div>
         )}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '2px'
-        }}>
-          <span>IVA (22%):</span>
-          <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
-        </div>
+        {receiptData.totals.vatIncluded && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '2px'
+          }}>
+            <span>IVA (22%):</span>
+            <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
+          </div>
+        )}
         
         {/* Payment Methods */}
         {receiptData.payments.map((payment, index) => (

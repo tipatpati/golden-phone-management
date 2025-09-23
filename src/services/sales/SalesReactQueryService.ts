@@ -51,6 +51,14 @@ export const useCreateSale = () => {
   
   return useMutation({
     mutationFn: async (saleData: CreateSaleData) => {
+      // Debug: Log VAT state being sent to API
+      console.log('🔥 useCreateSale - Sending sale data with VAT state:', {
+        vat_included: saleData.vat_included,
+        payment_method: saleData.payment_method,
+        total_amount: saleData.total_amount,
+        saleData: saleData
+      });
+      
       // Pre-validate with orchestration
       await SalesInventoryIntegration.validateAndCreateSale(saleData);
       

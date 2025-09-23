@@ -28,6 +28,7 @@ export interface ReceiptData {
     finalSubtotal: number;
     vatAmount: number;
     finalTotal: number;
+    vatIncluded: boolean; // Add VAT mode flag
   };
   payments: Array<{
     label: string;
@@ -59,6 +60,15 @@ export class ReceiptDataService {
     // Validate receipt calculations
     const receiptReport = ReceiptValidationService.generateReceiptReport(sale);
     const { calculations } = receiptReport;
+    
+    // Debug: Log VAT information
+    console.log('🧾 ReceiptDataService.generateReceiptData - VAT Info:', {
+      saleId: sale.id,
+      saleNumber: sale.sale_number,
+      vatIncluded: sale.vat_included,
+      vatAmount: calculations.vatAmount,
+      finalTotal: calculations.finalTotal
+    });
     
     // Log validation results for debugging
     if (!receiptReport.overallValid) {
@@ -97,7 +107,8 @@ export class ReceiptDataService {
         discountAmount: calculations.discountAmount,
         finalSubtotal: calculations.finalSubtotal,
         vatAmount: calculations.vatAmount,
-        finalTotal: calculations.finalTotal
+        finalTotal: calculations.finalTotal,
+        vatIncluded: sale.vat_included || false // Include VAT mode in receipt data
       },
       payments,
       legalTerms: this.LEGAL_TERMS
