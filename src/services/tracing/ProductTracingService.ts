@@ -43,11 +43,20 @@ export class ProductTracingService {
         .select(`
           unit_cost,
           total_cost,
+          quantity,
           supplier_transactions!inner (
+            id,
             transaction_number,
             transaction_date,
+            type,
+            status,
+            notes,
             suppliers (
-              name
+              id,
+              name,
+              contact_person,
+              email,
+              phone
             )
           )
         `)
@@ -93,12 +102,22 @@ export class ProductTracingService {
           updated_at: productUnit.updated_at,
         },
         acquisitionHistory: acquisitionData?.[0] ? {
+          supplier_id: acquisitionData[0].supplier_transactions.suppliers?.id,
           supplier_name: acquisitionData[0].supplier_transactions.suppliers?.name,
+          supplier_contact: acquisitionData[0].supplier_transactions.suppliers?.contact_person,
+          supplier_email: acquisitionData[0].supplier_transactions.suppliers?.email,
+          supplier_phone: acquisitionData[0].supplier_transactions.suppliers?.phone,
+          transaction_id: acquisitionData[0].supplier_transactions.id,
           transaction_number: acquisitionData[0].supplier_transactions.transaction_number,
+          transaction_type: acquisitionData[0].supplier_transactions.type,
           transaction_date: acquisitionData[0].supplier_transactions.transaction_date,
+          transaction_status: acquisitionData[0].supplier_transactions.status,
           unit_cost: acquisitionData[0].unit_cost,
+          total_cost: acquisitionData[0].total_cost,
+          quantity: acquisitionData[0].quantity,
           purchase_price: productUnit.purchase_price,
           purchase_date: productUnit.purchase_date,
+          notes: acquisitionData[0].supplier_transactions.notes,
         } : undefined,
         modificationHistory: unitHistory || [],
         saleInfo: saleData ? {

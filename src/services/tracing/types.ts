@@ -26,12 +26,22 @@ export interface ProductTraceResult {
   
   // Acquisition history
   acquisitionHistory?: {
+    supplier_id?: string;
     supplier_name?: string;
+    supplier_contact?: string;
+    supplier_email?: string;
+    supplier_phone?: string;
+    transaction_id?: string;
     transaction_number?: string;
+    transaction_type?: string;
     transaction_date?: string;
+    transaction_status?: string;
     unit_cost?: number;
+    total_cost?: number;
+    quantity?: number;
     purchase_price?: number;
     purchase_date?: string;
+    notes?: string;
   };
   
   // Modification history

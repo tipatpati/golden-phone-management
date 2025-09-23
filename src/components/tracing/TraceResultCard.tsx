@@ -15,7 +15,13 @@ import {
   User,
   Euro,
   Building,
-  FileText
+  FileText,
+  Phone,
+  Mail,
+  Receipt,
+  CheckCircle,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { ProductTraceResult } from '@/services/tracing/types';
 import { format, parseISO } from 'date-fns';
@@ -150,34 +156,115 @@ export function TraceResultCard({ traceResult, className }: TraceResultCardProps
             <div>
               <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <Package className="h-4 w-4" />
-                Acquisition History
+                Supplier Acquisition Details
               </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {traceResult.acquisitionHistory.supplier_name && (
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <span>Supplier: {traceResult.acquisitionHistory.supplier_name}</span>
-                  </div>
-                )}
-                {traceResult.acquisitionHistory.transaction_number && (
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span>TX: {traceResult.acquisitionHistory.transaction_number}</span>
-                  </div>
-                )}
-                {traceResult.acquisitionHistory.transaction_date && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Date: {formatDate(traceResult.acquisitionHistory.transaction_date)}</span>
-                  </div>
-                )}
-                {traceResult.acquisitionHistory.unit_cost && (
-                  <div className="flex items-center gap-2">
-                    <Euro className="h-4 w-4 text-muted-foreground" />
-                    <span>Cost: €{Number(traceResult.acquisitionHistory.unit_cost).toFixed(2)}</span>
-                  </div>
-                )}
+              
+              {/* Supplier Information */}
+              <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                <h4 className="font-medium text-xs mb-2 text-muted-foreground uppercase tracking-wide">Supplier Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {traceResult.acquisitionHistory.supplier_name && (
+                    <div className="flex items-center gap-2">
+                      <Building className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{traceResult.acquisitionHistory.supplier_name}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.supplier_contact && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span>Contact: {traceResult.acquisitionHistory.supplier_contact}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.supplier_email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{traceResult.acquisitionHistory.supplier_email}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.supplier_phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{traceResult.acquisitionHistory.supplier_phone}</span>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Transaction Information */}
+              <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                <h4 className="font-medium text-xs mb-2 text-muted-foreground uppercase tracking-wide">Transaction Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {traceResult.acquisitionHistory.transaction_number && (
+                    <div className="flex items-center gap-2">
+                      <Receipt className="h-4 w-4 text-muted-foreground" />
+                      <span>TX: {traceResult.acquisitionHistory.transaction_number}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.transaction_id && (
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <span>ID: {traceResult.acquisitionHistory.transaction_id}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.transaction_type && (
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span>Type: {traceResult.acquisitionHistory.transaction_type}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.transaction_status && (
+                    <div className="flex items-center gap-2">
+                      {traceResult.acquisitionHistory.transaction_status === 'completed' ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : traceResult.acquisitionHistory.transaction_status === 'pending' ? (
+                        <Clock className="h-4 w-4 text-yellow-500" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      )}
+                      <span>Status: {traceResult.acquisitionHistory.transaction_status}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.transaction_date && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>Date: {formatDate(traceResult.acquisitionHistory.transaction_date)}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.quantity && (
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <span>Quantity: {traceResult.acquisitionHistory.quantity}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Financial Information */}
+              <div className="p-3 bg-accent/30 rounded-lg">
+                <h4 className="font-medium text-xs mb-2 text-muted-foreground uppercase tracking-wide">Financial Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  {traceResult.acquisitionHistory.unit_cost && (
+                    <div className="flex items-center gap-2">
+                      <Euro className="h-4 w-4 text-muted-foreground" />
+                      <span>Unit Cost: €{Number(traceResult.acquisitionHistory.unit_cost).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {traceResult.acquisitionHistory.total_cost && (
+                    <div className="flex items-center gap-2">
+                      <Euro className="h-4 w-4 text-muted-foreground" />
+                      <span>Total Cost: €{Number(traceResult.acquisitionHistory.total_cost).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {traceResult.acquisitionHistory.notes && (
+                <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                  <h4 className="font-medium text-xs mb-2 text-muted-foreground uppercase tracking-wide">Notes</h4>
+                  <p className="text-sm">{traceResult.acquisitionHistory.notes}</p>
+                </div>
+              )}
             </div>
           </>
         )}
