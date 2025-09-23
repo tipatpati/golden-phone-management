@@ -24,6 +24,7 @@ const Profile = React.lazy(() => import("@/pages/Profile"));
 const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
 const ServiceMonitoring = React.lazy(() => import("@/components/admin/ServiceMonitoringDashboard"));
+const ProductTracing = React.lazy(() => import("@/pages/ProductTracing"));
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -171,6 +172,15 @@ export function AppRouter() {
                   </TabletLayout>
                 </ProtectedRoute>
               } />
+              <Route path="/tracing" element={
+                <ProtectedRoute>
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <ProductTracing />
+                    </Suspense>
+                  </TabletLayout>
+                </ProtectedRoute>
+              } />
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <TabletLayout userRole={effectiveRole}>
@@ -255,6 +265,19 @@ export function AppRouter() {
                     <TabletLayout userRole={effectiveRole}>
                       <Suspense fallback={<PageLoader />}>
                         <Repairs />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } />
+              <Route path="/tracing" element={
+                ['manager', 'inventory_manager'].includes(effectiveRole || '') ? (
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <ProductTracing />
                       </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>

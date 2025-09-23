@@ -15,7 +15,8 @@ import {
   LogOut,
   UserCog,
   Euro,
-  User
+  User,
+  Route
 } from "lucide-react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -54,6 +55,12 @@ const navItems: NavItem[] = [
     title: "Inventario",
     href: "/inventory",
     icon: PackageSearch,
+    permission: ["manager", "inventory_manager", "admin", "super_admin"],
+  },
+  {
+    title: "Tracciamento",
+    href: "/tracing",
+    icon: Route,
     permission: ["manager", "inventory_manager", "admin", "super_admin"],
   },
   {
