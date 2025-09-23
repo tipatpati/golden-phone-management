@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Building, Mail, Phone, Edit2, Trash2, MessageCircle, Eye } from "lucide-react";
+import { Building, Mail, Phone, Edit2, Trash2, MessageCircle, Eye, Package } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog, LoadingState } from "@/components/common";
 import { EditSupplierDialog } from "./EditSupplierDialog";
 import { DeleteSupplierDialog } from "./DeleteSupplierDialog";
 import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { SupplierDetailsDialog } from "./SupplierDetailsDialog";
+import { SupplierProductsDialog } from "./dialogs/SupplierProductsDialog";
 import { useSuppliers } from "@/services";
 
 interface SuppliersTableProps {
@@ -17,6 +18,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const [deletingSupplier, setDeletingSupplier] = useState<any>(null);
   const [contactingSupplier, setContactingSupplier] = useState<any>(null);
   const [viewingSupplier, setViewingSupplier] = useState<any>(null);
+  const [viewingProducts, setViewingProducts] = useState<any>(null);
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog();
   const { data: suppliers, isLoading, refetch } = useSuppliers();
 
@@ -105,6 +107,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
       onClick: (supplier: any) => {
         console.log('SuppliersTable: View Details clicked for supplier:', supplier.id);
         setViewingSupplier(supplier);
+      }
+    },
+    {
+      icon: <Package className="h-4 w-4" />,
+      label: "View Products",
+      onClick: (supplier: any) => {
+        console.log('SuppliersTable: View Products clicked for supplier:', supplier.id);
+        setViewingProducts(supplier);
       }
     },
     {
@@ -244,6 +254,12 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
         onToggleStatus={handleSuccess}
       />
 
+      <SupplierProductsDialog
+        supplier={viewingProducts}
+        open={!!viewingProducts}
+        onOpenChange={(open) => !open && setViewingProducts(null)}
+      />
+
       <EditSupplierDialog
         supplier={editingSupplier}
         open={!!editingSupplier}
@@ -270,6 +286,12 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
         supplier={contactingSupplier}
         open={!!contactingSupplier}
         onOpenChange={(open) => !open && setContactingSupplier(null)}
+      />
+
+      <SupplierProductsDialog
+        supplier={viewingProducts}
+        open={!!viewingProducts}
+        onOpenChange={(open) => !open && setViewingProducts(null)}
       />
     </>
   );

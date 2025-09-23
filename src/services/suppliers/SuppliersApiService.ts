@@ -160,4 +160,85 @@ export class SuppliersApiService extends BaseApiService<Supplier, CreateSupplier
 
     return stats;
   }
+
+  async getSupplierProducts(supplierId: string): Promise<Array<{
+    id: string;
+    serial_number: string;
+    barcode?: string;
+    purchase_price?: number;
+    purchase_date?: string;
+    status: string;
+    condition: string;
+    product: {
+      brand: string;
+      model: string;
+      year?: number;
+    };
+    transaction?: {
+      transaction_number: string;
+      transaction_date: string;
+    };
+  }>> {
+    const { data, error } = await supabase
+      .from('product_units')
+      .select(`
+        id,
+        serial_number,
+        barcode,
+        purchase_price,
+        purchase_date,
+        status,
+        condition,
+        products (
+          brand,
+          model,
+          year
+        )
+      `)
+      .eq('supplier_id', supplierId)
+      .order('purchase_date', { ascending: false });
+
+    if (error) throw error;
+
+    // Get transaction information separately for units that have it
+    const unitsWithTransactions = await Promise.all(
+      (data || []).map(async (unit) => {
+        const { data: transactionData } = await supabase
+          .from('supplier_transaction_items')
+          .select(`
+            supplier_transactions (
+              transaction_number,
+              transaction_date
+            )
+          `)
+          .eq('product_unit_ids', `["${unit.id}"]`)
+          .single();
+
+        return {
+          ...unit,
+          transaction: transactionData?.supplier_transactions || undefined
+        };
+      })
+    );
+
+    // Transform the data to flatten the nested structure
+    return unitsWithTransactions.map(unit => ({
+      id: unit.id,
+      serial_number: unit.serial_number,
+      barcode: unit.barcode,
+      purchase_price: unit.purchase_price,
+      purchase_date: unit.purchase_date,
+      status: unit.status,
+      condition: unit.condition,
+      product: {
+        brand: unit.products?.brand || 'Unknown',
+        model: unit.products?.model || 'Unknown',
+        year: unit.products?.year
+      },
+      transaction: unit.transaction ? {
+        transaction_number: unit.transaction.transaction_number,
+        transaction_date: unit.transaction.transaction_date
+      } : undefined
+    }));
+  }
 }
