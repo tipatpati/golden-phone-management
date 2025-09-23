@@ -42,6 +42,33 @@ export interface ProductTraceResult {
     purchase_price?: number;
     purchase_date?: string;
     notes?: string;
+    transaction_items?: Array<{
+      id: string;
+      product_id: string;
+      quantity: number;
+      unit_cost: number;
+      total_cost: number;
+      product_details: {
+        brand: string;
+        model: string;
+        category?: string;
+        description?: string;
+        barcode?: string;
+        storage?: number;
+        ram?: number;
+        color?: string;
+        has_serial: boolean;
+      };
+      unit_details?: Array<{
+        serial_number?: string;
+        barcode?: string;
+        color?: string;
+        storage?: number;
+        ram?: number;
+        condition?: string;
+        status?: string;
+      }>;
+    }>;
   };
   
   // Modification history
@@ -62,8 +89,36 @@ export interface ProductTraceResult {
     sold_price: number;
     sold_at: string;
     customer_name?: string;
+    customer_type?: string;
+    customer_email?: string;
+    customer_phone?: string;
     salesperson_name?: string;
     payment_method?: string;
+    payment_type?: string;
+    subtotal?: number;
+    tax_amount?: number;
+    discount_amount?: number;
+    total_amount?: number;
+    notes?: string;
+    sale_items?: Array<{
+      id: string;
+      product_id: string;
+      serial_number?: string;
+      quantity: number;
+      unit_price: number;
+      total_price: number;
+      product_details: {
+        brand: string;
+        model: string;
+        category?: string;
+        description?: string;
+        barcode?: string;
+        storage?: number;
+        ram?: number;
+        color?: string;
+        has_serial: boolean;
+      };
+    }>;
   };
   
   // Current status

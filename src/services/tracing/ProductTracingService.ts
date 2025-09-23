@@ -41,9 +41,12 @@ export class ProductTracingService {
       const { data: acquisitionData } = await supabase
         .from('supplier_transaction_items')
         .select(`
+          id,
           unit_cost,
           total_cost,
           quantity,
+          product_id,
+          unit_details,
           supplier_transactions!inner (
             id,
             transaction_number,
@@ -58,11 +61,53 @@ export class ProductTracingService {
               email,
               phone
             )
+          ),
+          products (
+            id,
+            brand,
+            model,
+            description,
+            barcode,
+            has_serial,
+            category_id,
+            categories (
+              name
+            )
           )
         `)
         .contains('product_unit_ids', [productUnit.id])
         .order('created_at', { ascending: false })
         .limit(1);
+
+      // Get all transaction items for the same transaction to show complete details
+      let allTransactionItems = null;
+      if (acquisitionData?.[0]) {
+        const { data: transactionItems } = await supabase
+          .from('supplier_transaction_items')
+          .select(`
+            id,
+            product_id,
+            quantity,
+            unit_cost,
+            total_cost,
+            unit_details,
+            products (
+              id,
+              brand,
+              model,
+              description,
+              barcode,
+              has_serial,
+              category_id,
+              categories (
+                name
+              )
+            )
+          `)
+          .eq('transaction_id', acquisitionData[0].supplier_transactions.id);
+        
+        allTransactionItems = transactionItems;
+      }
 
       // Get modification history
       const { data: unitHistory } = await supabase
@@ -77,6 +122,70 @@ export class ProductTracingService {
         .select('*')
         .eq('serial_number', cleanSerial)
         .single();
+
+      // Get detailed sale information if sold
+      let detailedSaleData = null;
+      if (saleData?.sale_id) {
+        const { data: saleDetails } = await supabase
+          .from('sales')
+          .select(`
+            id,
+            sale_number,
+            subtotal,
+            tax_amount,
+            discount_amount,
+            total_amount,
+            payment_method,
+            payment_type,
+            notes,
+            clients (
+              id,
+              type,
+              first_name,
+              last_name,
+              company_name,
+              email,
+              phone
+            ),
+            profiles (
+              username
+            )
+          `)
+          .eq('id', saleData.sale_id)
+          .single();
+        
+        detailedSaleData = saleDetails;
+      }
+
+      // Get all sale items for the same sale to show complete details
+      let allSaleItems = null;
+      if (saleData?.sale_id) {
+        const { data: saleItems } = await supabase
+          .from('sale_items')
+          .select(`
+            id,
+            product_id,
+            serial_number,
+            quantity,
+            unit_price,
+            total_price,
+            products (
+              id,
+              brand,
+              model,
+              description,
+              barcode,
+              has_serial,
+              category_id,
+              categories (
+                name
+              )
+            )
+          `)
+          .eq('sale_id', saleData.sale_id);
+        
+        allSaleItems = saleItems;
+      }
 
       // Build the trace result
       const traceResult: ProductTraceResult = {
@@ -118,6 +227,22 @@ export class ProductTracingService {
           purchase_price: productUnit.purchase_price,
           purchase_date: productUnit.purchase_date,
           notes: acquisitionData[0].supplier_transactions.notes,
+          transaction_items: allTransactionItems?.map(item => ({
+            id: item.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            unit_cost: item.unit_cost,
+            total_cost: item.total_cost,
+            product_details: {
+              brand: item.products.brand,
+              model: item.products.model,
+              category: item.products.categories?.name,
+              description: item.products.description,
+              barcode: item.products.barcode,
+              has_serial: item.products.has_serial,
+            },
+            unit_details: item.unit_details?.entries || [],
+          })) || [],
         } : undefined,
         modificationHistory: unitHistory || [],
         saleInfo: saleData ? {
@@ -126,8 +251,33 @@ export class ProductTracingService {
           sold_price: saleData.sold_price,
           sold_at: saleData.sold_at,
           customer_name: saleData.customer_name,
-          salesperson_name: saleData.salesperson_name,
-          payment_method: saleData.payment_method,
+          customer_type: detailedSaleData?.clients?.type,
+          customer_email: detailedSaleData?.clients?.email,
+          customer_phone: detailedSaleData?.clients?.phone,
+          salesperson_name: detailedSaleData?.profiles?.username || saleData.salesperson_name,
+          payment_method: saleData.payment_method || detailedSaleData?.payment_method,
+          payment_type: detailedSaleData?.payment_type,
+          subtotal: detailedSaleData?.subtotal,
+          tax_amount: detailedSaleData?.tax_amount,
+          discount_amount: detailedSaleData?.discount_amount,
+          total_amount: detailedSaleData?.total_amount,
+          notes: detailedSaleData?.notes,
+          sale_items: allSaleItems?.map(item => ({
+            id: item.id,
+            product_id: item.product_id,
+            serial_number: item.serial_number,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+            product_details: {
+              brand: item.products.brand,
+              model: item.products.model,
+              category: item.products.categories?.name,
+              description: item.products.description,
+              barcode: item.products.barcode,
+              has_serial: item.products.has_serial,
+            },
+          })) || [],
         } : undefined,
         currentStatus: productUnit.status as ProductTraceResult['currentStatus'],
       };
