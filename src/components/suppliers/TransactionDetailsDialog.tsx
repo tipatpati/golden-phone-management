@@ -337,10 +337,47 @@ export function TransactionDetailsDialog({
                                     </div>
                                     {item.unit_details && Object.keys(item.unit_details).length > 0 && (
                                       <div className="col-span-2">
-                                        <span className="font-medium">Details:</span>
-                                        <pre className="text-xs mt-1 bg-muted/30 p-2 rounded">
-                                          {JSON.stringify(item.unit_details, null, 2)}
-                                        </pre>
+                                        <span className="font-medium">Unit Details:</span>
+                                        <div className="mt-2 space-y-2">
+                                          {item.unit_details.barcodes && item.unit_details.barcodes.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              <span className="text-xs text-muted-foreground">Barcodes:</span>
+                                              {item.unit_details.barcodes.map((barcode: string, idx: number) => (
+                                                <Badge key={idx} variant="outline" className="text-xs font-mono">
+                                                  {barcode}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {item.unit_details.serial_numbers && item.unit_details.serial_numbers.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              <span className="text-xs text-muted-foreground">Serials:</span>
+                                              {item.unit_details.serial_numbers.map((serial: string, idx: number) => (
+                                                <Badge key={idx} variant="outline" className="text-xs font-mono">
+                                                  {serial}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {item.unit_details.product_unit_ids && item.unit_details.product_unit_ids.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              <span className="text-xs text-muted-foreground">Unit IDs:</span>
+                                              {item.unit_details.product_unit_ids.map((id: string, idx: number) => (
+                                                <Badge key={idx} variant="secondary" className="text-xs font-mono">
+                                                  {id.slice(0, 8)}...
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {Object.entries(item.unit_details)
+                                            .filter(([key]) => !['barcodes', 'serial_numbers', 'product_unit_ids'].includes(key))
+                                            .map(([key, value]) => (
+                                              <div key={key} className="text-xs">
+                                                <span className="font-medium text-muted-foreground capitalize">{key.replace(/_/g, ' ')}:</span>
+                                                <span className="ml-2">{JSON.stringify(value)}</span>
+                                              </div>
+                                            ))}
+                                        </div>
                                       </div>
                                     )}
                                   </div>
