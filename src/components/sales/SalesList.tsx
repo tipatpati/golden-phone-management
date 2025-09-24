@@ -263,13 +263,19 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     }
   ];
 
-  // Define actions - enhanced with print receipt
+  // Define actions - enhanced with print receipt and view details
   const actions = [
     {
       icon: <Printer className="h-4 w-4" />,
       label: "Stampa",
       onClick: (sale: Sale) => setSelectedSaleForReceipt(sale),
       className: "hover:bg-green-50 hover:text-green-600"
+    },
+    {
+      icon: <Eye className="h-4 w-4" />,
+      label: "Dettagli",
+      onClick: (sale: Sale) => setSelectedSaleForDetails(sale),
+      className: "hover:bg-blue-50 hover:text-blue-600"
     },
     ...(onEdit ? [
       {
@@ -278,14 +284,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         onClick: onEdit,
         className: "hover:bg-amber-50 hover:text-amber-600"
       }
-    ] : [
-      {
-        icon: <Eye className="h-4 w-4" />,
-        label: "Dettagli",
-        onClick: (sale: Sale) => setSelectedSaleForDetails(sale),
-        className: "hover:bg-blue-50 hover:text-blue-600"
-      }
-    ]),
+    ] : []),
     ...(onDelete ? [
       {
         icon: <Trash2 className="h-4 w-4" />,
