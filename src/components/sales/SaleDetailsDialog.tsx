@@ -9,10 +9,15 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/utils/currency';
 import type { Sale } from '@/services/sales';
 import { SaleReceiptDialog } from './SaleReceiptDialog';
 import { ReceiptValidationDisplay } from './ReceiptValidationDisplay';
@@ -25,12 +30,31 @@ interface SaleDetailsDialogProps {
 
 export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   
   // Use SalesDataService for consistent data formatting
   const statusColor = SalesDataService.getStatusColor(sale.status);
   const statusDisplay = SalesDataService.getStatusDisplay(sale.status);
   const paymentMethodDisplay = SalesDataService.getPaymentMethodDisplay(sale.payment_method);
   const clientInfo = SalesDataService.getClientInfo(sale);
+
+  // Calculate financial breakdown
+  const itemsCount = sale.sale_items?.length || 0;
+  const avgItemPrice = itemsCount > 0 ? sale.subtotal / itemsCount : 0;
+
+  const getStatusColorClass = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <Dialog>
@@ -42,7 +66,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -50,9 +74,6 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <Receipt className="h-5 w-5" />
                 Dettagli Garentille - {sale.sale_number}
               </DialogTitle>
-              <DialogDescription>
-                Informazioni complete per la vendita #{sale.sale_number}
-              </DialogDescription>
             </div>
             <Button
               variant="outline"
@@ -66,197 +87,387 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Sale Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Receipt className="h-5 w-5" />
-                Informazioni Vendita
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Numero Vendita</label>
-                  <p className="font-mono font-semibold">{sale.sale_number}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Stato</label>
-                  <div className="pt-1">
-                    <Badge variant={statusColor} className="text-xs">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="items" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Articoli ({itemsCount})
+            </TabsTrigger>
+            <TabsTrigger value="client" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Cliente
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex-1 overflow-hidden">
+            <TabsContent value="overview" className="space-y-6 h-full overflow-auto">
+              {/* Header Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Euro className="h-4 w-4" />
+                      Importo Totale
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(sale.total_amount)}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {itemsCount} articol{itemsCount !== 1 ? 'i' : 'o'}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Stato & Pagamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Badge className={cn("text-sm", getStatusColorClass(sale.status))}>
                       {statusDisplay}
                     </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {paymentMethodDisplay}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Prezzo Medio Articolo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xl font-semibold">{formatCurrency(avgItemPrice)}</div>
+                    <p className="text-xs text-muted-foreground">per articolo</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sale Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-4 w-4" />
+                    Informazioni Vendita
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Numero Vendita</label>
+                      <p className="font-mono text-sm">{sale.sale_number}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Data Vendita</label>
+                      <p className="text-sm">{format(new Date(sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm")}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Venditore</label>
+                      <p className="text-sm">{sale.salesperson?.username || "Unknown"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Metodo di Pagamento</label>
+                      <div className="mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {paymentMethodDisplay}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" />
-                    Data Vendita
-                  </label>
-                  <p className="font-medium">
-                    {format(new Date(sale.sale_date), "dd/MM/yyyy")} alle {format(new Date(sale.sale_date), "HH:mm")}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                    <CreditCard className="h-3 w-3" />
-                    Metodo di Pagamento
-                  </label>
-                  <p className="font-medium">
-                    {paymentMethodDisplay}
-                  </p>
-                </div>
-              </div>
+                  {sale.notes && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Note</label>
+                      <div className="bg-muted/30 rounded-md p-3 mt-1">
+                        <p className="text-sm">{sale.notes}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              <div>
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  Venditore
-                </label>
-                <p className="font-medium">{sale.salesperson?.username || "Unknown"}</p>
-              </div>
-
-              {sale.notes && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Note</label>
-                  <p className="text-sm bg-muted p-3 rounded-md">{sale.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Client Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5" />
-                Informazioni Cliente
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Nome Cliente</label>
-                <p className="font-semibold">{clientInfo.name}</p>
-              </div>
-
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
-                  <div className="pt-1">
-                    <Badge variant="outline" className="text-xs">
-                      {clientInfo.displayType}
-                    </Badge>
+              {/* Financial Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Euro className="h-4 w-4" />
+                    Riepilogo Finanziario
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Subtotale</span>
+                      <span className="font-medium">{formatCurrency(sale.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Importo IVA</span>
+                      <span className="font-medium">{formatCurrency(sale.tax_amount)}</span>
+                    </div>
+                    {sale.discount_amount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Sconto</span>
+                        <span className="font-medium text-green-600">-{formatCurrency(sale.discount_amount)}</span>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between items-center text-lg">
+                      <span className="font-semibold">Importo Totale</span>
+                      <span className="font-bold text-primary">{formatCurrency(sale.total_amount)}</span>
+                    </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-              {clientInfo.contact && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Persona di Contatto</label>
-                  <p className="font-medium">{clientInfo.contact}</p>
-                </div>
-              )}
+              {/* Technical Details Collapsible */}
+              <Collapsible open={showTechnicalDetails} onOpenChange={setShowTechnicalDetails}>
+                <CollapsibleTrigger asChild>
+                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Info className="h-4 w-4" />
+                          Dettagli Tecnici
+                        </div>
+                        {showTechnicalDetails ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                  </Card>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <label className="font-medium text-muted-foreground">ID Vendita</label>
+                          <p className="font-mono text-xs break-all">{sale.id}</p>
+                        </div>
+                        {sale.client_id && (
+                          <div>
+                            <label className="font-medium text-muted-foreground">ID Cliente</label>
+                            <p className="font-mono text-xs break-all">{sale.client_id}</p>
+                          </div>
+                        )}
+                        <div>
+                          <label className="font-medium text-muted-foreground">Creata il</label>
+                          <p className="text-xs">{format(new Date(sale.created_at || sale.sale_date), "dd MMM yyyy HH:mm:ss")}</p>
+                        </div>
+                        {sale.updated_at && (
+                          <div>
+                            <label className="font-medium text-muted-foreground">Ultimo Aggiornamento</label>
+                            <p className="text-xs">{format(new Date(sale.updated_at), "dd MMM yyyy HH:mm:ss")}</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CollapsibleContent>
+              </Collapsible>
+            </TabsContent>
 
-              {clientInfo.email && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email</label>
-                  <p className="font-medium text-sm">{clientInfo.email}</p>
-                </div>
-              )}
+            <TabsContent value="items" className="h-full overflow-auto">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Articoli Vendita
+                  </CardTitle>
+                  <CardDescription>
+                    {itemsCount} articol{itemsCount !== 1 ? 'i' : 'o'} in questa vendita
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {sale.sale_items && sale.sale_items.length > 0 ? (
+                    <ScrollArea className="h-96">
+                      <div className="space-y-4">
+                        {sale.sale_items.map((item, index) => (
+                          <Card key={item.id || index} className="border-l-4 border-l-primary/20">
+                            <CardContent className="pt-4">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h4 className="font-medium">
+                                    {item.product ? `${item.product.brand} ${item.product.model}` : "Prodotto"}
+                                    {item.product?.year && ` (${item.product.year})`}
+                                  </h4>
+                                  <div className="grid grid-cols-2 gap-4 mt-2 text-sm text-muted-foreground">
+                                    <div>
+                                      <span className="font-medium">Quantità:</span> {item.quantity}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Prezzo Unitario:</span> {formatCurrency(item.unit_price)}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Prezzo Totale:</span> {formatCurrency(item.total_price)}
+                                    </div>
+                                    {item.serial_number && (
+                                      <div className="col-span-2">
+                                        <span className="font-medium text-muted-foreground">IMEI:</span>
+                                        <div className="text-xs font-mono bg-background border rounded px-2 py-1 mt-1">
+                                          {item.serial_number}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Nessun articolo trovato per questa vendita
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-              {clientInfo.phone && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Telefono</label>
-                  <p className="font-medium">{clientInfo.phone}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            <TabsContent value="client" className="h-full overflow-auto">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Informazioni Cliente
+                  </CardTitle>
+                  <CardDescription>
+                    Dettagli completi del cliente per questa vendita
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Nome Cliente</label>
+                      <p className="font-semibold text-lg">{clientInfo.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
+                      <div className="pt-1">
+                        <Badge variant="outline" className="text-sm">
+                          {clientInfo.displayType}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Sale Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Package className="h-5 w-5" />
-              Articoli Vendita ({sale.sale_items?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {sale.sale_items && sale.sale_items.length > 0 ? (
-              <div className="space-y-3">
-                {sale.sale_items.map((item, index) => (
-                  <div key={item.id || index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-semibold">
-                        {item.product ? `${item.product.brand} ${item.product.model}` : "Product"}
-                        {item.product?.year && ` (${item.product.year})`}
-                      </p>
-                      {item.serial_number && (
-                        <p className="text-sm text-muted-foreground font-mono">
-                          S/N: {item.serial_number}
+                  {clientInfo.contact && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        Persona di Contatto
+                      </label>
+                      <p className="font-medium">{clientInfo.contact}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {clientInfo.email && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          Email
+                        </label>
+                        <p className="font-medium text-sm">{clientInfo.email}</p>
+                      </div>
+                    )}
+
+                    {clientInfo.phone && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          Telefono
+                        </label>
+                        <p className="font-medium">{clientInfo.phone}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="timeline" className="h-full overflow-auto">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Timeline Vendita
+                  </CardTitle>
+                  <CardDescription>
+                    Cronologia degli eventi per questa vendita
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-l-2 border-muted-foreground/20 pl-4 space-y-4">
+                    <div className="relative">
+                      <div className="absolute -left-6 w-3 h-3 bg-primary rounded-full"></div>
+                      <div>
+                        <h4 className="font-medium">Vendita Creata</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(sale.created_at || sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
                         </p>
-                      )}
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Qtà:</span>
-                        <span className="font-medium">{item.quantity}</span>
+
+                    {sale.updated_at && sale.updated_at !== (sale.created_at || sale.sale_date) && (
+                      <div className="relative">
+                        <div className="absolute -left-6 w-3 h-3 bg-muted-foreground rounded-full"></div>
+                        <div>
+                          <h4 className="font-medium">Ultimo Aggiornamento</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(sale.updated_at), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(sale.updated_at))} fa
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Unit:</span>
-                        <span className="font-medium">€{item.unit_price.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Totale:</span>
-                        <span className="font-bold">€{item.total_price.toFixed(2)}</span>
+                    )}
+
+                    <div className="relative">
+                      <div className="absolute -left-6 w-3 h-3 bg-green-500 rounded-full"></div>
+                      <div>
+                        <h4 className="font-medium">Stato Attuale</h4>
+                        <Badge className={cn("text-sm mt-1", getStatusColorClass(sale.status))}>
+                          {statusDisplay}
+                        </Badge>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Nessun articolo trovato per questa vendita
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Sale Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Euro className="h-5 w-5" />
-              Riepilogo Vendita
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Subtotale</span>
-                <span className="font-medium">€{sale.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Importo IVA</span>
-                <span className="font-medium">€{sale.tax_amount.toFixed(2)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center text-lg">
-                <span className="font-semibold">Importo Totale</span>
-                <span className="font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
 
         {/* Receipt Validation */}
-        <ReceiptValidationDisplay 
-          sale={sale} 
-          showDetails={true}
-        />
+        <div className="mt-6">
+          <ReceiptValidationDisplay 
+            sale={sale} 
+            showDetails={true}
+          />
+        </div>
       </DialogContent>
       
       {/* Receipt Print Dialog */}
