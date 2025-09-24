@@ -105,13 +105,20 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         ))}
       </div>
 
-      {/* Totals Section */}
+      {/* Riepilogo Section */}
       <div style={{
         marginBottom: '8px',
         fontSize: '10px',
         borderTop: '1px solid #000',
         paddingTop: '4px'
       }}>
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: '11px',
+          marginBottom: '4px',
+          textAlign: 'center'
+        }}>RIEPILOGO</div>
+        
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -166,7 +173,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         ))}
         
         <div style={{
-          borderTop: '2px solid #000',
+          borderTop: '1px solid #000',
           paddingTop: '4px',
           marginTop: '4px'
         }}>
@@ -174,11 +181,37 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
             display: 'flex',
             justifyContent: 'space-between',
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: '12px'
           }}>
             <span>TOTALE:</span>
             <span>{ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Totale Finale Section */}
+      <div style={{
+        marginBottom: '8px',
+        fontSize: '12px',
+        borderTop: '2px solid #000',
+        paddingTop: '6px',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: '14px',
+          marginBottom: '4px'
+        }}>TOTALE FINALE</div>
+        
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: '18px',
+          backgroundColor: '#f0f0f0',
+          padding: '8px',
+          border: '2px solid #000',
+          borderRadius: '4px'
+        }}>
+          {ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}
         </div>
       </div>
 
