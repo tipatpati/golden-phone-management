@@ -5,7 +5,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,23 +69,13 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="flex items-center gap-2">
-                <Receipt className="h-5 w-5" />
-                Dettagli Garentille - {sale.sale_number}
-              </DialogTitle>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowReceiptDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Stampa Ricevuta
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Receipt className="h-5 w-5" />
+            Dettagli Garentille - {sale.sale_number}
+          </DialogTitle>
+          <DialogDescription>
+            Informazioni complete per la vendita #{sale.sale_number}
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
@@ -468,6 +459,20 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             showDetails={true}
           />
         </div>
+
+        <DialogFooter className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+          </div>
+          <Button
+            onClick={() => setShowReceiptDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            Stampa Ricevuta
+          </Button>
+        </DialogFooter>
       </DialogContent>
       
       {/* Receipt Print Dialog */}
