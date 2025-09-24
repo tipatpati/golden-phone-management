@@ -267,7 +267,7 @@ export function SaleItemsList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-medium text-foreground">Articoli Vendita</Label>
+        <Label className="text-base font-medium text-foreground">Articoli Garentille</Label>
         <Button
           variant="outline"
           size="sm"

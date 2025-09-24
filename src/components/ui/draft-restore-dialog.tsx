@@ -46,7 +46,7 @@ export function DraftRestoreDialog({
       case 'employee':
         return 'Dipendente';
       case 'sale':
-        return 'Vendita';
+        return "Garentille";
       default:
         return 'Modulo';
     }

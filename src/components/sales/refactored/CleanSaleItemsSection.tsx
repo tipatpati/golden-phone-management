@@ -43,7 +43,7 @@ export function CleanSaleItemsSection() {
         <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-medium text-on-surface mb-2">Nessun prodotto aggiunto</h3>
         <p className="text-muted-foreground">
-          Cerca e aggiungi prodotti per iniziare la vendita
+          Cerca e aggiungi prodotti per iniziare la garentille
         </p>
       </div>
     );

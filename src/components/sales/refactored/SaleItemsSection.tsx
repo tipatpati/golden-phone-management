@@ -50,7 +50,7 @@ export function SaleItemsSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingCart className="h-5 w-5" />
-          Prodotti nella Vendita ({items.length})
+          Prodotti nella Garentille ({items.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -58,7 +58,7 @@ export function SaleItemsSection() {
           <div className="text-center py-8 text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p>Nessun prodotto aggiunto</p>
-            <p className="text-sm mt-1">Cerca e aggiungi prodotti alla vendita</p>
+            <p className="text-sm mt-1">Cerca e aggiungi prodotti alla garentille</p>
           </div>
         ) : (
           items.map((item) => {

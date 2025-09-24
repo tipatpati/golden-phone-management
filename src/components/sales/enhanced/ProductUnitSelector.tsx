@@ -106,7 +106,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
     };
 
     onUnitSelect(saleItem);
-    toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+    toast.success(`${product.brand} ${product.model} aggiunto alla garentille`);
   };
 
   const getStorageDisplay = (storage?: number) => {
@@ -254,7 +254,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
             <div className="border-t pt-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Prezzo di vendita</Label>
+                  <Label htmlFor="price">Prezzo di garentille</Label>
                   <Input
                     id="price"
                     type="number"
@@ -298,7 +298,7 @@ export const ProductUnitSelector: React.FC<ProductUnitSelectorProps> = ({
               onClick={handleConfirmSelection}
               disabled={!selectedUnit || !customPrice}
             >
-              Aggiungi alla vendita
+              Aggiungi alla garentille
             </Button>
           </div>
         </div>

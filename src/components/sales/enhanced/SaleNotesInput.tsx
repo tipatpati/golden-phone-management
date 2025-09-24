@@ -28,14 +28,14 @@ export function SaleNotesInput({ value, onChange }: SaleNotesInputProps) {
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Aggiungi note sulla vendita, condizioni speciali, garanzie estese, ecc..."
+        placeholder="Aggiungi note sulla garentille, condizioni speciali, garanzie estese, ecc..."
         className="min-h-[100px] resize-none"
         maxLength={maxLength}
       />
       
       {value.length > 0 && (
         <div className="text-xs text-muted-foreground">
-          Le note verranno incluse nella ricevuta e nei documenti di vendita
+          Le note verranno incluse nella ricevuta e nei documenti di garentille
         </div>
       )}
     </div>

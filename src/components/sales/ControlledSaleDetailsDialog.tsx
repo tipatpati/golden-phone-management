@@ -39,7 +39,7 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
                 Dettagli Garentille - {sale.sale_number}
               </DialogTitle>
               <DialogDescription>
-                Informazioni complete per la vendita #{sale.sale_number}
+                Informazioni complete per la garentille #{sale.sale_number}
               </DialogDescription>
             </div>
           </div>
@@ -51,13 +51,13 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Receipt className="h-5 w-5" />
-                Informazioni Vendita
+                Informazioni Garentille
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Numero Vendita</label>
+                  <label className="text-sm font-medium text-muted-foreground">Numero Garentille</label>
                   <p className="font-mono font-semibold">{sale.sale_number}</p>
                 </div>
                 <div>
@@ -74,7 +74,7 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
                 <div>
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                     <CalendarDays className="h-3 w-3" />
-                    Data Vendita
+                    Data Garentille
                   </label>
                   <p className="font-medium">
                     {format(new Date(sale.sale_date), "dd/MM/yyyy")} alle {format(new Date(sale.sale_date), "HH:mm")}
@@ -160,7 +160,7 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Package className="h-5 w-5" />
-              Articoli Vendita ({sale.sale_items?.length || 0})
+              Articoli Garentille ({sale.sale_items?.length || 0})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -198,7 +198,7 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                Nessun articolo trovato per questa vendita
+                Nessun articolo trovato per questa garentille
               </div>
             )}
           </CardContent>
@@ -209,7 +209,7 @@ export function ControlledSaleDetailsDialog({ sale, open, onClose }: ControlledS
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Euro className="h-5 w-5" />
-              Riepilogo Vendita
+              Riepilogo Garentille
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -141,7 +141,7 @@ export const EnhancedProductSearch: React.FC<EnhancedProductSearchProps> = ({
     onProductAdd(saleItem);
     setSearchTerm("");
     setSearchResults([]);
-    toast.success(`${product.brand} ${product.model} aggiunto alla vendita`);
+    toast.success(`${product.brand} ${product.model} aggiunto alla garentille`);
   };
 
   // Handle unit selection

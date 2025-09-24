@@ -391,7 +391,7 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
 
   const removeItem = useCallback((productId: string) => {
     dispatch({ type: 'REMOVE_ITEM', payload: productId });
-    toast({ title: 'Prodotto rimosso', description: 'Prodotto rimosso dalla vendita' });
+    toast({ title: "Prodotto rimosso", description: "Prodotto rimosso dalla garentille" });
   }, [toast]);
 
   const updateFormData = useCallback((data: Partial<SaleFormData>) => {
@@ -425,7 +425,7 @@ export function SaleCreationProvider({ children }: { children: React.ReactNode }
 
   const resetSale = useCallback(() => {
     dispatch({ type: 'RESET_SALE' });
-    toast({ title: 'Vendita azzerata', description: 'Tutti i dati sono stati cancellati' });
+    toast({ title: "Garentille azzerata", description: "Tutti i dati sono stati cancellati" });
   }, [toast]);
 
   const validateSale = useCallback(async (): Promise<boolean> => {

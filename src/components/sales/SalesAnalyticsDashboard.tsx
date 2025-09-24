@@ -394,7 +394,7 @@ export function SalesAnalyticsDashboard({ sales, isLoading }: SalesAnalyticsDash
                   <div className="text-sm text-muted-foreground">
                     {Object.keys(analytics.dailySales).length > 0 
                       ? `Vendite registrate in ${Object.keys(analytics.dailySales).length} giorni diversi`
-                      : 'Nessuna vendita nel periodo selezionato'
+                      : "Nessuna garentille nel periodo selezionato"
                     }
                   </div>
                 </CardContent>

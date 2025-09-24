@@ -74,7 +74,7 @@ export function CleanProductSearchSection() {
     // Clear search after adding
     setSearchTerm('');
     setResults([]);
-    toast.success('Prodotto aggiunto alla vendita');
+    toast.success("Prodotto aggiunto alla garentille");
   };
 
   const handleUnitSelect = (product: Product, unit: any) => {
@@ -88,7 +88,7 @@ export function CleanProductSearchSection() {
     );
 
     if (isAlreadyAdded) {
-      toast.error('Questa unità è già stata aggiunta alla vendita');
+      toast.error("Questa unità è già stata aggiunta alla garentille");
       return;
     }
 
@@ -118,7 +118,7 @@ export function CleanProductSearchSection() {
 
     setSearchTerm('');
     setResults([]);
-    toast.success('Prodotto serializzato aggiunto alla vendita');
+    toast.success("Prodotto serializzato aggiunto alla garentille");
   };
 
   return (
@@ -223,7 +223,7 @@ export function CleanProductSearchSection() {
                       if (availableUnits.length === 0) {
                         return (
                           <div className="text-center py-4 text-muted-foreground text-sm">
-                            Tutte le unità sono già state aggiunte alla vendita
+                            Tutte le unità sono già state aggiunte alla garentille
                           </div>
                         );
                       }

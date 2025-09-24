@@ -37,7 +37,7 @@ export const translations = {
   clients: "Clienti",
   product: "Prodotto",
   products: "Prodotti",
-  sale: "Vendita",
+  sale: "Garentille",
   sales: "Vendite",
   repair: "Riparazione",
   repairs: "Riparazioni",

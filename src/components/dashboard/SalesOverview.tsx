@@ -324,7 +324,7 @@ export const SalesOverview = React.memo(() => {
                   <div className="font-medium text-sm sm:text-base">€{(product.revenue as number).toFixed(2)}</div>
                 </div>
               </div>) : <div className="text-center py-6 sm:py-8 text-muted-foreground">
-                <div className="text-xs sm:text-sm">Nessun dato di vendita disponibile</div>
+                <div className="text-xs sm:text-sm">Nessun dato di garentille disponibile</div>
               </div>}
           </CardContent>
         </Card>

@@ -132,14 +132,14 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
       console.log('📤 FINAL SALE DATA BEING SENT (SaleSummarySection):', saleData);
 
       const result = await createSale.mutateAsync(saleData as any);
-      toast({ title: 'Successo', description: 'Vendita creata con successo!' });
+      toast({ title: "Successo", description: "Garentille creata con successo!" });
       resetSale();
       onSaleComplete?.(result);
     } catch (error) {
       console.error('Error creating sale:', error);
       toast({ 
         title: 'Errore', 
-        description: 'Errore nella creazione della vendita', 
+        description: "Errore nella creazione della garentille", 
         variant: 'destructive' 
       });
     }
@@ -256,7 +256,7 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
           <CardHeader>
             <CardTitle className={`flex items-center gap-2 ${isValid ? 'text-primary' : 'text-destructive'}`}>
               {isValid ? <CheckCircle className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
-              Totale Vendita
+              Totale Garentille
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -299,7 +299,7 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
                 size="lg"
               >
                 <Save className="mr-2 h-4 w-4" />
-                {createSale.isPending ? 'Creazione...' : 'Crea Vendita'}
+                {createSale.isPending ? "Creazione..." : "Crea Garentille"}
               </Button>
               
               {onCancel && (

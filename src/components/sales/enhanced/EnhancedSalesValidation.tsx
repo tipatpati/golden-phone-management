@@ -53,7 +53,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
         id: 'client',
         name: 'Cliente',
         status: 'warning',
-        message: 'Nessun cliente selezionato (vendita anonima)',
+        message: "Nessun cliente selezionato (garentille anonima)",
         icon: User,
         severity: 'low'
       });
@@ -66,7 +66,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
         id: 'items',
         name: 'Prodotti',
         status: 'error',
-        message: 'Nessun prodotto aggiunto alla vendita',
+        message: "Nessun prodotto aggiunto alla garentille",
         icon: Package,
         severity: 'high'
       });
@@ -142,7 +142,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
           id: 'amount',
           name: 'Importo',
           status: 'warning',
-          message: `Vendita di alto valore: €${totalAmount.toFixed(2)}`,
+          message: `Garentille di alto valore: €${totalAmount.toFixed(2)}`,
           icon: Euro,
           severity: 'medium'
         });
@@ -214,7 +214,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Validazione Vendita
+            Validazione Garentille
           </div>
           <Badge 
             variant={canProceed ? 'default' : 'destructive'}
@@ -287,7 +287,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
             <AlertDescription>
-              Risolvi tutti gli errori prima di procedere con la vendita.
+              Risolvi tutti gli errori prima di procedere con la garentille.
             </AlertDescription>
           </Alert>
         )}
@@ -296,7 +296,7 @@ export const EnhancedSalesValidation: React.FC<EnhancedSalesValidationProps> = (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              La vendita può procedere, ma ci sono alcuni avvisi da considerare.
+              La garentille può procedere, ma ci sono alcuni avvisi da considerare.
             </AlertDescription>
           </Alert>
         )}

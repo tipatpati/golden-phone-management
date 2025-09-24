@@ -74,7 +74,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             Dettagli Garentille - {sale.sale_number}
           </DialogTitle>
           <DialogDescription>
-            Informazioni complete per la vendita #{sale.sale_number}
+            Informazioni complete per la garentille #{sale.sale_number}
           </DialogDescription>
         </DialogHeader>
 
@@ -153,17 +153,17 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Hash className="h-4 w-4" />
-                    Informazioni Vendita
+                    Informazioni Garentille
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Numero Vendita</label>
+                      <label className="text-sm font-medium text-muted-foreground">Numero Garentille</label>
                       <p className="font-mono text-sm">{sale.sale_number}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Data Vendita</label>
+                      <label className="text-sm font-medium text-muted-foreground">Data Garentille</label>
                       <p className="text-sm">{format(new Date(sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm")}</p>
                     </div>
                     <div>
@@ -248,7 +248,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     <CardContent className="pt-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <label className="font-medium text-muted-foreground">ID Vendita</label>
+                          <label className="font-medium text-muted-foreground">ID Garentille</label>
                           <p className="font-mono text-xs break-all">{sale.id}</p>
                         </div>
                         {sale.client_id && (
@@ -279,10 +279,10 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ShoppingCart className="h-4 w-4" />
-                    Articoli Vendita
+                    Articoli Garentille
                   </CardTitle>
                   <CardDescription>
-                    {itemsCount} articol{itemsCount !== 1 ? 'i' : 'o'} in questa vendita
+                    {itemsCount} articol{itemsCount !== 1 ? "i" : "o"} in questa garentille
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -326,7 +326,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     </ScrollArea>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      Nessun articolo trovato per questa vendita
+                      Nessun articolo trovato per questa garentille
                     </div>
                   )}
                 </CardContent>
@@ -341,7 +341,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     Informazioni Cliente
                   </CardTitle>
                   <CardDescription>
-                    Dettagli completi del cliente per questa vendita
+                    Dettagli completi del cliente per questa garentille
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -400,10 +400,10 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Timeline Vendita
+                    Timeline Garentille
                   </CardTitle>
                   <CardDescription>
-                    Cronologia degli eventi per questa vendita
+                    Cronologia degli eventi per questa garentille
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -411,7 +411,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                     <div className="relative">
                       <div className="absolute -left-6 w-3 h-3 bg-primary rounded-full"></div>
                       <div>
-                        <h4 className="font-medium">Vendita Creata</h4>
+                        <h4 className="font-medium">Garentille Creata</h4>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(sale.created_at || sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
                         </p>

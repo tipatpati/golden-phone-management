@@ -43,7 +43,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
   const handleSubmit = async () => {
     if (!isValid || !user) {
-      toast.error('Verifica i dati della vendita');
+      toast.error("Verifica i dati della garentille");
       return;
     }
 
@@ -86,11 +86,11 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
       console.log('📤 FINAL SALE DATA BEING SENT:', saleData);
 
       const newSale = await createSale.mutateAsync(saleData);
-      toast.success('Vendita creata con successo!');
+      toast.success("Garentille creata con successo!");
       onSaleComplete?.(newSale);
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error('Errore durante la creazione della vendita');
+      toast.error("Errore durante la creazione della garentille");
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +224,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
           size="lg"
         >
           <CheckCircle2 className="h-4 w-4 mr-2" />
-          {isSubmitting ? 'Creazione...' : 'Crea Vendita'}
+          {isSubmitting ? "Creazione..." : "Crea Garentille"}
         </Button>
         
         {onCancel && (
