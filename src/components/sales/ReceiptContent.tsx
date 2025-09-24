@@ -105,7 +105,7 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         ))}
       </div>
 
-      {/* Riepilogo Section */}
+      {/* Summary Section - Simplified */}
       <div style={{
         marginBottom: '8px',
         fontSize: '10px',
@@ -113,105 +113,36 @@ export function ReceiptContent({ sale, qrCode, clientName }: ReceiptContentProps
         paddingTop: '4px'
       }}>
         <div style={{
-          fontWeight: 'bold',
-          fontSize: '11px',
-          marginBottom: '4px',
-          textAlign: 'center'
-        }}>RIEPILOGO</div>
-        
-        <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          marginBottom: '2px'
+          marginBottom: '4px'
         }}>
-          <span>Subtotale (esclusa IVA):</span>
+          <span>Subtotale:</span>
           <span>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT)}</span>
         </div>
-        {receiptData.totals.discountAmount > 0 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2px',
-            color: '#666'
-          }}>
-            <span>Sconto:</span>
-            <span>-{ReceiptDataService.formatAmount(receiptData.totals.discountAmount)}</span>
-          </div>
-        )}
-        {receiptData.totals.discountAmount > 0 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2px'
-          }}>
-            <span>Subtotale scontato:</span>
-            <span>{ReceiptDataService.formatAmount(receiptData.totals.finalSubtotal)}</span>
-          </div>
-        )}
-        {receiptData.totals.vatIncluded && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2px'
-          }}>
-            <span>IVA (22%):</span>
-            <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
-          </div>
-        )}
-        
-        {/* Payment Methods */}
-        {receiptData.payments.map((payment, index) => (
-          <div key={index} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: '2px',
-            fontStyle: 'italic'
-          }}>
-            <span>{payment.label}</span>
-            <span>{ReceiptDataService.formatAmount(payment.amount)}</span>
-          </div>
-        ))}
         
         <div style={{
-          borderTop: '1px solid #000',
-          paddingTop: '4px',
-          marginTop: '4px'
+          borderTop: '2px solid #000',
+          paddingTop: '6px',
+          marginTop: '4px',
+          textAlign: 'center'
         }}>
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
             fontWeight: 'bold',
-            fontSize: '12px'
+            fontSize: '14px',
+            marginBottom: '4px'
+          }}>TOTALE FINALE</div>
+          
+          <div style={{
+            fontWeight: 'bold',
+            fontSize: '18px',
+            backgroundColor: '#f0f0f0',
+            padding: '8px',
+            border: '2px solid #000',
+            borderRadius: '4px'
           }}>
-            <span>TOTALE:</span>
-            <span>{ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}</span>
+            {ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}
           </div>
-        </div>
-      </div>
-
-      {/* Totale Finale Section */}
-      <div style={{
-        marginBottom: '8px',
-        fontSize: '12px',
-        borderTop: '2px solid #000',
-        paddingTop: '6px',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontWeight: 'bold',
-          fontSize: '14px',
-          marginBottom: '4px'
-        }}>TOTALE FINALE</div>
-        
-        <div style={{
-          fontWeight: 'bold',
-          fontSize: '18px',
-          backgroundColor: '#f0f0f0',
-          padding: '8px',
-          border: '2px solid #000',
-          borderRadius: '4px'
-        }}>
-          {ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}
         </div>
       </div>
 
