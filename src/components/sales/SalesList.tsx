@@ -282,21 +282,8 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       {
         icon: <Eye className="h-4 w-4" />,
         label: "Dettagli",
-        onClick: () => {}, // Required but not used when renderCustom is provided
-        renderCustom: (sale: Sale) => (
-          <SaleDetailsDialog 
-            sale={sale}
-            trigger={
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            }
-          />
-        )
+        onClick: (sale: Sale) => setSelectedSaleForDetails(sale),
+        className: "hover:bg-blue-50 hover:text-blue-600"
       }
     ]),
     ...(onDelete ? [
