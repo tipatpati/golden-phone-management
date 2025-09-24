@@ -360,12 +360,12 @@ export function TransactionDetailsDialog({
                                             </div>
                                           )}
                                           {item.unit_details.product_unit_ids && item.unit_details.product_unit_ids.length > 0 && (
-                                            <div className="flex flex-wrap gap-1">
-                                              <span className="text-xs text-muted-foreground">Unit IDs:</span>
+                                            <div className="space-y-1">
+                                              <span className="text-xs font-medium text-muted-foreground">IMEI:</span>
                                               {item.unit_details.product_unit_ids.map((id: string, idx: number) => (
-                                                <Badge key={idx} variant="secondary" className="text-xs font-mono">
-                                                  {id.slice(0, 8)}...
-                                                </Badge>
+                                                <div key={idx} className="text-xs font-mono bg-background border rounded px-2 py-1">
+                                                  {id}
+                                                </div>
                                               ))}
                                             </div>
                                           )}
