@@ -102,16 +102,28 @@ export function ProductFormFields({
       />
 
       {/* Category Field */}
-      <FormField
-        label="Category"
-        type="select"
-        value={formData.category_id?.toString() || ''}
-        onChange={(value) => onFieldChange('category_id', parseInt(value))}
-        options={categoryOptions.length > 0 ? categoryOptions : [{ value: '0', label: 'Loading categories...' }]}
-        required
-        className="md:col-span-1"
-        error={getFieldError('category_id')}
-      />
+      {categoriesLoading ? (
+        <div className="md:col-span-1 space-y-2">
+          <Label className="text-sm font-medium text-on-surface">
+            Category <span className="text-destructive ml-1">*</span>
+          </Label>
+          <div className="w-full h-10 bg-muted animate-pulse rounded-md flex items-center justify-center">
+            <span className="text-xs text-muted-foreground">Loading categories...</span>
+          </div>
+        </div>
+      ) : (
+        <FormField
+          label="Category"
+          type="select"
+          value={formData.category_id?.toString() || ''}
+          onChange={(value) => onFieldChange('category_id', parseInt(value))}
+          options={categoryOptions}
+          placeholder="Select a category"
+          required
+          className="md:col-span-1"
+          error={getFieldError('category_id')}
+        />
+      )}
 
       {/* Default Price Field - Optional for new units */}
       <FormField
