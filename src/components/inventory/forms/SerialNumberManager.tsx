@@ -3,6 +3,7 @@ import type { SerialNumberManagerProps } from "@/services/inventory/types";
 import { UnitEntryForm } from "@/components/shared/forms/UnitEntryForm";
 import { UniversalBarcodeManager } from "@/components/shared/UniversalBarcodeManager";
 import { logger } from '@/utils/logger';
+import { getCategoryFieldConfig } from '@/utils/categoryUtils';
 
 export function SerialNumberManager({
   serialNumbers, // optional legacy
@@ -14,12 +15,14 @@ export function SerialNumberManager({
   productBrand,
   productModel,
   onBarcodeGenerated,
-  onDefaultPricesUpdate
+  onDefaultPricesUpdate,
+  categoryId
 }: SerialNumberManagerProps & { 
   productBrand?: string; 
   productModel?: string;
   onBarcodeGenerated?: (barcode: string) => void;
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
+  categoryId?: number;
 }) {
   if (!hasSerial) {
     return null;
@@ -31,6 +34,9 @@ export function SerialNumberManager({
     model: productModel || 'Unknown'
   };
 
+  // Get category-specific field configuration
+  const fieldConfig = getCategoryFieldConfig(categoryId);
+
   return (
     <div className="space-y-4">
       <UnitEntryForm
@@ -41,6 +47,7 @@ export function SerialNumberManager({
         title="Product Units (IMEI/SN + attributes)"
         showPricing={true}
         showPricingTemplates={true}
+        categoryFieldConfig={fieldConfig}
       />
       
       <UniversalBarcodeManager

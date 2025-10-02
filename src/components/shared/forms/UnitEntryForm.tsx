@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { Plus, Trash2, Copy } from "lucide-react";
 import type { UnitEntryForm } from "@/services/inventory/types";
-import { STORAGE_OPTIONS } from "@/services/inventory/types";
+import { STORAGE_OPTIONS, type CategoryFieldConfig } from "@/services/inventory/types";
 import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 import { useBarcodeService } from "@/components/shared/useBarcodeService";
 import { StoragePricingTemplateSelector } from "@/components/pricing/StoragePricingTemplateSelector";
@@ -32,6 +32,7 @@ interface UnitEntryFormProps {
   enablePricingPreview?: boolean; // To enable preview mode for pricing templates
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
   preselectedSupplierId?: string; // When supplier is already selected from parent form
+  categoryFieldConfig?: CategoryFieldConfig; // Field visibility based on category
 }
 
 export function UnitEntryForm({ 
@@ -46,7 +47,8 @@ export function UnitEntryForm({
   showPricingTemplates = false,
   enablePricingPreview = false,
   onDefaultPricesUpdate,
-  preselectedSupplierId
+  preselectedSupplierId,
+  categoryFieldConfig
 }: UnitEntryFormProps) {
   const { colorSuggestions } = useFilteredColorSuggestions();
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
@@ -303,7 +305,7 @@ export function UnitEntryForm({
                 />
               </div>
 
-              {/* Device attributes - Responsive grid */}
+              {/* Device attributes - Responsive grid with category-specific fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
                 <div>
                   <Label className="text-xs font-medium mb-1 block">Condition</Label>
@@ -321,63 +323,75 @@ export function UnitEntryForm({
                   </Select>
                 </div>
 
-                <div>
-                  <Label className="text-xs font-medium mb-1 block">Color</Label>
-                  <AutocompleteInput
-                    value={entry.color || ''}
-                    onChange={(value) => updateEntry(index, 'color', value)}
-                    suggestions={colorSuggestions}
-                    placeholder="Black / White / Gold..."
-                    className="text-sm h-10"
-                    maxSuggestions={8}
-                    minQueryLength={0}
-                  />
-                </div>
+                {/* Color - Show if category requires it */}
+                {(!categoryFieldConfig || categoryFieldConfig.fields.color) && (
+                  <div>
+                    <Label className="text-xs font-medium mb-1 block">Color</Label>
+                    <AutocompleteInput
+                      value={entry.color || ''}
+                      onChange={(value) => updateEntry(index, 'color', value)}
+                      suggestions={colorSuggestions}
+                      placeholder="Black / White / Gold..."
+                      className="text-sm h-10"
+                      maxSuggestions={8}
+                      minQueryLength={0}
+                    />
+                  </div>
+                )}
 
-                <div>
-                  <Label className="text-xs font-medium mb-1 block">Battery (%)</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={entry.battery_level ?? ''}
-                    onChange={(e) => updateEntry(index, 'battery_level', e.target.value === '' ? undefined : parseInt(e.target.value))}
-                    placeholder="85"
-                    className="text-sm h-10"
-                  />
-                </div>
+                {/* Battery Level - Show if category requires it */}
+                {(!categoryFieldConfig || categoryFieldConfig.fields.batteryLevel) && (
+                  <div>
+                    <Label className="text-xs font-medium mb-1 block">Battery (%)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={entry.battery_level ?? ''}
+                      onChange={(e) => updateEntry(index, 'battery_level', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                      placeholder="85"
+                      className="text-sm h-10"
+                    />
+                  </div>
+                )}
 
-                <div>
-                  <Label className="text-xs font-medium mb-1 block">Storage (GB)</Label>
-                  <Select 
-                    value={entry.storage?.toString() || ''} 
-                    onValueChange={(value) => updateEntry(index, 'storage', value ? parseInt(value) : undefined)}
-                  >
-                    <SelectTrigger className="text-sm h-10">
-                      <SelectValue placeholder="Select GB" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {STORAGE_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value.toString()} className="hover:bg-muted">
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Storage - Show if category requires it */}
+                {(!categoryFieldConfig || categoryFieldConfig.fields.storage) && (
+                  <div>
+                    <Label className="text-xs font-medium mb-1 block">Storage (GB)</Label>
+                    <Select 
+                      value={entry.storage?.toString() || ''} 
+                      onValueChange={(value) => updateEntry(index, 'storage', value ? parseInt(value) : undefined)}
+                    >
+                      <SelectTrigger className="text-sm h-10">
+                        <SelectValue placeholder="Select GB" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {STORAGE_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value.toString()} className="hover:bg-muted">
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-                <div>
-                  <Label className="text-xs font-medium mb-1 block">RAM (GB)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={64}
-                    value={entry.ram ?? ''}
-                    onChange={(e) => updateEntry(index, 'ram', e.target.value === '' ? undefined : parseInt(e.target.value))}
-                    placeholder="8"
-                    className="text-sm h-10"
-                  />
-                </div>
+                {/* RAM - Show if category requires it */}
+                {(!categoryFieldConfig || categoryFieldConfig.fields.ram) && (
+                  <div>
+                    <Label className="text-xs font-medium mb-1 block">RAM (GB)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={64}
+                      value={entry.ram ?? ''}
+                      onChange={(e) => updateEntry(index, 'ram', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                      placeholder="8"
+                      className="text-sm h-10"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <Label className="text-xs font-medium mb-1 block">

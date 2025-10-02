@@ -181,6 +181,7 @@ export function ProductForm({
           productModel={formData.model}
           onBarcodeGenerated={React.useCallback((barcode) => updateField('barcode', barcode), [updateField])}
           onDefaultPricesUpdate={handleDefaultPricesUpdate}
+          categoryId={formData.category_id}
         />
       )}
 
