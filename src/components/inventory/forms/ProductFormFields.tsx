@@ -1,328 +1,144 @@
-import React from "react";
-import { FormField } from "@/components/common/FormField";
-import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
-import { Label } from "@/components/ui/label";
-import type { ProductFormData } from "@/services/inventory/types";
-import { STORAGE_OPTIONS } from "@/services/inventory/types";
-import { useCategories } from "@/services/inventory/InventoryReactQueryService";
-import { getCategoryFieldConfig, getCategoryGuidance } from "@/utils/categoryUtils";
+ import React from "react";
+  import { Label } from "@/components/ui/label";
+  import { Input } from "@/components/ui/input";
+  import { Textarea } from "@/components/ui/textarea";
+  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue }
+  from "@/components/ui/select";
 
-interface ProductFormFieldsProps {
-  formData: Partial<ProductFormData>;
-  onFieldChange: (field: keyof ProductFormData, value: any) => void;
-  getFieldError: (field: string) => string | undefined;
-  uniqueBrands?: string[];
-  uniqueModels?: string[];
-  templateAppliedDefaults?: {
-    templateName?: string;
-    price?: number;
-    min_price?: number;
-    max_price?: number;
-  } | null;
-}
+  interface BaseFieldProps {
+    label: string;
+    required?: boolean;
+    error?: string;
+    className?: string;
+    description?: string;
+  }
 
-export function ProductFormFields({
-  formData,
-  onFieldChange,
-  getFieldError,
-  uniqueBrands = [],
-  uniqueModels = [],
-  templateAppliedDefaults
-}: ProductFormFieldsProps) {
-  const { data: categories = [], isLoading: categoriesLoading, isError: categoriesError } = useCategories();
+  interface InputFieldProps extends BaseFieldProps {
+    type?: "input";
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    inputType?: "text" | "email" | "tel" | "number" | "password";
+  }
 
-  // Debug logging
-  console.log('🔍 Categories Debug:', {
-    categories,
-    categoriesLength: categories?.length,
-    categoriesLoading,
-    categoriesError,
-    categoriesType: typeof categories,
-    categoriesIsArray: Array.isArray(categories)
-  });
+  interface TextareaFieldProps extends BaseFieldProps {
+    type: "textarea";
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    rows?: number;
+  }
 
-  // Transform categories for select options
-  const categoryOptions = React.useMemo(() => {
-    console.log('🔄 Computing categoryOptions from:', categories);
-    
-    if (!categories || categories.length === 0) {
-      console.log('⚠️ No categories to transform');
-      return [];
-    }
-    
-    const options = categories.map(cat => ({
-      value: cat.id.toString(),
-      label: cat.name
-    }));
-    
-    console.log('✅ Category options computed:', options);
-    return options;
-  }, [categories]);
+  interface SelectFieldProps extends BaseFieldProps {
+    type: "select";
+    value: string | undefined;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    options: Array<{ value: string; label: string }>;
+  }
 
-  // Get category-specific field configuration
-  const fieldConfig = getCategoryFieldConfig(formData.category_id);
-  const categoryGuidance = getCategoryGuidance(formData.category_id);
+  export type FormFieldProps = InputFieldProps | TextareaFieldProps |
+  SelectFieldProps;
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Category-specific guidance */}
-      {categoryGuidance && formData.category_id && (
-        <div className="md:col-span-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            💡 {categoryGuidance}
+  export function FormField({
+    label,
+    required = false,
+    error,
+    className = "",
+    description,
+    ...props
+  }: FormFieldProps) {
+    const fieldId = `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
+
+    return (
+      <div className={`space-y-2 ${className}`}>
+        <Label htmlFor={fieldId} className="text-sm font-medium 
+  text-foreground flex items-center gap-1">
+          {label}
+          {required && <span className="text-destructive">*</span>}
+        </Label>
+
+        {description && (
+          <p className="text-xs text-muted-foreground 
+  leading-relaxed">{description}</p>
+        )}
+
+        <div className="relative">
+          {props.type === "textarea" ? (
+            <Textarea
+              id={fieldId}
+              value={props.value}
+              onChange={(e) => props.onChange(e.target.value)}
+              placeholder={props.placeholder}
+              rows={props.rows || 3}
+              className={`
+                w-full resize-none transition-colors
+                ${error ? "border-destructive focus:border-destructive" :
+  "focus:border-primary"}
+              `}
+            />
+          ) : props.type === "select" ? (
+            <Select value={props.value || ""} 
+  onValueChange={props.onChange}>
+              <SelectTrigger 
+                id={fieldId} 
+                className={`
+                  w-full h-10 transition-colors
+                  ${error ? "border-destructive focus:border-destructive" : 
+  "focus:border-primary"}
+                `}
+              >
+                <SelectValue placeholder={props.placeholder} />
+              </SelectTrigger>
+              <SelectContent 
+                position="popper"
+                sideOffset={4}
+              >
+                {props.options.map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    className="cursor-pointer hover:bg-accent 
+  focus:bg-accent"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id={fieldId}
+              type={props.inputType || "text"}
+              value={props.value}
+              onChange={(e) => {
+                let value = e.target.value;
+                // Auto-sync with units/serial format for serial number
+  fields
+                if (fieldId.includes('serial') || fieldId.includes('imei')
+  || props.placeholder?.includes('serial')) {
+                  value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                }
+                props.onChange(value);
+              }}
+              placeholder={props.placeholder}
+              className={`
+                w-full h-10 transition-colors
+                ${error ? "border-destructive focus:border-destructive" :
+  "focus:border-primary"}
+              `}
+            />
+          )}
+        </div>
+
+        {error && (
+          <p className="text-xs text-destructive flex items-center gap-1 
+  mt-1">
+            <span className="inline-block w-1 h-1 bg-destructive 
+  rounded-full"></span>
+            {error}
           </p>
-        </div>
-      )}
-      
-      {/* Brand Field */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-on-surface">
-          Brand <span className="text-destructive ml-1">*</span>
-        </Label>
-        <AutocompleteInput
-          value={formData.brand || ''}
-          onChange={(value) => onFieldChange('brand', value)}
-          suggestions={uniqueBrands}
-          entityTypes={['brand']}
-          placeholder="Enter product brand"
-        />
-        {getFieldError('brand') && (
-          <p className="text-xs text-destructive">{getFieldError('brand')}</p>
         )}
       </div>
-
-      {/* Model Field */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-on-surface">
-          Model <span className="text-destructive ml-1">*</span>
-        </Label>
-        <AutocompleteInput
-          value={formData.model || ''}
-          onChange={(value) => onFieldChange('model', value)}
-          suggestions={uniqueModels}
-          entityTypes={['model']}
-          placeholder="Enter product model"
-        />
-        {getFieldError('model') && (
-          <p className="text-xs text-destructive">{getFieldError('model')}</p>
-        )}
-      </div>
-
-      {/* Year Field */}
-      <FormField
-        label="Year"
-        type="input"
-        inputType="number"
-        value={formData.year?.toString() || ''}
-        onChange={(value) => onFieldChange('year', value ? parseInt(value) : undefined)}
-        placeholder="2023"
-        className="md:col-span-1"
-        error={getFieldError('year')}
-      />
-
-      {/* Category Field */}
-      {categoriesLoading ? (
-        <div className="md:col-span-1 space-y-2">
-          <Label className="text-sm font-medium text-on-surface">
-            Category <span className="text-destructive ml-1">*</span>
-          </Label>
-          <div className="w-full h-10 bg-surface/50 border border-border rounded-md flex items-center justify-center">
-            <span className="text-sm text-muted-foreground">Loading categories...</span>
-          </div>
-        </div>
-      ) : categoriesError ? (
-        <div className="md:col-span-1 space-y-2">
-          <Label className="text-sm font-medium text-on-surface">
-            Category <span className="text-destructive ml-1">*</span>
-          </Label>
-          <div className="w-full h-10 bg-destructive/10 border border-destructive/30 rounded-md flex items-center justify-center">
-            <span className="text-sm text-destructive">Error loading categories</span>
-          </div>
-        </div>
-      ) : categoryOptions.length === 0 ? (
-        <div className="md:col-span-1 space-y-2">
-          <Label className="text-sm font-medium text-on-surface">
-            Category <span className="text-destructive ml-1">*</span>
-          </Label>
-          <div className="w-full h-10 bg-warning/10 border border-warning/30 rounded-md flex items-center justify-center">
-            <span className="text-sm text-warning">No categories available</span>
-          </div>
-        </div>
-      ) : (
-        <FormField
-          key={`category-${categoryOptions.length}`}
-          label="Category"
-          type="select"
-          value={formData.category_id?.toString() || undefined}
-          onChange={(value) => onFieldChange('category_id', parseInt(value))}
-          options={categoryOptions}
-          placeholder="Select a category"
-          required
-          className="md:col-span-1"
-          error={getFieldError('category_id')}
-        />
-      )}
-
-      {/* Default Price Field - Optional for new units */}
-      <FormField
-        label="Default Base Price (€)"
-        type="input"
-        inputType="number"
-        value={formData.price?.toString() || ''}
-        onChange={(value) => onFieldChange('price', value ? parseFloat(value) : undefined)}
-        placeholder="0.00"
-        description="Optional default purchase price for new units"
-        className="md:col-span-1"
-        error={getFieldError('price')}
-      />
-
-      {/* Default Min Price Field - Optional for new units */}
-      <FormField
-        label="Default Min Selling Price (€)"
-        type="input"
-        inputType="number"
-        value={formData.min_price?.toString() || ''}
-        onChange={(value) => onFieldChange('min_price', value ? parseFloat(value) : undefined)}
-        placeholder="0.00"
-        description="Optional default minimum selling price for new units"
-        className="md:col-span-1"
-        error={getFieldError('min_price')}
-      />
-
-      {/* Default Max Price Field - Optional for new units */}
-      <FormField
-        label="Default Max Selling Price (€)"
-        type="input"
-        inputType="number"
-        value={formData.max_price?.toString() || ''}
-        onChange={(value) => onFieldChange('max_price', value ? parseFloat(value) : undefined)}
-        placeholder="0.00"
-        description="Optional default maximum selling price for new units"
-        className="md:col-span-1"
-        error={getFieldError('max_price')}
-      />
-
-      {/* Template Applied Notice */}
-      {templateAppliedDefaults && (
-        <div className="md:col-span-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-green-900 mb-2">✅ Template Applied: {templateAppliedDefaults.templateName}</h4>
-          <div className="text-xs text-green-800 space-y-1">
-            <p><strong>Default prices have been updated based on the pricing template:</strong></p>
-            {templateAppliedDefaults.price !== undefined && (
-              <p>• Base Price: €{templateAppliedDefaults.price.toFixed(2)}</p>
-            )}
-            {templateAppliedDefaults.min_price !== undefined && (
-              <p>• Min Selling Price: €{templateAppliedDefaults.min_price.toFixed(2)}</p>
-            )}
-            {templateAppliedDefaults.max_price !== undefined && (
-              <p>• Max Selling Price: €{templateAppliedDefaults.max_price.toFixed(2)}</p>
-            )}
-            <p className="text-green-700 font-medium mt-2">These defaults now apply to new units without specific pricing.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Pricing Information Guide */}
-      <div className="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h4 className="text-sm font-semibold text-yellow-900 mb-2">💰 Pricing Strategy</h4>
-        <div className="text-xs text-yellow-800 space-y-1">
-          <p><strong>✅ Unit-Level Pricing (Recommended):</strong> Set individual prices for each IMEI/serial number below</p>
-          <p><strong>📋 Default Prices (Optional):</strong> These will apply only to new units without specific pricing</p>
-          <p><strong>🎯 Best Practice:</strong> Leave default fields empty and set specific prices for each unit individually</p>
-          <p className="mt-2 font-medium text-yellow-700">⚡ For products with serial numbers: Unit prices are required, default prices are optional</p>
-          <p className="text-yellow-700">⚡ For products without serial numbers: At least one default price is required</p>
-        </div>
-      </div>
-
-      {/* Stock Field - Only show if not using serial numbers */}
-      {!formData.has_serial && (
-        <FormField
-          label="Stock"
-          type="input"
-          inputType="number"
-          value={formData.stock?.toString() || ''}
-          onChange={(value) => onFieldChange('stock', value ? parseInt(value) : 0)}
-          placeholder="0"
-          required
-          className="md:col-span-1"
-          error={getFieldError('stock')}
-        />
-      )}
-
-      {/* Threshold Field */}
-      <FormField
-        label="Low Stock Threshold"
-        type="input"
-        inputType="number"
-        value={formData.threshold?.toString() || ''}
-        onChange={(value) => {
-          const num = parseInt(value) || 0;
-          if (num >= 0) { // Only allow natural numbers (0 and positive integers)
-            onFieldChange('threshold', num);
-          }
-        }}
-        placeholder="5"
-        required
-        className="md:col-span-1"
-        error={getFieldError('threshold')}
-      />
-
-
-      {/* Description Field */}
-      <FormField
-        label="Description"
-        type="textarea"
-        value={formData.description || ''}
-        onChange={(value) => onFieldChange('description', value)}
-        placeholder="Product description..."
-        className="md:col-span-2"
-        rows={2}
-        error={getFieldError('description')}
-      />
-
-      {/* Legacy Supplier Field - For Reference Only */}
-      <div className="md:col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-900 mb-2">📋 Legacy Supplier Field</h4>
-        <div className="text-xs text-gray-800 space-y-1">
-          <p><strong>Note:</strong> This field is for reference only and not linked to the database.</p>
-          <p><strong>⚡ For serialized products:</strong> Set suppliers individually for each unit below.</p>
-          <p><strong>📦 For bulk products:</strong> This field can be used for general supplier reference.</p>
-        </div>
-        <FormField
-          label="Reference Supplier (Optional)"
-          type="input"
-          value={formData.supplier || ''}
-          onChange={(value) => onFieldChange('supplier', value)}
-          placeholder="Supplier name for reference"
-          className="mt-3"
-          error={getFieldError('supplier')}
-        />
-      </div>
-
-      {/* Barcode Field - Only for products without serial numbers */}
-      {!formData.has_serial && (
-        <FormField
-          label="Product Barcode"
-          type="input"
-          value={formData.barcode || ''}
-          onChange={(value) => onFieldChange('barcode', value)}
-          placeholder="Enter or scan barcode"
-          className="md:col-span-2"
-          description="For bulk products without individual serial numbers"
-          error={getFieldError('barcode')}
-        />
-      )}
-
-      {/* Barcode Information Guide */}
-      <div className="md:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="text-sm font-semibold text-blue-900 mb-2">📦 Barcode Information</h4>
-        <div className="text-xs text-blue-800 space-y-1">
-          <p><strong>Products with Serial Numbers:</strong> Each unit gets its own unique barcode automatically</p>
-          <p><strong>Bulk Products:</strong> Single barcode for the entire product (editable above)</p>
-          <p><strong>Format:</strong> System uses CODE128 format for maximum compatibility</p>
-          <p className="mt-2 text-blue-700">💡 Barcodes can be updated after product creation using the barcode management tools</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+    );
+  }
