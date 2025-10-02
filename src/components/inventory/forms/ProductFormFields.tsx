@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import type { ProductFormData } from "@/services/inventory/types";
 import { STORAGE_OPTIONS } from "@/services/inventory/types";
 import { useCategories } from "@/services/inventory/InventoryReactQueryService";
+import { getCategoryFieldConfig, getCategoryGuidance } from "@/utils/categoryUtils";
 
 interface ProductFormFieldsProps {
   formData: Partial<ProductFormData>;
@@ -38,8 +39,21 @@ export function ProductFormFields({
     }));
   }, [categories]);
 
+  // Get category-specific field configuration
+  const fieldConfig = getCategoryFieldConfig(formData.category_id);
+  const categoryGuidance = getCategoryGuidance(formData.category_id);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Category-specific guidance */}
+      {categoryGuidance && formData.category_id && (
+        <div className="md:col-span-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            💡 {categoryGuidance}
+          </p>
+        </div>
+      )}
+      
       {/* Brand Field */}
       <div className="space-y-2">
         <Label className="text-sm font-medium text-on-surface">

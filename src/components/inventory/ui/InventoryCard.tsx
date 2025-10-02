@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Package, AlertTriangle, Euro } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCategoryIcon } from "@/utils/categoryUtils";
 
 interface InventoryCardProps {
   brand: string;
@@ -90,7 +91,8 @@ export function InventoryCard({
         
         <div className="flex gap-2 flex-wrap">
           {category && (
-            <Badge variant="secondary" className="w-fit">
+            <Badge variant="secondary" className="w-fit flex items-center gap-1">
+              {getCategoryIcon(category) && <span>{getCategoryIcon(category)}</span>}
               {category}
             </Badge>
           )}

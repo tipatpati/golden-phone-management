@@ -348,3 +348,28 @@ export const CONDITION_OPTIONS = [
   { value: 'new', label: 'New' },
   { value: 'used', label: 'Used' },
 ] as const;
+
+// ============================================
+// CATEGORY FIELD CONFIGURATION
+// ============================================
+
+/**
+ * Defines which fields should be visible for each category
+ * Categories with device specs: Phones (1), Tablets (3), Computers (9), Smartphones (13)
+ */
+export interface CategoryFieldConfig {
+  requiresDeviceSpecs: boolean;
+  fields: {
+    storage?: boolean;
+    ram?: boolean;
+    color?: boolean;
+    batteryLevel?: boolean;
+  };
+}
+
+export const CATEGORY_FIELD_CONFIG: Record<number, CategoryFieldConfig> = {
+  1: { requiresDeviceSpecs: true, fields: { storage: true, ram: true, color: true, batteryLevel: true } }, // Phones
+  3: { requiresDeviceSpecs: true, fields: { storage: true, ram: true, color: true, batteryLevel: false } }, // Tablets
+  9: { requiresDeviceSpecs: true, fields: { storage: true, ram: true, color: true, batteryLevel: false } }, // Computers
+  13: { requiresDeviceSpecs: true, fields: { storage: true, ram: true, color: true, batteryLevel: true } }, // Smartphones
+};

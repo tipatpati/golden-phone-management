@@ -340,10 +340,14 @@ export const inventoryManagementTestSuite: TestSuite = {
       test: async () => {
         // Arrange
         const categories = {
-          1: 'Smartphones',
+          1: 'Phones',
           2: 'Accessories',
-          3: 'Spare Parts',
-          4: 'Protection'
+          3: 'Tablets',
+          4: 'Repairs',
+          8: 'Electronics',
+          9: 'Computers',
+          11: 'Audio',
+          13: 'Smartphones'
         };
 
         const factory = MockDataFactory.getInstance();
@@ -371,7 +375,7 @@ export const inventoryManagementTestSuite: TestSuite = {
         // Assert
         expect.toEqual(smartphones.length, 2);
         expect.toEqual(accessories.length, 1);
-        expect.toEqual(mockCategoryService.getCategoryName(1), 'Smartphones');
+        expect.toEqual(mockCategoryService.getCategoryName(1), 'Phones');
         expect.toEqual(mockCategoryService.getCategoryName(2), 'Accessories');
 
         // Verify all smartphones have correct category

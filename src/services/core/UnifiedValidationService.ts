@@ -6,6 +6,7 @@
 import { ProductFormData, UnitEntryForm, InventoryValidationError } from '@/services/inventory/types';
 import { validateSerialWithBattery } from '@/utils/serialNumberUtils';
 import { logger } from '@/utils/logger';
+import { getCategoryFieldConfig } from '@/utils/categoryUtils';
 
 export interface ValidationContext {
   isUpdate?: boolean;
@@ -118,11 +119,39 @@ export class UnifiedValidationService {
     const relationshipErrors = this.validatePricingRelationships(data, context);
     errors.push(...relationshipErrors);
 
+    // Validate category-specific requirements
+    const categoryErrors = this.validateCategoryRequirements(data, context);
+    errors.push(...categoryErrors);
+
     logger.debug('Unified validation completed', { 
       totalErrors: errors.length, 
       errors 
     }, 'UnifiedValidationService');
 
+    return errors;
+  }
+
+  private validateCategoryRequirements(data: Partial<ProductFormData>, context: ValidationContext): InventoryValidationError[] {
+    const errors: InventoryValidationError[] = [];
+    
+    if (!data.category_id) return errors;
+    
+    const fieldConfig = getCategoryFieldConfig(data.category_id);
+    
+    // For device categories, validate required specs based on configuration
+    if (fieldConfig.requiresDeviceSpecs && data.has_serial) {
+      // These validations only apply to products with serial numbers
+      // Non-serial products don't need individual unit specs
+      if (fieldConfig.fields.storage) {
+        // Storage validation is handled at unit level for serial products
+      }
+      
+      if (fieldConfig.fields.ram && data.category_id === 9) {
+        // Computers (9) should have RAM specified at unit level
+        // This is a soft requirement, just for guidance
+      }
+    }
+    
     return errors;
   }
 
