@@ -37,7 +37,7 @@
     options: Array<{ value: string; label: string }>;
   }
 
-  export type FormFieldProps = InputFieldProps | TextareaFieldProps |
+export type FormFieldProps = InputFieldProps | TextareaFieldProps |
   SelectFieldProps;
 
   export function FormField({
@@ -114,7 +114,6 @@
               onChange={(e) => {
                 let value = e.target.value;
                 // Auto-sync with units/serial format for serial number
-  fields
                 if (fieldId.includes('serial') || fieldId.includes('imei')
   || props.placeholder?.includes('serial')) {
                   value = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
@@ -142,3 +141,6 @@
       </div>
     );
   }
+
+// Re-export the container component
+export { ProductFormFields } from "./ProductFormFieldsContainer";
