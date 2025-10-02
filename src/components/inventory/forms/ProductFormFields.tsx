@@ -102,26 +102,47 @@ export function ProductFormFields({
       />
 
       {/* Category Field */}
-      <FormField
-        label="Category"
-        type="select"
-        value={formData.category_id?.toString() || undefined}
-        onChange={(value) => onFieldChange('category_id', value ? parseInt(value) : undefined)}
-        options={
-          categoriesLoading 
-            ? [{ value: 'loading', label: 'Loading categories...', disabled: true }]
-            : categoriesError
-            ? [{ value: 'error', label: 'Error loading categories', disabled: true }]
-            : categoryOptions.length === 0
-            ? [{ value: 'empty', label: 'No categories available', disabled: true }]
-            : categoryOptions
-        }
-        placeholder="Select a category"
-        required
-        className="md:col-span-1"
-        error={getFieldError('category_id')}
-        disabled={categoriesLoading || categoriesError || categoryOptions.length === 0}
-      />
+      {categoriesLoading ? (
+        <div className="md:col-span-1 space-y-2">
+          <Label className="text-sm font-medium text-on-surface">
+            Category <span className="text-destructive ml-1">*</span>
+          </Label>
+          <div className="w-full h-10 bg-surface/50 border border-border rounded-md flex items-center justify-center">
+            <span className="text-sm text-muted-foreground">Loading categories...</span>
+          </div>
+        </div>
+      ) : categoriesError ? (
+        <div className="md:col-span-1 space-y-2">
+          <Label className="text-sm font-medium text-on-surface">
+            Category <span className="text-destructive ml-1">*</span>
+          </Label>
+          <div className="w-full h-10 bg-destructive/10 border border-destructive/30 rounded-md flex items-center justify-center">
+            <span className="text-sm text-destructive">Error loading categories</span>
+          </div>
+        </div>
+      ) : categoryOptions.length === 0 ? (
+        <div className="md:col-span-1 space-y-2">
+          <Label className="text-sm font-medium text-on-surface">
+            Category <span className="text-destructive ml-1">*</span>
+          </Label>
+          <div className="w-full h-10 bg-warning/10 border border-warning/30 rounded-md flex items-center justify-center">
+            <span className="text-sm text-warning">No categories available</span>
+          </div>
+        </div>
+      ) : (
+        <FormField
+          key={`category-${categoryOptions.length}`}
+          label="Category"
+          type="select"
+          value={formData.category_id?.toString() || undefined}
+          onChange={(value) => onFieldChange('category_id', parseInt(value))}
+          options={categoryOptions}
+          placeholder="Select a category"
+          required
+          className="md:col-span-1"
+          error={getFieldError('category_id')}
+        />
+      )}
 
       {/* Default Price Field - Optional for new units */}
       <FormField
