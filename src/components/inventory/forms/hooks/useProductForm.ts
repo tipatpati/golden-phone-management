@@ -19,7 +19,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     brand: '',
     model: '',
     year: undefined,
-    category_id: 1, // Set default category to Phones
+    category_id: undefined, // No default - user must select category
     price: undefined, // Make default prices optional
     min_price: undefined,
     max_price: undefined,
@@ -111,12 +111,15 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
     
     // Handle has_serial toggle specifically
     if (field === 'has_serial') {
-      // Check if phones category (category_id: 1) requires IMEI
-      if (value === false && formData.category_id === 1) {
-        // Prevent disabling IMEI for phones category
+      // Categories requiring serials: Phones (1), Tablets (3), Computers (9), Smartphones (13)
+      const CATEGORIES_WITH_SERIALS = [1, 3, 9, 13];
+      const categoryRequiresSerial = CATEGORIES_WITH_SERIALS.includes(formData.category_id || 0);
+      
+      if (value === false && categoryRequiresSerial) {
+        // Prevent disabling IMEI/Serial for categories that require them
         toast({
-          title: "IMEI Required",
-          description: "Phones category requires IMEI/Serial numbers. Please change category first if this product doesn't need IMEI.",
+          title: "Serial/IMEI Required",
+          description: "This product category requires serial numbers/IMEI. Please change category first if this product doesn't need serial numbers.",
           variant: "destructive"
         });
         
@@ -219,7 +222,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       brand: '',
       model: '',
       year: undefined,
-      category_id: 1,
+      category_id: undefined, // No default - user must select
       price: undefined,
       min_price: undefined,
       max_price: undefined,

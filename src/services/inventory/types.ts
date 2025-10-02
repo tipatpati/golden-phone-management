@@ -311,6 +311,15 @@ export interface BarcodeManagerProps {
 // CONSTANTS
 // ============================================
 
+/**
+ * @deprecated Use dynamic categories from database via useCategories() hook instead.
+ * This hardcoded constant does not reflect all categories in the database 
+ * (missing Tablets, Computers, Electronics, Audio, etc.)
+ * 
+ * MIGRATION PATH:
+ * - Import: import { useCategories } from '@/services/inventory/InventoryReactQueryService'
+ * - Usage: const { data: categories } = useCategories()
+ */
 export const CATEGORY_OPTIONS = [
   { id: 1, name: "Phones" },
   { id: 2, name: "Accessories" },

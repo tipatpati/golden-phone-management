@@ -60,7 +60,7 @@ export class UnifiedValidationService {
         field: 'category_id',
         required: true,
         validate: (value: number) => {
-          if (!value || value < 1 || value > 4) {
+          if (!value || value < 1) {
             return { field: 'category_id', message: 'Category is required' };
           }
           return null;

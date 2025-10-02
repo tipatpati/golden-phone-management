@@ -30,8 +30,8 @@ export function useProductValidation() {
       newErrors.push({ field: 'model', message: 'Model is required' });
     }
 
-    // Category validation - ensure it's a valid category ID (1-4)
-    if (!data.category_id || data.category_id < 1 || data.category_id > 4) {
+    // Category validation - ensure a category is selected
+    if (!data.category_id || data.category_id < 1) {
       newErrors.push({ field: 'category_id', message: 'Category is required' });
     }
 

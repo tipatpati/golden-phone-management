@@ -630,7 +630,7 @@ export class InventoryManagementService {
       errors.push('Model is required');
     }
 
-    if (!formData.category_id || formData.category_id < 1 || formData.category_id > 4) {
+    if (!formData.category_id || formData.category_id < 1) {
       errors.push('Valid category is required');
     }
 

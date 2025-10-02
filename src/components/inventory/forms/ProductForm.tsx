@@ -85,7 +85,10 @@ export function ProductForm({
   }, [products]);
 
   // Check if category requires serial numbers
-  const requiresSerial = formData.category_id !== 2;
+  // Categories requiring serials: Phones (1), Tablets (3), Computers (9), Smartphones (13)
+  // Categories NOT requiring serials: Accessories (2), Repairs (4), Electronics (8), Audio (11)
+  const CATEGORIES_WITH_SERIALS = [1, 3, 9, 13]; // Phones, Tablets, Computers, Smartphones
+  const requiresSerial = CATEGORIES_WITH_SERIALS.includes(formData.category_id || 0);
 
   return (
     <div className="space-y-6">

@@ -3,7 +3,8 @@ import { FormField } from "@/components/common/FormField";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { Label } from "@/components/ui/label";
 import type { ProductFormData } from "@/services/inventory/types";
-import { STORAGE_OPTIONS, CATEGORY_OPTIONS } from "@/services/inventory/types";
+import { STORAGE_OPTIONS } from "@/services/inventory/types";
+import { useCategories } from "@/services/inventory/InventoryReactQueryService";
 
 interface ProductFormFieldsProps {
   formData: Partial<ProductFormData>;
@@ -27,6 +28,16 @@ export function ProductFormFields({
   uniqueModels = [],
   templateAppliedDefaults
 }: ProductFormFieldsProps) {
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
+  // Transform categories for select options
+  const categoryOptions = React.useMemo(() => {
+    return categories.map(cat => ({
+      value: cat.id.toString(),
+      label: cat.name
+    }));
+  }, [categories]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Brand Field */}
@@ -79,12 +90,9 @@ export function ProductFormFields({
       <FormField
         label="Category"
         type="select"
-        value={formData.category_id?.toString() || '1'}
-        onChange={(value) => onFieldChange('category_id', parseInt(value) || 1)}
-        options={CATEGORY_OPTIONS.map(cat => ({ 
-          value: cat.id.toString(), 
-          label: cat.name 
-        }))}
+        value={formData.category_id?.toString() || ''}
+        onChange={(value) => onFieldChange('category_id', parseInt(value))}
+        options={categoryOptions.length > 0 ? categoryOptions : [{ value: '', label: 'Loading categories...' }]}
         required
         className="md:col-span-1"
         error={getFieldError('category_id')}
