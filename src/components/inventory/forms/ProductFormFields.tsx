@@ -33,6 +33,7 @@ export function ProductFormFields({
 
   // Transform categories for select options
   const categoryOptions = React.useMemo(() => {
+    if (!categories || categories.length === 0) return [];
     return categories.map(cat => ({
       value: cat.id.toString(),
       label: cat.name
