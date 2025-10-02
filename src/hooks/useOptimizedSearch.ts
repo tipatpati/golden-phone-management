@@ -106,7 +106,8 @@ export function useOptimizedSearch(
       setResults([]);
       setSuggestions([]);
     }
-  }, [query, autoSearch, minQueryLength, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, autoSearch, minQueryLength]);
 
   // Cleanup on unmount
   useEffect(() => {

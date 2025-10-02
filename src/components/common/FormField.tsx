@@ -30,10 +30,11 @@ interface TextareaFieldProps extends BaseFieldProps {
 
 interface SelectFieldProps extends BaseFieldProps {
   type: "select";
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   placeholder?: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; disabled?: boolean }>;
+  disabled?: boolean;
 }
 
 export type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps;
@@ -73,24 +74,32 @@ export function FormField({
             `}
           />
         ) : props.type === "select" ? (
-          <Select value={props.value} onValueChange={props.onChange}>
+          <Select 
+            value={props.value || undefined} 
+            onValueChange={props.onChange}
+            disabled={props.disabled}
+          >
             <SelectTrigger 
               id={fieldId} 
               className={`
                 w-full h-10 transition-colors
                 ${error ? "border-destructive focus:border-destructive" : "focus:border-primary"}
+                ${props.disabled ? "opacity-50 cursor-not-allowed" : ""}
               `}
+              disabled={props.disabled}
             >
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
             <SelectContent 
               position="popper"
               sideOffset={4}
+              className="z-[999999] bg-popover"
             >
               {props.options.map((option) => (
                 <SelectItem 
                   key={option.value} 
                   value={option.value}
+                  disabled={option.disabled}
                   className="cursor-pointer hover:bg-accent focus:bg-accent"
                 >
                   {option.label}

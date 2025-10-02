@@ -29,7 +29,7 @@ export function ProductFormFields({
   uniqueModels = [],
   templateAppliedDefaults
 }: ProductFormFieldsProps) {
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: categories = [], isLoading: categoriesLoading, isError: categoriesError } = useCategories();
 
   // Transform categories for select options
   const categoryOptions = React.useMemo(() => {
@@ -102,28 +102,26 @@ export function ProductFormFields({
       />
 
       {/* Category Field */}
-      {categoriesLoading ? (
-        <div className="md:col-span-1 space-y-2">
-          <Label className="text-sm font-medium text-on-surface">
-            Category <span className="text-destructive ml-1">*</span>
-          </Label>
-          <div className="w-full h-10 bg-muted animate-pulse rounded-md flex items-center justify-center">
-            <span className="text-xs text-muted-foreground">Loading categories...</span>
-          </div>
-        </div>
-      ) : (
-        <FormField
-          label="Category"
-          type="select"
-          value={formData.category_id?.toString() || ''}
-          onChange={(value) => onFieldChange('category_id', parseInt(value))}
-          options={categoryOptions}
-          placeholder="Select a category"
-          required
-          className="md:col-span-1"
-          error={getFieldError('category_id')}
-        />
-      )}
+      <FormField
+        label="Category"
+        type="select"
+        value={formData.category_id?.toString() || undefined}
+        onChange={(value) => onFieldChange('category_id', value ? parseInt(value) : undefined)}
+        options={
+          categoriesLoading 
+            ? [{ value: 'loading', label: 'Loading categories...', disabled: true }]
+            : categoriesError
+            ? [{ value: 'error', label: 'Error loading categories', disabled: true }]
+            : categoryOptions.length === 0
+            ? [{ value: 'empty', label: 'No categories available', disabled: true }]
+            : categoryOptions
+        }
+        placeholder="Select a category"
+        required
+        className="md:col-span-1"
+        error={getFieldError('category_id')}
+        disabled={categoriesLoading || categoriesError || categoryOptions.length === 0}
+      />
 
       {/* Default Price Field - Optional for new units */}
       <FormField
