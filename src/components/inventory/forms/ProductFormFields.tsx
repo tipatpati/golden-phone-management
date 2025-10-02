@@ -31,13 +31,32 @@ export function ProductFormFields({
 }: ProductFormFieldsProps) {
   const { data: categories = [], isLoading: categoriesLoading, isError: categoriesError } = useCategories();
 
+  // Debug logging
+  console.log('🔍 Categories Debug:', {
+    categories,
+    categoriesLength: categories?.length,
+    categoriesLoading,
+    categoriesError,
+    categoriesType: typeof categories,
+    categoriesIsArray: Array.isArray(categories)
+  });
+
   // Transform categories for select options
   const categoryOptions = React.useMemo(() => {
-    if (!categories || categories.length === 0) return [];
-    return categories.map(cat => ({
+    console.log('🔄 Computing categoryOptions from:', categories);
+    
+    if (!categories || categories.length === 0) {
+      console.log('⚠️ No categories to transform');
+      return [];
+    }
+    
+    const options = categories.map(cat => ({
       value: cat.id.toString(),
       label: cat.name
     }));
+    
+    console.log('✅ Category options computed:', options);
+    return options;
   }, [categories]);
 
   // Get category-specific field configuration
