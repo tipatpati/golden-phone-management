@@ -107,7 +107,7 @@ export function ProductFormFields({
         type="select"
         value={formData.category_id?.toString() || ''}
         onChange={(value) => onFieldChange('category_id', parseInt(value))}
-        options={categoryOptions.length > 0 ? categoryOptions : [{ value: '', label: 'Loading categories...' }]}
+        options={categoryOptions.length > 0 ? categoryOptions : [{ value: '0', label: 'Loading categories...' }]}
         required
         className="md:col-span-1"
         error={getFieldError('category_id')}
