@@ -29,6 +29,9 @@ export function InventoryFilters({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
+  // Safety check for categories to prevent null errors
+  const safeCategories = categories ?? [];
+  
   const {
     filters,
     setSearchTerm,
@@ -156,7 +159,7 @@ export function InventoryFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tutte le categorie</SelectItem>
-            {categories.map((cat) => (
+            {safeCategories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id.toString()}>
                 {cat.name}
               </SelectItem>
@@ -363,7 +366,7 @@ export function InventoryFilters({
         <div className="flex flex-wrap gap-2">
           {filters.categoryId !== 'all' && (
             <Badge variant="secondary" className="gap-1">
-              Categoria: {categories.find(c => c.id === filters.categoryId)?.name}
+              Categoria: {safeCategories.find(c => c.id === filters.categoryId)?.name}
               <button 
                 onClick={() => clearFilter('categoryId')}
                 className="ml-1 hover:bg-background/20 rounded-full p-0.5"
