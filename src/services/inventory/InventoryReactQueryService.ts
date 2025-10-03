@@ -4,14 +4,14 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { eventBus, EVENT_TYPES } from '../core/EventBus';
-import type { Product, CreateProductData, ProductFormData } from './types';
+import type { Product, CreateProductData, ProductFormData, InventorySearchFilters } from './types';
 
 // Direct hook implementations for inventory management
 
-export const useProducts = (searchTerm: string = '') => {
+export const useProducts = (filters?: InventorySearchFilters) => {
   return useOptimizedQuery(
-    ['products', 'list', searchTerm],
-    () => InventoryManagementService.getProducts({ searchTerm }),
+    ['products', 'list', JSON.stringify(filters || {})],
+    () => InventoryManagementService.getProducts(filters || {}),
     {
       priority: 'high',
       enablePrefetching: true,

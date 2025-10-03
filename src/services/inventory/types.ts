@@ -208,13 +208,18 @@ export interface LabelGenerationOptions {
 
 export interface InventorySearchFilters {
   searchTerm?: string;
+  categoryId?: number | 'all';
   category?: number;
   status?: string;
   priceRange?: {
     min?: number;
     max?: number;
   };
-  stockStatus?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+  hasSerial?: 'all' | 'yes' | 'no';
+  dateRange?: { start?: Date; end?: Date };
+  year?: number | 'all';
+  sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 }
 
 export interface InventoryStats {

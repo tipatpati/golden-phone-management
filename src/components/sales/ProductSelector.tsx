@@ -20,8 +20,8 @@ type ProductSelectorProps = {
 
 export function ProductSelector({ onProductAdd, selectedCategory }: ProductSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
-  const { data: products = [] } = useProducts(productSearch);
-  const { data: allProducts = [] } = useProducts(""); // For autocomplete suggestions
+  const { data: products = [] } = useProducts({ searchTerm: productSearch });
+  const { data: allProducts = [] } = useProducts(); // For autocomplete suggestions
   
   // Filter products by category if one is selected
   const filteredProducts = React.useMemo(() => {

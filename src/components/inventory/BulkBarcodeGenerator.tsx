@@ -16,7 +16,7 @@ export function BulkBarcodeGenerator() {
   const [progress, setProgress] = useState(0);
   const [processedCount, setProcessedCount] = useState(0);
   
-  const { data: allProducts = [] } = useProducts('');
+  const { data: allProducts = [] } = useProducts();
   const updateProduct = useUpdateProduct();
   
   const productsWithoutBarcodes = ensureArray(allProducts).filter((product: any) => !product.barcode);

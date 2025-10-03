@@ -2,13 +2,14 @@
 import React, { useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { InventoryTable } from "./InventoryTable";
-import { InventoryTableToolbar } from "./InventoryTableToolbar";
+import { InventoryFilters } from "./InventoryFilters";
+import { useInventoryFilters } from "@/hooks/useInventoryFilters";
 import { AddProductDialog } from "./AddProductDialog";
 import { EditProductDialog } from "./EditProductDialog";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
 import { BarcodeUpdateTool } from "./admin/BarcodeUpdateTool";
 import { CrossModuleSyncButton } from "@/components/shared/CrossModuleSyncButton";
-import { useProducts, useDeleteProduct } from "@/services/inventory/LightweightInventoryService";
+import { useProducts, useDeleteProduct, useCategories } from "@/services/inventory/LightweightInventoryService";
 import { useBulkActions } from "./hooks/useBulkActions";
 import { toast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -30,16 +31,19 @@ export function InventoryContent({
   onAddProduct, 
   onCancelAddProduct 
 }: InventoryContentProps) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  
-  // Debounce search term to reduce API calls
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const { filters, effectiveDateRange } = useInventoryFilters();
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
   
   const queryClient = useQueryClient();
-  const { data: products, isLoading, error, refetch } = useProducts(debouncedSearchTerm);
+  const { data: products, isLoading, error, refetch } = useProducts({
+    ...filters,
+    searchTerm: debouncedSearchTerm,
+    dateRange: effectiveDateRange,
+  });
   const deleteProduct = useDeleteProduct();
+  const { data: categories = [] } = useCategories();
 
   // Force refresh function for immediate table updates
   const refreshTable = useCallback(() => {
@@ -61,11 +65,6 @@ export function InventoryContent({
     selectedCount,
     isLoading: isBulkLoading,
   } = useBulkActions(Array.isArray(products) ? products : []);
-
-  const handleSearchChange = useCallback((newSearchTerm: string) => {
-    logger.debug('Search term updated', { searchTerm: newSearchTerm }, 'InventoryContent');
-    setSearchTerm(newSearchTerm);
-  }, []);
 
   const handleViewModeChange = (newViewMode: "list" | "grid") => {
     setViewMode(newViewMode);
@@ -122,13 +121,14 @@ export function InventoryContent({
   if (!products || !Array.isArray(products) || products.length === 0) {
     return (
       <div className="space-y-6">
-        <InventoryTableToolbar 
-          onSearchChange={handleSearchChange}
-          onViewModeChange={handleViewModeChange}
-          searchTerm={searchTerm}
-          viewMode={viewMode}
-          onAddProduct={onAddProduct}
-        />
+        <div className="bg-white rounded-xl shadow-xl p-6">
+          <InventoryFilters
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            onAddProduct={onAddProduct}
+            categories={categories}
+          />
+        </div>
         <EmptyState
           icon={<Package />}
           title="No Products Found"
@@ -162,13 +162,14 @@ export function InventoryContent({
         </div>
       </RoleGuard>
 
-      <InventoryTableToolbar 
-        onSearchChange={handleSearchChange}
-        onViewModeChange={handleViewModeChange}
-        searchTerm={searchTerm}
-        viewMode={viewMode}
-        onAddProduct={onAddProduct}
-      />
+      <div className="bg-white rounded-xl shadow-xl p-6 mb-6">
+        <InventoryFilters
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onAddProduct={onAddProduct}
+          categories={categories}
+        />
+      </div>
       
       <BulkActionsToolbar
         selectedCount={selectedCount}
@@ -183,7 +184,7 @@ export function InventoryContent({
       <InventoryTable
         products={products || []}
         isLoading={isLoading}
-        searchTerm={searchTerm}
+        searchTerm={filters.searchTerm}
         viewMode={viewMode}
         selectedItems={selectedItems}
         onSelectItem={toggleSelectItem}

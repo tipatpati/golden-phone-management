@@ -96,11 +96,16 @@ export class InventoryManagementService {
         }
       }
       
+      // Category filter - support both category and categoryId
       if (filters?.category) {
         query = query.eq('category_id', filters.category);
       }
+      if (filters?.categoryId && filters.categoryId !== 'all') {
+        query = query.eq('category_id', filters.categoryId);
+      }
       
-      if (filters?.stockStatus) {
+      // Stock status filter
+      if (filters?.stockStatus && filters.stockStatus !== 'all') {
         switch (filters.stockStatus) {
           case 'out_of_stock':
             query = query.eq('stock', 0);
