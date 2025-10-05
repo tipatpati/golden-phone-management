@@ -103,8 +103,12 @@ export function NewProductItem({
                 id={`quantity_${index}`}
                 type="number"
                 min="1"
-                value={item.quantity || ''}
-                onChange={(e) => onUpdateProductData({ stock: parseInt(e.target.value) || 0 })}
+                value={productData.stock || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const quantity = value === '' ? 1 : parseInt(value) || 1;
+                  onUpdateProductData({ stock: quantity });
+                }}
                 placeholder="Enter quantity"
                 className={getFieldError('quantity') ? 'border-destructive' : ''}
               />
@@ -116,7 +120,7 @@ export function NewProductItem({
             {/* Total Cost Display */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <div className="text-sm font-medium">
-                <span>Total Cost:</span> €{((item.quantity || 0) * (productData.price || 0)).toFixed(2)}
+                <span>Total Cost:</span> €{((productData.stock || 0) * (productData.price || 0)).toFixed(2)}
               </div>
             </div>
           </div>
