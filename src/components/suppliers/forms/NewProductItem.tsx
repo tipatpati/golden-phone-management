@@ -74,7 +74,7 @@ export function NewProductItem({
         </div>
 
         {/* Unit Management */}
-        {productData.has_serial && (
+        {productData.has_serial ? (
           <div id={`item-${index}-unit-management`}>
             <UnitManagementSection
               item={item}
@@ -84,6 +84,12 @@ export function NewProductItem({
               onUpdateProductData={onUpdateProductData}
               getFieldError={getFieldError}
             />
+          </div>
+        ) : (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm text-blue-800">
+              <span className="font-medium">📦 Quantity Tracking:</span> This product is tracked by quantity only. Individual units will not be created.
+            </div>
           </div>
         )}
 

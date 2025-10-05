@@ -39,6 +39,22 @@ export class ProductUnitManagementService {
    */
   static async createUnitsForProduct(params: CreateUnitsParams): Promise<CreateUnitsResult> {
     const { productId, unitEntries, defaultPricing, metadata } = params;
+    
+    // CRITICAL: Validate product is actually serialized before creating units
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('has_serial, brand, model')
+      .eq('id', productId)
+      .single();
+    
+    if (productError) {
+      throw new Error(`Failed to verify product: ${productError.message}`);
+    }
+    
+    if (!product.has_serial) {
+      throw new Error(`Cannot create individual units for non-serialized product "${product.brand} ${product.model}". Use quantity-based stock management instead.`);
+    }
+    
     console.log('🏭 Creating unified product units:', { productId, count: unitEntries.length, metadata });
 
     const barcodeService = await Services.getBarcodeService();

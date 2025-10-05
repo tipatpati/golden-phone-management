@@ -106,6 +106,14 @@ export class UnifiedValidationService {
       }
     }
 
+    // CRITICAL: Validate non-serialized products don't have unit entries
+    if (!data.has_serial && unitEntries && unitEntries.length > 0) {
+      errors.push({
+        field: 'has_serial',
+        message: 'Non-serialized products cannot have individual unit entries. Use quantity tracking instead.'
+      });
+    }
+
     // Handle serial number validation
     if (data.has_serial) {
       const serialErrors = this.validateSerialNumbers(unitEntries || [], data.category_id, context);
