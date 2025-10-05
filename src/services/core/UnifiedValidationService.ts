@@ -4,7 +4,7 @@
  */
 
 import { ProductFormData, UnitEntryForm, InventoryValidationError } from '@/services/inventory/types';
-import { validateSerialWithBattery } from '@/utils/serialNumberUtils';
+import { validateSerialNumber } from '@/utils/serialNumberUtils';
 import { logger } from '@/utils/logger';
 import { getCategoryFieldConfig } from '@/utils/categoryUtils';
 
@@ -108,7 +108,7 @@ export class UnifiedValidationService {
 
     // Handle serial number validation
     if (data.has_serial) {
-      const serialErrors = this.validateSerialNumbers(unitEntries || [], context);
+      const serialErrors = this.validateSerialNumbers(unitEntries || [], data.category_id, context);
       errors.push(...serialErrors);
     } else {
       const pricingErrors = this.validateNonSerialPricing(data, context);
@@ -155,7 +155,7 @@ export class UnifiedValidationService {
     return errors;
   }
 
-  private validateSerialNumbers(entries: UnitEntryForm[], context: ValidationContext): InventoryValidationError[] {
+  private validateSerialNumbers(entries: UnitEntryForm[], categoryId: number | undefined, context: ValidationContext): InventoryValidationError[] {
     const errors: InventoryValidationError[] = [];
     const validEntries = entries.filter(e => (e.serial || '').trim() !== '');
 
@@ -172,9 +172,19 @@ export class UnifiedValidationService {
         continue;
       }
       
-      if (numericSerial.length !== 15) {
-        errors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI must be exactly 15 digits` });
-        continue;
+      // Category-aware serial validation: only enforce 15-digit IMEI for Phones (category 1)
+      if (categoryId === 1) {
+        if (numericSerial.length !== 15) {
+          errors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: IMEI must be exactly 15 digits` });
+          continue;
+        }
+      } else {
+        // For other categories (tablets, laptops, computers), use flexible alphanumeric validation
+        const validation = validateSerialNumber(serialInput);
+        if (!validation.isValid) {
+          errors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: ${validation.error}` });
+          continue;
+        }
       }
 
       // Validate pricing for serial entries
@@ -186,13 +196,6 @@ export class UnifiedValidationService {
       if (battery === undefined || battery === null || isNaN(battery) || 
           battery < 0 || battery > 100 || !Number.isInteger(battery)) {
         errors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Battery level must be an integer between 0 and 100` });
-        continue;
-      }
-
-      // Serial format validation
-      const basicValidation = validateSerialWithBattery(entry.serial + '');
-      if (!basicValidation.isValid && entry.serial.length < 10) {
-        errors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Serial appears invalid` });
         continue;
       }
     }
