@@ -77,7 +77,7 @@ export function useProductValidation() {
             break;
           }
           if (minPrice === undefined || minPrice === null || isNaN(minPrice) || minPrice <= price) {
-            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Min selling must be a number greater than purchase price` });
+            newErrors.push({ field: 'serial_numbers', message: `Unit #${idx + 1}: Min selling price must be greater than purchase price` });
             break;
           }
           if (maxPrice === undefined || maxPrice === null || isNaN(maxPrice) || maxPrice <= minPrice) {
@@ -144,10 +144,10 @@ export function useProductValidation() {
 
     if (priceValue !== undefined && !isNaN(priceValue) && priceValue >= 0) {
       if (minPriceValue !== undefined && !isNaN(minPriceValue) && minPriceValue > 0 && minPriceValue <= priceValue) {
-        newErrors.push({ field: 'min_price', message: 'Default minimum selling price must be greater than default base price' });
+        newErrors.push({ field: 'min_price', message: 'Minimum selling price must be greater than purchase price' });
       }
       if (maxPriceValue !== undefined && !isNaN(maxPriceValue) && maxPriceValue > 0 && maxPriceValue <= priceValue) {
-        newErrors.push({ field: 'max_price', message: 'Default maximum selling price must be greater than default base price' });
+        newErrors.push({ field: 'max_price', message: 'Maximum selling price must be greater than purchase price' });
       }
     }
 

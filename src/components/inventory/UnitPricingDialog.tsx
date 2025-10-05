@@ -44,13 +44,13 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
     const minPrice = parseFloat(formData.min_price) || 0;
     const maxPrice = parseFloat(formData.max_price) || 0;
 
-    // Validate that selling prices are greater than base price
+    // Validate that selling prices are greater than purchase price
     if (price > 0) {
       if (minPrice > 0 && minPrice <= price) {
-        newErrors.min_price = 'Minimum selling price must be greater than base price';
+        newErrors.min_price = 'Minimum selling price must be greater than purchase price';
       }
       if (maxPrice > 0 && maxPrice <= price) {
-        newErrors.max_price = 'Maximum selling price must be greater than base price';
+        newErrors.max_price = 'Maximum selling price must be greater than purchase price';
       }
     }
 
@@ -128,7 +128,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
         <div className="space-y-4">
           <PurchasePriceGuard fallback={null}>
             <div className="space-y-2">
-              <Label htmlFor="price">Base Purchase Price (€)</Label>
+              <Label htmlFor="price">Purchase Price (€)</Label>
               <Input
                 id="price"
                 type="number"
@@ -179,7 +179,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-800">
               <strong>Pricing Rules:</strong><br />
-              • Selling prices must be greater than base price<br />
+              • Selling prices must be greater than purchase price<br />
               • Minimum price must be less than maximum price<br />
               • Leave fields empty if not applicable
             </p>

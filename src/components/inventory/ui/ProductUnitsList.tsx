@@ -97,31 +97,24 @@ export function ProductUnitsList({ units, onEdit, onDelete, onView }: ProductUni
               )}
             </div>
 
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
               <PurchasePriceGuard fallback={null}>
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">Purchase Price</span>
-                  <p className="text-sm font-semibold">{formatPrice(unit.purchase_price)}</p>
+                  <p className="text-sm font-semibold">{formatPrice(unit.purchase_price || unit.price)}</p>
                 </div>
               </PurchasePriceGuard>
               
-              {unit.price && (
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">Base Price</span>
-                  <p className="text-sm">{formatPrice(unit.price)}</p>
-                </div>
-              )}
-              
               {unit.min_price && (
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Min Price</span>
+                  <span className="text-sm font-medium text-muted-foreground">Min Selling Price</span>
                   <p className="text-sm">{formatPrice(unit.min_price)}</p>
                 </div>
               )}
               
               {unit.max_price && (
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Max Price</span>
+                  <span className="text-sm font-medium text-muted-foreground">Max Selling Price</span>
                   <p className="text-sm">{formatPrice(unit.max_price)}</p>
                 </div>
               )}
