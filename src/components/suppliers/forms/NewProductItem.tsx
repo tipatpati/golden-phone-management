@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import { ProductFormFields } from '@/components/inventory/forms/ProductFormFields';
 import { UnitManagementSection } from './UnitManagementSection';
@@ -86,31 +87,85 @@ export function NewProductItem({
             />
           </div>
         ) : (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm text-blue-800">
-              <span className="font-medium">📦 Quantity Tracking:</span> This product is tracked by quantity only. Individual units will not be created.
+          <div className="space-y-4">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-sm text-blue-800">
+                <span className="font-medium">📦 Quantity Tracking:</span> This product is tracked by quantity only. Individual units will not be created.
+              </div>
+            </div>
+
+            {/* Quantity and Unit Cost Inputs for Non-Serialized Products */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor={`quantity_${index}`} className="text-sm font-medium">
+                  Quantity <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id={`quantity_${index}`}
+                  type="number"
+                  min="1"
+                  value={item.quantity || ''}
+                  onChange={(e) => onUpdateProductData({ stock: parseInt(e.target.value) || 0 })}
+                  placeholder="Enter quantity"
+                  className={getFieldError('quantity') ? 'border-destructive' : ''}
+                />
+                {getFieldError('quantity') && (
+                  <p className="text-xs text-destructive">{getFieldError('quantity')}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`unit_cost_${index}`} className="text-sm font-medium">
+                  Unit Cost (€) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id={`unit_cost_${index}`}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={item.unitCost || ''}
+                  onChange={(e) => {
+                    const unitCost = parseFloat(e.target.value) || 0;
+                    onUpdateProductData({ price: unitCost });
+                  }}
+                  placeholder="0.00"
+                  className={getFieldError('unitCost') ? 'border-destructive' : ''}
+                />
+                {getFieldError('unitCost') && (
+                  <p className="text-xs text-destructive">{getFieldError('unitCost')}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Total Cost Display */}
+            <div className="p-3 bg-muted/30 rounded-lg">
+              <div className="text-sm font-medium">
+                <span>Total Cost:</span> €{((item.quantity || 0) * (item.unitCost || 0)).toFixed(2)}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Simple Pricing Display */}
-        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-          <div className="text-sm">
-            <span className="font-medium">Quantity:</span> {item.quantity}
-            {getFieldError('quantity') && (
-              <div className="text-xs text-destructive mt-1">{getFieldError('quantity')}</div>
-            )}
+        {/* Pricing Display for Serialized Products */}
+        {productData.has_serial && (
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="text-sm">
+              <span className="font-medium">Quantity:</span> {item.quantity}
+              {getFieldError('quantity') && (
+                <div className="text-xs text-destructive mt-1">{getFieldError('quantity')}</div>
+              )}
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">Unit Cost:</span> €{item.unitCost?.toFixed(2) || '0.00'}
+              {getFieldError('unitCost') && (
+                <div className="text-xs text-destructive mt-1">{getFieldError('unitCost')}</div>
+              )}
+            </div>
+            <div className="text-sm font-medium">
+              <span>Total:</span> €{(item.quantity * (item.unitCost || 0)).toFixed(2)}
+            </div>
           </div>
-          <div className="text-sm">
-            <span className="font-medium">Unit Cost:</span> €{item.unitCost?.toFixed(2) || '0.00'}
-            {getFieldError('unitCost') && (
-              <div className="text-xs text-destructive mt-1">{getFieldError('unitCost')}</div>
-            )}
-          </div>
-          <div className="text-sm font-medium">
-            <span>Total:</span> €{(item.quantity * (item.unitCost || 0)).toFixed(2)}
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
