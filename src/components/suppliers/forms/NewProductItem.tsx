@@ -94,53 +94,29 @@ export function NewProductItem({
               </div>
             </div>
 
-            {/* Quantity and Unit Cost Inputs for Non-Serialized Products */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor={`quantity_${index}`} className="text-sm font-medium">
-                  Quantity <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id={`quantity_${index}`}
-                  type="number"
-                  min="1"
-                  value={item.quantity || ''}
-                  onChange={(e) => onUpdateProductData({ stock: parseInt(e.target.value) || 0 })}
-                  placeholder="Enter quantity"
-                  className={getFieldError('quantity') ? 'border-destructive' : ''}
-                />
-                {getFieldError('quantity') && (
-                  <p className="text-xs text-destructive">{getFieldError('quantity')}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={`unit_cost_${index}`} className="text-sm font-medium">
-                  Unit Cost (€) <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id={`unit_cost_${index}`}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.unitCost || ''}
-                  onChange={(e) => {
-                    const unitCost = parseFloat(e.target.value) || 0;
-                    onUpdateProductData({ price: unitCost });
-                  }}
-                  placeholder="0.00"
-                  className={getFieldError('unitCost') ? 'border-destructive' : ''}
-                />
-                {getFieldError('unitCost') && (
-                  <p className="text-xs text-destructive">{getFieldError('unitCost')}</p>
-                )}
-              </div>
+            {/* Quantity Input for Non-Serialized Products */}
+            <div className="space-y-2">
+              <Label htmlFor={`quantity_${index}`} className="text-sm font-medium">
+                Quantity <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id={`quantity_${index}`}
+                type="number"
+                min="1"
+                value={item.quantity || ''}
+                onChange={(e) => onUpdateProductData({ stock: parseInt(e.target.value) || 0 })}
+                placeholder="Enter quantity"
+                className={getFieldError('quantity') ? 'border-destructive' : ''}
+              />
+              {getFieldError('quantity') && (
+                <p className="text-xs text-destructive">{getFieldError('quantity')}</p>
+              )}
             </div>
 
             {/* Total Cost Display */}
             <div className="p-3 bg-muted/30 rounded-lg">
               <div className="text-sm font-medium">
-                <span>Total Cost:</span> €{((item.quantity || 0) * (item.unitCost || 0)).toFixed(2)}
+                <span>Total Cost:</span> €{((item.quantity || 0) * (productData.price || 0)).toFixed(2)}
               </div>
             </div>
           </div>
