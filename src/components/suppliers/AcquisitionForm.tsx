@@ -180,12 +180,29 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   }, []);
 
   const updateProductData = useCallback((index: number, productData: Partial<ProductFormData>) => {
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { 
-        ...item, 
-        productData: { ...item.productData!, ...productData }
-      } : item
-    ));
+    setItems(prev => prev.map((item, i) => {
+      if (i === index) {
+        const updatedProductData = { ...item.productData!, ...productData };
+        
+        // For non-serialized products, sync quantity and unitCost from productData
+        const updates: Partial<AcquisitionItem> = {
+          productData: updatedProductData
+        };
+        
+        // Sync quantity from stock for non-serialized products
+        if ('stock' in productData && !updatedProductData.has_serial) {
+          updates.quantity = productData.stock || 0;
+        }
+        
+        // Sync unitCost from price (purchase price)
+        if ('price' in productData) {
+          updates.unitCost = productData.price || 0;
+        }
+        
+        return { ...item, ...updates };
+      }
+      return item;
+    }));
   }, []);
 
   const updateUnitEntries = useCallback((index: number, unitEntries: UnitEntryFormType[]) => {
