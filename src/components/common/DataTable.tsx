@@ -51,13 +51,13 @@ export function DataTable<T>({
 
   return (
     <div className={`bg-surface rounded-xl border border-outline overflow-hidden ${className}`}>
-      {/* Table Header */}
-      <div className="bg-surface-container border-b border-outline">
+      {/* Table Header - Desktop Only */}
+      <div className="hidden lg:block bg-surface-container border-b border-outline">
         <div className="grid gap-4 px-4 py-3 text-sm font-medium text-on-surface-variant" 
              style={{ 
-               gridTemplateColumns: columns.map((col, idx) => 
-                 col.header === '' ? 'minmax(40px, auto)' : '1fr'
-               ).join(' ')
+               gridTemplateColumns: `${columns.map((col) => 
+                 col.header === '' ? '48px' : 'minmax(100px, 1fr)'
+               ).join(' ')} ${actions.length > 0 ? 'minmax(120px, auto)' : ''}`
              }}>
           {columns.map((column) => (
             <div 
@@ -73,8 +73,8 @@ export function DataTable<T>({
         </div>
       </div>
 
-      {/* Table Body */}
-      <div className="divide-y divide-outline">
+      {/* Table Body - Desktop Only */}
+      <div className="hidden lg:block divide-y divide-outline">
         {paginatedData.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <p className="text-muted-foreground">No data available</p>
@@ -85,9 +85,9 @@ export function DataTable<T>({
               key={getRowKey(item)}
               className={`grid gap-4 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
               style={{ 
-                gridTemplateColumns: columns.map((col, idx) => 
-                  col.header === '' ? 'minmax(40px, auto)' : '1fr'
-                ).join(' ')
+                gridTemplateColumns: `${columns.map((col) => 
+                  col.header === '' ? '48px' : 'minmax(100px, 1fr)'
+                ).join(' ')} ${actions.length > 0 ? 'minmax(120px, auto)' : ''}`
               }}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >

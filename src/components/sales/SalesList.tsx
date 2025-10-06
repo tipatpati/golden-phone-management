@@ -152,13 +152,13 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       key: 'select' as keyof Sale,
       header: '',
       render: (value: any, sale: Sale) => (
-        <Checkbox
-          checked={selectedSales.has(sale.id)}
-          onCheckedChange={(checked) => handleSelectSale(sale.id, checked as boolean)}
-          className="ml-1"
-        />
-      ),
-      className: 'w-10'
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={selectedSales.has(sale.id)}
+            onCheckedChange={(checked) => handleSelectSale(sale.id, checked as boolean)}
+          />
+        </div>
+      )
     }] : []),
     {
       key: 'sale_number' as keyof Sale,
@@ -191,57 +191,59 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     {
       key: 'salesperson' as keyof Sale,
       header: 'Venditore',
-      render: (value: any) => (
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          {typeof value === 'object' && value ? value.username || "Unknown" : value || "Unknown"}
-        </div>
-      )
+      render: (value: any) => {
+        const username = typeof value === 'object' && value ? value.username || "Unknown" : value || "Unknown";
+        return (
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate text-sm">{username}</span>
+          </div>
+        );
+      }
     },
     {
       key: 'sale_items' as keyof Sale,
       header: 'Prodotti',
-      render: (value: any[]) => (
-        <div className="space-y-1">
-          <div className="flex items-center gap-1">
-            <Package className="h-3 w-3 text-muted-foreground" />
-            <span className="text-sm font-medium">
-              {value?.length || 0} {value?.length === 1 ? 'prodotto' : 'prodotti'}
-            </span>
-          </div>
-          {value && value.length > 0 && (
-            <div className="text-xs text-muted-foreground">
-              {value.slice(0, 2).map((item, idx) => (
-                <div key={idx}>{item.product?.brand} {item.product?.model}</div>
-              ))}
-              {value.length > 2 && <div>+{value.length - 2} altri...</div>}
+      render: (value: any[]) => {
+        const itemCount = value?.length || 0;
+        if (itemCount === 0) return <span className="text-muted-foreground text-sm">-</span>;
+        
+        const firstItem = value[0];
+        const productName = firstItem.product 
+          ? `${firstItem.product.brand || ''} ${firstItem.product.model || ''}`.trim()
+          : 'Unknown';
+        
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1">
+              <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+              <span className="text-sm font-medium">{itemCount} prodott{itemCount === 1 ? 'o' : 'i'}</span>
             </div>
-          )}
-        </div>
-      )
+            <div className="text-xs text-muted-foreground truncate">
+              {productName}{itemCount > 1 ? ` +${itemCount - 1}` : ''}
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'total_amount' as keyof Sale,
       header: 'Totale',
       align: 'right' as const,
       render: (value: number) => (
-        <div className="space-y-1">
-          <div className="font-bold text-lg">€{value.toFixed(2)}</div>
-        </div>
+        <div className="font-bold text-primary">€{value.toFixed(2)}</div>
       )
     },
     {
       key: 'payment_method' as keyof Sale,
       header: 'Pagamento',
       render: (value: string, sale: Sale) => (
-        <div className="space-y-1">
-          <Badge variant="outline" className="text-xs">
-            {value.charAt(0).toUpperCase() + value.slice(1)}
-          </Badge>
+        <div className="space-y-0.5">
+          <div className="text-sm font-medium capitalize">{value}</div>
           {value === 'hybrid' && (
-            <div className="text-xs text-muted-foreground space-y-0.5">
-              {sale.cash_amount > 0 && <div>Contanti: €{sale.cash_amount.toFixed(2)}</div>}
-              {sale.card_amount > 0 && <div>Carta: €{sale.card_amount.toFixed(2)}</div>}
+            <div className="text-xs text-muted-foreground">
+              {sale.cash_amount > 0 && <div>Cash: €{sale.cash_amount.toFixed(2)}</div>}
+              {sale.card_amount > 0 && <div>Card: €{sale.card_amount.toFixed(2)}</div>}
             </div>
           )}
         </div>
@@ -250,6 +252,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     {
       key: 'status' as keyof Sale,
       header: 'Stato',
+      align: 'center' as const,
       render: (value: string) => (
         <Badge variant={getStatusColor(value)}>
           {value.charAt(0).toUpperCase() + value.slice(1)}
@@ -261,15 +264,9 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       header: 'Data & Ora',
       align: 'right' as const,
       render: (value: string) => (
-        <div className="text-sm space-y-1">
-          <div className="flex items-center gap-1">
-            <CalendarDays className="h-3 w-3 text-muted-foreground" />
-            {format(new Date(value), "dd/MM/yyyy")}
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3 text-muted-foreground" />
-            {format(new Date(value), "HH:mm")}
-          </div>
+        <div className="text-sm space-y-0.5">
+          <div className="font-medium">{format(new Date(value), "dd/MM/yyyy")}</div>
+          <div className="text-muted-foreground text-xs">{format(new Date(value), "HH:mm")}</div>
         </div>
       )
     }
