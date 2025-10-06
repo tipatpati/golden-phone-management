@@ -53,7 +53,7 @@ export function DataTable<T>({
     <div className={`bg-surface rounded-xl border border-outline overflow-hidden ${className}`}>
       {/* Table Header - Desktop Only */}
       <div className="hidden lg:block bg-surface-container border-b border-outline">
-        <div className="grid gap-3 px-4 py-3 text-sm font-medium text-on-surface-variant" 
+        <div className="grid gap-3 px-4 py-4 text-sm font-medium text-on-surface-variant" 
              style={{ 
                gridTemplateColumns: `${columns.map((col) => 
                  col.header === '' ? '48px' : '1fr'
@@ -62,13 +62,16 @@ export function DataTable<T>({
           {columns.map((column) => (
             <div 
               key={String(column.key)} 
-              className={`${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'} ${column.className || ''}`}
+              className={`flex items-center ${
+                column.align === 'center' ? 'justify-center' : 
+                column.align === 'right' ? 'justify-end' : 'justify-start'
+              } ${column.className || ''}`}
             >
               {column.header}
             </div>
           ))}
           {actions.length > 0 && (
-            <div className="text-right">Actions</div>
+            <div className="flex items-center justify-end">Actions</div>
           )}
         </div>
       </div>
@@ -83,18 +86,19 @@ export function DataTable<T>({
           paginatedData.map((item) => (
             <div
               key={getRowKey(item)}
-              className={`grid gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+              className={`grid gap-3 px-4 py-4 hover:bg-surface-container-high transition-colors items-center ${onRowClick ? 'cursor-pointer' : ''}`}
               style={{ 
                 gridTemplateColumns: `${columns.map((col) => 
                   col.header === '' ? '48px' : '1fr'
-                ).join(' ')} ${actions.length > 0 ? '140px' : ''}`
+                ).join(' ')} ${actions.length > 0 ? '140px' : ''}`,
+                minHeight: '72px'
               }}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
               {columns.map((column) => (
                 <div
                   key={String(column.key)}
-                  className={`text-on-surface text-sm flex items-center ${
+                  className={`flex items-center overflow-hidden ${
                     column.align === 'center' ? 'justify-center' : 
                     column.align === 'right' ? 'justify-end' : 'justify-start'
                   } ${column.className || ''}`}

@@ -164,26 +164,20 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       key: 'sale_number' as keyof Sale,
       header: 'Sale #',
       render: (value: string) => (
-        <div className="font-mono font-medium">#{value}</div>
+        <div className="font-mono font-medium text-sm whitespace-nowrap">#{value}</div>
       )
     },
     {
       key: 'client' as keyof Sale,
       header: 'Cliente',
       render: (value: any) => {
-        if (!value) return <span className="text-muted-foreground">N/A</span>;
+        if (!value) return <span className="text-muted-foreground text-sm">N/A</span>;
         const name = value.type === 'business' 
           ? value.company_name 
           : `${value.first_name || ''} ${value.last_name || ''}`.trim();
         return (
-          <div className="space-y-1">
-            <div className="font-medium">{name || 'Cliente Anonimo'}</div>
-            {value.phone && (
-              <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <Phone className="h-3 w-3" />
-                {value.phone}
-              </div>
-            )}
+          <div className="text-sm truncate max-w-[150px]" title={name || 'N/A'}>
+            {name || 'N/A'}
           </div>
         );
       }
@@ -194,8 +188,8 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       render: (value: any) => {
         const username = typeof value === 'object' && value ? value.username || "Unknown" : value || "Unknown";
         return (
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
             <span className="truncate text-sm">{username}</span>
           </div>
         );
@@ -214,12 +208,12 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
           : 'Unknown';
         
         return (
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1">
-              <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm font-medium">{itemCount} prodott{itemCount === 1 ? 'o' : 'i'}</span>
+          <div className="min-w-0 w-full">
+            <div className="flex items-center gap-1.5">
+              <Package className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-sm font-medium whitespace-nowrap">{itemCount} prodott{itemCount === 1 ? 'o' : 'i'}</span>
             </div>
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate mt-0.5">
               {productName}{itemCount > 1 ? ` +${itemCount - 1}` : ''}
             </div>
           </div>
@@ -231,19 +225,19 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       header: 'Totale',
       align: 'right' as const,
       render: (value: number) => (
-        <div className="font-bold text-primary">€{value.toFixed(2)}</div>
+        <div className="font-bold text-primary text-base whitespace-nowrap">€{value.toFixed(2)}</div>
       )
     },
     {
       key: 'payment_method' as keyof Sale,
       header: 'Pagamento',
       render: (value: string, sale: Sale) => (
-        <div className="space-y-0.5">
-          <div className="text-sm font-medium capitalize">{value}</div>
+        <div className="min-w-0 w-full">
+          <div className="text-sm font-medium capitalize whitespace-nowrap">{value}</div>
           {value === 'hybrid' && (
-            <div className="text-xs text-muted-foreground">
-              {sale.cash_amount > 0 && <div>Cash: €{sale.cash_amount.toFixed(2)}</div>}
-              {sale.card_amount > 0 && <div>Card: €{sale.card_amount.toFixed(2)}</div>}
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {sale.cash_amount > 0 && <div className="whitespace-nowrap">Cash: €{sale.cash_amount.toFixed(2)}</div>}
+              {sale.card_amount > 0 && <div className="whitespace-nowrap">Card: €{sale.card_amount.toFixed(2)}</div>}
             </div>
           )}
         </div>
@@ -264,9 +258,9 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       header: 'Data & Ora',
       align: 'right' as const,
       render: (value: string) => (
-        <div className="text-sm space-y-0.5">
-          <div className="font-medium">{format(new Date(value), "dd/MM/yyyy")}</div>
-          <div className="text-muted-foreground text-xs">{format(new Date(value), "HH:mm")}</div>
+        <div className="text-sm text-right">
+          <div className="font-medium whitespace-nowrap">{format(new Date(value), "dd/MM/yyyy")}</div>
+          <div className="text-muted-foreground text-xs whitespace-nowrap">{format(new Date(value), "HH:mm")}</div>
         </div>
       )
     }
