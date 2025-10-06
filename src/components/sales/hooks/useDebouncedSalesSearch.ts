@@ -7,7 +7,7 @@ import { useSales } from '@/services/sales/SalesReactQueryService';
  */
 export function useDebouncedSalesSearch(initialSearchTerm: string = '') {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   
   const salesQuery = useSales(debouncedSearchTerm);
   
