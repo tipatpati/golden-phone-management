@@ -12,6 +12,8 @@ import { AdvancedTransactionFilters } from "./AdvancedTransactionFilters";
 import { TransactionSummaryStats } from "./TransactionSummaryStats";
 import { SupplierAcquisitionPrintDialog } from "./dialogs/SupplierAcquisitionPrintDialog";
 import type { TransactionSearchFilters, SupplierTransaction } from "@/services/suppliers/types";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 interface TransactionsTableProps {
   searchTerm: string;
@@ -176,6 +178,14 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     }
   };
 
+  // Mobile pagination
+  const {
+    paginatedData: mobilePaginatedTransactions,
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: transactions || [], itemsPerPage: 17 });
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -258,7 +268,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {(transactions || []).map((transaction) => (
+        {mobilePaginatedTransactions.map((transaction) => (
           <div key={transaction.id} className="border rounded-lg p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div>
@@ -333,6 +343,17 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
             </div>
           </div>
         ))}
+        
+        {/* Mobile Pagination */}
+        {(transactions || []).length > 0 && (
+          <TablePagination
+            currentPage={mobilePage}
+            totalPages={mobileTotalPages}
+            onPageChange={mobileGoToPage}
+            pageSize={17}
+            totalItems={transactions?.length || 0}
+          />
+        )}
       </div>
 
       {/* Dialogs */}

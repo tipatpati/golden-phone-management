@@ -8,6 +8,8 @@ import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { SupplierDetailsDialog } from "./SupplierDetailsDialog";
 import { SupplierProductsDialog } from "./dialogs/SupplierProductsDialog";
 import { useSuppliers } from "@/services";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 interface SuppliersTableProps {
   searchTerm: string;
@@ -152,6 +154,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     setContactingSupplier(null);
   };
 
+  // Mobile pagination
+  const {
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    paginatedData: paginatedMobileSuppliers,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: filteredSuppliers, itemsPerPage: 17 });
+
   return (
     <>
       {/* Desktop Table Layout */}
@@ -165,8 +175,9 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
       </div>
 
       {/* Mobile Card Layout */}
-      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1">
-        {filteredSuppliers.map((supplier) => (
+      <div className="lg:hidden space-y-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1">
+          {paginatedMobileSuppliers.map((supplier) => (
           <DataCard
             key={supplier.id}
             title={supplier.name}
@@ -234,6 +245,18 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
             ]}
           />
         ))}
+        </div>
+        
+        {/* Mobile Pagination */}
+        {filteredSuppliers.length > 0 && (
+          <TablePagination
+            currentPage={mobilePage}
+            totalPages={mobileTotalPages}
+            onPageChange={mobileGoToPage}
+            pageSize={17}
+            totalItems={filteredSuppliers.length}
+          />
+        )}
       </div>
 
       {/* Confirm Dialog */}

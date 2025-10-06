@@ -2,6 +2,8 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/utils/logger";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Column<T> {
   key: keyof T;
@@ -37,6 +39,16 @@ export function DataTable<T>({
   onRowClick,
   className = ""
 }: DataTableProps<T>) {
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    startIndex,
+    endIndex,
+    totalItems
+  } = usePagination({ data, itemsPerPage: 17 });
+
   return (
     <div className={`bg-surface rounded-xl border border-outline overflow-hidden ${className}`}>
       {/* Table Header */}
@@ -59,12 +71,12 @@ export function DataTable<T>({
 
       {/* Table Body */}
       <div className="divide-y divide-outline">
-        {data.length === 0 ? (
+        {paginatedData.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <p className="text-muted-foreground">No data available</p>
           </div>
         ) : (
-          data.map((item) => (
+          paginatedData.map((item) => (
             <div
               key={getRowKey(item)}
               className={`grid gap-4 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
@@ -119,6 +131,17 @@ export function DataTable<T>({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          pageSize={17}
+          totalItems={totalItems}
+        />
+      )}
     </div>
   );
 }

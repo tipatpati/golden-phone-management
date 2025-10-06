@@ -15,6 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { logger } from '@/utils/logger';
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 interface SalesListProps {
   sales: Sale[];
@@ -57,6 +59,14 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
   const handleClearSelection = () => {
     setSelectedSales(new Set());
   };
+
+  // Mobile pagination
+  const {
+    paginatedData: paginatedMobileSales,
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: sales, itemsPerPage: 17 });
 
   const handleBulkDelete = async () => {
     if (selectedSales.size === 0) return;
@@ -332,8 +342,9 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       </div>
 
       {/* Mobile Card Layout */}
-      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1">
-        {sales.map((sale) => (
+      <div className="lg:hidden space-y-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1">
+          {paginatedMobileSales.map((sale) => (
           <div key={sale.id} className="relative">
             {isSelectionMode && (
               <div className="absolute top-4 left-4 z-10">
@@ -492,6 +503,18 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
             />
           </div>
         ))}
+        </div>
+        
+        {/* Mobile Pagination */}
+        {sales.length > 0 && (
+          <TablePagination
+            currentPage={mobilePage}
+            totalPages={mobileTotalPages}
+            onPageChange={mobileGoToPage}
+            pageSize={17}
+            totalItems={sales.length}
+          />
+        )}
       </div>
 
       {/* Confirm Dialog */}

@@ -7,6 +7,8 @@ import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/componen
 import { type Client } from "@/services";
 import { ClientDetailsDialog } from "./ClientDetailsDialog";
 import { format } from "date-fns";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 interface ClientsListProps {
   clients: Client[];
@@ -136,6 +138,14 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
     ] : [])
   ];
 
+  // Mobile pagination
+  const {
+    paginatedData: paginatedMobileClients,
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: clients, itemsPerPage: 17 });
+
   return (
     <>
       {/* Desktop Table Layout */}
@@ -149,8 +159,9 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
       </div>
 
       {/* Mobile Card Layout */}
-      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1">
-        {clients.map((client) => (
+      <div className="lg:hidden space-y-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1">
+          {paginatedMobileClients.map((client) => (
           <DataCard
             key={client.id}
             title={getClientDisplayName(client)}
@@ -224,7 +235,19 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
               ] : [])
             ]}
           />
-        ))}
+          ))}
+        </div>
+        
+        {/* Mobile Pagination */}
+        {clients.length > 0 && (
+          <TablePagination
+            currentPage={mobilePage}
+            totalPages={mobileTotalPages}
+            onPageChange={mobileGoToPage}
+            pageSize={17}
+            totalItems={clients.length}
+          />
+        )}
       </div>
 
       {/* Confirm Dialog */}

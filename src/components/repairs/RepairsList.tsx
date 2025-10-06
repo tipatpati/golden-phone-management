@@ -2,12 +2,22 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RepairCard, type Repair } from "./RepairCard";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 interface RepairsListProps {
   repairs: Repair[];
 }
 
 export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    totalItems
+  } = usePagination({ data: repairs, itemsPerPage: 17 });
+
   if (repairs.length === 0) {
     return (
       <Card>
@@ -22,7 +32,7 @@ export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
 
   return (
     <div className="space-y-4">
-      {repairs.map((repair, index) => (
+      {paginatedData.map((repair, index) => (
         <div 
           key={repair.id} 
           className="md-enter"
@@ -34,6 +44,17 @@ export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
           <RepairCard repair={repair} />
         </div>
       ))}
+      
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          pageSize={17}
+          totalItems={totalItems}
+        />
+      )}
     </div>
   );
 };
