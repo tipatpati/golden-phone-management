@@ -54,7 +54,11 @@ export function DataTable<T>({
       {/* Table Header */}
       <div className="bg-surface-container border-b border-outline">
         <div className="grid gap-4 px-4 py-3 text-sm font-medium text-on-surface-variant" 
-             style={{ gridTemplateColumns: `repeat(${columns.length + (actions.length > 0 ? 1 : 0)}, minmax(0, 1fr))` }}>
+             style={{ 
+               gridTemplateColumns: columns.map((col, idx) => 
+                 col.header === '' ? 'minmax(40px, auto)' : '1fr'
+               ).join(' ')
+             }}>
           {columns.map((column) => (
             <div 
               key={String(column.key)} 
@@ -80,7 +84,11 @@ export function DataTable<T>({
             <div
               key={getRowKey(item)}
               className={`grid gap-4 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
-              style={{ gridTemplateColumns: `repeat(${columns.length + (actions.length > 0 ? 1 : 0)}, minmax(0, 1fr))` }}
+              style={{ 
+                gridTemplateColumns: columns.map((col, idx) => 
+                  col.header === '' ? 'minmax(40px, auto)' : '1fr'
+                ).join(' ')
+              }}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
               {columns.map((column) => (

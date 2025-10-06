@@ -155,8 +155,10 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         <Checkbox
           checked={selectedSales.has(sale.id)}
           onCheckedChange={(checked) => handleSelectSale(sale.id, checked as boolean)}
+          className="ml-1"
         />
-      )
+      ),
+      className: 'w-10'
     }] : []),
     {
       key: 'sale_number' as keyof Sale,
