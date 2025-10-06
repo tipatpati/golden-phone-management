@@ -53,11 +53,11 @@ export function DataTable<T>({
     <div className={`bg-surface rounded-xl border border-outline overflow-hidden ${className}`}>
       {/* Table Header - Desktop Only */}
       <div className="hidden lg:block bg-surface-container border-b border-outline">
-        <div className="grid gap-4 px-4 py-3 text-sm font-medium text-on-surface-variant" 
+        <div className="grid gap-3 px-4 py-3 text-sm font-medium text-on-surface-variant" 
              style={{ 
                gridTemplateColumns: `${columns.map((col) => 
-                 col.header === '' ? '48px' : 'minmax(100px, 1fr)'
-               ).join(' ')} ${actions.length > 0 ? 'minmax(120px, auto)' : ''}`
+                 col.header === '' ? '48px' : '1fr'
+               ).join(' ')} ${actions.length > 0 ? '140px' : ''}`
              }}>
           {columns.map((column) => (
             <div 
@@ -83,11 +83,11 @@ export function DataTable<T>({
           paginatedData.map((item) => (
             <div
               key={getRowKey(item)}
-              className={`grid gap-4 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+              className={`grid gap-3 px-4 py-3 hover:bg-surface-container-high transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
               style={{ 
                 gridTemplateColumns: `${columns.map((col) => 
-                  col.header === '' ? '48px' : 'minmax(100px, 1fr)'
-                ).join(' ')} ${actions.length > 0 ? 'minmax(120px, auto)' : ''}`
+                  col.header === '' ? '48px' : '1fr'
+                ).join(' ')} ${actions.length > 0 ? '140px' : ''}`
               }}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
