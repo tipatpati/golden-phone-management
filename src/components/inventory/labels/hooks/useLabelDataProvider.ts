@@ -48,8 +48,9 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
   const hasPreloadedUnits = config.source === 'inventory' && 
     config.products.length > 0 && 
     config.products.some(p => {
-      const units = p.units || p.product_units || [];
-      return units.length > 0;
+      // Check both 'units' and 'product_units' fields for compatibility
+      const units = (p as any).units || (p as any).product_units || [];
+      return Array.isArray(units) && units.length > 0;
     });
 
   // For supplier labels
@@ -113,8 +114,8 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
           }
           
           // Handle both 'units' and 'product_units' fields for compatibility
-          const units = product.units || product.product_units || [];
-          if (units.length > 0) {
+          const units = (product as any).units || (product as any).product_units || [];
+          if (Array.isArray(units) && units.length > 0) {
             console.log(`🔍 Processing ${units.length} units for product ${product.brand} ${product.model}`);
             
             let productLabelsGenerated = 0;
