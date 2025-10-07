@@ -63,10 +63,19 @@ export function UnifiedInventoryLabels({
     );
   }
 
-  // If no labels available, show disabled state
+  // If no labels available, show disabled state with helpful message
   if (!labelDataProvider.labels || labelDataProvider.labels.length === 0) {
+    const errorReason = hasValidProducts 
+      ? `No printable labels found for ${products.length} product(s). Check console for details.`
+      : 'No products selected';
+    
     return (
-      <Button disabled variant="outline" className={buttonClassName}>
+      <Button 
+        disabled 
+        variant="outline" 
+        className={buttonClassName}
+        title={errorReason}
+      >
         <Printer className="h-4 w-4 mr-2" />
         No Labels Available
       </Button>

@@ -105,61 +105,95 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
         setError(null);
         
         const directLabels: ThermalLabelData[] = [];
+        const labelGenerationLog: string[] = [];
         
         inventoryProducts.forEach(product => {
           // Validate product has required fields
+          const productName = `${product.brand || 'Unknown'} ${product.model || 'Unknown'}`;
+          
           if (!product.brand || !product.model) {
-            console.warn('Product missing required fields:', product);
+            labelGenerationLog.push(`❌ Product missing brand/model: ${JSON.stringify(product)}`);
             return;
           }
           
           // Handle both 'units' and 'product_units' fields for compatibility
           const units = (product as any).units || (product as any).product_units || [];
-          if (Array.isArray(units) && units.length > 0) {
-            console.log(`🔍 Processing ${units.length} units for product ${product.brand} ${product.model}`);
+          
+          // FALLBACK: If no units exist, generate ONE label from product-level data
+          if (!Array.isArray(units) || units.length === 0) {
+            labelGenerationLog.push(`⚠️ Product ${productName} has no units - generating product-level label`);
             
-            let productLabelsGenerated = 0;
-            units.forEach((unit, unitIndex) => {
-              console.log(`🔍 Unit ${unitIndex + 1}:`, {
-                id: unit.id,
-                status: unit.status,
-                hasSerial: !!unit.serial_number,
-                serialNumber: unit.serial_number,
-                hasBarcode: !!unit.barcode,
-                hasPrice: !!unit.price
-              });
-              
-              // Include all available units, even those without serial numbers (for bulk products)
-              if (unit.status !== 'sold') {
-                directLabels.push({
-                  id: unit.id,
-                  productName: `${product.brand} ${product.model}`,
-                  brand: product.brand,
-                  model: product.model,
-                  serialNumber: unit.serial_number || '', // Allow empty serial for bulk products
-                  barcode: unit.barcode || product.barcode || '',
-                  price: unit.price || product.price || 0,
-                  maxPrice: unit.max_price || product.max_price,
-                  minPrice: unit.min_price || product.min_price,
-                  category: product.category?.name,
-                  color: unit.color,
-                  batteryLevel: unit.battery_level,
-                  storage: unit.storage,
-                  ram: unit.ram
-                });
-                productLabelsGenerated++;
-              } else {
-                console.log(`🚫 Skipping sold unit: ${unit.serial_number || unit.id}`);
-              }
+            // Generate a single label using product-level data
+            directLabels.push({
+              id: product.id || `product-${Date.now()}`,
+              productName,
+              brand: product.brand,
+              model: product.model,
+              serialNumber: '', // Bulk product - no serial
+              barcode: product.barcode || '',
+              price: product.price || 0,
+              maxPrice: product.max_price,
+              minPrice: product.min_price,
+              category: product.category?.name,
+              color: undefined,
+              batteryLevel: undefined,
+              storage: product.storage,
+              ram: product.ram
             });
             
-            console.log(`✅ Generated ${productLabelsGenerated} labels for product ${product.brand} ${product.model}`);
-          } else {
-            console.log(`⚠️ Product ${product.brand} ${product.model} has no units array or empty units`);
+            labelGenerationLog.push(`✅ Generated 1 product-level label for ${productName}`);
+            return;
           }
+          
+          labelGenerationLog.push(`🔍 Processing ${units.length} units for ${productName}`);
+          
+          let productLabelsGenerated = 0;
+          let skippedUnits = 0;
+          
+          units.forEach((unit, unitIndex) => {
+            // Log unit details for debugging
+            labelGenerationLog.push(`  Unit ${unitIndex + 1}: status=${unit.status}, serial=${unit.serial_number || 'none'}, barcode=${unit.barcode ? 'yes' : 'no'}`);
+            
+            // RELAXED VALIDATION: Include all non-sold units
+            if (unit.status === 'sold') {
+              labelGenerationLog.push(`    🚫 Skipped (sold)`);
+              skippedUnits++;
+              return;
+            }
+            
+            // Generate label with fallback values
+            directLabels.push({
+              id: unit.id || `unit-${product.id}-${unitIndex}`,
+              productName,
+              brand: product.brand,
+              model: product.model,
+              serialNumber: unit.serial_number || '', // Allow empty for bulk products
+              barcode: unit.barcode || product.barcode || '', // Fallback to product barcode
+              price: unit.price ?? product.price ?? 0, // Use nullish coalescing
+              maxPrice: unit.max_price ?? product.max_price,
+              minPrice: unit.min_price ?? product.min_price,
+              category: product.category?.name,
+              color: unit.color,
+              batteryLevel: unit.battery_level,
+              storage: unit.storage ?? product.storage, // Fallback to product storage
+              ram: unit.ram ?? product.ram // Fallback to product RAM
+            });
+            
+            productLabelsGenerated++;
+            labelGenerationLog.push(`    ✅ Label generated`);
+          });
+          
+          labelGenerationLog.push(`✅ Product ${productName}: ${productLabelsGenerated} labels generated, ${skippedUnits} units skipped`);
         });
         
-        console.log(`Generated ${directLabels.length} labels from preloaded units`);
+        // Enhanced logging with summary
+        console.group('📋 Label Generation Summary');
+        console.log(`Total products processed: ${inventoryProducts.length}`);
+        console.log(`Total labels generated: ${directLabels.length}`);
+        console.log('\nDetailed log:');
+        labelGenerationLog.forEach(log => console.log(log));
+        console.groupEnd();
+        
         setLabels(directLabels);
         return;
       }
