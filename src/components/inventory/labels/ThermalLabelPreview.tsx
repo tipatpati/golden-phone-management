@@ -3,6 +3,8 @@ import { ThermalLabelData, ThermalLabelOptions } from "./types";
 import { formatLabelElements } from "./services/labelDataFormatter";
 import { BarcodeRenderer } from "./services/BarcodeRenderer";
 import { PRINT_SETTINGS } from "./services/config";
+import { logger } from "@/utils/logger";
+
 interface ThermalLabelPreviewProps {
   label: ThermalLabelData;
   options: ThermalLabelOptions & {
@@ -10,93 +12,58 @@ interface ThermalLabelPreviewProps {
     isSupplierLabel?: boolean;
   };
 }
-export function ThermalLabelPreview({
-  label,
-  options
-}: ThermalLabelPreviewProps) {
-  const [barcodeMarkup, setBarcodeMarkup] = useState<string>('');
-  
-  // Defensive check: Unwrap any corrupted {_type, value} objects
-  const sanitizedLabel = React.useMemo(() => {
-    const unwrap = (value: any) => {
-      if (value && typeof value === 'object' && '_type' in value && 'value' in value) {
-        console.error('🚨 CORRUPTED DATA IN PREVIEW:', value);
-        return value.value === 'undefined' ? undefined : value.value;
-      }
-      return value;
-    };
 
-    return {
-      ...label,
-      id: unwrap(label.id),
-      productName: unwrap(label.productName),
-      brand: unwrap(label.brand),
-      model: unwrap(label.model),
-      serialNumber: unwrap(label.serialNumber),
-      barcode: unwrap(label.barcode),
-      price: unwrap(label.price),
-      maxPrice: unwrap(label.maxPrice),
-      minPrice: unwrap(label.minPrice),
-      category: unwrap(label.category),
-      color: unwrap(label.color),
-      batteryLevel: unwrap(label.batteryLevel),
-      storage: unwrap(label.storage),
-      ram: unwrap(label.ram)
-    };
-  }, [label]);
-  
-  const formattedLabel = formatLabelElements(sanitizedLabel, options);
+export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps) {
+  const [barcodeMarkup, setBarcodeMarkup] = useState<string>("");
 
+  // Format the label for display
+  const formattedLabel = formatLabelElements(label, options);
+
+  // Generate barcode when it changes
   useEffect(() => {
-    if (options.includeBarcode && sanitizedLabel.barcode) {
-      try {
-        console.log(`🖨️ ThermalLabelPreview: Generating barcode for preview: ${sanitizedLabel.barcode}`);
-        
-        // Phase 3: Use preview-optimized barcode that matches thermal output
-        const svgMarkup = BarcodeRenderer.generatePreview(sanitizedLabel.barcode);
-        setBarcodeMarkup(svgMarkup);
-        
-        console.log(`✅ ThermalLabelPreview: Barcode generated successfully`);
-      } catch (error) {
-        console.error('❌ ThermalLabelPreview: Failed to generate barcode:', error);
-        setBarcodeMarkup(`
-          <svg width="200" height="50" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="50" fill="#ffebee" stroke="#f44336" stroke-width="1"/>
-            <text x="100" y="20" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">
-              Barcode Error
-            </text>
-            <text x="100" y="35" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
-              ${sanitizedLabel.barcode}
-            </text>
-          </svg>
-        `);
-      }
-    } else {
-      setBarcodeMarkup('');
+    if (!options.includeBarcode || !label.barcode) {
+      setBarcodeMarkup("");
+      return;
     }
-  }, [options.includeBarcode, sanitizedLabel.barcode]);
 
-  // Phase 3: WYSIWYG thermal label styling - exact 6cm × 3cm dimensions using config
+    try {
+      const markup = BarcodeRenderer.generatePreview(label.barcode);
+      setBarcodeMarkup(markup);
+    } catch (error) {
+      logger.error('Failed to generate barcode preview', { 
+        error, 
+        barcode: label.barcode 
+      });
+      setBarcodeMarkup(`
+        <svg width="200" height="100">
+          <text x="100" y="50" text-anchor="middle" fill="red">Error</text>
+        </svg>
+      `);
+    }
+  }, [options.includeBarcode, label.barcode]);
+
+  // Label styling
   const labelStyle = {
     width: `${PRINT_SETTINGS.width}px`,
     height: `${PRINT_SETTINGS.height}px`,
     border: '1px solid hsl(var(--border))',
     borderRadius: '2px',
-    padding: '1px',   // Minimal padding for max space
+    padding: '1px',
     margin: '4px',
-    fontSize: '5px',  // Reduced base font
+    fontSize: '5px',
     fontFamily: 'system-ui, -apple-system, sans-serif',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     textAlign: 'center' as const,
-    lineHeight: '0.85', // Tighter line height
+    lineHeight: '0.85',
     boxSizing: 'border-box' as const,
     overflow: 'hidden',
     boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
     position: 'relative' as const
   };
+
   return (
     <div style={labelStyle}>
       {/* Header Section */}
@@ -190,21 +157,21 @@ export function ThermalLabelPreview({
         )}
       </div>
 
-      {/* Phase 3: Barcode Section - optimized for 6cm x 3cm */}
+      {/* Barcode Section */}
       {options.includeBarcode && formattedLabel.barcode && barcodeMarkup && (
         <div style={{
-          height: '25px',           // Further reduced height
+          height: '25px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#ffffff',
           overflow: 'hidden',
-          marginTop: '0.5px'        // Minimal spacing
+          marginTop: '0.5px'
         }}>
           <div 
             style={{
-              maxWidth: `${PRINT_SETTINGS.width - 12}px`, // Use config width minus margins
-              height: '22px',         // Reduced height for better fit
+              maxWidth: `${PRINT_SETTINGS.width - 12}px`,
+              height: '22px',
               display: 'block'
             }}
             dangerouslySetInnerHTML={{ __html: barcodeMarkup }}

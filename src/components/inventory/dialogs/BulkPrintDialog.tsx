@@ -10,19 +10,21 @@ interface BulkPrintDialogProps {
   isLoading?: boolean;
 }
 
-export function BulkPrintDialog({
-  open,
+export function BulkPrintDialog({ 
+  open, 
   onOpenChange,
   products,
   isLoading = false
 }: BulkPrintDialogProps) {
   if (!open) return null;
 
+  const productIds = products.map(p => p.id).filter(Boolean);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <UnifiedInventoryLabels
-          products={products}
+          productIds={productIds}
           companyName="GOLDEN PHONE SRL"
           buttonText="Generate and Print Labels"
         />

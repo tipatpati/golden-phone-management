@@ -307,7 +307,7 @@ export function InventoryTable({
                     </Button>
                     <div onClick={(e) => e.stopPropagation()}>
                       <UnifiedInventoryLabels
-                        products={[product]}
+                        productIds={[product.id]}
                         companyName="GOLDEN PHONE SRL"
                         buttonText=""
                         buttonClassName="h-8 w-8 p-0"
