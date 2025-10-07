@@ -10,6 +10,39 @@ import { useSimpleThermalLabels } from "@/components/suppliers/hooks/useSimpleTh
 import { logger } from "@/utils/logger";
 import type { Product, ProductUnit } from "@/services/inventory/types";
 
+/**
+ * Sanitizes label data by unwrapping any corrupted {_type, value} objects
+ * This fixes data corruption from serialization/deserialization
+ */
+function sanitizeLabelData(label: any): ThermalLabelData {
+  const unwrap = (value: any) => {
+    // If value is an object with _type and value properties, unwrap it
+    if (value && typeof value === 'object' && '_type' in value && 'value' in value) {
+      console.warn('🔧 Unwrapping corrupted value:', value);
+      // Return undefined if value is "undefined" string
+      return value.value === 'undefined' ? undefined : value.value;
+    }
+    return value;
+  };
+
+  return {
+    id: unwrap(label.id),
+    productName: unwrap(label.productName) || 'Unknown Product',
+    brand: unwrap(label.brand),
+    model: unwrap(label.model),
+    serialNumber: unwrap(label.serialNumber),
+    barcode: unwrap(label.barcode) || '',
+    price: typeof unwrap(label.price) === 'number' ? unwrap(label.price) : 0,
+    maxPrice: unwrap(label.maxPrice),
+    minPrice: unwrap(label.minPrice),
+    category: unwrap(label.category),
+    color: unwrap(label.color),
+    batteryLevel: unwrap(label.batteryLevel),
+    storage: unwrap(label.storage),
+    ram: unwrap(label.ram)
+  };
+}
+
 export type LabelSource = 'inventory' | 'supplier';
 
 // Properly typed product interface with units
@@ -124,22 +157,26 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
             labelGenerationLog.push(`⚠️ Product ${productName} has no units - generating product-level label`);
             
             // Generate a single label using product-level data
-            directLabels.push({
+            const rawLabel = {
               id: product.id || `product-${Date.now()}`,
               productName,
-              brand: product.brand,
-              model: product.model,
-              serialNumber: '', // Bulk product - no serial
+              brand: product.brand || undefined,
+              model: product.model || undefined,
+              serialNumber: undefined,
               barcode: product.barcode || '',
               price: product.price || 0,
-              maxPrice: product.max_price,
-              minPrice: product.min_price,
-              category: product.category?.name,
+              maxPrice: product.max_price || undefined,
+              minPrice: product.min_price || undefined,
+              category: product.category?.name || undefined,
               color: undefined,
               batteryLevel: undefined,
-              storage: product.storage,
-              ram: product.ram
-            });
+              storage: product.storage || undefined,
+              ram: product.ram || undefined
+            };
+            
+            // Sanitize the label before adding
+            const sanitizedLabel = sanitizeLabelData(rawLabel);
+            directLabels.push(sanitizedLabel);
             
             labelGenerationLog.push(`✅ Generated 1 product-level label for ${productName}`);
             return;
@@ -161,23 +198,27 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
               return;
             }
             
-            // Generate label with fallback values
-            directLabels.push({
+            // Generate label with fallback values - using explicit undefined instead of nullish values
+            const rawLabel = {
               id: unit.id || `unit-${product.id}-${unitIndex}`,
               productName,
-              brand: product.brand,
-              model: product.model,
-              serialNumber: unit.serial_number || '', // Allow empty for bulk products
-              barcode: unit.barcode || product.barcode || '', // Fallback to product barcode
-              price: unit.price ?? product.price ?? 0, // Use nullish coalescing
-              maxPrice: unit.max_price ?? product.max_price,
-              minPrice: unit.min_price ?? product.min_price,
-              category: product.category?.name,
-              color: unit.color,
-              batteryLevel: unit.battery_level,
-              storage: unit.storage ?? product.storage, // Fallback to product storage
-              ram: unit.ram ?? product.ram // Fallback to product RAM
-            });
+              brand: product.brand || undefined,
+              model: product.model || undefined,
+              serialNumber: unit.serial_number || undefined,
+              barcode: unit.barcode || product.barcode || '',
+              price: unit.price !== null && unit.price !== undefined ? unit.price : (product.price || 0),
+              maxPrice: unit.max_price !== null && unit.max_price !== undefined ? unit.max_price : product.max_price,
+              minPrice: unit.min_price !== null && unit.min_price !== undefined ? unit.min_price : product.min_price,
+              category: product.category?.name || undefined,
+              color: unit.color || undefined,
+              batteryLevel: unit.battery_level !== null && unit.battery_level !== undefined ? unit.battery_level : undefined,
+              storage: unit.storage !== null && unit.storage !== undefined ? unit.storage : product.storage,
+              ram: unit.ram !== null && unit.ram !== undefined ? unit.ram : product.ram
+            };
+            
+            // Sanitize the label before adding
+            const sanitizedLabel = sanitizeLabelData(rawLabel);
+            directLabels.push(sanitizedLabel);
             
             productLabelsGenerated++;
             labelGenerationLog.push(`    ✅ Label generated`);
@@ -190,6 +231,10 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
         console.group('📋 Label Generation Summary');
         console.log(`Total products processed: ${inventoryProducts.length}`);
         console.log(`Total labels generated: ${directLabels.length}`);
+        console.log('\nSample label data (first label):');
+        if (directLabels.length > 0) {
+          console.log(JSON.stringify(directLabels[0], null, 2));
+        }
         console.log('\nDetailed log:');
         labelGenerationLog.forEach(log => console.log(log));
         console.groupEnd();

@@ -15,15 +15,45 @@ export function ThermalLabelPreview({
   options
 }: ThermalLabelPreviewProps) {
   const [barcodeMarkup, setBarcodeMarkup] = useState<string>('');
-  const formattedLabel = formatLabelElements(label, options);
+  
+  // Defensive check: Unwrap any corrupted {_type, value} objects
+  const sanitizedLabel = React.useMemo(() => {
+    const unwrap = (value: any) => {
+      if (value && typeof value === 'object' && '_type' in value && 'value' in value) {
+        console.error('🚨 CORRUPTED DATA IN PREVIEW:', value);
+        return value.value === 'undefined' ? undefined : value.value;
+      }
+      return value;
+    };
+
+    return {
+      ...label,
+      id: unwrap(label.id),
+      productName: unwrap(label.productName),
+      brand: unwrap(label.brand),
+      model: unwrap(label.model),
+      serialNumber: unwrap(label.serialNumber),
+      barcode: unwrap(label.barcode),
+      price: unwrap(label.price),
+      maxPrice: unwrap(label.maxPrice),
+      minPrice: unwrap(label.minPrice),
+      category: unwrap(label.category),
+      color: unwrap(label.color),
+      batteryLevel: unwrap(label.batteryLevel),
+      storage: unwrap(label.storage),
+      ram: unwrap(label.ram)
+    };
+  }, [label]);
+  
+  const formattedLabel = formatLabelElements(sanitizedLabel, options);
 
   useEffect(() => {
-    if (options.includeBarcode && label.barcode) {
+    if (options.includeBarcode && sanitizedLabel.barcode) {
       try {
-        console.log(`🖨️ ThermalLabelPreview: Generating barcode for preview: ${label.barcode}`);
+        console.log(`🖨️ ThermalLabelPreview: Generating barcode for preview: ${sanitizedLabel.barcode}`);
         
         // Phase 3: Use preview-optimized barcode that matches thermal output
-        const svgMarkup = BarcodeRenderer.generatePreview(label.barcode);
+        const svgMarkup = BarcodeRenderer.generatePreview(sanitizedLabel.barcode);
         setBarcodeMarkup(svgMarkup);
         
         console.log(`✅ ThermalLabelPreview: Barcode generated successfully`);
@@ -36,7 +66,7 @@ export function ThermalLabelPreview({
               Barcode Error
             </text>
             <text x="100" y="35" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">
-              ${label.barcode}
+              ${sanitizedLabel.barcode}
             </text>
           </svg>
         `);
@@ -44,7 +74,7 @@ export function ThermalLabelPreview({
     } else {
       setBarcodeMarkup('');
     }
-  }, [options.includeBarcode, label.barcode]);
+  }, [options.includeBarcode, sanitizedLabel.barcode]);
 
   // Phase 3: WYSIWYG thermal label styling - exact 6cm × 3cm dimensions using config
   const labelStyle = {
