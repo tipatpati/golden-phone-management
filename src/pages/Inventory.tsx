@@ -1,20 +1,16 @@
 
 import React from "react";
-import { ConnectionStatus } from "@/components/inventory/ConnectionStatus";
+import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { InventoryHeader } from "@/components/inventory/InventoryHeader";
 import { InventoryContent } from "@/components/inventory/InventoryContent";
 import { useInventoryState } from "@/hooks/useInventoryState";
-import AdminPurgeProducts from "@/components/inventory/admin/AdminPurgeProducts";
 import { InventoryIntegrityDashboard } from "@/components/inventory/admin/InventoryIntegrityDashboard";
 
 const Inventory = () => {
   const {
     showAddProduct,
-    canAddProducts,
-    isCheckingConnection,
     handleAddProduct,
-    handleCancelAddProduct,
-    handleTestConnection
+    handleCancelAddProduct
   } = useInventoryState();
 
   return (
@@ -24,15 +20,8 @@ const Inventory = () => {
         <InventoryHeader />
       </div>
       
-      {/* API Connection Status */}
-      <ConnectionStatus 
-        canAddProducts={canAddProducts}
-        isCheckingConnection={isCheckingConnection}
-        onTestConnection={handleTestConnection}
-      />
-
-      {/* Admin purge tool */}
-      <AdminPurgeProducts />
+      {/* Quick Navigation */}
+      <ModuleNavCards currentModule="inventory" />
       
       {/* Data Integrity Dashboard */}
       <InventoryIntegrityDashboard />

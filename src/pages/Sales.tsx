@@ -2,7 +2,7 @@ import React from "react";
 import type { Sale } from "@/services/sales/types";
 import { SalesHeader } from "@/components/sales/SalesHeader";
 import { SalesStats } from "@/components/sales/SalesStats";
-import { SalesNavCards } from "@/components/sales/SalesNavCards";
+import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { SalesSearchBar } from "@/components/sales/SalesSearchBar";
 import { SalesList } from "@/components/sales/SalesList";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -148,7 +148,7 @@ const Garentille = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         <SalesHeader />
-        <SalesNavCards />
+        <ModuleNavCards currentModule="sales" />
         
         {/* Enhanced Filters */}
         <EnhancedSalesFilters
