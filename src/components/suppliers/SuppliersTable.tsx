@@ -32,6 +32,14 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  // CRITICAL: Mobile pagination MUST be called before any early returns to avoid hook violations
+  const {
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    paginatedData: paginatedMobileSuppliers,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: filteredSuppliers, itemsPerPage: 17 });
+
   const handleDeleteSupplier = (supplier: any) => {
     showConfirmDialog({
       item: supplier,
@@ -45,6 +53,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     return status === 'active' ? 'default' : 'secondary';
   };
 
+  // Early return AFTER all hooks have been called
   if (isLoading) {
     return <LoadingState message="Loading suppliers..." />;
   }
@@ -153,14 +162,6 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
     setDeletingSupplier(null);
     setContactingSupplier(null);
   };
-
-  // Mobile pagination
-  const {
-    currentPage: mobilePage,
-    totalPages: mobileTotalPages,
-    paginatedData: paginatedMobileSuppliers,
-    goToPage: mobileGoToPage
-  } = usePagination({ data: filteredSuppliers, itemsPerPage: 17 });
 
   return (
     <>
