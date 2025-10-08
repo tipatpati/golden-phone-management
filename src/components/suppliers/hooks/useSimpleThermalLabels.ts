@@ -89,8 +89,8 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           battery_level,
           color
         `)
-        .in('id', allUnitIds)
-        .eq('status', 'available');
+        .in('id', allUnitIds);
+        // Note: No status filter - supplier labels should show all units from transaction
 
       if (unitsError) {
         logger.error('Failed to fetch product units', unitsError);

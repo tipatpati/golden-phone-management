@@ -144,22 +144,12 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
             )
           );
 
-          // Check if all units are sold - if so, skip this product to prevent infinite loops
-          const availableUnits = productUnitsForProduct.filter(unit => unit.status !== 'sold');
-          const allUnitsSold = productUnitsForProduct.length > 0 && availableUnits.length === 0;
+          // Note: Show all units regardless of status for supplier transaction labels
+          // Supplier labels are for historical records and may need reprinting
+          const allUnits = productUnitsForProduct;
 
-          if (allUnitsSold) {
-            logger.warn('Skipping product with all units sold', { 
-              productId: product.id, 
-              brand: product.brand, 
-              model: product.model,
-              totalUnits: productUnitsForProduct.length 
-            }, 'useSupplierTransactionProducts');
-            return; // Skip this product entirely
-          }
-
-          // Extract serial numbers for legacy compatibility (only for non-sold units)
-          const serialNumbers = availableUnits
+          // Extract serial numbers for legacy compatibility (all units)
+          const serialNumbers = allUnits
             .filter(unit => unit.serial_number)
             .map(unit => unit.serial_number);
 
@@ -176,7 +166,7 @@ export function useSupplierTransactionProducts(transactionIds: string[]) {
           });
 
           // Enhance units with transaction pricing data
-          const enhancedUnits = availableUnits.map(unit => {
+          const enhancedUnits = allUnits.map(unit => {
             const transactionCost = transactionCostMap.get(unit.id);
             const enhancedUnit = {
               ...unit,
