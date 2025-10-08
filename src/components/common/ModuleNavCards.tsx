@@ -77,13 +77,33 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
           
+          // Define colors matching dashboard module cards
+          const getModuleColors = (title: string) => {
+            switch (title.toLowerCase()) {
+              case 'crea garentille':
+                return "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700";
+              case 'trova cliente':
+                return "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700";
+              case 'visualizza inventario':
+                return "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700";
+              case 'nuova riparazione':
+                return "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700";
+              case 'fornitori':
+                return "bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700";
+              default:
+                return "bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700";
+            }
+          };
+          
+          const bgColor = getModuleColors(action.title);
+          
           return (
             <button
               key={index}
               onClick={() => navigate(action.href)}
-              className="
-                bg-primary hover:bg-primary/90
-                text-primary-foreground
+              className={`
+                ${bgColor}
+                text-white
                 rounded-2xl p-6 
                 shadow-xl hover:shadow-2xl 
                 transform hover:scale-105 
@@ -93,7 +113,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
                 flex flex-col items-center justify-center
                 font-bold text-lg
                 active:scale-95
-              "
+              `}
             >
               <IconComponent className="h-10 w-10 mb-3" />
               <span className="text-center leading-tight">
