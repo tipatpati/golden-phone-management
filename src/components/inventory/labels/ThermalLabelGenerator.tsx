@@ -202,23 +202,23 @@ export function ThermalLabelGenerator({
             <Printer className="h-5 w-5" />
             {labelSource === 'supplier' ? 'Supplier' : 'Professional'} Thermal Label Generator
           </DialogTitle>
-          <DialogDescription className="space-y-2">
-            <div>6cm × 3cm landscape format at 96 DPI for professional thermal printers</div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">
-                {labelStats.totalLabels} total labels
-              </Badge>
-              <Badge variant="outline">
-                {labelStats.uniqueProducts} product{labelStats.uniqueProducts !== 1 ? 's' : ''}
-              </Badge>
-              {labelStats.hasSerialNumbers && (
-                <Badge variant="outline">Serial numbers</Badge>
-              )}
-              {labelStats.hasBatteryLevels && (
-                <Badge variant="outline">Battery levels</Badge>
-              )}
-            </div>
+          <DialogDescription>
+            6cm × 3cm landscape format at 96 DPI for professional thermal printers
           </DialogDescription>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Badge variant="secondary">
+              {labelStats.totalLabels} total labels
+            </Badge>
+            <Badge variant="outline">
+              {labelStats.uniqueProducts} product{labelStats.uniqueProducts !== 1 ? 's' : ''}
+            </Badge>
+            {labelStats.hasSerialNumbers && (
+              <Badge variant="outline">Serial numbers</Badge>
+            )}
+            {labelStats.hasBatteryLevels && (
+              <Badge variant="outline">Battery levels</Badge>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-6">
