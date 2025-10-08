@@ -8,6 +8,7 @@ import type { Sale } from "@/services/sales";
 import { SaleDetailsDialog } from "./SaleDetailsDialog";
 import { ControlledSaleDetailsDialog } from "./ControlledSaleDetailsDialog";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
+import { ComprehensiveEditSaleDialog } from "./ComprehensiveEditSaleDialog";
 import { BulkSalesActionsToolbar } from "./BulkSalesActionsToolbar";
 import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
@@ -280,12 +281,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
       onClick: (sale: Sale) => setSelectedSaleForDetails(sale),
       className: "hover:bg-blue-50 hover:text-blue-600"
     },
-    ...(onEdit ? [
+    ...(userRole === 'super_admin' ? [
       {
         icon: <Edit2 className="h-4 w-4" />,
         label: "Modifica",
-        onClick: onEdit,
-        className: "hover:bg-amber-50 hover:text-amber-600"
+        onClick: () => {}, // Not used because of renderCustom
+        className: "hover:bg-amber-50 hover:text-amber-600",
+        renderCustom: (sale: Sale) => (
+          <ComprehensiveEditSaleDialog sale={sale} />
+        )
       }
     ] : []),
     ...(onDelete ? [
@@ -358,15 +362,8 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
                 variant: getStatusColor(sale.status) as any
               }}
             headerActions={
-              onEdit ? (
-                <Button 
-                  variant="text" 
-                  size="sm" 
-                  onClick={() => onEdit(sale)}
-                  className="h-8 w-8 p-0 hover:bg-amber-50 hover:text-amber-600 transition-colors border border-border/30 bg-background/50 backdrop-blur-sm shadow-sm"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
+              userRole === 'super_admin' ? (
+                <ComprehensiveEditSaleDialog sale={sale} />
               ) : null
             }
             fields={[

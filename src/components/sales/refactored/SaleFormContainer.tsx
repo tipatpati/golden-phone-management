@@ -8,9 +8,12 @@ import { CleanSaleSummarySection } from './CleanSaleSummarySection';
 interface SaleFormContainerProps {
   onSaleComplete?: (sale: any) => void;
   onCancel?: () => void;
+  isEditMode?: boolean;
+  editingSaleId?: string;
+  initialSale?: any;
 }
 
-function SaleFormWithDrafts({ onSaleComplete, onCancel }: SaleFormContainerProps) {
+function SaleFormWithDrafts({ onSaleComplete, onCancel, isEditMode, editingSaleId }: SaleFormContainerProps) {
   const { state } = useSaleCreation();
 
   return (
@@ -34,6 +37,8 @@ function SaleFormWithDrafts({ onSaleComplete, onCancel }: SaleFormContainerProps
             <CleanSaleSummarySection 
               onSaleComplete={onSaleComplete}
               onCancel={onCancel}
+              isEditMode={isEditMode}
+              editingSaleId={editingSaleId}
             />
           </div>
         </div>
@@ -42,10 +47,15 @@ function SaleFormWithDrafts({ onSaleComplete, onCancel }: SaleFormContainerProps
   );
 }
 
-export function SaleFormContainer({ onSaleComplete, onCancel }: SaleFormContainerProps) {
+export function SaleFormContainer({ onSaleComplete, onCancel, isEditMode, editingSaleId, initialSale }: SaleFormContainerProps) {
   return (
-    <SaleCreationProvider>
-      <SaleFormWithDrafts onSaleComplete={onSaleComplete} onCancel={onCancel} />
+    <SaleCreationProvider initialSale={initialSale}>
+      <SaleFormWithDrafts 
+        onSaleComplete={onSaleComplete} 
+        onCancel={onCancel}
+        isEditMode={isEditMode}
+        editingSaleId={editingSaleId}
+      />
     </SaleCreationProvider>
   );
 }

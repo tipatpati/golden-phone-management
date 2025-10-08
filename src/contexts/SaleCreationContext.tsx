@@ -322,9 +322,64 @@ interface SaleCreationContextValue {
 const SaleCreationContext = createContext<SaleCreationContextValue | null>(null);
 
 // Provider
-export function SaleCreationProvider({ children }: { children: React.ReactNode }) {
+interface SaleCreationProviderProps {
+  children: React.ReactNode;
+  initialSale?: any; // Existing sale data for edit mode
+}
+
+export function SaleCreationProvider({ children, initialSale }: SaleCreationProviderProps) {
   const [state, dispatch] = useReducer(saleCreationReducer, initialState);
   const { toast } = useToast();
+
+  // Initialize with existing sale data if provided
+  useEffect(() => {
+    if (!initialSale) return;
+    
+    console.log('🔄 Initializing edit mode with sale:', initialSale);
+    
+    // Load sale items
+    if (initialSale.sale_items && initialSale.sale_items.length > 0) {
+      initialSale.sale_items.forEach((item: any) => {
+        const saleItem: SaleItem = {
+          product_id: item.product_id,
+          product_unit_id: item.product_unit_id,
+          product_name: `${item.product?.brand || ''} ${item.product?.model || ''}`.trim(),
+          brand: item.product?.brand || '',
+          model: item.product?.model || '',
+          year: item.product?.year,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          serial_number: item.serial_number,
+          barcode: item.barcode,
+          has_serial: item.product?.has_serial,
+          stock: 999, // Will be refreshed
+        };
+        dispatch({ type: 'ADD_ITEM', payload: saleItem });
+      });
+    }
+    
+    // Load form data
+    const formData: Partial<SaleFormData> = {
+      client_id: initialSale.client_id,
+      payment_method: initialSale.payment_method,
+      payment_type: initialSale.payment_type || 'single',
+      cash_amount: initialSale.cash_amount || 0,
+      card_amount: initialSale.card_amount || 0,
+      bank_transfer_amount: initialSale.bank_transfer_amount || 0,
+      discount_type: initialSale.discount_percentage > 0 ? 'percentage' : 
+                     initialSale.discount_amount > 0 ? 'amount' : null,
+      discount_value: initialSale.discount_percentage > 0 ? initialSale.discount_percentage : 
+                      initialSale.discount_amount || 0,
+      notes: initialSale.notes || '',
+      vat_included: initialSale.vat_included ?? true
+    };
+    dispatch({ type: 'UPDATE_FORM_DATA', payload: formData });
+    
+    // Load client if exists
+    if (initialSale.client) {
+      dispatch({ type: 'SET_SELECTED_CLIENT', payload: initialSale.client });
+    }
+  }, [initialSale]);
 
   console.log('🔄 SaleCreationProvider rendering with state:', {
     itemsCount: state.items.length,

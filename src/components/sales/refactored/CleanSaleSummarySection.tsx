@@ -15,9 +15,11 @@ import { toast } from 'sonner';
 interface CleanSaleSummarySectionProps {
   onSaleComplete?: (sale: any) => void;
   onCancel?: () => void;
+  isEditMode?: boolean;
+  editingSaleId?: string;
 }
 
-export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleSummarySectionProps) {
+export function CleanSaleSummarySection({ onSaleComplete, onCancel, isEditMode, editingSaleId }: CleanSaleSummarySectionProps) {
   const { state, updateFormData } = useSaleCreation();
   const { items, formData, totalAmount, subtotal, discountAmount, taxAmount, isValid, validationErrors } = state;
   const { user } = useAuth();
@@ -49,48 +51,91 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
 
     setIsSubmitting(true);
     try {
-      // Debug VAT state at submission time
-      console.log('🚀 CREATING SALE WITH VAT STATE:', {
-        formData_vat_included: formData.vat_included,
-        context_state_vat: state.formData.vat_included,
-        subtotal,
-        taxAmount,
-        totalAmount
-      });
-      
-      const saleData = {
-        salesperson_id: user.id,
-        client_id: formData.client_id,
-        payment_method: formData.payment_method as any,
-        payment_type: formData.payment_type || 'single',
-        cash_amount: formData.cash_amount || 0,
-        card_amount: formData.card_amount || 0,
-        bank_transfer_amount: formData.bank_transfer_amount || 0,
-        discount_amount: discountAmount,
-        discount_percentage: formData.discount_type === 'percentage' ? formData.discount_value : undefined,
-        subtotal: subtotal,
-        tax_amount: taxAmount,
-        total_amount: totalAmount,
-        vat_included: formData.vat_included,
-        notes: formData.notes || '',
-        sale_items: items.map(item => ({
-          product_id: item.product_id,
-          product_unit_id: item.product_unit_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          serial_number: item.serial_number || undefined,
-          barcode: item.barcode || undefined,
-        })),
-      };
+      if (isEditMode && editingSaleId) {
+        // UPDATE MODE
+        console.log('🔄 UPDATING SALE WITH VAT STATE:', {
+          saleId: editingSaleId,
+          formData_vat_included: formData.vat_included,
+          subtotal,
+          taxAmount,
+          totalAmount
+        });
+        
+        const updateData = {
+          client_id: formData.client_id,
+          payment_method: formData.payment_method as any,
+          payment_type: formData.payment_type || 'single',
+          cash_amount: formData.cash_amount || 0,
+          card_amount: formData.card_amount || 0,
+          bank_transfer_amount: formData.bank_transfer_amount || 0,
+          discount_amount: discountAmount,
+          discount_percentage: formData.discount_type === 'percentage' ? formData.discount_value : undefined,
+          subtotal: subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount,
+          vat_included: formData.vat_included,
+          notes: formData.notes || '',
+        };
 
-      console.log('📤 FINAL SALE DATA BEING SENT:', saleData);
+        console.log('📤 FINAL UPDATE DATA BEING SENT:', updateData);
 
-      const newSale = await createSale.mutateAsync(saleData);
-      toast.success("Garentille creata con successo!");
-      onSaleComplete?.(newSale);
+        // Import useUpdateSale dynamically to avoid circular deps
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: updatedSale, error } = await supabase
+          .from('sales')
+          .update(updateData)
+          .eq('id', editingSaleId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast.success("Garentille aggiornata con successo!");
+        onSaleComplete?.(updatedSale);
+      } else {
+        // CREATE MODE
+        console.log('🚀 CREATING SALE WITH VAT STATE:', {
+          formData_vat_included: formData.vat_included,
+          context_state_vat: state.formData.vat_included,
+          subtotal,
+          taxAmount,
+          totalAmount
+        });
+        
+        const saleData = {
+          salesperson_id: user.id,
+          client_id: formData.client_id,
+          payment_method: formData.payment_method as any,
+          payment_type: formData.payment_type || 'single',
+          cash_amount: formData.cash_amount || 0,
+          card_amount: formData.card_amount || 0,
+          bank_transfer_amount: formData.bank_transfer_amount || 0,
+          discount_amount: discountAmount,
+          discount_percentage: formData.discount_type === 'percentage' ? formData.discount_value : undefined,
+          subtotal: subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount,
+          vat_included: formData.vat_included,
+          notes: formData.notes || '',
+          sale_items: items.map(item => ({
+            product_id: item.product_id,
+            product_unit_id: item.product_unit_id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            serial_number: item.serial_number || undefined,
+            barcode: item.barcode || undefined,
+          })),
+        };
+
+        console.log('📤 FINAL SALE DATA BEING SENT:', saleData);
+
+        const newSale = await createSale.mutateAsync(saleData);
+        toast.success("Garentille creata con successo!");
+        onSaleComplete?.(newSale);
+      }
     } catch (error) {
-      console.error('Error creating sale:', error);
-      const errorMessage = error instanceof Error ? error.message : "Errore durante la creazione della garentille";
+      console.error('Error creating/updating sale:', error);
+      const errorMessage = error instanceof Error ? error.message : "Errore durante l'operazione";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -225,7 +270,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
           size="lg"
         >
           <CheckCircle2 className="h-4 w-4 mr-2" />
-          {isSubmitting ? "Creazione..." : "Crea Garentille"}
+          {isSubmitting ? (isEditMode ? "Aggiornamento..." : "Creazione...") : (isEditMode ? "Aggiorna Garentille" : "Crea Garentille")}
         </Button>
         
         {onCancel && (
