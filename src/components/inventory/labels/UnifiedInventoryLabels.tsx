@@ -33,8 +33,18 @@ export function UnifiedInventoryLabels({
   });
 
   const handleOpenGenerator = () => {
+    console.log('🔍 Opening label generator', {
+      hasLabels: !!labelDataProvider.labels,
+      labelCount: labelDataProvider.labels?.length,
+      isLoading: labelDataProvider.isLoading,
+      error: labelDataProvider.error
+    });
+    
     if (labelDataProvider.labels && labelDataProvider.labels.length > 0) {
+      console.log('✅ Opening generator with labels:', labelDataProvider.labels);
       setIsGeneratorOpen(true);
+    } else {
+      console.log('❌ Cannot open generator - no labels available');
     }
   };
 
