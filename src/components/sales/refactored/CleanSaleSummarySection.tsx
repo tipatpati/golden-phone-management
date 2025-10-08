@@ -90,7 +90,8 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel }: CleanSaleS
       onSaleComplete?.(newSale);
     } catch (error) {
       console.error('Error creating sale:', error);
-      toast.error("Errore durante la creazione della garentille");
+      const errorMessage = error instanceof Error ? error.message : "Errore durante la creazione della garentille";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

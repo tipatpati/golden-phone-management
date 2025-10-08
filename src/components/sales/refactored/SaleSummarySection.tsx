@@ -137,9 +137,10 @@ export function SaleSummarySection({ onSaleComplete, onCancel }: SaleSummarySect
       onSaleComplete?.(result);
     } catch (error) {
       console.error('Error creating sale:', error);
+      const errorMessage = error instanceof Error ? error.message : "Errore nella creazione della garentille";
       toast({ 
         title: 'Errore', 
-        description: "Errore nella creazione della garentille", 
+        description: errorMessage, 
         variant: 'destructive' 
       });
     }
