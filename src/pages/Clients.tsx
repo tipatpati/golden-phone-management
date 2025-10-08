@@ -7,6 +7,7 @@ import { ClientsStats } from "@/components/clients/ClientsStats";
 import { ClientsList } from "@/components/clients/ClientsList";
 import { EmptyClientsList } from "@/components/clients/EmptyClientsList";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
+import { PageLayout } from "@/components/common/PageLayout";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,39 +22,25 @@ const Clients = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Gestione Clienti
-            </h2>
-            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">Caricamento clienti...</p>
-          </div>
-        </div>
-      </div>
+      <PageLayout>
+        <ClientsHeader />
+      </PageLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Gestione Clienti
-            </h2>
-            <p className="text-red-500 mt-2 sm:mt-3 text-base sm:text-lg">Errore nel caricamento clienti. Riprova.</p>
-          </div>
-        </div>
-      </div>
+      <PageLayout>
+        <ClientsHeader />
+        <p className="text-destructive">Errore nel caricamento clienti. Riprova.</p>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-        <ClientsHeader />
-        <ModuleNavCards currentModule="clients" />
+    <PageLayout>
+      <ClientsHeader />
+      <ModuleNavCards currentModule="clients" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="lg:col-span-2">
@@ -64,13 +51,12 @@ const Clients = () => {
           </div>
         </div>
 
-        {clients.length === 0 ? (
-          <EmptyClientsList searchTerm={searchTerm} />
-        ) : (
-          <ClientsList clients={clients} />
-        )}
-      </div>
-    </div>
+      {clients.length === 0 ? (
+        <EmptyClientsList searchTerm={searchTerm} />
+      ) : (
+        <ClientsList clients={clients} />
+      )}
+    </PageLayout>
   );
 };
 

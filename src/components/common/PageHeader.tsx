@@ -1,5 +1,9 @@
+/**
+ * Standardized Page Header Component
+ * Material Design 3 compliant with consistent styling across all modules
+ */
+
 import React from "react";
-import { Button } from "@/components/ui/updated-button";
 
 interface PageHeaderProps {
   title: string;
@@ -15,20 +19,20 @@ export function PageHeader({
   className = "" 
 }: PageHeaderProps) {
   return (
-    <div className={`bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0 ${className}`}>
+    <div className={`bg-surface-container-highest rounded-xl sm:rounded-2xl md-elevation-1 p-4 sm:p-6 lg:p-8 border-0 ${className}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-muted-foreground mt-2 sm:mt-3 text-base sm:text-lg">
+            <p className="text-on-surface-variant mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg leading-relaxed">
               {subtitle}
             </p>
           )}
         </div>
         {actions && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             {actions}
           </div>
         )}

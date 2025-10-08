@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
@@ -15,8 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/updated-dialog";
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
+import { PageLayout } from "@/components/common/PageLayout";
+import { PageHeader } from "@/components/common/PageHeader";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,16 +56,12 @@ const Suppliers = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-3 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Suppliers</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Manage suppliers and track transactions</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <NotificationCenter />
-        </div>
-      </div>
+    <PageLayout>
+      <PageHeader 
+        title="Suppliers"
+        subtitle="Manage suppliers and track transactions"
+        actions={<NotificationCenter />}
+      />
 
       <ModuleNavCards currentModule="suppliers" />
 
@@ -92,7 +90,7 @@ const Suppliers = () => {
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Button 
                     onClick={handleContactAllSuppliers}
-                    variant="outline"
+                    variant="outlined"
                     disabled={isContactingSuppliers}
                     className="flex items-center gap-2 text-xs sm:text-sm"
                     size="sm"
@@ -148,7 +146,7 @@ const Suppliers = () => {
                 </CardTitle>
                 <div className="flex gap-2">
                   <Button 
-                    variant="outline"
+                    variant="outlined"
                     onClick={() => setShowAcquisitionDialog(true)}
                     className="flex items-center gap-2 text-xs sm:text-sm"
                     size="sm"
@@ -158,7 +156,7 @@ const Suppliers = () => {
                     <span className="sm:hidden">Acquire</span>
                   </Button>
                   <Button 
-                    variant="outline"
+                    variant="outlined"
                     onClick={() => setShowRecoveryDialog(true)}
                     className="flex items-center gap-2 text-xs sm:text-sm"
                     size="sm"
@@ -230,7 +228,7 @@ const Suppliers = () => {
         }}
       />
 
-    </div>
+    </PageLayout>
   );
 };
 

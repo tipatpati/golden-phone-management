@@ -5,6 +5,8 @@ import { InventoryHeader } from "@/components/inventory/InventoryHeader";
 import { InventoryContent } from "@/components/inventory/InventoryContent";
 import { useInventoryState } from "@/hooks/useInventoryState";
 import { InventoryIntegrityDashboard } from "@/components/inventory/admin/InventoryIntegrityDashboard";
+import { PageLayout } from "@/components/common/PageLayout";
+import { PageHeader } from "@/components/common/PageHeader";
 
 const Inventory = () => {
   const {
@@ -14,11 +16,8 @@ const Inventory = () => {
   } = useInventoryState();
 
   return (
-    <div className="space-y-4 sm:space-y-6 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen p-3 sm:p-6">
-      {/* Header */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-8 border-0">
-        <InventoryHeader />
-      </div>
+    <PageLayout>
+      <InventoryHeader />
       
       {/* Quick Navigation */}
       <ModuleNavCards currentModule="inventory" />
@@ -31,7 +30,7 @@ const Inventory = () => {
         onAddProduct={handleAddProduct}
         onCancelAddProduct={handleCancelAddProduct}
       />
-    </div>
+    </PageLayout>
   );
 };
 

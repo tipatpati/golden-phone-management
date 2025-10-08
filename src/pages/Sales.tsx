@@ -8,8 +8,9 @@ import { SalesList } from "@/components/sales/SalesList";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleUtils } from "@/utils/roleUtils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/updated-button";
+import { PageLayout } from "@/components/common/PageLayout";
 import { AlertCircle } from "lucide-react";
 import { useDebouncedSalesSearch } from "@/components/sales/hooks/useDebouncedSalesSearch";
 import { SalesDataService } from "@/services/sales/SalesDataService";
@@ -145,53 +146,51 @@ const Garentille = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-        <SalesHeader />
-        <ModuleNavCards currentModule="sales" />
-        
-        {/* Enhanced Filters */}
-        <EnhancedSalesFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          onReset={resetFilters}
-          isLoading={isLoading}
-        />
-        
-        {/* Analytics Dashboard for admin users */}
-        {canViewAnalytics && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Analytics</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAnalytics(!showAnalytics)}
-              >
-                {showAnalytics ? 'Nascondi' : 'Mostra'} Analytics
-              </Button>
-            </div>
-            
-            {showAnalytics ? (
-              <SalesAnalyticsDashboard sales={filteredGarentille} isLoading={isLoading} />
-            ) : (
-              <SalesStats sales={filteredGarentille} />
-            )}
+    <PageLayout>
+      <SalesHeader />
+      <ModuleNavCards currentModule="sales" />
+      
+      {/* Enhanced Filters */}
+      <EnhancedSalesFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={resetFilters}
+        isLoading={isLoading}
+      />
+      
+      {/* Analytics Dashboard for admin users */}
+      {canViewAnalytics && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Analytics</h3>
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+            >
+              {showAnalytics ? 'Nascondi' : 'Mostra'} Analytics
+            </Button>
           </div>
-        )}
-        
-        <SalesSearchBar 
-          searchTerm={searchTerm} 
-          onSearchChange={setSearchTerm} 
-          isSearching={isSearching}
-        />
-        
-        <SalesList 
-          sales={formattedGarentille} 
-          onEdit={userRole === 'super_admin' ? handleEditSale : undefined}
-          onDelete={userRole === 'super_admin' ? handleDeleteSale : undefined}
-        />
-      </div>
+          
+          {showAnalytics ? (
+            <SalesAnalyticsDashboard sales={filteredGarentille} isLoading={isLoading} />
+          ) : (
+            <SalesStats sales={filteredGarentille} />
+          )}
+        </div>
+      )}
+      
+      <SalesSearchBar 
+        searchTerm={searchTerm} 
+        onSearchChange={setSearchTerm} 
+        isSearching={isSearching}
+      />
+      
+      <SalesList 
+        sales={formattedGarentille} 
+        onEdit={userRole === 'super_admin' ? handleEditSale : undefined}
+        onDelete={userRole === 'super_admin' ? handleDeleteSale : undefined}
+      />
 
       {/* Enhanced CRUD Dialogs */}
       {selectedSaleForEdit && (
@@ -218,7 +217,7 @@ const Garentille = () => {
           onSuccess={handleBulkEditSuccess}
         />
       )}
-    </div>
+    </PageLayout>
   );
 };
 

@@ -28,7 +28,6 @@ export {
   CardDescription,
   CardContent,
   DataCard,
-  StatsCard,
   InteractiveCard,
 } from "./enhanced-card";
 
@@ -61,8 +60,14 @@ export {
   TableSkeleton,
   CardSkeleton,
   ListSkeleton,
-  EmptyState,
 } from "./loading-states";
+
+export { EmptyState } from "./empty-state";
+
+// Standardized Components
+export { SearchBar } from "./search-bar";
+export { StatsCard } from "./stats-card";
+export { StatsCard as EnhancedStatsCard } from "./enhanced-card";
 
 // Design System Utilities
 export {
@@ -79,3 +84,7 @@ export {
   typographyVariants,
   buttonGroupVariants,
 } from "./design-system";
+
+// Layout Components
+export { PageLayout } from "@/components/common/PageLayout";
+export { PageHeader } from "@/components/common/PageHeader";
