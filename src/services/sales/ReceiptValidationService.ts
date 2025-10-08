@@ -50,6 +50,7 @@ export class ReceiptValidationService {
     const vatIncluded = sale.vat_included !== false; // default to true for backward compatibility
     const originalSubtotal = itemsTotal;
     const discountAmount = Number(sale.discount_amount) || 0;
+    const discountPercentage = Number(sale.discount_percentage) || 0;
     const storedTotal = Number(sale.total_amount) || 0;
     
     let subtotalWithoutVAT: number;
@@ -58,21 +59,52 @@ export class ReceiptValidationService {
     let finalTotal: number;
     
     if (vatIncluded) {
-      // Prices include 22% VAT - extract base price before applying discount
+      // Prices include 22% VAT - extract base price first
       subtotalWithoutVAT = itemsTotal / 1.22; // Remove 22% VAT to get base price
-      finalSubtotal = subtotalWithoutVAT - discountAmount;
-      vatAmount = finalSubtotal * 0.22; // 22% IVA on discounted amount
-      finalTotal = finalSubtotal + vatAmount;
+      
+      // Apply discount based on type (matching SaleCreationContext.tsx logic)
+      if (discountPercentage > 0) {
+        // PERCENTAGE DISCOUNT: Apply to subtotal (before VAT)
+        const discountOnSubtotal = subtotalWithoutVAT * (discountPercentage / 100);
+        finalSubtotal = subtotalWithoutVAT - discountOnSubtotal;
+        vatAmount = finalSubtotal * 0.22; // 22% IVA on discounted subtotal
+        finalTotal = finalSubtotal + vatAmount;
+      } else if (discountAmount > 0) {
+        // AMOUNT DISCOUNT: Apply to total (after VAT)
+        const totalBeforeDiscount = subtotalWithoutVAT * 1.22; // Add VAT back
+        finalTotal = totalBeforeDiscount - discountAmount;
+        // Keep original subtotal and VAT, discount comes from total
+        finalSubtotal = subtotalWithoutVAT;
+        vatAmount = subtotalWithoutVAT * 0.22;
+      } else {
+        // No discount
+        finalSubtotal = subtotalWithoutVAT;
+        vatAmount = finalSubtotal * 0.22;
+        finalTotal = finalSubtotal + vatAmount;
+      }
     } else {
       // Prices are VAT-excluded - VAT was added during sale creation
-      // Use stored total and extrapolate VAT that was actually applied
       subtotalWithoutVAT = itemsTotal;
-      finalSubtotal = subtotalWithoutVAT - discountAmount;
       
-      // For VAT-excluded sales, extrapolate VAT from the stored total
-      // The stored total already includes VAT that was added during creation
-      vatAmount = this.calculateVATFromTotal(storedTotal, finalSubtotal);
-      finalTotal = storedTotal; // Use the stored total to maintain consistency
+      // Apply discount based on type
+      if (discountPercentage > 0) {
+        // PERCENTAGE DISCOUNT: Apply to subtotal
+        const discountOnSubtotal = subtotalWithoutVAT * (discountPercentage / 100);
+        finalSubtotal = subtotalWithoutVAT - discountOnSubtotal;
+        vatAmount = finalSubtotal * 0.22;
+        finalTotal = finalSubtotal + vatAmount;
+      } else if (discountAmount > 0) {
+        // AMOUNT DISCOUNT: Apply to total (after VAT)
+        const totalBeforeDiscount = subtotalWithoutVAT * 1.22;
+        finalTotal = totalBeforeDiscount - discountAmount;
+        finalSubtotal = subtotalWithoutVAT;
+        vatAmount = subtotalWithoutVAT * 0.22;
+      } else {
+        // No discount
+        finalSubtotal = subtotalWithoutVAT;
+        vatAmount = finalSubtotal * 0.22;
+        finalTotal = finalSubtotal + vatAmount;
+      }
     }
 
     // Validation checks - use consistent total validation

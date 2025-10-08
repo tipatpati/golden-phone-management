@@ -101,7 +101,7 @@ export function ReceiptContent({
           </div>)}
       </div>
 
-      {/* Summary Section - Simplified */}
+      {/* Summary Section - Mirroring Sales Summary */}
       <div style={{
       marginBottom: '8px',
       fontSize: '10px',
@@ -111,11 +111,42 @@ export function ReceiptContent({
         <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: '4px'
+        marginBottom: '2px'
       }}>
-          <span>Subtotale:</span>
+          <span>Subtotale (senza IVA):</span>
           <span>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT)}</span>
         </div>
+        
+        <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '2px'
+      }}>
+          <span>IVA (22%):</span>
+          <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
+        </div>
+        
+        {receiptData.totals.discountAmount > 0 && (
+          <>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '2px'
+            }}>
+              <span>Totale (prima sconto):</span>
+              <span>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT + receiptData.totals.vatAmount)}</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '4px',
+              color: '#d32f2f'
+            }}>
+              <span>Sconto:</span>
+              <span>-{ReceiptDataService.formatAmount(receiptData.totals.discountAmount)}</span>
+            </div>
+          </>
+        )}
         
         <div style={{
         borderTop: '2px solid #000',
@@ -127,7 +158,7 @@ export function ReceiptContent({
           fontWeight: 'bold',
           fontSize: '14px',
           marginBottom: '4px'
-        }}>TOTALE FINALE CON IVA (22%)</div>
+        }}>TOTALE FINALE</div>
           
           <div style={{
           fontWeight: 'bold',
