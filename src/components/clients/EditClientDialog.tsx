@@ -67,7 +67,7 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         onClose={() => setOpen(false)}
         isLoading={updateClient.isPending}
         submitText="Update Client"
-        maxWidth="2xl"
+        size="lg"
       >
         <ClientForm
           initialData={initialData}

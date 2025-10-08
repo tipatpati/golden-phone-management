@@ -40,7 +40,7 @@ export const EditRepairDialog: React.FC<EditRepairDialogProps> = ({
       isLoading={updateRepair.isPending}
       submitText={updateRepair.isPending ? 'Aggiornamento...' : 'Aggiorna Riparazione'}
       cancelText="Annulla"
-      maxWidth="2xl"
+      size="lg"
     >
       <div className="space-y-6">
         <ClientTechnicianSection

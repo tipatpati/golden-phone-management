@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Receipt, User, CreditCard, CalendarDays, Edit2, Trash2, Eye, Printer, Package, Euro, Clock, MapPin, Phone, Mail } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
@@ -360,7 +360,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
             headerActions={
               onEdit ? (
                 <Button 
-                  variant="ghost" 
+                  variant="text" 
                   size="sm" 
                   onClick={() => onEdit(sale)}
                   className="h-8 w-8 p-0 hover:bg-amber-50 hover:text-amber-600 transition-colors border border-border/30 bg-background/50 backdrop-blur-sm shadow-sm"

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Search, Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -209,7 +209,7 @@ export function InventoryFilters({
         {/* Clear Filters */}
         {hasActiveFilters && (
           <Button 
-            variant="ghost" 
+            variant="text" 
             size="sm"
             onClick={clearFilters}
             className="h-10"
@@ -226,7 +226,7 @@ export function InventoryFilters({
 
         {/* Advanced Filters Toggle */}
         <Button 
-          variant="outline" 
+          variant="outlined" 
           size="sm"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="h-10"
@@ -240,14 +240,14 @@ export function InventoryFilters({
         {/* View Mode & Add Product */}
         <div className="flex items-center gap-2">
           {canModifyProducts && onAddProduct && (
-            <Button onClick={onAddProduct} className="flex items-center gap-2 h-10">
+            <Button onClick={onAddProduct} variant="filled" className="flex items-center gap-2 h-10">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Aggiungi</span>
             </Button>
           )}
           
           <Button 
-            variant={viewMode === "grid" ? "default" : "outline"} 
+            variant={viewMode === "grid" ? "filled" : "outlined"} 
             size="icon"
             onClick={() => onViewModeChange("grid")}
             className="h-10 w-10"
@@ -255,7 +255,7 @@ export function InventoryFilters({
             <Grid className="h-4 w-4" />
           </Button>
           <Button 
-            variant={viewMode === "list" ? "default" : "outline"} 
+            variant={viewMode === "list" ? "filled" : "outlined"} 
             size="icon"
             onClick={() => onViewModeChange("list")}
             className="h-10 w-10"

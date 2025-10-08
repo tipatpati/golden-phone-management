@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { 
   Trash2, 
   Edit3, 
@@ -74,7 +74,7 @@ export function BulkActionsToolbar({
           <div className="flex items-center gap-2">
             {/* Quick Actions */}
             <Button
-              variant="outline"
+              variant="outlined"
               size="sm"
               onClick={() => setShowDeleteDialog(true)}
               disabled={isLoading}
@@ -85,7 +85,7 @@ export function BulkActionsToolbar({
             </Button>
             
             <Button
-              variant="outline"
+              variant="outlined"
               size="sm"
               onClick={() => setShowEditDialog(true)}
               disabled={isLoading}
@@ -95,7 +95,7 @@ export function BulkActionsToolbar({
             </Button>
 
             <Button
-              variant="outline"
+              variant="outlined"
               size="sm"
               onClick={() => setShowPrintDialog(true)}
               disabled={isLoading}
@@ -107,7 +107,7 @@ export function BulkActionsToolbar({
             {/* More Actions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isLoading}>
+                <Button variant="outlined" size="sm" disabled={isLoading}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -150,7 +150,7 @@ export function BulkActionsToolbar({
         </div>
 
         <Button
-          variant="ghost"
+          variant="text"
           size="sm"
           onClick={onClearSelection}
           disabled={isLoading}

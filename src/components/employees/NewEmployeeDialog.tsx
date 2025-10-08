@@ -32,7 +32,7 @@ export function NewEmployeeDialog({ open, onClose, onSuccess }: NewEmployeeDialo
       onSubmit={handleSubmit}
       isLoading={isLoading}
       submitText="Aggiungi Dipendente"
-      maxWidth="md"
+      size="md"
     >
       <EmployeeForm
         formData={formData}

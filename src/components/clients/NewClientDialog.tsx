@@ -39,7 +39,7 @@ export function NewClientDialog() {
         onClose={() => setOpen(false)}
         isLoading={createClient.isPending}
         submitText="Aggiungi Cliente"
-        maxWidth="2xl"
+        size="lg"
       >
         <ClientForm
           onSubmit={handleSubmit}

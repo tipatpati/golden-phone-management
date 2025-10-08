@@ -31,5 +31,31 @@ export function BarcodeTestTool() {
     navigator.clipboard.writeText(barcode);
     toast.success('Barcode copied to clipboard');
   };
-  return;
+  
+  return (
+    <div className="bg-background rounded-xl shadow-xl p-4 sm:p-6 border">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-lg font-semibold">Barcode Test Generator</h3>
+          <p className="text-sm text-muted-foreground">Generate test barcodes for verification</p>
+        </div>
+        <Button onClick={generateTestBarcodes} disabled={isGenerating}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+          Generate Test Barcodes
+        </Button>
+      </div>
+      {testBarcodes.length > 0 && (
+        <div className="space-y-2">
+          {testBarcodes.map((barcode, idx) => (
+            <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <Badge variant="outline" className="font-mono">{barcode}</Badge>
+              <Button variant="text" size="sm" onClick={() => copyBarcode(barcode)}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

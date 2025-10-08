@@ -190,7 +190,7 @@ export function AddProductDialog({ open: externalOpen, onClose: externalOnClose,
             setInternalOpen(false);
           }
         }}
-        maxWidth="2xl"
+        size="lg"
         showActions={false}
       >
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">

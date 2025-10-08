@@ -14,7 +14,7 @@ export function NewSupplierDialog({ open, onOpenChange }: NewSupplierDialogProps
       open={open}
       onClose={() => onOpenChange(false)}
       showActions={false} // SupplierForm handles its own actions
-      maxWidth="lg"
+      size="md"
     >
       <SupplierForm onSuccess={() => onOpenChange(false)} />
     </BaseDialog>

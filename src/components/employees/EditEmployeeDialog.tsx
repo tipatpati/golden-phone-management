@@ -47,7 +47,7 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
       onSubmit={handleSubmit}
       isLoading={isLoading}
       submitText="Aggiorna Dipendente"
-      maxWidth="md"
+      size="md"
     >
       <EmployeeForm
         formData={formData}

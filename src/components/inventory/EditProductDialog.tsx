@@ -245,7 +245,7 @@ export function EditProductDialog({
         onSubmit={() => Promise.resolve()}
         isLoading={true}
         submitText="Loading..."
-        maxWidth="xl"
+        size="lg"
       >
         <div className="p-8 text-center">
           <p>Loading product data...</p>
@@ -262,7 +262,7 @@ export function EditProductDialog({
       onSubmit={handleFormDialogSubmit}
       isLoading={updateProduct.isPending}
       submitText="Update Product"
-      maxWidth="xl"
+      size="lg"
     >
       <ProductForm
         initialData={initialData}

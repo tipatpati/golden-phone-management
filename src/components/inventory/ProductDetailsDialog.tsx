@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { formatProductName, parseSerialString, formatProductUnitDisplay } from "@/utils/productNaming";
 import {
   Dialog,
-  DialogContent,
+  EnhancedDialogContent as DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Package, 
@@ -189,7 +189,7 @@ export function ProductDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -472,7 +472,7 @@ export function ProductDetailsDialog({
                             
                             <Button
                               size="sm"
-                              variant="outline"
+                              variant="outlined"
                               onClick={() => {
                                 setSelectedUnit(unit);
                                 setUnitPricingOpen(true);
@@ -530,7 +530,7 @@ export function ProductDetailsDialog({
             {/* Action Buttons */}
             <div className="flex gap-3 justify-end">
               {onPrint && (
-                <Button variant="outline" onClick={() => onPrint(product)}>
+                <Button variant="outlined" onClick={() => onPrint(product)}>
                   <Printer className="h-4 w-4 mr-2" />
                   Print Labels
                 </Button>

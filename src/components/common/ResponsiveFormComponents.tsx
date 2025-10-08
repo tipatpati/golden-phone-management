@@ -152,7 +152,7 @@ export function ResponsiveDialog({
       isLoading={isLoading}
       submitText={submitText}
       cancelText={cancelText}
-      maxWidth={size as any}
+      size={size as any}
     >
       <div className={fullscreen ? "min-h-[60vh]" : ""}>
         {children}

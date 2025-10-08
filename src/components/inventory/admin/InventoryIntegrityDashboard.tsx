@@ -55,5 +55,42 @@ export const InventoryIntegrityDashboard = () => {
     if (issues < 5) return 'warning';
     return 'destructive';
   };
-  return;
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Data Integrity Dashboard
+        </CardTitle>
+        <CardDescription>Monitor and repair inventory data integrity</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Button onClick={runIntegrityCheck} disabled={isRunning}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRunning ? 'animate-spin' : ''}`} />
+            Run Check
+          </Button>
+          {report && getTotalIssues() > 0 && (
+            <Button onClick={autoRepair} disabled={isRepairing} variant="outlined">
+              <Wrench className={`h-4 w-4 mr-2 ${isRepairing ? 'animate-spin' : ''}`} />
+              Auto Repair
+            </Button>
+          )}
+        </div>
+        {report && (
+          <Alert>
+            <AlertDescription>
+              <div className="flex items-center justify-between">
+                <span>Total Issues: {getTotalIssues()}</span>
+                <Badge variant={getStatusColor() as any}>
+                  {getTotalIssues() === 0 ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                </Badge>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+  );
 };

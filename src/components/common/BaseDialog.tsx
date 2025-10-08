@@ -1,11 +1,11 @@
 import React from "react";
 import {
   Dialog,
-  DialogContent,
+  EnhancedDialogContent as DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/updated-dialog";
-import { Button } from "@/components/ui/updated-button";
+} from "@/components/ui/enhanced-dialog";
+import { Button } from "@/components/ui/enhanced-button";
 import { Loader2 } from "lucide-react";
 import { logger } from "@/utils/logger";
 
@@ -19,7 +19,7 @@ interface BaseDialogProps {
   submitText?: string;
   cancelText?: string;
   showActions?: boolean;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export function BaseDialog({
@@ -32,26 +32,11 @@ export function BaseDialog({
   submitText = "Save",
   cancelText = "Cancel",
   showActions = true,
-  maxWidth = "md"
+  size = "md"
 }: BaseDialogProps) {
-  const maxWidthClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md", 
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl"
-  };
-
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className={`
-        ${maxWidthClasses[maxWidth]} 
-        w-[95vw] 
-        max-h-[90vh] 
-        overflow-y-auto 
-        p-0
-        gap-0
-      `}>
+      <DialogContent size={size} className="p-0 gap-0">
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground leading-tight">
             {title}

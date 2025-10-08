@@ -11,7 +11,7 @@ interface FormDialogProps {
   onClose: () => void;
   isLoading?: boolean;
   submitText?: string;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
+  size?: "sm" | "md" | "lg" | "xl";
   children: React.ReactNode;
   onSubmit?: (...args: any[]) => Promise<void>;
 }
@@ -21,7 +21,7 @@ interface FormDialogProps {
  * Allows child components to control submission flow
  */
 export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
-  ({ title, open, onClose, isLoading, submitText, maxWidth, children, onSubmit }, ref) => {
+  ({ title, open, onClose, isLoading, submitText, size, children, onSubmit }, ref) => {
     const handleSubmit = async () => {
       if (onSubmit) {
         await onSubmit();
@@ -44,7 +44,7 @@ export const FormDialog = forwardRef<FormDialogHandle, FormDialogProps>(
         onSubmit={handleSubmit}
         isLoading={isLoading}
         submitText={submitText}
-        maxWidth={maxWidth}
+        size={size}
       >
         {children}
       </BaseDialog>

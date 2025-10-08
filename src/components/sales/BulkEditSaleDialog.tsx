@@ -142,7 +142,7 @@ export function BulkEditSaleDialog({ selectedSales, onSuccess, onClose, open }: 
       onSubmit={handleSubmit}
       isLoading={updateSale.isPending}
       submitText={updateSale.isPending ? "Updating..." : "Update All"}
-      maxWidth="lg"
+      size="md"
     >
       <div className="space-y-6">
         {/* Selected Sales Summary */}

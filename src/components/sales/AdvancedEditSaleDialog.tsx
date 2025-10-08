@@ -234,7 +234,7 @@ export function AdvancedEditSaleDialog({ sale, onSuccess, trigger }: AdvancedEdi
         onSubmit={handleSubmit}
         isLoading={updateSale.isPending}
         submitText={updateSale.isPending ? "Updating..." : "Update Sale"}
-        maxWidth="2xl"
+        size="lg"
       >
         <div className="space-y-6 max-h-[80vh] overflow-y-auto">
           {/* Sale Info */}
