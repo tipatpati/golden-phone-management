@@ -374,7 +374,13 @@ export function TransactionDetailsDialog({
                                             .map(([key, value]) => (
                                               <div key={key} className="text-xs">
                                                 <span className="font-medium text-muted-foreground capitalize">{key.replace(/_/g, ' ')}:</span>
-                                                <span className="ml-2">{JSON.stringify(value)}</span>
+                                                <span className="ml-2">
+                                                  {typeof value === 'object' && value !== null
+                                                    ? Array.isArray(value)
+                                                      ? value.join(', ')
+                                                      : Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(', ')
+                                                    : String(value)}
+                                                </span>
                                               </div>
                                             ))}
                                         </div>
