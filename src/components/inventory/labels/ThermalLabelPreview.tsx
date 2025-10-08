@@ -94,19 +94,20 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       }}>
         {/* Product Name */}
         <div style={{
-          fontSize: '7px',
+          fontSize: '6px',
           fontWeight: '700',
           lineHeight: '0.85',
           color: '#000',
           textTransform: 'uppercase',
           letterSpacing: '0.05px',
           textAlign: 'center',
-          maxHeight: '14px',
+          maxHeight: '16px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
-          wordBreak: 'break-word'
+          wordBreak: 'break-word',
+          hyphens: 'auto'
         }}>
           {formattedLabel.productName}
         </div>

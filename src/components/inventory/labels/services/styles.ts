@@ -65,19 +65,20 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 11px !important;
+        font-size: 9px !important;
         line-height: 1.0 !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.2px !important;
         color: #000 !important;
         text-align: center !important;
-        max-height: 22px !important;
+        max-height: 20px !important;
         overflow: hidden !important;
         display: -webkit-box !important;
         -webkit-line-clamp: 2 !important;
         -webkit-box-orient: vertical !important;
         word-break: break-word !important;
+        hyphens: auto !important;
       }
 
       .product-specs {
@@ -196,16 +197,16 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 800;
       line-height: 1.0;
       color: #000;
       text-align: center;
       margin-bottom: 1px;
-      max-height: 50px;
+      max-height: 30px;
       overflow: hidden;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       text-transform: uppercase;
       letter-spacing: 0.2px;
