@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { logger } from "@/utils/logger";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { usePagination } from "@/hooks/usePagination";
@@ -17,7 +17,7 @@ interface Action<T> {
   icon: React.ReactNode;
   label: string;
   onClick: (item: T) => void;
-  variant?: "ghost" | "outline" | "destructive";
+  variant?: "text" | "outlined" | "destructive";
   className?: string;
   renderCustom?: (item: T) => React.ReactNode;
 }
@@ -120,7 +120,7 @@ export function DataTable<T>({
                     ) : (
                       <Button
                         key={index}
-                        variant={action.variant || "ghost"}
+                        variant={action.variant || "text"}
                         size="sm"
                         className={`h-8 w-8 p-0 ${action.className || ''}`}
                         onClick={(e) => {

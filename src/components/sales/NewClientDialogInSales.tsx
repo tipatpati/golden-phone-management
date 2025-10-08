@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -79,12 +79,12 @@ export function NewClientDialogInSales({ onClientCreated }: NewClientDialogInSal
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outlined" size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Add New Client
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
         </DialogHeader>
@@ -207,7 +207,7 @@ export function NewClientDialogInSales({ onClientCreated }: NewClientDialogInSal
           <div className="flex gap-4">
             <Button 
               type="button" 
-              variant="outline" 
+              variant="outlined" 
               onClick={() => setOpen(false)}
               className="flex-1"
             >

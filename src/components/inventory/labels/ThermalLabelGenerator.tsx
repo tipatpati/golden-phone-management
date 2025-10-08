@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -178,7 +178,7 @@ export function ThermalLabelGenerator({
   if (currentLabels.length === 0 && !allowUnitSelection && (!productName || productPrice < 0)) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent size="sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-warning" />
@@ -208,7 +208,7 @@ export function ThermalLabelGenerator({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Printer className="h-5 w-5" />
@@ -360,7 +360,7 @@ export function ThermalLabelGenerator({
 
             <div className="flex gap-3 pt-4">
               <Button
-                variant="outline"
+                variant="outlined"
                 onClick={() => setShowPreview(!showPreview)}
                 className="flex-1"
                 disabled={currentLabels.length === 0}
@@ -369,7 +369,7 @@ export function ThermalLabelGenerator({
                 {showPreview ? 'Hide' : 'Show'} Preview
               </Button>
               <Button
-                variant="outline"
+                variant="outlined"
                 onClick={() => setShowBarcodeFixTool(!showBarcodeFixTool)}
                 className="flex-1"
                 disabled={printState.isPrinting}
@@ -454,7 +454,7 @@ export function ThermalLabelGenerator({
 
         <div className="flex gap-3 pt-4 border-t">
           <Button
-            variant="outline"
+            variant="outlined"
             onClick={() => onOpenChange(false)}
             className="flex-1"
           >

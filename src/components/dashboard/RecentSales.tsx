@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
 import { Avatar } from "@/components/ui/avatar";
 import { useSales } from "@/services";
 import { supabase } from "@/integrations/supabase/client";

@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -158,13 +158,13 @@ export function ProductImportDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" onClick={resetDialog} className="text-center justify-center">
+        <Button variant="outlined" size="sm" onClick={resetDialog} className="text-center justify-center">
           <Upload className="h-4 w-4 mr-2 flex-shrink-0" />
           <span className="hidden sm:inline">Import Products</span>
           <span className="sm:hidden">Import</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
@@ -182,7 +182,7 @@ export function ProductImportDialog() {
                   Download our Excel template with sample data and instructions.
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={downloadTemplate}>
+              <Button variant="outlined" size="sm" onClick={downloadTemplate}>
                 <Download className="h-4 w-4 mr-2" />
                 Template
               </Button>
@@ -303,7 +303,7 @@ export function ProductImportDialog() {
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outlined" onClick={() => setOpen(false)}>
               {result ? 'Close' : 'Cancel'}
             </Button>
             <Button 

@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -63,13 +63,13 @@ export function ProductExportDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-center justify-center">
+        <Button variant="outlined" size="sm" className="text-center justify-center">
           <Download className="h-4 w-4 mr-2 flex-shrink-0" />
           <span className="hidden sm:inline">Export Products</span>
           <span className="sm:hidden">Export</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
@@ -129,7 +129,7 @@ export function ProductExportDialog() {
               )}
             </Button>
             <Button 
-              variant="outline" 
+              variant="outlined" 
               onClick={() => setOpen(false)}
               className="w-full min-h-[44px] text-base"
             >

@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Plus } from "lucide-react";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { SaleFormContainer } from "./refactored/SaleFormContainer";
@@ -44,7 +44,7 @@ export function NewSaleDialog({ onSuccess }: NewSaleDialogProps = {}) {
           NUOVA GARENTILLE
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl w-[95vw] max-h-[95vh] overflow-y-auto p-6">
+      <DialogContent size="xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Crea Nuova Garentille</DialogTitle>
         </DialogHeader>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ProductUnit } from "@/services/inventory";
@@ -118,7 +118,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>
             Unit Pricing - {unit.serial_number}
@@ -186,7 +186,7 @@ export function UnitPricingDialog({ unit, open, onClose, onSuccess }: UnitPricin
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outlined" onClick={onClose}>
               Cancel
             </Button>
             <Button 

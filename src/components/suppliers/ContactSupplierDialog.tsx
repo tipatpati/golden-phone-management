@@ -6,8 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -87,7 +87,7 @@ Best regards,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] w-[95vw] sm:w-full p-4 sm:p-6">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -137,7 +137,7 @@ Best regards,
             {isLoading ? "Sending..." : "Send Message"}
           </Button>
           <Button 
-            variant="outline" 
+            variant="outlined" 
             onClick={() => onOpenChange(false)}
             className="w-full min-h-[44px] text-base"
           >

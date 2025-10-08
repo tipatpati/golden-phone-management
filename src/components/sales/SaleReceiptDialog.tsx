@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Receipt, Download } from "lucide-react";
 import { type Sale } from "@/services";
 import QRCode from "qrcode";
@@ -205,12 +205,12 @@ export function SaleReceiptDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {!open && (
         <DialogTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+          <Button variant="text" size="icon" className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors">
             <Receipt className="h-4 w-4" />
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Ricevuta di Garentille</DialogTitle>
         </DialogHeader>
@@ -239,7 +239,7 @@ export function SaleReceiptDialog({
           <div className="flex gap-2 justify-center pt-4">
             <Button 
               onClick={handlePrint}
-              variant="outline"
+              variant="outlined"
               className="flex-1 max-w-xs"
             >
               <Receipt className="mr-2 h-4 w-4" />

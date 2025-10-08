@@ -6,8 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/updated-dialog";
+import { Button } from "@/components/ui/updated-button";
 import { Label } from "@/components/ui/label";
 import { 
   Select,
@@ -66,7 +66,7 @@ export function BulkEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
@@ -141,7 +141,7 @@ export function BulkEditDialog({
 
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="outlined"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
