@@ -97,8 +97,11 @@ export function ThermalLabelGenerator({
         setSelectedLabels(defaultLabels);
         console.log('🏷️ Generated default thermal labels for bulk product:', productName);
       }
+    } else if (labelSource === 'inventory' && activeLabels.length > 0) {
+      // Auto-select all inventory labels even in unit selection mode
+      setSelectedLabels(activeLabels);
     }
-  }, [activeLabels, allowUnitSelection, productName, productPrice, productBarcode, productMaxPrice, productCategory]);
+  }, [activeLabels, allowUnitSelection, labelSource, productName, productPrice, productBarcode, productMaxPrice, productCategory]);
 
   const { printState, printLabels } = useThermalLabelPrint();
 
