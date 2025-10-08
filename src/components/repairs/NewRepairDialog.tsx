@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, EnhancedDialogContent as DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/enhanced-dialog";
+import { Button } from "@/components/ui/enhanced-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,12 +78,12 @@ export const NewRepairDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button variant="filled">
+          <Plus className="h-4 w-4 mr-2" />
           Nuova Riparazione
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Crea Nuova Riparazione</DialogTitle>
         </DialogHeader>
@@ -197,10 +197,10 @@ export const NewRepairDialog = () => {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outlined" onClick={() => setOpen(false)}>
               Annulla
             </Button>
-            <Button type="submit" disabled={createRepair.isPending}>
+            <Button type="submit" variant="filled" disabled={createRepair.isPending}>
               {createRepair.isPending ? 'Creazione...' : 'Crea Riparazione'}
             </Button>
           </div>

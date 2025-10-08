@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
+import { Button } from "@/components/ui/enhanced-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -224,11 +224,11 @@ export function DiscountManager() {
               />
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleAddNew}>
+              <Button onClick={handleAddNew} variant="filled">
                 <Save className="h-4 w-4 mr-2" />
                 Salva
               </Button>
-              <Button variant="outline" onClick={() => setIsAdding(false)}>
+              <Button variant="outlined" onClick={() => setIsAdding(false)}>
                 Annulla
               </Button>
             </div>
@@ -353,11 +353,11 @@ function DiscountCard({ discount, isEditing, onEdit, onSave, onCancel, onDelete,
             />
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => onSave(editedDiscount)}>
+            <Button onClick={() => onSave(editedDiscount)} variant="filled">
               <Save className="h-4 w-4 mr-2" />
               Salva
             </Button>
-            <Button variant="outline" onClick={onCancel}>
+            <Button variant="outlined" onClick={onCancel}>
               Annulla
             </Button>
           </div>

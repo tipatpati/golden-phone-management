@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
-import { Button } from "@/components/ui/updated-button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
+import { Button } from "@/components/ui/enhanced-button";
 import { ROLE_CONFIGS, UserRole } from "@/types/roles";
 import { Users, Package, ShoppingCart, Settings } from "lucide-react";
 

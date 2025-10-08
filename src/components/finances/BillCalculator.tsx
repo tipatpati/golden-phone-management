@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
+import { Button } from "@/components/ui/enhanced-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -327,11 +327,11 @@ export function BillCalculator() {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button onClick={generateReceipt}>
+                <Button onClick={generateReceipt} variant="filled">
                   <Receipt className="h-4 w-4 mr-2" />
                   Genera Ricevuta
                 </Button>
-                <Button variant="outline" onClick={generateReceipt}>
+                <Button variant="outlined" onClick={generateReceipt}>
                   <Download className="h-4 w-4 mr-2" />
                   Esporta PDF
                 </Button>

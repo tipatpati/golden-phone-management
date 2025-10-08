@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/enhanced-card";
 import { RepairCard, type Repair } from "./RepairCard";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";

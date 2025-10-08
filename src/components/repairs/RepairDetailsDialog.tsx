@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, EnhancedDialogContent as DialogContent, DialogHeader, DialogTitle } from "@/components/ui/enhanced-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Wrench, Euro, AlertTriangle, Hash } from "lucide-react";
 import { type Repair } from "./RepairCard";
@@ -73,7 +73,7 @@ export const RepairDetailsDialog: React.FC<RepairDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Dettagli Riparazione</DialogTitle>
         </DialogHeader>

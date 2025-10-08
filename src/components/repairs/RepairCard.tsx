@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Calendar, User, Wrench, Euro, AlertTriangle } from "lucide-react";
 import { RepairDetailsDialog } from "./RepairDetailsDialog";
 import { EditRepairDialog } from "./EditRepairDialog";
@@ -89,7 +89,7 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <CardTitle variant="title">{repair.repairNumber || repair.id}</CardTitle>
+              <CardTitle>{repair.repairNumber || repair.id}</CardTitle>
               <div className="flex gap-2">
                 <Badge className={getStatusColor(repair.status)}>
                   {getStatusText(repair.status)}
@@ -101,14 +101,14 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
             </div>
             <div className="flex gap-2">
               <Button 
-                variant="outline" 
+                variant="outlined" 
                 size="sm"
                 onClick={() => setShowEdit(true)}
               >
                 Modifica
               </Button>
               <Button 
-                variant="outline" 
+                variant="outlined" 
                 size="sm"
                 onClick={() => setShowDetails(true)}
               >

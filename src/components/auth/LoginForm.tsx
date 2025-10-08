@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/updated-button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/updated-card";
+import { Button } from "@/components/ui/enhanced-button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
