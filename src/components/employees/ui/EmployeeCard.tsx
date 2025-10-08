@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/enhanced-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mail, Phone, Building, Calendar, Edit, Trash2 } from "lucide-react";
 import { Employee } from "@/services/employees/types";
@@ -158,7 +158,7 @@ export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: Em
           <div className="flex justify-end space-x-2 pt-4 border-t">
             {onEdit && (
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={() => onEdit(employee)}
                 className="flex items-center space-x-1"
@@ -169,7 +169,7 @@ export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: Em
             )}
             {onDelete && (
               <Button
-                variant="outline"
+                variant="outlined"
                 size="sm"
                 onClick={() => onDelete(employee)}
                 className="flex items-center space-x-1 text-destructive hover:text-destructive"

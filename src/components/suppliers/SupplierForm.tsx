@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { FormField } from "@/components/common";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateSupplier, useUpdateSupplier } from "@/services";

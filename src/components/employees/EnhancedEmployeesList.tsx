@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/enhanced-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
@@ -136,11 +136,11 @@ export function EnhancedEmployeesList({
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExport} size="sm">
+          <Button variant="outlined" onClick={handleExport} size="sm">
             <Download className="h-4 w-4 mr-2" />
             Esporta
           </Button>
-          <Button onClick={onAddNew} size="sm">
+          <Button onClick={onAddNew} variant="filled" size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Nuovo Dipendente
           </Button>
@@ -156,7 +156,7 @@ export function EnhancedEmployeesList({
               <span>Filtri e Ricerca</span>
             </CardTitle>
             {activeFiltersCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <Button variant="text" size="sm" onClick={clearFilters}>
                 Cancella Filtri
               </Button>
             )}

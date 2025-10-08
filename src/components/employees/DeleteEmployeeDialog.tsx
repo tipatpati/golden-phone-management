@@ -1,14 +1,14 @@
 
 import React from "react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/enhanced-button";
 import {
   Dialog,
-  DialogContent,
+  EnhancedDialogContent as DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/enhanced-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle } from "lucide-react";
@@ -57,7 +57,7 @@ export function DeleteEmployeeDialog({ employee, open, onClose, onSuccess }: Del
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-[95vw] sm:w-full p-4 sm:p-6">
+      <DialogContent size="sm">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -72,7 +72,7 @@ export function DeleteEmployeeDialog({ employee, open, onClose, onSuccess }: Del
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button 
             type="button" 
-            variant="outline" 
+            variant="outlined" 
             onClick={onClose}
             className="w-full sm:w-auto min-h-[44px] text-base"
           >

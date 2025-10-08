@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import {
   Dialog,
-  DialogContent,
+  EnhancedDialogContent as DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/enhanced-dialog";
+import { Button } from "@/components/ui/enhanced-button";
 import { AlertTriangle, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useDeleteSupplier } from "@/services";
@@ -50,7 +50,7 @@ export function DeleteSupplierDialog({ supplier, open, onOpenChange }: DeleteSup
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -87,7 +87,7 @@ export function DeleteSupplierDialog({ supplier, open, onOpenChange }: DeleteSup
 
         <DialogFooter className="gap-2">
           <Button 
-            variant="outline" 
+            variant="outlined" 
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
           >
