@@ -26,6 +26,9 @@ import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { UnifiedInventoryLabels } from "./labels/UnifiedInventoryLabels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { InventoryCard } from "./InventoryCard";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 import type { Product as UnifiedProduct } from "@/services/inventory/types";
 
 
@@ -130,9 +133,18 @@ export function InventoryTable({
     );
   }
 
+  // Mobile pagination
+  const {
+    paginatedData: paginatedMobileProducts,
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: productList, itemsPerPage: 17 });
+
   return (
     <>
-      <div className="rounded-md border">
+      {/* Desktop Table Layout */}
+      <div className="hidden lg:block rounded-md border">
         <Table>
         <TableHeader>
           <TableRow>
@@ -344,7 +356,34 @@ export function InventoryTable({
         </TableBody>
       </Table>
     </div>
-    
+
+      {/* Mobile & Tablet Card Layout */}
+      <div className="lg:hidden space-y-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+          {paginatedMobileProducts.map((product) => (
+            <InventoryCard
+              key={product.id}
+              product={product}
+              isSelected={selectedItems.includes(product.id)}
+              onSelect={onSelectItem}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onViewDetails={handleRowClick}
+            />
+          ))}
+        </div>
+
+        {/* Mobile Pagination */}
+        {productList.length > 0 && (
+          <TablePagination
+            currentPage={mobilePage}
+            totalPages={mobileTotalPages}
+            onPageChange={mobileGoToPage}
+            pageSize={17}
+            totalItems={productList.length}
+          />
+        )}
+      </div>
 
     <ProductDetailsDialog
       product={selectedProductForDetails as any}

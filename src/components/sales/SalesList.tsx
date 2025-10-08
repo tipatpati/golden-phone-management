@@ -338,9 +338,9 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         />
       </div>
 
-      {/* Mobile Card Layout */}
+      {/* Mobile & Tablet Card Layout */}
       <div className="lg:hidden space-y-4">
-        <div className="grid gap-3 md:gap-4 grid-cols-1">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
           {paginatedMobileSales.map((sale) => (
           <div key={sale.id} className="relative">
             {isSelectionMode && (

@@ -3,6 +3,7 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components
 import { DataTablePagination } from "@/components/ui/data-table-pagination"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile"
 
 interface Column<T> {
   key: keyof T
@@ -28,6 +29,7 @@ interface MaterialDataTableProps<T> {
   className?: string
   getRowKey?: (item: T) => string | number
   onRowClick?: (item: T) => void
+  mobileCardRender?: (item: T) => React.ReactNode
 }
 
 export function MaterialDataTable<T>({
@@ -45,7 +47,11 @@ export function MaterialDataTable<T>({
   className,
   getRowKey,
   onRowClick,
+  mobileCardRender,
 }: MaterialDataTableProps<T>) {
+  const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
+  const showMobileView = isMobile || isTablet
   const pageCount = Math.ceil((totalItems || data.length) / pageSize)
   const canPreviousPage = pageIndex > 0
   const canNextPage = pageIndex < pageCount - 1
@@ -75,7 +81,8 @@ export function MaterialDataTable<T>({
 
   return (
     <Card className={cn("overflow-hidden md-elevation-1 md-elevation-smooth hover:md-elevation-2", className)}>
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className={cn("overflow-x-auto", showMobileView && mobileCardRender ? "hidden lg:block" : "")}>
         <Table>
           <TableHeader>
             <TableRow interactive={false}>

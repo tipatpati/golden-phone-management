@@ -87,29 +87,29 @@ export function DataCard({
       </CardHeader>
       
       <CardContent className="pt-0 space-y-2 md:space-y-2">
-        {/* Information Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {/* Information Grid - Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {fields.map((field, index) => (
             <div key={index} className="space-y-0.5">
-              <p className="text-xs md:text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 {field.label}
               </p>
-              <div className={`text-xs md:text-xs font-medium text-on-surface ${field.className || ''}`}>
+              <div className={`text-xs font-medium text-on-surface ${field.className || ''}`}>
                 {field.value}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Stack on mobile, row on tablet+ */}
         {actions.length > 0 && (
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 pt-2 border-t">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t">
             {actions.map((action, index) => (
               <Button
                 key={index}
                 variant={action.variant === "outlined" ? "outlined" : action.variant || "filled"}
                 size="sm"
-                className={`touch-button h-8 md:h-7 text-xs font-medium ${action.className || ''}`}
+                className={`touch-button min-h-[44px] sm:min-h-[36px] text-xs font-medium ${action.className || ''}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

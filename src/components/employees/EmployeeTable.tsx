@@ -161,8 +161,8 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
         />
       </div>
 
-      {/* Mobile Card Layout */}
-      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-1 xl:grid-cols-2">
+      {/* Mobile & Tablet Card Layout */}
+      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
         {employees.map((employee) => (
           <DataCard
             key={employee.id}
