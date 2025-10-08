@@ -85,7 +85,7 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
       minPrice: label.minPrice,
       maxPrice: label.maxPrice,
       barcode: label.barcode || '',
-      serialNumber: label.serialNumber,
+      serialNumber: label.serial,
       color: label.color,
       storage: label.storage,
       ram: label.ram,
