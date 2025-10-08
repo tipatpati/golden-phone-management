@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/enhanced-card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/enhanced-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, XCircle, AlertTriangle, Shield, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -168,7 +168,7 @@ export function SecurityComplianceChecker() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="outlined"
             size="sm"
             onClick={() => setShowDetails(!showDetails)}
           >

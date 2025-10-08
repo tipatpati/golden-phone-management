@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/enhanced-card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/enhanced-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrentUserRole } from '@/hooks/useRoleManagement';
@@ -134,7 +134,7 @@ export const SecurityAuditLog: React.FC = () => {
                   {criticalEvents} Critical
                 </Badge>
               )}
-              <Button onClick={exportAuditLog} size="sm" variant="outline">
+              <Button onClick={exportAuditLog} size="sm" variant="outlined">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>

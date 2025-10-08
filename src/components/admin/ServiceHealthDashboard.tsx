@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/updated-card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/enhanced-card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/updated-button';
+import { Button } from '@/components/ui/enhanced-button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, RefreshCw, Activity, Database, Zap } from 'lucide-react';

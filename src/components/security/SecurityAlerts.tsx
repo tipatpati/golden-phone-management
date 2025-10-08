@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/enhanced-button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/enhanced-card';
 import { AlertTriangle, Bell, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrentUserRole } from '@/hooks/useRoleManagement';
@@ -129,7 +129,7 @@ export function SecurityAlerts() {
                 </span>
               </div>
               <Button
-                variant="ghost"
+                variant="text"
                 size="sm"
                 onClick={() => dismissAlert(alert.id)}
                 className="h-6 w-6 p-0"
