@@ -209,7 +209,7 @@ class ProductUnitCoordinatorClass {
       // Get units using unified service
       const units = await ProductUnitManagementService.getUnitsForProduct(productId, undefined, false); // Only available units
       
-      // Convert to form data format for UI consistency
+      // Convert to form data format for UI consistency - INCLUDE ALL ATTRIBUTES
       const unitEntries: UnitFormData[] = units.map(unit => ({
         serial: unit.serial_number,
         barcode: unit.barcode,
@@ -219,7 +219,12 @@ class ProductUnitCoordinatorClass {
         ram: unit.ram,
         price: unit.price,
         min_price: unit.min_price,
-        max_price: unit.max_price
+        max_price: unit.max_price,
+        condition: unit.condition as 'new' | 'used' | undefined,
+        purchase_date: unit.purchase_date,
+        purchase_price: unit.purchase_price,
+        supplier_id: unit.supplier_id,
+        status: unit.status
       }));
 
       return {
@@ -462,7 +467,12 @@ class ProductUnitCoordinatorClass {
       ram: unit.ram,
       price: unit.price,
       min_price: unit.min_price,
-      max_price: unit.max_price
+      max_price: unit.max_price,
+      condition: unit.condition as 'new' | 'used' | undefined,
+      purchase_date: unit.purchase_date,
+      purchase_price: unit.purchase_price,
+      supplier_id: unit.supplier_id,
+      status: unit.status
     };
   }
 

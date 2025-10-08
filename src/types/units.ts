@@ -35,6 +35,10 @@ export interface UnitFormData {
   price?: number;
   min_price?: number;
   max_price?: number;
+  purchase_date?: string;
+  purchase_price?: number;
+  supplier_id?: string;
+  status?: string;
 }
 
 export interface UnitOperationOptions {
