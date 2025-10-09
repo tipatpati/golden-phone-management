@@ -3,7 +3,7 @@
  * Uses direct database queries like supplier labels for reliable printing
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThermalLabelGenerator } from "./ThermalLabelGenerator";
 import { useLabelDataProvider } from "./hooks/useLabelDataProvider";
@@ -15,6 +15,8 @@ interface UnifiedInventoryLabelsProps {
   useMasterBarcode?: boolean;
   buttonText?: string;
   buttonClassName?: string;
+  autoOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function UnifiedInventoryLabels({ 
@@ -22,7 +24,9 @@ export function UnifiedInventoryLabels({
   companyName = "GOLDEN PHONE SRL",
   useMasterBarcode = false,
   buttonText,
-  buttonClassName = "w-full"
+  buttonClassName = "w-full",
+  autoOpen = false,
+  onClose
 }: UnifiedInventoryLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
@@ -31,6 +35,13 @@ export function UnifiedInventoryLabels({
     productIds,
     useMasterBarcode
   });
+
+  // Auto-open when autoOpen prop is true and labels are loaded
+  useEffect(() => {
+    if (autoOpen && !labelDataProvider.isLoading && labelDataProvider.labels && labelDataProvider.labels.length > 0) {
+      setIsGeneratorOpen(true);
+    }
+  }, [autoOpen, labelDataProvider.isLoading, labelDataProvider.labels]);
 
   const handleOpenGenerator = () => {
     console.log('🔍 Opening label generator', {
@@ -92,7 +103,12 @@ export function UnifiedInventoryLabels({
 
       <ThermalLabelGenerator
         open={isGeneratorOpen}
-        onOpenChange={setIsGeneratorOpen}
+        onOpenChange={(open) => {
+          setIsGeneratorOpen(open);
+          if (!open && onClose) {
+            onClose();
+          }
+        }}
         labelSource="inventory"
         dataProvider={labelDataProvider}
         companyName={companyName}

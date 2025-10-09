@@ -68,6 +68,7 @@ export function InventoryTable({
 }: InventoryTableProps) {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
+  const [printProductId, setPrintProductId] = useState<string | null>(null);
   
   // Use products passed from parent - no double data fetching
   const productList = Array.isArray(products) ? products : [];
@@ -424,9 +425,21 @@ export function InventoryTable({
       }}
       onPrint={(product) => {
         setDetailsDialogOpen(false);
-        // The UnifiedInventoryLabels component handles printing directly
+        setPrintProductId(product.id);
       }}
     />
+
+    {/* Hidden label printer - opens when Print Labels is clicked */}
+    {printProductId && (
+      <UnifiedInventoryLabels
+        productIds={[printProductId]}
+        companyName="GOLDEN PHONE SRL"
+        buttonText=""
+        buttonClassName="hidden"
+        autoOpen={true}
+        onClose={() => setPrintProductId(null)}
+      />
+    )}
     </>
   );
 }
