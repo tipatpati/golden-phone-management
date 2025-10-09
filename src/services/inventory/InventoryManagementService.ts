@@ -74,25 +74,30 @@ export class InventoryManagementService {
             query = query.or(`brand.ilike.%${searchTerm}%,model.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
           }
         } else {
-          // Regular search in brand, model, barcode, and also check if it matches a serial number
-          const searchConditions = [
-            `brand.ilike.%${searchTerm}%`,
-            `model.ilike.%${searchTerm}%`,
-            `barcode.ilike.%${searchTerm}%`
-          ];
-          
-          // Also search for products that have units with matching serial numbers or barcodes
+          // Regular search: search for products that have units with matching serial numbers or barcodes
           const { data: unitsData } = await supabase
             .from('product_units')
             .select('product_id')
             .or(`serial_number.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
           
-          if (unitsData && unitsData.length > 0) {
-            const productIds = [...new Set(unitsData.map(u => u.product_id))];
-            // Combine product search with serial number matches
-            query = query.or([...searchConditions].join(',')).in('id', productIds);
+          const productIdsFromUnits = unitsData && unitsData.length > 0 
+            ? [...new Set(unitsData.map(u => u.product_id))]
+            : [];
+          
+          // Build search conditions
+          const productSearchConditions = [
+            `brand.ilike.%${searchTerm}%`,
+            `model.ilike.%${searchTerm}%`,
+            `barcode.ilike.%${searchTerm}%`
+          ];
+          
+          // If we found matching units, include those product IDs in the search
+          if (productIdsFromUnits.length > 0) {
+            // Combine: (brand OR model OR barcode) OR (id IN productIds)
+            query = query.or(`${productSearchConditions.join(',')},id.in.(${productIdsFromUnits.join(',')})`);
           } else {
-            query = query.or(searchConditions.join(','));
+            // Just search in product fields
+            query = query.or(productSearchConditions.join(','));
           }
         }
       }
