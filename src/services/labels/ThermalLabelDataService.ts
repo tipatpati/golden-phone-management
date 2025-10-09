@@ -314,8 +314,9 @@ export class ThermalLabelDataService {
       color: unit.color
     });
 
-    // Resolve pricing with hierarchy: unit max_price > unit price > product max_price > product price > 0
-    const price = unit.max_price ?? unit.price ?? product.max_price ?? product.price ?? 0;
+    // CRITICAL: Use max_price (selling price), NEVER purchase_price
+    // Hierarchy: unit max_price > product max_price > fallback to 0
+    const price = unit.max_price ?? product.max_price ?? 0;
     const maxPrice = unit.max_price ?? product.max_price ?? null;
 
     const label: ThermalLabelData = {

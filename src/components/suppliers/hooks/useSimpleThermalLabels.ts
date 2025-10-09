@@ -118,7 +118,7 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
             productName: `${product.brand} ${product.model}`,
             brand: product.brand,
             model: product.model,
-            price: unit.max_price || product.max_price || 0, // Use max_price as the selling price
+            price: unit.max_price || product.max_price || 0, // CRITICAL: max_price (selling price) only
             maxPrice: unit.max_price || product.max_price,
             barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
             serial: unit.serial_number,

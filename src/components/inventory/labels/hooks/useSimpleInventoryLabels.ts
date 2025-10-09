@@ -97,7 +97,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: unit.max_price || product.max_price || product.price || 0,
+              price: unit.max_price || product.max_price || 0, // CRITICAL: max_price (selling price) only
               maxPrice: unit.max_price || product.max_price,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
               serial: unit.serial_number || `UNIT-${unit.id}`,
@@ -116,7 +116,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: product.max_price || product.price || 0,
+              price: product.max_price || 0, // CRITICAL: max_price (selling price) only
               maxPrice: product.max_price,
               barcode: product.barcode || `TEMP-${product.id}-${i}`,
               serial: undefined,
