@@ -129,9 +129,16 @@ class LightweightInventoryService {
 
     if (error) {
       console.error('Error fetching products:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       throw error;
     }
 
+    console.log(`✅ Fetched ${data?.length || 0} products with filters:`, filters);
     return data || [];
   }
 

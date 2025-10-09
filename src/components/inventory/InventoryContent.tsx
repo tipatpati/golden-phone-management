@@ -117,11 +117,12 @@ export function InventoryContent({
 
   if (error) {
     logger.error('Products fetch error', error, 'InventoryContent');
+    console.error('Full error object:', error);
     return (
       <EmptyState
         icon={<Package />}
         title="Error Loading Products"
-        description="Failed to load products. Please try again."
+        description={`Failed to load products: ${error.message || 'Please try again.'}`}
       />
     );
   }
