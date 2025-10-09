@@ -26,8 +26,6 @@ export function InventoryFilters({
   categories = []
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
@@ -49,6 +47,15 @@ export function InventoryFilters({
     activeFilterCount,
     hasActiveFilters,
   } = useInventoryFilters();
+  
+  // Sync searchInput with filters.searchTerm (including from localStorage)
+  const [searchInput, setSearchInput] = useState(filters.searchTerm);
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Keep searchInput in sync with filters.searchTerm when it changes externally
+  useEffect(() => {
+    setSearchInput(filters.searchTerm);
+  }, [filters.searchTerm]);
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
   
