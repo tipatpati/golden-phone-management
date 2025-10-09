@@ -127,6 +127,8 @@ class LightweightInventoryService {
     }
 
     let results = data || [];
+    
+    console.log('📊 Query returned:', results.length, 'products with filters:', { categoryId, stockStatus, hasSerial, year, sortBy });
 
     // Client-side search filtering - allows searching across all fields including product_units
     if (searchTerm.trim()) {
