@@ -48,20 +48,10 @@ export function InventoryFilters({
     hasActiveFilters,
   } = useInventoryFilters();
   
-  // Sync searchInput with filters.searchTerm (including from localStorage)
-  const [searchInput, setSearchInput] = useState(filters.searchTerm);
-  const [isSearching, setIsSearching] = useState(false);
-  
-  // Keep searchInput in sync with filters.searchTerm when it changes externally
-  useEffect(() => {
-    setSearchInput(filters.searchTerm);
-  }, [filters.searchTerm]);
-  
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
   
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
-      setSearchInput(result);
       setSearchTerm(result);
     }
   });
@@ -73,32 +63,16 @@ export function InventoryFilters({
     }
   }, [setupHardwareScanner]);
   
-  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-  }, []);
-
-  const handleSearchSubmit = useCallback(() => {
-    logger.debug('Search submitted', { searchTerm: searchInput }, 'InventoryFilters');
-    setIsSearching(true);
-    setSearchTerm(searchInput);
-    // Reset searching state after a brief delay for visual feedback
-    setTimeout(() => setIsSearching(false), 500);
-  }, [searchInput, setSearchTerm]);
-
-  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearchSubmit();
-    }
-  }, [handleSearchSubmit]);
+  // Instant search as user types
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, [setSearchTerm]);
 
   const handleClearSearch = useCallback(() => {
-    setSearchInput("");
     setSearchTerm("");
   }, [setSearchTerm]);
 
   const handleBarcodeScanned = useCallback((barcode: string) => {
-    setSearchInput(barcode);
     setSearchTerm(barcode);
   }, [setSearchTerm]);
 
@@ -147,13 +121,12 @@ export function InventoryFilters({
             ref={searchInputRef}
             type="search"
             placeholder="Cerca prodotti o scansiona barcode..."
-            className="w-full pl-10 pr-32 h-12 text-base"
-            value={searchInput}
-            onChange={handleSearchInputChange}
-            onKeyDown={handleSearchKeyDown}
+            className="w-full pl-10 pr-20 h-12 text-base"
+            value={filters.searchTerm}
+            onChange={handleSearchChange}
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {searchInput && (
+            {filters.searchTerm && (
               <button 
                 type="button"
                 className="p-1 hover:bg-muted rounded transition-colors"
@@ -162,20 +135,6 @@ export function InventoryFilters({
                 <FilterX className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
-            <Button
-              type="button"
-              onClick={handleSearchSubmit}
-              size="sm"
-              variant="filled"
-              className="h-8 px-3"
-              disabled={isSearching}
-            >
-              {isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-            </Button>
             <BarcodeScannerTrigger
               onScan={handleBarcodeScanned}
               variant="ghost"

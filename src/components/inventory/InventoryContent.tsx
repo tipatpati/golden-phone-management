@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { InventoryTable } from "./InventoryTable";
 import { InventoryFilters } from "./InventoryFilters";
@@ -35,15 +35,21 @@ export function InventoryContent({
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const { filters, effectiveDateRange } = useInventoryFilters();
   
-  // No debounce - instant search when button clicked
-  const searchTerm = filters.searchTerm;
+  // Use debounce for better UX - reduces API calls while typing
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 200);
   
   const queryClient = useQueryClient();
   const { data: products, isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
-    searchTerm,
+    searchTerm: debouncedSearchTerm,
     dateRange: effectiveDateRange,
   });
+  
+  // Track if we're actively searching (search term exists and is being debounced)
+  const isSearching = useMemo(() => 
+    filters.searchTerm !== debouncedSearchTerm && filters.searchTerm.length > 0,
+    [filters.searchTerm, debouncedSearchTerm]
+  );
   const deleteProduct = useDeleteProduct();
   const { data: categories = [] } = useCategories();
 
@@ -186,8 +192,8 @@ export function InventoryContent({
       <InventoryTable
         products={products || []}
         isLoading={isLoading}
-        isFetching={isFetching}
-        searchTerm={filters.searchTerm}
+        isFetching={isFetching || isSearching}
+        searchTerm={debouncedSearchTerm}
         viewMode={viewMode}
         selectedItems={selectedItems}
         onSelectItem={toggleSelectItem}
