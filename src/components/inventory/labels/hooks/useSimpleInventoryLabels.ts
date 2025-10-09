@@ -97,36 +97,55 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         if (productUnits.length > 0) {
           // Create labels for each unit
           for (const unit of productUnits) {
-            const finalPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
+            // CRITICAL PRICE LOGIC:
+            // For inventory labels, ALWAYS use max_price (selling price)
+            // NEVER use unit.price (which is purchase/cost price)
+            const sellingPrice = unit.max_price || product.max_price || 0;
             
-            console.log(`🟢 CREATING LABEL for ${unit.serial_number}:`, {
+            console.log(`🟢 LABEL PRICE - Serial ${unit.serial_number}:`, {
               unit_max_price: unit.max_price,
               unit_price: unit.price,
               product_max_price: product.max_price,
               product_price: product.price,
-              FINAL_PRICE: finalPrice,
-              calculation: `unit.max_price(${unit.max_price}) ?? unit.price(${unit.price}) ?? product.max_price(${product.max_price}) = ${finalPrice}`
+              SELECTED_SELLING_PRICE: sellingPrice,
+              explanation: 'Using unit.max_price (selling price), NOT unit.price (cost price)'
             });
             
-            labels.push({
+            const labelData: ThermalLabelData = {
               id: `${product.id}-${unit.id}`,
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
               serialNumber: unit.serial_number || `UNIT-${unit.id}`,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-              price: finalPrice,
-              maxPrice: unit.max_price ?? product.max_price,
+              price: sellingPrice,  // ✅ This is the SELLING price (max_price)
+              maxPrice: unit.max_price || product.max_price,
               minPrice: product.price,
               color: unit.color,
               storage: unit.storage,
               ram: unit.ram,
               batteryLevel: unit.battery_level
+            };
+            
+            console.log(`✅ LABEL CREATED:`, {
+              serial: labelData.serialNumber,
+              displayPrice: labelData.price,
+              productName: labelData.productName
             });
+            
+            labels.push(labelData);
           }
         } else {
-          // Create generic product labels based on stock
+          // Create generic product labels based on stock (no individual units)
           const labelCount = Math.min(product.stock || 1, 10);
+          const sellingPrice = product.max_price || product.price || 0;
+          
+          console.log(`🟡 BULK LABEL - ${product.brand} ${product.model}:`, {
+            product_max_price: product.max_price,
+            product_price: product.price,
+            SELECTED_SELLING_PRICE: sellingPrice
+          });
+          
           for (let i = 0; i < labelCount; i++) {
             labels.push({
               id: `${product.id}-bulk-${i}`,
@@ -134,7 +153,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               brand: product.brand,
               model: product.model,
               barcode: product.barcode || `TEMP-${product.id}-${i}`,
-              price: product.max_price ?? product.price ?? 0,
+              price: sellingPrice,  // ✅ Selling price for bulk items
               maxPrice: product.max_price,
               minPrice: product.price
             });

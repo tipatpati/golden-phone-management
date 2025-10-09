@@ -99,6 +99,16 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         for (const unit of productUnits) {
           if (!unit.serial_number) continue;
 
+          // CRITICAL: For supplier labels, use max_price (selling price)
+          const sellingPrice = unit.max_price || product.max_price || 0;
+          
+          console.log(`📦 SUPPLIER LABEL - ${unit.serial_number}:`, {
+            unit_max_price: unit.max_price,
+            unit_price: unit.price,
+            product_max_price: product.max_price,
+            SELLING_PRICE: sellingPrice
+          });
+
           labels.push({
             id: `${product.id}-${unit.id}`,
             productName: `${product.brand} ${product.model}`,
@@ -106,8 +116,8 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
             model: product.model,
             serialNumber: unit.serial_number,
             barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-            price: unit.max_price ?? unit.price ?? product.max_price ?? 0,
-            maxPrice: unit.max_price ?? product.max_price,
+            price: sellingPrice,  // ✅ Selling price
+            maxPrice: unit.max_price || product.max_price,
             minPrice: product.price,
             color: unit.color,
             storage: unit.storage,
