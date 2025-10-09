@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2 } from 'lucide-react';
 import { UnitManagementSection } from './UnitManagementSection';
 import { ItemValidationIndicator } from '../components/ItemValidationIndicator';
+import { ProductSearchSelector } from './ProductSearchSelector';
 import type { AcquisitionItem } from '@/services/suppliers/SupplierAcquisitionService';
 import type { UnitEntryForm as UnitEntryFormType } from '@/services/inventory/types';
 import type { ItemValidationSummary } from '../hooks/useAcquisitionValidation';
@@ -53,9 +53,10 @@ export function ExistingProductItem({
         {/* Product Selection */}
         <div className="space-y-2">
           <Label>Product</Label>
-          <Select 
+          <ProductSearchSelector
+            products={products}
             value={item.productId || ''}
-            onValueChange={(value) => {
+            onChange={(value) => {
               const selectedProduct = products.find(p => p.id === value);
               onUpdateItem({ 
                 productId: value,
@@ -63,18 +64,9 @@ export function ExistingProductItem({
                 quantity: selectedProduct?.has_serial ? 0 : 1
               });
             }}
-          >
-            <SelectTrigger className={getFieldError('productId') ? 'border-destructive' : ''}>
-              <SelectValue placeholder="Select product" />
-            </SelectTrigger>
-            <SelectContent>
-              {products.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  {product.brand} {product.model} {product.has_serial ? '(Serialized)' : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Search by brand or model..."
+            error={!!getFieldError('productId')}
+          />
           {getFieldError('productId') && (
             <p className="text-sm text-destructive">{getFieldError('productId')}</p>
           )}
