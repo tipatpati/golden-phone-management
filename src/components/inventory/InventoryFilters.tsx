@@ -26,6 +26,7 @@ export function InventoryFilters({
   categories = []
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
@@ -52,6 +53,7 @@ export function InventoryFilters({
   
   const { setupHardwareScanner } = useBarcodeScanner({
     onScan: (result) => {
+      setSearchInput(result);
       setSearchTerm(result);
     }
   });
@@ -63,13 +65,29 @@ export function InventoryFilters({
     }
   }, [setupHardwareScanner]);
   
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSearchTerm = e.target.value;
-    logger.debug('Search input changed', { searchTerm: newSearchTerm }, 'InventoryFilters');
-    setSearchTerm(newSearchTerm);
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    logger.debug('Search submitted', { searchTerm: searchInput }, 'InventoryFilters');
+    setSearchTerm(searchInput);
+  }, [searchInput, setSearchTerm]);
+
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
+  }, [handleSearchSubmit]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchInput("");
+    setSearchTerm("");
   }, [setSearchTerm]);
 
   const handleBarcodeScanned = useCallback((barcode: string) => {
+    setSearchInput(barcode);
     setSearchTerm(barcode);
   }, [setSearchTerm]);
 
@@ -118,25 +136,30 @@ export function InventoryFilters({
             ref={searchInputRef}
             type="search"
             placeholder="Cerca prodotti o scansiona barcode..."
-            className="w-full pl-10 pr-20 h-12 text-base"
-            value={filters.searchTerm}
-            onChange={handleSearch}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-              }
-            }}
+            className="w-full pl-10 pr-32 h-12 text-base"
+            value={searchInput}
+            onChange={handleSearchInputChange}
+            onKeyDown={handleSearchKeyDown}
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {filters.searchTerm && (
+            {searchInput && (
               <button 
                 type="button"
                 className="p-1 hover:bg-muted rounded transition-colors"
-                onClick={() => setSearchTerm('')}
+                onClick={handleClearSearch}
               >
                 <FilterX className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
+            <Button
+              type="button"
+              onClick={handleSearchSubmit}
+              size="sm"
+              variant="filled"
+              className="h-8 px-3"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
             <BarcodeScannerTrigger
               onScan={handleBarcodeScanned}
               variant="ghost"
