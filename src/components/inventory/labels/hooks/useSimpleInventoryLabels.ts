@@ -72,6 +72,24 @@ export function useSimpleInventoryLabels(productIds: string[]) {
       // Transform to ThermalLabelData directly
       const labels: ThermalLabelData[] = [];
       
+      console.log('🔵 DATABASE QUERY RESULTS:', {
+        productsCount: products.length,
+        unitsCount: units?.length || 0,
+        firstProduct: products[0] ? {
+          id: products[0].id,
+          brand: products[0].brand,
+          model: products[0].model,
+          price: products[0].price,
+          max_price: products[0].max_price
+        } : null,
+        firstUnit: units?.[0] ? {
+          id: units[0].id,
+          serial_number: units[0].serial_number,
+          price: units[0].price,
+          max_price: units[0].max_price
+        } : null
+      });
+      
       for (const product of products) {
         // Find units for this product
         const productUnits = units?.filter(unit => unit.product_id === product.id) || [];
@@ -79,6 +97,17 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         if (productUnits.length > 0) {
           // Create labels for each unit
           for (const unit of productUnits) {
+            const finalPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
+            
+            console.log(`🟢 CREATING LABEL for ${unit.serial_number}:`, {
+              unit_max_price: unit.max_price,
+              unit_price: unit.price,
+              product_max_price: product.max_price,
+              product_price: product.price,
+              FINAL_PRICE: finalPrice,
+              calculation: `unit.max_price(${unit.max_price}) ?? unit.price(${unit.price}) ?? product.max_price(${product.max_price}) = ${finalPrice}`
+            });
+            
             labels.push({
               id: `${product.id}-${unit.id}`,
               productName: `${product.brand} ${product.model}`,
@@ -86,7 +115,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               model: product.model,
               serialNumber: unit.serial_number || `UNIT-${unit.id}`,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-              price: unit.max_price ?? unit.price ?? product.max_price ?? 0,
+              price: finalPrice,
               maxPrice: unit.max_price ?? product.max_price,
               minPrice: product.price,
               color: unit.color,

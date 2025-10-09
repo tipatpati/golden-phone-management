@@ -27,7 +27,16 @@ export function formatLabelElements(
   label: ThermalLabelData,
   options: ThermalLabelOptions & { companyName?: string; isSupplierLabel?: boolean }
 ): FormattedLabelElements {
-  logger.debug('formatLabelElements input', { label, options }, 'labelDataFormatter');
+  console.log('🔴 FORMATTER RECEIVED:', {
+    productName: label.productName,
+    serialNumber: label.serialNumber,
+    price: label.price,
+    maxPrice: label.maxPrice,
+    typeof_price: typeof label.price,
+    typeof_maxPrice: typeof label.maxPrice,
+    isSupplierLabel: options.isSupplierLabel,
+    includePrice: options.includePrice
+  });
   
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
@@ -35,6 +44,12 @@ export function formatLabelElements(
   const displayPrice = options.includePrice && label.price && label.price > 0 
     ? formatPrice(label.price) 
     : null;
+    
+  console.log('🔴 FORMATTER OUTPUT:', {
+    displayPrice,
+    maxPriceFormatted: label.maxPrice ? formatPrice(label.maxPrice) : null,
+    willShowPrice: displayPrice
+  });
   
   return {
     productName,
