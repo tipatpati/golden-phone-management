@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { 
@@ -69,9 +69,18 @@ export function InventoryTable({
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   const [printProductId, setPrintProductId] = useState<string | null>(null);
+  const [renderKey, setRenderKey] = useState(0);
   
-  // Use products passed from parent - no double data fetching
-  const productList = Array.isArray(products) ? products : [];
+  // Force re-render when search term changes
+  useEffect(() => {
+    setRenderKey(prev => prev + 1);
+  }, [searchTerm, products]);
+  
+  // Memoize product list to ensure fresh calculation on search
+  const productList = useMemo(() => 
+    Array.isArray(products) ? products : [],
+    [products, searchTerm]
+  );
 
   const handleRowClick = (product: Product) => {
     setSelectedProductForDetails(product);
@@ -165,7 +174,7 @@ export function InventoryTable({
       )}
 
       {/* Desktop Table Layout */}
-      <div className="hidden lg:block rounded-md border relative">
+      <div key={`table-${renderKey}`} className="hidden lg:block rounded-md border relative">
         {/* Loading overlay */}
         {isFetching && !isLoading && (
           <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-md">
