@@ -2,6 +2,9 @@
  * SIMPLE INVENTORY LABELS
  * Direct inventory data fetching for thermal label printing
  * Returns ThermalLabelData directly - no transformations needed
+ * 
+ * CRITICAL: Always uses max_price (selling price), NEVER unit.price (cost price)
+ * Version: 2.0 - Refactored price logic
  */
 
 import { useQuery } from "@tanstack/react-query";
