@@ -83,6 +83,7 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           barcode,
           status,
           max_price,
+          price,
           product_id,
           storage,
           ram,
@@ -113,12 +114,22 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         for (const unit of productUnits) {
           if (!unit.serial_number) continue;
 
+          // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
+          const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
+          
+          console.log(`📊 Label Price Debug - ${unit.serial_number}:`, {
+            unit_max_price: unit.max_price,
+            unit_price: unit.price,
+            product_max_price: product.max_price,
+            final_price: sellingPrice
+          });
+
           labels.push({
             id: `${product.id}-${unit.id}`,
             productName: `${product.brand} ${product.model}`,
             brand: product.brand,
             model: product.model,
-            price: unit.max_price || product.max_price || 0, // CRITICAL: max_price (selling price) only
+            price: sellingPrice,
             maxPrice: unit.max_price || product.max_price,
             barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
             serial: unit.serial_number,

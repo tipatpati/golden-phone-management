@@ -60,7 +60,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
       }
 
       // Fetch product units for products that have them
-      const { data: units, error: unitsError } = await supabase
+       const { data: units, error: unitsError } = await supabase
         .from('product_units')
         .select(`
           id,
@@ -68,6 +68,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
           barcode,
           status,
           max_price,
+          price,
           product_id,
           storage,
           ram,
@@ -92,12 +93,22 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         if (productUnits.length > 0) {
           // Create labels for each unit (with or without serial numbers)
           for (const unit of productUnits) {
+            // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
+            const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
+            
+            console.log(`📊 Inventory Label Price Debug - ${unit.serial_number}:`, {
+              unit_max_price: unit.max_price,
+              unit_price: unit.price,
+              product_max_price: product.max_price,
+              final_price: sellingPrice
+            });
+
             labels.push({
               id: `${product.id}-${unit.id}`,
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: unit.max_price || product.max_price || 0, // CRITICAL: max_price (selling price) only
+              price: sellingPrice,
               maxPrice: unit.max_price || product.max_price,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
               serial: unit.serial_number || `UNIT-${unit.id}`,
