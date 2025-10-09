@@ -16,8 +16,23 @@ interface ThermalLabelPreviewProps {
 export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps) {
   const [barcodeMarkup, setBarcodeMarkup] = useState<string>("");
 
+  // 🟣 DEBUG: Preview component receives
+  console.log('🟣 PREVIEW RENDER:', {
+    serial: label.serialNumber,
+    price: label.price,
+    maxPrice: label.maxPrice,
+    typeof_price: typeof label.price,
+    includePrice: options.includePrice
+  });
+
   // Format the label for display
   const formattedLabel = formatLabelElements(label, options);
+  
+  console.log('🟣 PREVIEW FORMATTED:', {
+    serial: label.serialNumber,
+    formattedPrice: formattedLabel.price,
+    rawPrice: label.price
+  });
 
   // Generate barcode when it changes
   useEffect(() => {

@@ -32,18 +32,27 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // SIMPLIFIED: Just format the price that was passed in
-  console.log('🎯 SIMPLIFIED FORMATTER:', {
+  // 🔴 DEBUG: Formatter receives
+  console.log('🔴 FORMATTER INPUT:', {
     productName: label.productName,
+    serial: label.serialNumber,
     inputPrice: label.price,
     maxPrice: label.maxPrice,
+    typeof_price: typeof label.price,
+    typeof_maxPrice: typeof label.maxPrice,
     isSupplierLabel: options.isSupplierLabel,
-    willDisplay: label.price
+    includePrice: options.includePrice
   });
   
   const displayPrice = options.includePrice && typeof label.price === 'number' && label.price > 0 
     ? formatPrice(label.price) 
     : null;
+    
+  console.log('🔴 FORMATTER OUTPUT:', {
+    serial: label.serialNumber,
+    displayPrice,
+    rawPrice: label.price
+  });
   
   const formatted = {
     productName,

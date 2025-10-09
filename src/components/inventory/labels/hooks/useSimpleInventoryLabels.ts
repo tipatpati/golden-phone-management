@@ -83,6 +83,19 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         throw unitsError;
       }
 
+      // 🔵 DEBUG: Raw Supabase response
+      console.log('🔵 RAW SUPABASE RESPONSE - Product Units:', {
+        unitsCount: units?.length || 0,
+        sampleUnit: units?.[0] ? {
+          serial: units[0].serial_number,
+          max_price_from_db: units[0].max_price,
+          price_from_db: units[0].price,
+          typeof_max_price: typeof units[0].max_price,
+          is_null: units[0].max_price === null,
+          is_undefined: units[0].max_price === undefined
+        } : 'No units'
+      });
+
       // Transform to simple label data
       const labels: SimpleInventoryLabelData[] = [];
       
@@ -96,15 +109,17 @@ export function useSimpleInventoryLabels(productIds: string[]) {
             // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
             const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
             
-            console.log(`💰💰💰 INVENTORY LABEL - Serial ${unit.serial_number}:`, {
+            // 🟢 DEBUG: After transformation in useSimpleInventoryLabels
+            console.log(`🟢 TRANSFORM - Serial ${unit.serial_number}:`, {
               unit_max_price: unit.max_price,
               unit_price: unit.price,
               product_max_price: product.max_price,
-              FINAL_SELLING_PRICE: sellingPrice,
-              willDisplayAs: `€${sellingPrice}`
+              SELLING_PRICE: sellingPrice,
+              logic: `unit.max_price(${unit.max_price}) ?? unit.price(${unit.price}) ?? product.max_price(${product.max_price})`,
+              willPushToLabel: sellingPrice
             });
 
-            labels.push({
+            const labelData = {
               id: `${product.id}-${unit.id}`,
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
@@ -117,7 +132,16 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               storage: unit.storage,
               ram: unit.ram,
               batteryLevel: unit.battery_level
+            };
+            
+            console.log('🟢 LABEL DATA CREATED:', {
+              serial: labelData.serial,
+              price: labelData.price,
+              maxPrice: labelData.maxPrice,
+              type: 'with unit'
             });
+            
+            labels.push(labelData);
           }
         } else {
           // Create generic product labels based on stock

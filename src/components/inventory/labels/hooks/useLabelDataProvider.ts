@@ -71,15 +71,27 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
 
   // Convert inventory label data to thermal label format
   const convertInventoryLabels = useCallback((inventoryLabels: any[]): ThermalLabelData[] => {
+    console.log('🟡 PROVIDER CONVERSION - Input:', {
+      count: inventoryLabels.length,
+      firstLabel: inventoryLabels[0] ? {
+        serial: inventoryLabels[0].serial,
+        price: inventoryLabels[0].price,
+        maxPrice: inventoryLabels[0].maxPrice,
+        typeof_price: typeof inventoryLabels[0].price,
+        typeof_maxPrice: typeof inventoryLabels[0].maxPrice
+      } : 'No labels'
+    });
+    
     return inventoryLabels.map(label => {
       // Prioritize maxPrice for selling price display on labels
       const displayPrice = label.maxPrice || label.price || 0;
       
-      console.log('💰 Label price conversion:', {
+      console.log('🟡 PROVIDER - Converting label:', {
         serial: label.serial,
         maxPrice: label.maxPrice,
         price: label.price,
-        displayPrice
+        displayPrice,
+        logic: `maxPrice(${label.maxPrice}) || price(${label.price}) || 0`
       });
       
       return {
