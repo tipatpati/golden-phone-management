@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TracingSearchBar } from '@/components/tracing/TracingSearchBar';
 import { TraceResultCard } from '@/components/tracing/TraceResultCard';
 import { ProductTraceTimeline } from '@/components/tracing/ProductTraceTimeline';
+import { InteractiveProductTimeline } from '@/components/tracing/InteractiveProductTimeline';
 import { useProductTrace } from '@/hooks/useProductTrace';
 import { ProductTracingService } from '@/services/tracing/ProductTracingService';
-import { SearchX, AlertCircle, Route } from 'lucide-react';
+import { SearchX, AlertCircle, Route, Clock, List } from 'lucide-react';
 
 export default function ProductTracing() {
   const [searchedSerial, setSearchedSerial] = useState<string | null>(null);
@@ -92,16 +94,31 @@ export default function ProductTracing() {
       )}
 
       {traceResult && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="space-y-6">
           {/* Product Details */}
-          <div className="space-y-6">
-            <TraceResultCard traceResult={traceResult} />
-          </div>
+          <TraceResultCard traceResult={traceResult} />
 
-          {/* Timeline */}
-          <div className="space-y-6">
-            <ProductTraceTimeline events={timelineEvents} />
-          </div>
+          {/* Timeline Tabs */}
+          <Tabs defaultValue="interactive" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="interactive" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Interactive Timeline
+              </TabsTrigger>
+              <TabsTrigger value="list" className="flex items-center gap-2">
+                <List className="h-4 w-4" />
+                Event List
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="interactive" className="mt-6">
+              <InteractiveProductTimeline traceResult={traceResult} />
+            </TabsContent>
+
+            <TabsContent value="list" className="mt-6">
+              <ProductTraceTimeline events={timelineEvents} />
+            </TabsContent>
+          </Tabs>
         </div>
       )}
 

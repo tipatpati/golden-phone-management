@@ -358,4 +358,50 @@ export class ProductTracingService {
 
     return data.map(item => item.serial_number);
   }
+
+  /**
+   * Get product state at a specific point in time
+   */
+  static async getProductStateAtTime(serialNumber: string, timestamp: string): Promise<any> {
+    const traceResult = await this.traceProductBySerial(serialNumber);
+    if (!traceResult) return null;
+
+    const { ProductStateReconstructor } = await import('./ProductStateReconstructor');
+    const timeline = ProductStateReconstructor.reconstructTimeline(traceResult);
+    return ProductStateReconstructor.getStateAtTime(timeline, timestamp);
+  }
+
+  /**
+   * Search products by various criteria (reverse lookup)
+   */
+  static async searchProductsBySupplier(supplierId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('product_units')
+      .select('serial_number')
+      .eq('supplier_id', supplierId);
+
+    if (error) return [];
+    return data.map(item => item.serial_number);
+  }
+
+  static async searchProductsByCustomer(customerName: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('sold_product_units')
+      .select('serial_number')
+      .ilike('customer_name', `%${customerName}%`);
+
+    if (error) return [];
+    return data.map(item => item.serial_number);
+  }
+
+  static async searchProductsByDateRange(startDate: string, endDate: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('product_units')
+      .select('serial_number')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
+
+    if (error) return [];
+    return data.map(item => item.serial_number);
+  }
 }
