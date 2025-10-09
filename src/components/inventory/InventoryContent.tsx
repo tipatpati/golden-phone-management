@@ -33,7 +33,7 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const { filters, effectiveDateRange } = useInventoryFilters();
+  const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
   // Use debounce for better UX - reduces API calls while typing
   const debouncedSearchTerm = useDebounce(filters.searchTerm, 200);
@@ -117,17 +117,6 @@ export function InventoryContent({
 
   if (error) {
     logger.error('Products fetch error', error, 'InventoryContent');
-    console.error('Full error object:', error);
-    return (
-      <EmptyState
-        icon={<Package />}
-        title="Error Loading Products"
-        description={`Failed to load products: ${error.message || 'Please try again.'}`}
-      />
-    );
-  }
-
-  if (!products || !Array.isArray(products) || products.length === 0) {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-xl p-6">
@@ -139,19 +128,66 @@ export function InventoryContent({
           />
         </div>
         <EmptyState
-          icon={<Package />}
-          title="No Products Found"
-          description="Start by adding your first product to the inventory."
-          action={{
-            label: "Add Product",
-            onClick: onAddProduct
-          }}
+          icon={<Package className="h-16 w-16 text-muted-foreground" />}
+          title="Error Loading Products"
+          description={error.message || 'Unable to load products. Please try refreshing the page.'}
+        />
+      </div>
+    );
+  }
+
+  if (!products || products.length === 0) {
+    logger.info('No products found', { filters, hasActiveFilters }, 'InventoryContent');
+    
+    // Contextual empty state messages
+    const getEmptyStateContent = () => {
+      if (filters.searchTerm) {
+        return {
+          title: "No Products Found",
+          description: `No products match "${filters.searchTerm}". Try different keywords or check the spelling.`,
+        };
+      }
+      if (hasActiveFilters) {
+        return {
+          title: "No Products Match Filters",
+          description: "No products match your current filters. Try adjusting or clearing filters to see more results.",
+        };
+      }
+      return {
+        title: "No Products Yet",
+        description: "Your inventory is empty. Start by adding your first product.",
+      };
+    };
+
+    const { title, description } = getEmptyStateContent();
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-xl p-6">
+          <InventoryFilters
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            onAddProduct={onAddProduct}
+            categories={categories}
+          />
+        </div>
+        <EmptyState
+          icon={<Package className="h-16 w-16 text-muted-foreground" />}
+          title={title}
+          description={description}
+          action={
+            onAddProduct && !filters.searchTerm && !hasActiveFilters ? {
+              label: "Add Product",
+              onClick: onAddProduct,
+            } : undefined
+          }
         />
         
         {showAddProduct && (
           <AddProductDialog 
             open={showAddProduct}
             onClose={onCancelAddProduct}
+            onSuccess={handleProductAdded}
           />
         )}
       </div>

@@ -54,10 +54,17 @@ class LightweightInventoryService {
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
-    // Search filter
+    // Comprehensive search: brand, model, barcode, description, AND serial numbers in product_units
     if (searchTerm.trim()) {
-      const term = `%${searchTerm.trim()}%`;
-      query = query.or(`brand.ilike.${term},model.ilike.${term},barcode.eq.${searchTerm.trim()}`);
+      const term = searchTerm.trim();
+      // Search across multiple fields - products table and serial_numbers array
+      query = query.or(
+        `brand.ilike.%${term}%,` +
+        `model.ilike.%${term}%,` +
+        `barcode.eq.${term},` +
+        `description.ilike.%${term}%,` +
+        `serial_numbers.cs.{${term}}`
+      );
     }
 
     // Category filter
@@ -129,16 +136,9 @@ class LightweightInventoryService {
 
     if (error) {
       console.error('Error fetching products:', error);
-      console.error('Error details:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
       throw error;
     }
 
-    console.log(`✅ Fetched ${data?.length || 0} products with filters:`, filters);
     return data || [];
   }
 

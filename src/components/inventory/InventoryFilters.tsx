@@ -120,7 +120,7 @@ export function InventoryFilters({
           <Input
             ref={searchInputRef}
             type="search"
-            placeholder="Cerca prodotti o scansiona barcode..."
+            placeholder="Search by brand, model, serial number, IMEI, or barcode..."
             className="w-full pl-10 pr-20 h-12 text-base"
             value={filters.searchTerm}
             onChange={handleSearchChange}

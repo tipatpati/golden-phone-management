@@ -24,7 +24,7 @@ export interface InventoryFilters {
 }
 
 const DEFAULT_FILTERS: InventoryFilters = {
-  searchTerm: '',
+  searchTerm: '', // Never persisted - always starts empty
   categoryId: 'all',
   stockStatus: 'all',
   hasSerial: 'all',
@@ -37,7 +37,7 @@ const STORAGE_KEY = 'inventory-filters';
 
 export function useInventoryFilters() {
   const [filters, setFilters] = useState<InventoryFilters>(() => {
-    // Load from localStorage
+    // Load from localStorage (except searchTerm which always starts empty)
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -47,7 +47,8 @@ export function useInventoryFilters() {
           if (parsed.dateRange.start) parsed.dateRange.start = new Date(parsed.dateRange.start);
           if (parsed.dateRange.end) parsed.dateRange.end = new Date(parsed.dateRange.end);
         }
-        return { ...DEFAULT_FILTERS, ...parsed };
+        // Always reset searchTerm to empty on mount
+        return { ...DEFAULT_FILTERS, ...parsed, searchTerm: '' };
       }
     } catch (error) {
       console.error('Failed to load filters from localStorage:', error);
@@ -55,10 +56,11 @@ export function useInventoryFilters() {
     return DEFAULT_FILTERS;
   });
 
-  // Save to localStorage whenever filters change
+  // Save to localStorage (except searchTerm which should never persist)
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+      const { searchTerm, ...persistedFilters } = filters;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedFilters));
     } catch (error) {
       console.error('Failed to save filters to localStorage:', error);
     }
