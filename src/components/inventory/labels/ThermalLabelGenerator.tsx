@@ -242,17 +242,17 @@ export function ThermalLabelGenerator({
             />
           )}
           
-          {allowUnitSelection && labelSource === 'inventory' && productSerialNumbers.length > 0 && (
+          {allowUnitSelection && labelSource === 'inventory' && activeLabels.length > 0 && (
             <ProductUnitSelector
-              serialNumbers={productSerialNumbers}
+              serialNumbers={activeLabels.map(label => label.serialNumber).filter(Boolean) as string[]}
               onSelectionChange={setSelectedLabels}
-              productName={productName}
-              productPrice={productPrice}
-              productMaxPrice={productMaxPrice}
-              productMinPrice={productMinPrice}
+              productName={activeLabels[0]?.productName || productName}
+              productPrice={activeLabels[0]?.price || productPrice}
+              productMaxPrice={activeLabels[0]?.maxPrice || productMaxPrice}
+              productMinPrice={activeLabels[0]?.minPrice || productMinPrice}
               productBarcode={productBarcode}
-              productCategory={productCategory}
-              productId={productId} // Pass productId for real data fetching
+              productCategory={activeLabels[0]?.category || productCategory}
+              productId={productId}
             />
           )}
 

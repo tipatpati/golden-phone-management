@@ -98,6 +98,7 @@ export function UnifiedInventoryLabels({
         companyName={companyName}
         isSupplierLabel={false}
         allowUnitSelection={true}
+        productId={productIds[0]} // Pass the product ID to enable unit selection
       />
     </>
   );
