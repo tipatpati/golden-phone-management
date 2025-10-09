@@ -71,26 +71,38 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
 
   // Convert inventory label data to thermal label format
   const convertInventoryLabels = useCallback((inventoryLabels: any[]): ThermalLabelData[] => {
-    return inventoryLabels.map(label => ({
-      id: label.id || crypto.randomUUID(),
-      productName: `${label.brand || ''} ${label.model || ''}`.trim(),
-      brand: label.brand || '',
-      model: label.model || '',
-      specifications: [
-        label.color,
-        label.storage ? `${label.storage}GB` : undefined,
-        label.ram ? `${label.ram}GB RAM` : undefined,
-      ].filter(Boolean).join(' • '),
-      price: label.price || 0,
-      minPrice: label.minPrice,
-      maxPrice: label.maxPrice,
-      barcode: label.barcode || '',
-      serialNumber: label.serial,
-      color: label.color,
-      storage: label.storage,
-      ram: label.ram,
-      batteryLevel: label.batteryLevel,
-    }));
+    return inventoryLabels.map(label => {
+      // Prioritize maxPrice for selling price display on labels
+      const displayPrice = label.maxPrice || label.price || 0;
+      
+      console.log('💰 Label price conversion:', {
+        serial: label.serial,
+        maxPrice: label.maxPrice,
+        price: label.price,
+        displayPrice
+      });
+      
+      return {
+        id: label.id || crypto.randomUUID(),
+        productName: `${label.brand || ''} ${label.model || ''}`.trim(),
+        brand: label.brand || '',
+        model: label.model || '',
+        specifications: [
+          label.color,
+          label.storage ? `${label.storage}GB` : undefined,
+          label.ram ? `${label.ram}GB RAM` : undefined,
+        ].filter(Boolean).join(' • '),
+        price: displayPrice,  // Use max selling price for label display
+        minPrice: label.minPrice,
+        maxPrice: label.maxPrice,
+        barcode: label.barcode || '',
+        serialNumber: label.serial,
+        color: label.color,
+        storage: label.storage,
+        ram: label.ram,
+        batteryLevel: label.batteryLevel,
+      };
+    });
   }, []);
 
   // Handle inventory label data

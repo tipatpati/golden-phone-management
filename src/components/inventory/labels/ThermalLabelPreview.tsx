@@ -69,7 +69,7 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
       {/* Header Section */}
       {options.includeCompany && formattedLabel.companyName && (
         <div style={{
-          fontSize: '5px',
+          fontSize: '4.5px',
           fontWeight: '700',
           textTransform: 'uppercase',
           color: '#000',
@@ -78,7 +78,7 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
           textAlign: 'center',
           borderBottom: '1px solid #e5e5e5',
           paddingBottom: '0.5px',
-          marginBottom: '0.5px'
+          marginBottom: '1px'
         }}>
           {formattedLabel.companyName}
         </div>
@@ -130,13 +130,13 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
         {/* Serial Number */}
         {formattedLabel.serialNumber && (
           <div style={{
-            fontSize: '5px',
-            fontWeight: '600',
+            fontSize: '6px',
+            fontWeight: '700',
             color: '#000',
             textAlign: 'center',
             letterSpacing: '0.05px',
             lineHeight: '0.85',
-            marginTop: '0.5px'
+            marginTop: '1px'
           }}>
             SN: {formattedLabel.serialNumber}
           </div>
@@ -145,11 +145,11 @@ export function ThermalLabelPreview({ label, options }: ThermalLabelPreviewProps
         {/* Price */}
         {options.includePrice && formattedLabel.price && (
           <div style={{
-            fontSize: '8px',
+            fontSize: '9px',
             fontWeight: '700',
             color: '#000',
             textAlign: 'center',
-            marginTop: '0.5px',
+            marginTop: '1.5px',
             letterSpacing: '0.05px',
             lineHeight: '0.85'
           }}>
