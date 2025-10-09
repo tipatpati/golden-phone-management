@@ -281,26 +281,6 @@ export class UnifiedPrintService implements IPrintService {
       
       console.log(`🔍 UnifiedPrintService: Final barcode integrity check passed for ${barcodeToUse}`);
     }
-    // Convert the interface types to match the component types with proper battery level
-    const componentLabel = {
-      productName: label.productName,
-      serialNumber: label.serial,
-      barcode: label.barcode,
-      price: label.price,
-      maxPrice: label.maxPrice, // CRITICAL: Pass maxPrice to formatter
-      category: undefined,
-      color: label.color,
-      batteryLevel: label.batteryLevel, // Now properly typed
-      storage: label.storage ? parseInt(label.storage.replace(/\D/g, '')) || undefined : undefined,
-      ram: label.ram ? parseInt(label.ram.replace(/\D/g, '')) || undefined : undefined
-    };
-    
-    console.log('🖨️ UnifiedPrintService: Label data before formatting:', {
-      productName: componentLabel.productName,
-      price: componentLabel.price,
-      maxPrice: componentLabel.maxPrice,
-      isSupplierLabel: options.isSupplierLabel
-    });
     
     const componentOptions = {
       copies: options.copies || 1,
@@ -310,11 +290,11 @@ export class UnifiedPrintService implements IPrintService {
       includeCategory: false,
       format: "standard" as const,
       companyName: options.companyName,
-      isSupplierLabel: options.isSupplierLabel // CRITICAL: Pass isSupplierLabel to formatter
+      isSupplierLabel: options.isSupplierLabel
     };
     
     // Use the same formatter as the preview to ensure consistency
-    const formattedLabel = formatLabelElements(componentLabel, componentOptions);
+    const formattedLabel = formatLabelElements(label, componentOptions);
     
     console.log('🖨️ UnifiedPrintService: Formatted label result:', {
       productName: formattedLabel.productName,

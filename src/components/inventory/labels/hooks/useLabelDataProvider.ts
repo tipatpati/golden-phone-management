@@ -49,74 +49,6 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     setRefreshKey(prev => prev + 1);
   }, []);
 
-  // Convert supplier label data to thermal label format
-  const convertSupplierLabels = useCallback((supplierLabels: any[]): ThermalLabelData[] => {
-    return supplierLabels.map(label => ({
-      id: label.id || crypto.randomUUID(),
-      productName: label.productName || '',
-      brand: label.brand || '',
-      model: label.model || '',
-      specifications: label.specifications || '',
-      price: label.price || 0,
-      minPrice: label.minPrice,
-      maxPrice: label.maxPrice,
-      barcode: label.barcode || '',
-      serialNumber: label.serialNumber,
-      color: label.color,
-      storage: label.storage,
-      ram: label.ram,
-      batteryLevel: label.batteryLevel,
-    }));
-  }, []);
-
-  // Convert inventory label data to thermal label format
-  const convertInventoryLabels = useCallback((inventoryLabels: any[]): ThermalLabelData[] => {
-    console.log('🟡 PROVIDER CONVERSION - Input:', {
-      count: inventoryLabels.length,
-      firstLabel: inventoryLabels[0] ? {
-        serial: inventoryLabels[0].serial,
-        price: inventoryLabels[0].price,
-        maxPrice: inventoryLabels[0].maxPrice,
-        typeof_price: typeof inventoryLabels[0].price,
-        typeof_maxPrice: typeof inventoryLabels[0].maxPrice
-      } : 'No labels'
-    });
-    
-    return inventoryLabels.map(label => {
-      // Prioritize maxPrice for selling price display on labels
-      const displayPrice = label.maxPrice || label.price || 0;
-      
-      console.log('🟡 PROVIDER - Converting label:', {
-        serial: label.serial,
-        maxPrice: label.maxPrice,
-        price: label.price,
-        displayPrice,
-        logic: `maxPrice(${label.maxPrice}) || price(${label.price}) || 0`
-      });
-      
-      return {
-        id: label.id || crypto.randomUUID(),
-        productName: `${label.brand || ''} ${label.model || ''}`.trim(),
-        brand: label.brand || '',
-        model: label.model || '',
-        specifications: [
-          label.color,
-          label.storage ? `${label.storage}GB` : undefined,
-          label.ram ? `${label.ram}GB RAM` : undefined,
-        ].filter(Boolean).join(' • '),
-        price: displayPrice,  // Use max selling price for label display
-        minPrice: label.minPrice,
-        maxPrice: label.maxPrice,
-        barcode: label.barcode || '',
-        serialNumber: label.serial,
-        color: label.color,
-        storage: label.storage,
-        ram: label.ram,
-        batteryLevel: label.batteryLevel,
-      };
-    });
-  }, []);
-
   // Handle inventory label data
   useEffect(() => {
     if (config.source !== 'inventory') return;
@@ -134,13 +66,12 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     }
 
     if (inventoryQuery.data) {
-      logger.info('Converting inventory labels', { count: inventoryQuery.data.length });
-      const converted = convertInventoryLabels(inventoryQuery.data);
-      setLabels(converted);
+      logger.info('Using inventory labels directly', { count: inventoryQuery.data.length });
+      setLabels(inventoryQuery.data);
       setError(null);
       setIsLoading(false);
     }
-  }, [config.source, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error, convertInventoryLabels]);
+  }, [config.source, inventoryQuery.data, inventoryQuery.isLoading, inventoryQuery.error]);
 
   // Handle supplier label data
   useEffect(() => {
@@ -158,13 +89,12 @@ export function useLabelDataProvider(config: LabelDataConfig): UseLabelDataProvi
     }
 
     if (supplierQuery.data) {
-      logger.info('Converting supplier labels', { count: supplierQuery.data.length });
-      const converted = convertSupplierLabels(supplierQuery.data);
-      setLabels(converted);
+      logger.info('Using supplier labels directly', { count: supplierQuery.data.length });
+      setLabels(supplierQuery.data);
       setError(null);
       setIsLoading(false);
     }
-  }, [config.source, supplierQuery.data, supplierQuery.isLoading, supplierQuery.error, convertSupplierLabels]);
+  }, [config.source, supplierQuery.data, supplierQuery.isLoading, supplierQuery.error]);
 
   return {
     labels,

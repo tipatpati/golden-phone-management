@@ -384,12 +384,12 @@ class ProductUnitCoordinatorClass {
         productName: label.productName,
         brand: "GPMS",
         model: label.productName,
+        serialNumber: label.serialNumber,
         price: label.price,
         barcode: label.barcode,
-        serial: label.serialNumber,
         color: label.color,
-        storage: label.storage?.toString(),
-        ram: label.ram?.toString()
+        storage: label.storage,
+        ram: label.ram
       })), {
         copies: 1,
         companyName: "GOLDEN PHONE SRL",

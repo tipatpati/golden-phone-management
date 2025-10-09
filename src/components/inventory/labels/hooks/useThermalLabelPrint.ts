@@ -41,18 +41,18 @@ export function useThermalLabelPrint(): UseThermalLabelPrintResult {
       }
       
       return {
-        id: label.barcode, // Use barcode as ID to maintain traceability
+        id: label.barcode,
         productName: label.productName,
-        brand: "GPMS", // Default brand
+        brand: "GPMS",
         model: label.productName,
+        serialNumber: label.serialNumber,
         price: label.price,
-        maxPrice: label.maxPrice, // Pass through maxPrice for print service
-        barcode: label.barcode, // Preserve exact barcode from source
-        serial: label.serialNumber,
+        maxPrice: label.maxPrice,
+        barcode: label.barcode,
         color: label.color,
-        storage: label.storage?.toString(),
-        ram: label.ram?.toString(),
-        batteryLevel: label.batteryLevel // Now properly passed through
+        storage: label.storage,
+        ram: label.ram,
+        batteryLevel: label.batteryLevel
       };
     });
   };

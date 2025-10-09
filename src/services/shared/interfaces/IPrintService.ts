@@ -18,18 +18,20 @@ export interface PrintOptions {
 }
 
 export interface ThermalLabelData {
-  id: string;
+  id?: string;
   productName: string;
-  brand: string;
-  model: string;
+  brand?: string;
+  model?: string;
+  serialNumber?: string;
+  barcode: string;
   price: number;
   maxPrice?: number;
-  barcode: string;
-  serial?: string;
+  minPrice?: number;
+  category?: string;
   color?: string;
-  storage?: string;
-  ram?: string;
   batteryLevel?: number;
+  storage?: number;
+  ram?: number;
 }
 
 export interface ThermalLabelOptions extends PrintOptions {

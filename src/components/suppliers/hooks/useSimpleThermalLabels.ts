@@ -1,27 +1,13 @@
 /**
  * SIMPLE THERMAL LABELS
  * Direct product data fetching for thermal label printing
- * Clean, straightforward logic without complex transformations
+ * Returns ThermalLabelData directly - no transformations needed
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ThermalLabelData } from "@/services/labels/types";
 import { logger } from "@/utils/logger";
-
-export interface SimpleLabelData {
-  id: string;
-  productName: string;
-  brand: string;
-  model: string;
-  price: number;
-  maxPrice?: number;
-  barcode: string;
-  serial?: string;
-  color?: string;
-  storage?: number;
-  ram?: number;
-  batteryLevel?: number;
-}
 
 /**
  * Fetches product units with all needed data for thermal labels
@@ -30,7 +16,7 @@ export interface SimpleLabelData {
 export function useSimpleThermalLabels(transactionIds: string[]) {
   return useQuery({
     queryKey: ["simple-thermal-labels", transactionIds.join(',')],
-    queryFn: async (): Promise<SimpleLabelData[]> => {
+    queryFn: async (): Promise<ThermalLabelData[]> => {
       if (!transactionIds.length) return [];
 
       logger.info('Fetching simple thermal label data', { transactionIds });
@@ -98,14 +84,13 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         throw unitsError;
       }
 
-      // Transform to simple label data
-      const labels: SimpleLabelData[] = [];
+      // Transform to ThermalLabelData directly
+      const labels: ThermalLabelData[] = [];
       
       for (const item of items) {
         const product = item.products;
         if (!product) continue;
 
-        // Find units for this product
         const productUnits = units?.filter(unit => {
           if (!item.product_unit_ids || !Array.isArray(item.product_unit_ids)) return false;
           return item.product_unit_ids.some((id: any) => typeof id === 'string' && id === unit.id);
@@ -114,25 +99,16 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         for (const unit of productUnits) {
           if (!unit.serial_number) continue;
 
-          // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
-          const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
-          
-          console.log(`📊 Label Price Debug - ${unit.serial_number}:`, {
-            unit_max_price: unit.max_price,
-            unit_price: unit.price,
-            product_max_price: product.max_price,
-            final_price: sellingPrice
-          });
-
           labels.push({
             id: `${product.id}-${unit.id}`,
             productName: `${product.brand} ${product.model}`,
             brand: product.brand,
             model: product.model,
-            price: sellingPrice,
-            maxPrice: unit.max_price || product.max_price,
+            serialNumber: unit.serial_number,
             barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-            serial: unit.serial_number,
+            price: unit.max_price ?? unit.price ?? product.max_price ?? 0,
+            maxPrice: unit.max_price ?? product.max_price,
+            minPrice: product.price,
             color: unit.color,
             storage: unit.storage,
             ram: unit.ram,

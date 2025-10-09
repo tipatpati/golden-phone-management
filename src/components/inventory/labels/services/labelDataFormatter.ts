@@ -32,29 +32,11 @@ export function formatLabelElements(
   // Enhanced product name formatting
   const productName = formatProductName(label.productName);
   
-  // 🔴 DEBUG: Formatter receives
-  console.log('🔴 FORMATTER INPUT:', {
-    productName: label.productName,
-    serial: label.serialNumber,
-    inputPrice: label.price,
-    maxPrice: label.maxPrice,
-    typeof_price: typeof label.price,
-    typeof_maxPrice: typeof label.maxPrice,
-    isSupplierLabel: options.isSupplierLabel,
-    includePrice: options.includePrice
-  });
-  
-  const displayPrice = options.includePrice && typeof label.price === 'number' && label.price > 0 
+  const displayPrice = options.includePrice && label.price && label.price > 0 
     ? formatPrice(label.price) 
     : null;
-    
-  console.log('🔴 FORMATTER OUTPUT:', {
-    serial: label.serialNumber,
-    displayPrice,
-    rawPrice: label.price
-  });
   
-  const formatted = {
+  return {
     productName,
     serialNumber: label.serialNumber ? formatSerialNumber(label.serialNumber) : null,
     price: displayPrice,
@@ -66,20 +48,6 @@ export function formatLabelElements(
     ram: formatRAM(label.ram),
     batteryLevel: formatBatteryLevel(label.batteryLevel)
   };
-  
-  logger.debug('formatLabelElements output', {
-    formatted,
-    inputDebug: {
-      originalStorage: label.storage,
-      originalRam: label.ram,
-      originalBatteryLevel: label.batteryLevel,
-      formattedStorage: formatted.storage,
-      formattedRam: formatted.ram,
-      formattedBatteryLevel: formatted.batteryLevel
-    }
-  }, 'labelDataFormatter');
-  
-  return formatted;
 }
 
 /**

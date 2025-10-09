@@ -1,27 +1,13 @@
 /**
  * SIMPLE INVENTORY LABELS
  * Direct inventory data fetching for thermal label printing
- * Mirrors the working supplier approach
+ * Returns ThermalLabelData directly - no transformations needed
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ThermalLabelData } from "@/services/labels/types";
 import { logger } from "@/utils/logger";
-
-export interface SimpleInventoryLabelData {
-  id: string;
-  productName: string;
-  brand: string;
-  model: string;
-  price: number;
-  maxPrice?: number;
-  barcode: string;
-  serial?: string;
-  color?: string;
-  storage?: number;
-  ram?: number;
-  batteryLevel?: number;
-}
 
 /**
  * Fetches inventory product data directly for thermal labels
@@ -30,7 +16,7 @@ export interface SimpleInventoryLabelData {
 export function useSimpleInventoryLabels(productIds: string[]) {
   return useQuery({
     queryKey: ["simple-inventory-labels", productIds.join(',')],
-    queryFn: async (): Promise<SimpleInventoryLabelData[]> => {
+    queryFn: async (): Promise<ThermalLabelData[]> => {
       if (!productIds.length) return [];
 
       logger.info('Fetching simple inventory label data', { productIds });
@@ -83,83 +69,45 @@ export function useSimpleInventoryLabels(productIds: string[]) {
         throw unitsError;
       }
 
-      // 🔵 DEBUG: Raw Supabase response
-      console.log('🔵 RAW SUPABASE RESPONSE - Product Units:', {
-        unitsCount: units?.length || 0,
-        sampleUnit: units?.[0] ? {
-          serial: units[0].serial_number,
-          max_price_from_db: units[0].max_price,
-          price_from_db: units[0].price,
-          typeof_max_price: typeof units[0].max_price,
-          is_null: units[0].max_price === null,
-          is_undefined: units[0].max_price === undefined
-        } : 'No units'
-      });
-
-      // Transform to simple label data
-      const labels: SimpleInventoryLabelData[] = [];
+      // Transform to ThermalLabelData directly
+      const labels: ThermalLabelData[] = [];
       
       for (const product of products) {
         // Find units for this product
         const productUnits = units?.filter(unit => unit.product_id === product.id) || [];
 
         if (productUnits.length > 0) {
-          // Create labels for each unit (with or without serial numbers)
+          // Create labels for each unit
           for (const unit of productUnits) {
-            // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
-            const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
-            
-            // 🟢 DEBUG: After transformation in useSimpleInventoryLabels
-            console.log(`🟢 TRANSFORM - Serial ${unit.serial_number}:`, {
-              unit_max_price: unit.max_price,
-              unit_price: unit.price,
-              product_max_price: product.max_price,
-              SELLING_PRICE: sellingPrice,
-              logic: `unit.max_price(${unit.max_price}) ?? unit.price(${unit.price}) ?? product.max_price(${product.max_price})`,
-              willPushToLabel: sellingPrice
-            });
-
-            const labelData = {
+            labels.push({
               id: `${product.id}-${unit.id}`,
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: sellingPrice,  // THIS is the selling price (max_price)
-              maxPrice: unit.max_price || product.max_price,
+              serialNumber: unit.serial_number || `UNIT-${unit.id}`,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
-              serial: unit.serial_number || `UNIT-${unit.id}`,
+              price: unit.max_price ?? unit.price ?? product.max_price ?? 0,
+              maxPrice: unit.max_price ?? product.max_price,
+              minPrice: product.price,
               color: unit.color,
               storage: unit.storage,
               ram: unit.ram,
               batteryLevel: unit.battery_level
-            };
-            
-            console.log('🟢 LABEL DATA CREATED:', {
-              serial: labelData.serial,
-              price: labelData.price,
-              maxPrice: labelData.maxPrice,
-              type: 'with unit'
             });
-            
-            labels.push(labelData);
           }
         } else {
           // Create generic product labels based on stock
-          const labelCount = Math.min(product.stock || 1, 10); // Max 10 labels for bulk products
+          const labelCount = Math.min(product.stock || 1, 10);
           for (let i = 0; i < labelCount; i++) {
             labels.push({
               id: `${product.id}-bulk-${i}`,
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: product.max_price || 0, // CRITICAL: max_price (selling price) only
-              maxPrice: product.max_price,
               barcode: product.barcode || `TEMP-${product.id}-${i}`,
-              serial: undefined,
-              color: undefined,
-              storage: undefined,
-              ram: undefined,
-              batteryLevel: undefined
+              price: product.max_price ?? product.price ?? 0,
+              maxPrice: product.max_price,
+              minPrice: product.price
             });
           }
         }

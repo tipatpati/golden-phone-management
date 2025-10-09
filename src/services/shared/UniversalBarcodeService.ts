@@ -155,10 +155,10 @@ class UniversalBarcodeServiceClass {
         model: labelData.productModel,
         price: unit.price || 0,
         barcode: unit.barcode,
-        serial: unit.serial,
+        serialNumber: unit.serial,
         color: unit.color,
-        storage: unit.storage?.toString(),
-        ram: unit.ram?.toString()
+        storage: unit.storage,
+        ram: unit.ram
       }));
 
       // Use unified print service
