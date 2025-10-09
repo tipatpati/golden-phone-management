@@ -17,7 +17,6 @@ interface InventoryFiltersProps {
   viewMode: "list" | "grid";
   onAddProduct?: () => void;
   categories: Array<{ id: number; name: string }>;
-  isSearching?: boolean;
   isFetching?: boolean;
   resultCount?: number;
 }
@@ -27,7 +26,6 @@ export function InventoryFilters({
   viewMode,
   onAddProduct,
   categories = [],
-  isSearching = false,
   isFetching = false,
   resultCount = 0
 }: InventoryFiltersProps) {
@@ -139,19 +137,12 @@ export function InventoryFilters({
       {/* Main Search Bar with Live Feedback */}
       <div className="flex w-full items-center gap-3">
         <div className="relative flex-1 min-w-0">
-          {isSearching || isFetching ? (
-            <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
-          ) : (
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          )}
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             ref={searchInputRef}
             type="search"
             placeholder="Search by brand, model, serial number, IMEI, or barcode... (Ctrl+K)"
-            className={cn(
-              "w-full pl-10 pr-20 h-12 text-base transition-all",
-              isSearching && "border-primary ring-1 ring-primary/20"
-            )}
+            className="w-full pl-10 pr-20 h-12 text-base"
             value={filters.searchTerm}
             onChange={handleSearchChange}
             aria-label="Search inventory"
@@ -178,16 +169,9 @@ export function InventoryFilters({
         {/* Search Status Indicator */}
         {filters.searchTerm && (
           <div className="text-sm text-muted-foreground whitespace-nowrap min-w-fit">
-            {isSearching || isFetching ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Searching...
-              </span>
-            ) : (
-              <span className="font-medium">
-                {resultCount} {resultCount === 1 ? 'result' : 'results'}
-              </span>
-            )}
+            <span className="font-medium">
+              {resultCount} {resultCount === 1 ? 'result' : 'results'}
+            </span>
           </div>
         )}
       </div>

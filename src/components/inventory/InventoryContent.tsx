@@ -1,6 +1,5 @@
 
-import React, { useState, useCallback, useMemo } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
+import React, { useState, useCallback } from "react";
 import { InventoryTable } from "./InventoryTable";
 import { InventoryFilters } from "./InventoryFilters";
 import { useInventoryFilters } from "@/hooks/useInventoryFilters";
@@ -35,21 +34,11 @@ export function InventoryContent({
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
-  // Use debounce for better UX - reduces API calls while typing (optimized to 150ms for instant feel)
-  const debouncedSearchTerm = useDebounce(filters.searchTerm, 150);
-  
   const queryClient = useQueryClient();
   const { data: products, isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
-    searchTerm: debouncedSearchTerm,
     dateRange: effectiveDateRange,
   });
-  
-  // Track if we're actively searching (search term exists and is being debounced)
-  const isSearching = useMemo(() => 
-    filters.searchTerm !== debouncedSearchTerm && filters.searchTerm.length > 0,
-    [filters.searchTerm, debouncedSearchTerm]
-  );
   const deleteProduct = useDeleteProduct();
   const { data: categories = [] } = useCategories();
 
@@ -213,7 +202,6 @@ export function InventoryContent({
           onViewModeChange={handleViewModeChange}
           onAddProduct={onAddProduct}
           categories={categories}
-          isSearching={isSearching}
           isFetching={isFetching}
           resultCount={products?.length || 0}
         />
@@ -232,8 +220,8 @@ export function InventoryContent({
       <InventoryTable
         products={products || []}
         isLoading={isLoading}
-        isFetching={isFetching || isSearching}
-        searchTerm={debouncedSearchTerm}
+        isFetching={isFetching}
+        searchTerm={filters.searchTerm}
         viewMode={viewMode}
         selectedItems={selectedItems}
         onSelectItem={toggleSelectItem}
