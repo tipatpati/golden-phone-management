@@ -29,7 +29,7 @@ export interface SimpleInventoryLabelData {
  */
 export function useSimpleInventoryLabels(productIds: string[]) {
   return useQuery({
-    queryKey: ["simple-inventory-labels", productIds.join(','), Date.now()], // Force fresh data
+    queryKey: ["simple-inventory-labels", productIds.join(',')],
     queryFn: async (): Promise<SimpleInventoryLabelData[]> => {
       if (!productIds.length) return [];
 
@@ -145,7 +145,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
       return labels;
     },
     enabled: productIds.length > 0,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 0, // Always fetch fresh data for label printing
     retry: 2
   });
 }
