@@ -69,7 +69,7 @@ export function ProductUnitSelector({
           serialNumber: unit.serial_number,
           barcode: unit.barcode || '', // Use existing barcode from DB
           productName: productName,
-          price: unit.price || productPrice,
+          price: unit.max_price || productMaxPrice || productPrice, // ✅ Selling price (max_price) - NEVER cost price
           maxPrice: unit.max_price || productMaxPrice,
           minPrice: unit.min_price || productMinPrice,
           color: unit.color,
