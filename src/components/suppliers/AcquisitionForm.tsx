@@ -318,9 +318,9 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Simple Draft Button - Top right */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end -mt-2 mb-3">
         <SimpleDraftButton
           hasDraft={draft.hasDraft}
           onRestore={() => setShowDraftDialog(true)}

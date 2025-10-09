@@ -206,16 +206,18 @@ const Suppliers = () => {
       />
 
       <Dialog open={showAcquisitionDialog} onOpenChange={setShowAcquisitionDialog}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Supplier Acquisition</DialogTitle>
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-xl">Supplier Acquisition</DialogTitle>
           </DialogHeader>
-          <AcquisitionForm
-            onSuccess={() => {
-              setShowAcquisitionDialog(false);
-              toast.success('Acquisition completed successfully');
-            }}
-          />
+          <div className="mt-2">
+            <AcquisitionForm
+              onSuccess={() => {
+                setShowAcquisitionDialog(false);
+                toast.success('Acquisition completed successfully');
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
