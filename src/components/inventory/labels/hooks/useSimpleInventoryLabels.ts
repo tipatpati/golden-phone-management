@@ -29,7 +29,7 @@ export interface SimpleInventoryLabelData {
  */
 export function useSimpleInventoryLabels(productIds: string[]) {
   return useQuery({
-    queryKey: ["simple-inventory-labels", productIds.join(',')],
+    queryKey: ["simple-inventory-labels", productIds.join(','), Date.now()], // Force fresh data
     queryFn: async (): Promise<SimpleInventoryLabelData[]> => {
       if (!productIds.length) return [];
 
@@ -96,11 +96,12 @@ export function useSimpleInventoryLabels(productIds: string[]) {
             // CRITICAL: Always use max_price (selling price), fallback to unit.price or product max_price
             const sellingPrice = unit.max_price ?? unit.price ?? product.max_price ?? 0;
             
-            console.log(`📊 Inventory Label Price Debug - ${unit.serial_number}:`, {
+            console.log(`💰💰💰 INVENTORY LABEL - Serial ${unit.serial_number}:`, {
               unit_max_price: unit.max_price,
               unit_price: unit.price,
               product_max_price: product.max_price,
-              final_price: sellingPrice
+              FINAL_SELLING_PRICE: sellingPrice,
+              willDisplayAs: `€${sellingPrice}`
             });
 
             labels.push({
@@ -108,7 +109,7 @@ export function useSimpleInventoryLabels(productIds: string[]) {
               productName: `${product.brand} ${product.model}`,
               brand: product.brand,
               model: product.model,
-              price: sellingPrice,
+              price: sellingPrice,  // THIS is the selling price (max_price)
               maxPrice: unit.max_price || product.max_price,
               barcode: unit.barcode || product.barcode || `TEMP-${unit.id}`,
               serial: unit.serial_number || `UNIT-${unit.id}`,

@@ -39,6 +39,8 @@ export function UnifiedInventoryLabels({
   // Auto-open when autoOpen prop is true and labels are loaded
   useEffect(() => {
     if (autoOpen && !labelDataProvider.isLoading && labelDataProvider.labels && labelDataProvider.labels.length > 0) {
+      // Force refresh to get latest data
+      labelDataProvider.refresh();
       setIsGeneratorOpen(true);
     }
   }, [autoOpen, labelDataProvider.isLoading, labelDataProvider.labels]);
