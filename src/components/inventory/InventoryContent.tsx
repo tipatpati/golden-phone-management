@@ -34,12 +34,14 @@ export function InventoryContent({
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const { filters, effectiveDateRange } = useInventoryFilters();
-  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
+  
+  // No debounce - instant search when button clicked
+  const searchTerm = filters.searchTerm;
   
   const queryClient = useQueryClient();
-  const { data: products, isLoading, error, refetch } = useProducts({
+  const { data: products, isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
-    searchTerm: debouncedSearchTerm,
+    searchTerm,
     dateRange: effectiveDateRange,
   });
   const deleteProduct = useDeleteProduct();
@@ -184,6 +186,7 @@ export function InventoryContent({
       <InventoryTable
         products={products || []}
         isLoading={isLoading}
+        isFetching={isFetching}
         searchTerm={filters.searchTerm}
         viewMode={viewMode}
         selectedItems={selectedItems}

@@ -40,6 +40,7 @@ type Product = UnifiedProduct;
 interface InventoryTableProps {
   products: Product[];
   isLoading: boolean;
+  isFetching?: boolean;
   searchTerm?: string;
   viewMode?: "list" | "grid";
   selectedItems: string[];
@@ -54,6 +55,7 @@ interface InventoryTableProps {
 export function InventoryTable({ 
   products,
   isLoading,
+  isFetching = false,
   searchTerm = "",
   viewMode = "list",
   selectedItems,
@@ -143,8 +145,35 @@ export function InventoryTable({
 
   return (
     <>
+      {/* Search Results Banner */}
+      {searchTerm && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-blue-600" />
+            <span className="text-sm text-blue-900">
+              Showing <strong>{productList.length}</strong> result{productList.length !== 1 ? 's' : ''} for "<strong>{searchTerm}</strong>"
+            </span>
+          </div>
+          {isFetching && (
+            <div className="text-xs text-blue-600 flex items-center gap-1">
+              <div className="h-3 w-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              Updating...
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Desktop Table Layout */}
-      <div className="hidden lg:block rounded-md border">
+      <div className="hidden lg:block rounded-md border relative">
+        {/* Loading overlay */}
+        {isFetching && !isLoading && (
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-md">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background px-4 py-2 rounded-lg shadow-lg">
+              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              Loading results...
+            </div>
+          </div>
+        )}
         <Table>
         <TableHeader>
           <TableRow>

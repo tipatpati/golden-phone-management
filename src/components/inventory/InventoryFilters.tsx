@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/enhanced-button";
-import { Search, Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles } from "lucide-react";
+import { Search, Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
@@ -27,6 +27,7 @@ export function InventoryFilters({
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
@@ -71,7 +72,10 @@ export function InventoryFilters({
 
   const handleSearchSubmit = useCallback(() => {
     logger.debug('Search submitted', { searchTerm: searchInput }, 'InventoryFilters');
+    setIsSearching(true);
     setSearchTerm(searchInput);
+    // Reset searching state after a brief delay for visual feedback
+    setTimeout(() => setIsSearching(false), 500);
   }, [searchInput, setSearchTerm]);
 
   const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -157,8 +161,13 @@ export function InventoryFilters({
               size="sm"
               variant="filled"
               className="h-8 px-3"
+              disabled={isSearching}
             >
-              <Search className="h-4 w-4" />
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
             </Button>
             <BarcodeScannerTrigger
               onScan={handleBarcodeScanned}
