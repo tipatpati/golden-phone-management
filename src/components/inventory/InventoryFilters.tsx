@@ -17,13 +17,19 @@ interface InventoryFiltersProps {
   viewMode: "list" | "grid";
   onAddProduct?: () => void;
   categories: Array<{ id: number; name: string }>;
+  isSearching?: boolean;
+  isFetching?: boolean;
+  resultCount?: number;
 }
 
 export function InventoryFilters({ 
   onViewModeChange, 
   viewMode,
   onAddProduct,
-  categories = []
+  categories = [],
+  isSearching = false,
+  isFetching = false,
+  resultCount = 0
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +78,23 @@ export function InventoryFilters({
     setSearchTerm("");
   }, [setSearchTerm]);
 
+  // Keyboard shortcuts: Ctrl/Cmd+K to focus search, Escape to clear
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        handleClearSearch();
+        searchInputRef.current?.blur();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleClearSearch]);
+
   const handleBarcodeScanned = useCallback((barcode: string) => {
     setSearchTerm(barcode);
   }, [setSearchTerm]);
@@ -113,17 +136,25 @@ export function InventoryFilters({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Main Search Bar */}
+      {/* Main Search Bar with Live Feedback */}
       <div className="flex w-full items-center gap-3">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          {isSearching || isFetching ? (
+            <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          )}
           <Input
             ref={searchInputRef}
             type="search"
-            placeholder="Search by brand, model, serial number, IMEI, or barcode..."
-            className="w-full pl-10 pr-20 h-12 text-base"
+            placeholder="Search by brand, model, serial number, IMEI, or barcode... (Ctrl+K)"
+            className={cn(
+              "w-full pl-10 pr-20 h-12 text-base transition-all",
+              isSearching && "border-primary ring-1 ring-primary/20"
+            )}
             value={filters.searchTerm}
             onChange={handleSearchChange}
+            aria-label="Search inventory"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             {filters.searchTerm && (
@@ -131,6 +162,7 @@ export function InventoryFilters({
                 type="button"
                 className="p-1 hover:bg-muted rounded transition-colors"
                 onClick={handleClearSearch}
+                aria-label="Clear search"
               >
                 <FilterX className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -143,6 +175,21 @@ export function InventoryFilters({
             />
           </div>
         </div>
+        {/* Search Status Indicator */}
+        {filters.searchTerm && (
+          <div className="text-sm text-muted-foreground whitespace-nowrap min-w-fit">
+            {isSearching || isFetching ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Searching...
+              </span>
+            ) : (
+              <span className="font-medium">
+                {resultCount} {resultCount === 1 ? 'result' : 'results'}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick Filters Row */}

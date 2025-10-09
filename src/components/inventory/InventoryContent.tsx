@@ -35,8 +35,8 @@ export function InventoryContent({
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
-  // Use debounce for better UX - reduces API calls while typing
-  const debouncedSearchTerm = useDebounce(filters.searchTerm, 200);
+  // Use debounce for better UX - reduces API calls while typing (optimized to 150ms for instant feel)
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 150);
   
   const queryClient = useQueryClient();
   const { data: products, isLoading, error, refetch, isFetching } = useProducts({
@@ -213,6 +213,9 @@ export function InventoryContent({
           onViewModeChange={handleViewModeChange}
           onAddProduct={onAddProduct}
           categories={categories}
+          isSearching={isSearching}
+          isFetching={isFetching}
+          resultCount={products?.length || 0}
         />
       </div>
       
