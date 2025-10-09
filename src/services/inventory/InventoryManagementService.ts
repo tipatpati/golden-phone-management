@@ -81,15 +81,16 @@ export class InventoryManagementService {
             `barcode.ilike.%${searchTerm}%`
           ];
           
-          // Also search for products that have units with matching serial numbers
+          // Also search for products that have units with matching serial numbers or barcodes
           const { data: unitsData } = await supabase
             .from('product_units')
             .select('product_id')
-            .ilike('serial_number', `%${searchTerm}%`);
+            .or(`serial_number.ilike.%${searchTerm}%,barcode.ilike.%${searchTerm}%`);
           
           if (unitsData && unitsData.length > 0) {
             const productIds = [...new Set(unitsData.map(u => u.product_id))];
-            query = query.or([...searchConditions, `id.in.(${productIds.join(',')})`].join(','));
+            // Combine product search with serial number matches
+            query = query.or([...searchConditions].join(',')).in('id', productIds);
           } else {
             query = query.or(searchConditions.join(','));
           }
