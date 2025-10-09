@@ -54,20 +54,7 @@ class LightweightInventoryService {
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
-    // Comprehensive search: brand, model, barcode, description, AND serial numbers in product_units
-    if (searchTerm.trim()) {
-      const term = searchTerm.trim();
-      // Search across multiple fields - products table and serial_numbers array
-      query = query.or(
-        `brand.ilike.%${term}%,` +
-        `model.ilike.%${term}%,` +
-        `barcode.eq.${term},` +
-        `description.ilike.%${term}%,` +
-        `serial_numbers.cs.{${term}}`
-      );
-    }
-
-    // Category filter
+    // Category filter - apply FIRST to narrow down dataset
     if (categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
     }
@@ -139,7 +126,38 @@ class LightweightInventoryService {
       throw error;
     }
 
-    return data || [];
+    let results = data || [];
+
+    // Client-side search filtering - allows searching across all fields including product_units
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      console.log('🔍 Filtering search term:', term, 'from', results.length, 'products');
+      
+      results = results.filter(product => {
+        // Search in main product fields
+        const brandMatch = product.brand?.toLowerCase().includes(term);
+        const modelMatch = product.model?.toLowerCase().includes(term);
+        const barcodeMatch = product.barcode?.toLowerCase().includes(term);
+        const descriptionMatch = product.description?.toLowerCase().includes(term);
+        
+        // Search in serial_numbers array
+        const serialArrayMatch = product.serial_numbers?.some((sn: string) => 
+          sn?.toLowerCase().includes(term)
+        );
+        
+        // Search in product_units for serial numbers and barcodes
+        const unitsMatch = product.units?.some((unit: any) => 
+          unit.serial_number?.toLowerCase().includes(term) ||
+          unit.barcode?.toLowerCase().includes(term)
+        );
+        
+        return brandMatch || modelMatch || barcodeMatch || descriptionMatch || serialArrayMatch || unitsMatch;
+      });
+      
+      console.log('✅ Search filtered to', results.length, 'products');
+    }
+
+    return results;
   }
 
   /**
