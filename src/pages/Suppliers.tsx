@@ -206,7 +206,7 @@ const Suppliers = () => {
       />
 
       <Dialog open={showAcquisitionDialog} onOpenChange={setShowAcquisitionDialog}>
-        <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="max-w-7xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader className="pb-4">
             <DialogTitle className="text-xl">Supplier Acquisition</DialogTitle>
           </DialogHeader>
