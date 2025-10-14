@@ -17,10 +17,10 @@ function SaleFormWithDrafts({ onSaleComplete, onCancel, isEditMode, editingSaleI
   const { state } = useSaleCreation();
 
   return (
-    <div className="max-w-6xl mx-auto bg-surface p-6 rounded-lg shadow-sm">
+    <div className="w-full mx-auto bg-surface p-3 sm:p-4 md:p-6 rounded-lg shadow-sm max-w-full sm:max-w-6xl">
 
       {/* Main Flow - Single Column with Clean Sections */}
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6 md:space-y-8">
         {/* Product Search - Prominent at top */}
         <CleanProductSearchSection />
         
