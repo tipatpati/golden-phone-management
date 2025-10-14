@@ -24,24 +24,15 @@ function SaleFormWithDrafts({ onSaleComplete, onCancel, isEditMode, editingSaleI
         {/* Product Search - Prominent at top */}
         <CleanProductSearchSection />
         
-        {/* Two-column layout for items and summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sale Items - Takes more space */}
-          <div className="lg:col-span-2">
-            <CleanSaleItemsSection />
-          </div>
-          
-          {/* Payment & Summary - Compact sidebar */}
-          <div className="space-y-6">
-            <CleanPaymentSection />
-            <CleanSaleSummarySection 
-              onSaleComplete={onSaleComplete}
-              onCancel={onCancel}
-              isEditMode={isEditMode}
-              editingSaleId={editingSaleId}
-            />
-          </div>
-        </div>
+        {/* Stacked layout */}
+        <CleanSaleItemsSection />
+        <CleanPaymentSection />
+        <CleanSaleSummarySection 
+          onSaleComplete={onSaleComplete}
+          onCancel={onCancel}
+          isEditMode={isEditMode}
+          editingSaleId={editingSaleId}
+        />
       </div>
     </div>
   );
