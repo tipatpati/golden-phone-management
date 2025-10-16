@@ -2,13 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Product, CreateProductData } from './types';
 
-// Lightweight service with simple queries and minimal overhead
 class LightweightInventoryService {
-  /**
-   * Get products with comprehensive filtering
-   */
   async getProducts(filters: {
-    searchTerm?: string;
     categoryId?: number | 'all';
     stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
     hasSerial?: 'all' | 'yes' | 'no';
@@ -18,7 +13,6 @@ class LightweightInventoryService {
     sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
   } = {}): Promise<Product[]> {
     const {
-      searchTerm = '',
       categoryId = 'all',
       stockStatus = 'all',
       hasSerial = 'all',
@@ -28,39 +22,6 @@ class LightweightInventoryService {
       sortBy = 'newest'
     } = filters;
 
-    console.log('🔍 [SEARCH] getProducts called with:', { searchTerm, categoryId, stockStatus });
-
-    // SIMPLE SEARCH: If there's a search term, use it
-    if (searchTerm && searchTerm.trim().length > 0) {
-      console.log('🔍 [SEARCH] Searching for:', searchTerm.trim());
-      
-      const { data, error } = await supabase
-        .rpc('search_inventory', { search_text: searchTerm.trim() });
-
-      if (error) {
-        console.error('❌ [SEARCH] Error:', error);
-        throw error;
-      }
-
-      console.log('✅ [SEARCH] Raw results:', data?.length, 'products');
-      
-      // Transform to proper format
-      const products = (data || []).map((item: any) => ({
-        ...item,
-        category: item.category_name ? {
-          id: item.category_id,
-          name: item.category_name
-        } : null,
-        units: item.unit_data || []
-      }));
-
-      console.log('✅ [SEARCH] Returning', products.length, 'products');
-      return products;
-    }
-
-    // NO SEARCH: Regular filtered query
-    console.log('📋 [QUERY] No search term, fetching with filters');
-    
     let query = supabase
       .from('products')
       .select(`
@@ -103,7 +64,6 @@ class LightweightInventoryService {
       query = query.eq('year', year);
     }
 
-    // Sorting
     switch (sortBy) {
       case 'newest':
         query = query.order('created_at', { ascending: false });
@@ -129,42 +89,17 @@ class LightweightInventoryService {
 
     const { data, error } = await query;
 
-    if (error) {
-      console.error('❌ [QUERY] Error:', error);
-      throw error;
-    }
-
-    console.log('✅ [QUERY] Returning', data?.length || 0, 'products');
+    if (error) throw error;
     return data || [];
   }
 
-  /**
-   * Create product - simple operation
-   */
   async createProduct(productData: any): Promise<Product> {
     const { data, error } = await supabase
       .from('products')
       .insert(productData)
       .select(`
-        id,
-        brand,
-        model,
-        year,
-        category_id,
-        price,
-        min_price,
-        max_price,
-        stock,
-        threshold,
-        description,
-        supplier,
-        barcode,
-        has_serial,
-        serial_numbers,
-        category:categories!inner (
-          id,
-          name
-        ),
+        *,
+        category:categories!inner(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
@@ -173,34 +108,14 @@ class LightweightInventoryService {
     return data;
   }
 
-  /**
-   * Update product - simple operation
-   */
   async updateProduct(id: string, updates: any): Promise<Product> {
     const { data, error } = await supabase
       .from('products')
       .update(updates)
       .eq('id', id)
       .select(`
-        id,
-        brand,
-        model,
-        year,
-        category_id,
-        price,
-        min_price,
-        max_price,
-        stock,
-        threshold,
-        description,
-        supplier,
-        barcode,
-        has_serial,
-        serial_numbers,
-        category:categories!inner (
-          id,
-          name
-        ),
+        *,
+        category:categories!inner(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
@@ -209,9 +124,6 @@ class LightweightInventoryService {
     return data;
   }
 
-  /**
-   * Delete product - simple operation
-   */
   async deleteProduct(id: string): Promise<void> {
     const { error } = await supabase
       .from('products')
@@ -221,9 +133,6 @@ class LightweightInventoryService {
     if (error) throw error;
   }
 
-  /**
-   * Get categories - cached for 15 minutes
-   */
   async getCategories() {
     const { data, error } = await supabase
       .from('categories')
@@ -237,9 +146,7 @@ class LightweightInventoryService {
 
 const service = new LightweightInventoryService();
 
-// Lightweight React Query hooks with minimal configuration
 export const useProducts = (filters?: {
-  searchTerm?: string;
   categoryId?: number | 'all';
   stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
   hasSerial?: 'all' | 'yes' | 'no';
@@ -251,10 +158,10 @@ export const useProducts = (filters?: {
   return useQuery({
     queryKey: ['products', filters],
     queryFn: () => service.getProducts(filters || {}),
-    staleTime: 0, // Always fetch fresh data when filters change
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always', // Ensure fresh data on component mount
+    refetchOnMount: 'always',
   });
 };
 
@@ -264,7 +171,6 @@ export const useCreateProduct = () => {
   return useMutation({
     mutationFn: service.createProduct,
     onSuccess: () => {
-      // Simple invalidation - no complex cache management
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
@@ -297,8 +203,8 @@ export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
     queryFn: service.getCategories,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 };
 

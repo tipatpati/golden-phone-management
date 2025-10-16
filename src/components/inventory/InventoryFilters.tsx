@@ -1,14 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/enhanced-button";
-import { Search, Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles, Loader2 } from "lucide-react";
+import { Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
-import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
-import { logger } from "@/utils/logger";
 import { useInventoryFilters, type DatePreset, type StockStatus, type SerialFilter, type SortOption } from "@/hooks/useInventoryFilters";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +14,6 @@ interface InventoryFiltersProps {
   viewMode: "list" | "grid";
   onAddProduct?: () => void;
   categories: Array<{ id: number; name: string }>;
-  isFetching?: boolean;
-  isSearching?: boolean;
-  resultCount?: number;
 }
 
 export function InventoryFilters({ 
@@ -27,20 +21,14 @@ export function InventoryFilters({
   viewMode,
   onAddProduct,
   categories = [],
-  isFetching = false,
-  isSearching = false,
-  resultCount = 0
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
-  // Safety check for categories to prevent null errors
   const safeCategories = categories ?? [];
   
   const {
     filters,
-    setSearchTerm,
     setCategoryId,
     setStockStatus,
     setHasSerial,
@@ -55,51 +43,7 @@ export function InventoryFilters({
   } = useInventoryFilters();
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
-  
-  const { setupHardwareScanner } = useBarcodeScanner({
-    onScan: (result) => {
-      setSearchTerm(result);
-    }
-  });
 
-  useEffect(() => {
-    if (searchInputRef.current) {
-      const cleanup = setupHardwareScanner(searchInputRef.current);
-      return cleanup;
-    }
-  }, [setupHardwareScanner]);
-  
-  // Instant search as user types
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, [setSearchTerm]);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm("");
-  }, [setSearchTerm]);
-
-  // Keyboard shortcuts: Ctrl/Cmd+K to focus search, Escape to clear
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-      if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
-        handleClearSearch();
-        searchInputRef.current?.blur();
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleClearSearch]);
-
-  const handleBarcodeScanned = useCallback((barcode: string) => {
-    setSearchTerm(barcode);
-  }, [setSearchTerm]);
-
-  // Get available years from current year - 10 to current year
   const availableYears = React.useMemo(() => {
     const currentYear = new Date().getFullYear();
     const years = [];
@@ -136,60 +80,7 @@ export function InventoryFilters({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Main Search Bar with Live Feedback */}
-      <div className="flex w-full items-center gap-3">
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            ref={searchInputRef}
-            type="search"
-            placeholder="Search by brand, model, serial number, IMEI, or barcode... (Ctrl+K)"
-            className="w-full pl-10 pr-20 h-12 text-base"
-            value={filters.searchTerm}
-            onChange={handleSearchChange}
-            aria-label="Search inventory"
-          />
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {/* Loading spinner when searching */}
-            {isSearching && (
-              <Loader2 className="h-4 w-4 text-primary animate-spin" />
-            )}
-            {filters.searchTerm && !isSearching && (
-              <button 
-                type="button"
-                className="p-1 hover:bg-muted rounded transition-colors"
-                onClick={handleClearSearch}
-                aria-label="Clear search"
-              >
-                <FilterX className="h-4 w-4 text-muted-foreground" />
-              </button>
-            )}
-            <BarcodeScannerTrigger
-              onScan={handleBarcodeScanned}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-            />
-          </div>
-        </div>
-        {/* Search Status Indicator */}
-        {filters.searchTerm && (
-          <div className="text-sm text-muted-foreground whitespace-nowrap min-w-fit flex items-center gap-2">
-            {isSearching ? (
-              <span className="flex items-center gap-1">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Searching...
-              </span>
-            ) : (
-              <span className="font-medium">
-                {resultCount} {resultCount === 1 ? 'result' : 'results'}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Filters Row */}
+      {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Category Filter */}
         <Select 

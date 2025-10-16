@@ -32,19 +32,16 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const { filters, debouncedSearchTerm, effectiveDateRange, hasActiveFilters, isSearching } = useInventoryFilters();
+  const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
   const queryClient = useQueryClient();
-  // Use debounced search term for the actual query to avoid excessive requests
   const { data: products, isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
-    searchTerm: debouncedSearchTerm, // Use debounced version for query
     dateRange: effectiveDateRange,
   });
   const deleteProduct = useDeleteProduct();
   const { data: categories = [] } = useCategories();
 
-  // Force refresh function for immediate table updates
   const refreshTable = useCallback(() => {
     logger.debug('Refreshing inventory table', {}, 'InventoryContent');
     refetch();
@@ -72,42 +69,38 @@ export function InventoryContent({
   const handleDelete = async (id: string) => {
     try {
       await deleteProduct.mutateAsync(id);
-      // Clear selection if deleted item was selected
       if (selectedItems.includes(id)) {
         toggleSelectItem(id);
       }
-      // Force immediate table refresh
       refreshTable();
       toast({
         title: "Product Deleted",
-        description: "Product has been successfully deleted",
+        description: "The product has been successfully deleted.",
       });
     } catch (error) {
-      logger.error('Delete error', error, 'InventoryContent');
+      logger.error('Failed to delete product', error, 'InventoryContent');
       toast({
-        title: "Delete Failed",
-        description: "Failed to delete product",
+        title: "Error",
+        description: "Failed to delete product. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   const handleProductAdded = useCallback(() => {
-    logger.info('Product added - refreshing table', {}, 'InventoryContent');
+    logger.info('Product added successfully', {}, 'InventoryContent');
     refreshTable();
   }, [refreshTable]);
 
   const handleProductUpdated = useCallback(() => {
-    logger.info('Product updated - refreshing table', {}, 'InventoryContent');
+    logger.info('Product updated successfully', {}, 'InventoryContent');
+    setEditingProduct(null);
     refreshTable();
   }, [refreshTable]);
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  const canAddProduct = true;
 
-  if (error) {
-    logger.error('Products fetch error', error, 'InventoryContent');
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-xl p-6">
@@ -118,11 +111,26 @@ export function InventoryContent({
             categories={categories}
           />
         </div>
-        <EmptyState
-          icon={<Package className="h-16 w-16 text-muted-foreground" />}
-          title="Error Loading Products"
-          description={error.message || 'Unable to load products. Please try refreshing the page.'}
-        />
+        <LoadingState message="Loading inventory..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    logger.error('Failed to load inventory', error, 'InventoryContent');
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-xl p-6">
+          <InventoryFilters
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            onAddProduct={onAddProduct}
+            categories={categories}
+          />
+        </div>
+        <div className="text-center text-red-600">
+          <p>Failed to load inventory. Please try again.</p>
+        </div>
       </div>
     );
   }
@@ -130,18 +138,11 @@ export function InventoryContent({
   if (!products || products.length === 0) {
     logger.info('No products found', { filters, hasActiveFilters }, 'InventoryContent');
     
-    // Contextual empty state messages
     const getEmptyStateContent = () => {
-      if (filters.searchTerm) {
-        return {
-          title: "No Products Found",
-          description: `No products match "${filters.searchTerm}". Try different keywords or check the spelling.`,
-        };
-      }
       if (hasActiveFilters) {
         return {
           title: "No Products Match Filters",
-          description: "No products match your current filters. Try adjusting or clearing filters to see more results.",
+          description: "No products match your current filters. Try adjusting or clearing filters.",
         };
       }
       return {
@@ -167,7 +168,7 @@ export function InventoryContent({
           title={title}
           description={description}
           action={
-            onAddProduct && !filters.searchTerm && !hasActiveFilters ? {
+            onAddProduct && !hasActiveFilters ? {
               label: "Add Product",
               onClick: onAddProduct,
             } : undefined
@@ -186,56 +187,32 @@ export function InventoryContent({
   }
 
   return (
-    <>
-      {/* Barcode Update Tool - Only for authorized roles */}
-      <RoleGuard requiredRoles={['super_admin' as UserRole, 'admin' as UserRole, 'inventory_manager' as UserRole]}>
-        <div className="mb-6 flex items-center justify-between">
-          <BarcodeUpdateTool />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Cross-module sync:</span>
-            <CrossModuleSyncButton source="inventory" />
-          </div>
-        </div>
-      </RoleGuard>
-
-      <div className="bg-white rounded-xl shadow-xl p-6 mb-6">
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-xl p-6">
         <InventoryFilters
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
-          onAddProduct={onAddProduct}
+          onAddProduct={canAddProduct ? onAddProduct : undefined}
           categories={categories}
-          isFetching={isFetching}
-          isSearching={isSearching}
-          resultCount={products?.length || 0}
         />
       </div>
-      
-      <BulkActionsToolbar
-        selectedCount={selectedCount}
-        selectedProducts={selectedItems.map(id => products?.find(p => p.id === id)).filter(Boolean)}
-        onClearSelection={clearSelection}
-        onBulkDelete={bulkDelete}
-        onBulkUpdateStatus={bulkUpdateStatus}
-        onBulkUpdateCategory={bulkUpdateCategory}
-        isLoading={isBulkLoading}
-      />
-      
-      <InventoryTable
-        products={products || []}
-        isLoading={isLoading}
-        isFetching={isFetching}
-        searchTerm={filters.searchTerm}
-        viewMode={viewMode}
-        selectedItems={selectedItems}
-        onSelectItem={toggleSelectItem}
-        onSelectAll={toggleSelectAll}
-        isAllSelected={isAllSelected}
-        isIndeterminate={isIndeterminate}
-        onEdit={setEditingProduct}
-        onDelete={handleDelete}
-      />
 
-      {/* Only render AddProductDialog when explicitly requested */}
+
+      <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+        <InventoryTable
+          products={products}
+          viewMode={viewMode}
+          onDelete={handleDelete}
+          onEdit={setEditingProduct}
+          selectedItems={selectedItems}
+          isAllSelected={isAllSelected}
+          isIndeterminate={isIndeterminate}
+          onSelectAll={toggleSelectAll}
+          onSelectItem={toggleSelectItem}
+          isLoading={isFetching}
+        />
+      </div>
+
       {showAddProduct && (
         <AddProductDialog 
           open={showAddProduct}
@@ -249,12 +226,9 @@ export function InventoryContent({
           product={editingProduct}
           open={!!editingProduct}
           onClose={() => setEditingProduct(null)}
-          onSuccess={() => {
-            setEditingProduct(null);
-            handleProductUpdated();
-          }}
+          onSuccess={handleProductUpdated}
         />
       )}
-    </>
+    </div>
   );
 }
