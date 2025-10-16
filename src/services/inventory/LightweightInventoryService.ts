@@ -66,11 +66,7 @@ class LightweightInventoryService {
       query = query.eq('year', year);
     }
 
-    // Search across brand, model, and product units (serial numbers)
-    if (searchTerm && searchTerm.trim()) {
-      const term = searchTerm.trim().toLowerCase();
-      query = query.or(`brand.ilike.%${term}%,model.ilike.%${term}%`);
-    }
+    // Note: Search filtering is done client-side after fetching to include unit serial/barcode matching
 
     switch (sortBy) {
       case 'newest':
