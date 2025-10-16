@@ -28,6 +28,34 @@ class LightweightInventoryService {
       sortBy = 'newest'
     } = filters;
 
+    const startTime = performance.now();
+
+    // SERVER-SIDE SEARCH: Use database function when search term exists
+    if (searchTerm.trim()) {
+      console.log(`[Search] Server-side search for: "${searchTerm}"`);
+      
+      const { data, error } = await supabase
+        .rpc('search_inventory', { search_text: searchTerm.trim() });
+
+      if (error) {
+        console.error('[Search] Database search error:', error);
+        throw error;
+      }
+
+      // Transform RPC result to match Product interface
+      const products = (data || []).map((item: any) => ({
+        ...item,
+        category: { id: item.category_id, name: item.category_name || 'Unknown' },
+        units: item.unit_data || []
+      }));
+
+      const elapsed = performance.now() - startTime;
+      console.log(`[Search] Found ${products.length} results in ${elapsed.toFixed(0)}ms`);
+      
+      return products;
+    }
+
+    // REGULAR QUERY: No search term, use standard filtering
     let query = supabase
       .from('products')
       .select(`
@@ -54,27 +82,23 @@ class LightweightInventoryService {
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
-    // Category filter - apply FIRST to narrow down dataset
+    // Apply filters server-side
     if (categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
     }
 
-    // Stock status filter
     if (stockStatus === 'in_stock') {
       query = query.gt('stock', 0);
     } else if (stockStatus === 'low_stock') {
-      // Products with stock > 0 but <= threshold
       query = query.gt('stock', 0).filter('stock', 'lte', 'threshold');
     } else if (stockStatus === 'out_of_stock') {
       query = query.eq('stock', 0);
     }
 
-    // Serial tracking filter
     if (hasSerial !== 'all') {
       query = query.eq('has_serial', hasSerial === 'yes');
     }
 
-    // Date range filter
     if (dateRange?.start) {
       query = query.gte('created_at', dateRange.start.toISOString());
     }
@@ -82,7 +106,6 @@ class LightweightInventoryService {
       query = query.lte('created_at', dateRange.end.toISOString());
     }
 
-    // Price range filter
     if (priceRange?.min !== undefined) {
       query = query.gte('price', priceRange.min);
     }
@@ -90,7 +113,6 @@ class LightweightInventoryService {
       query = query.lte('price', priceRange.max);
     }
 
-    // Year filter
     if (year !== 'all') {
       query = query.eq('year', year);
     }
@@ -122,56 +144,15 @@ class LightweightInventoryService {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching products:', error);
+      console.error('[Query] Database error:', error);
       throw error;
     }
 
-    let results = data || [];
-    
-    console.log('📊 Query returned:', results.length, 'products with filters:', { categoryId, stockStatus, hasSerial, year, sortBy });
+    const products = data || [];
+    const elapsed = performance.now() - startTime;
+    console.log(`[Query] Fetched ${products.length} products in ${elapsed.toFixed(0)}ms`);
 
-    // Client-side search filtering - allows searching across all fields including product_units
-    if (searchTerm.trim()) {
-      const term = searchTerm.trim().toLowerCase();
-      console.log('🔍 Starting search for term:', term);
-      console.log('📦 Products before filter:', results.length);
-      console.log('📦 Sample product with units:', results[0]);
-      
-      results = results.filter(product => {
-        // Search in main product fields
-        const brandMatch = product.brand?.toLowerCase().includes(term);
-        const modelMatch = product.model?.toLowerCase().includes(term);
-        const barcodeMatch = product.barcode?.toLowerCase().includes(term);
-        const descriptionMatch = product.description?.toLowerCase().includes(term);
-        
-        // Search in serial_numbers array
-        const serialArrayMatch = product.serial_numbers?.some((sn: string) => 
-          sn?.toLowerCase().includes(term)
-        );
-        
-        // Search in product_units for serial numbers and barcodes
-        const unitsMatch = product.units?.some((unit: any) => {
-          const serialMatch = unit.serial_number?.toLowerCase().includes(term);
-          const unitBarcodeMatch = unit.barcode?.toLowerCase().includes(term);
-          if (serialMatch || unitBarcodeMatch) {
-            console.log('✅ Found match in unit:', unit.serial_number, unit.barcode);
-          }
-          return serialMatch || unitBarcodeMatch;
-        });
-        
-        const hasMatch = brandMatch || modelMatch || barcodeMatch || descriptionMatch || serialArrayMatch || unitsMatch;
-        
-        if (hasMatch) {
-          console.log('✅ Product matched:', product.brand, product.model, 'Units:', product.units?.length);
-        }
-        
-        return hasMatch;
-      });
-      
-      console.log('✅ Search complete. Results:', results.length);
-    }
-
-    return results;
+    return products;
   }
 
   /**

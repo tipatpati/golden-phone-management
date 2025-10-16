@@ -1742,6 +1742,30 @@ export type Database = {
           slug: string
         }[]
       }
+      search_inventory: {
+        Args: { search_text: string }
+        Returns: {
+          barcode: string
+          brand: string
+          category_id: number
+          category_name: string
+          created_at: string
+          description: string
+          has_serial: boolean
+          id: string
+          max_price: number
+          min_price: number
+          model: string
+          price: number
+          serial_numbers: string[]
+          stock: number
+          supplier: string
+          threshold: number
+          unit_data: Json
+          updated_at: string
+          year: number
+        }[]
+      }
       search_models: {
         Args: { brand_name?: string; max_results?: number; search_term: string }
         Returns: {
