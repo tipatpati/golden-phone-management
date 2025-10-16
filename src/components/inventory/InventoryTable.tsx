@@ -20,7 +20,10 @@ import {
   Barcode,
   Printer,
   Euro,
-  Info
+  Info,
+  ChevronDown,
+  ChevronRight,
+  Hash
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
@@ -70,10 +73,24 @@ export function InventoryTable({
   const [selectedProductForDetails, setSelectedProductForDetails] = useState<Product | null>(null);
   const [printProductId, setPrintProductId] = useState<string | null>(null);
   const [renderKey, setRenderKey] = useState(0);
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   
   // Force re-render when search term changes
   useEffect(() => {
     setRenderKey(prev => prev + 1);
+    // Auto-expand products when search finds units
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      const productsWithMatchedUnits = productList.filter(product => 
+        product.units?.some((unit: any) => 
+          unit.serial_number?.toLowerCase().includes(term) || 
+          unit.barcode?.toLowerCase().includes(term)
+        )
+      );
+      setExpandedProducts(new Set(productsWithMatchedUnits.map(p => p.id)));
+    } else {
+      setExpandedProducts(new Set());
+    }
   }, [searchTerm, products]);
   
   // Memoize product list to ensure fresh calculation on search
@@ -110,6 +127,26 @@ export function InventoryTable({
     } else {
       return { label: 'In Stock', color: 'bg-green-100 text-green-800 border-green-200' };
     }
+  };
+
+  const toggleProductExpansion = (productId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  // Helper to check if unit matches search
+  const unitMatchesSearch = (unit: any, term: string) => {
+    const lowerTerm = term.toLowerCase();
+    return unit.serial_number?.toLowerCase().includes(lowerTerm) || 
+           unit.barcode?.toLowerCase().includes(lowerTerm);
   };
 
   if (isLoading || !products) {
@@ -206,190 +243,308 @@ export function InventoryTable({
           {productList.map((product) => {
             const stockStatus = getStockStatus(product.stock, product.threshold);
             const isSelected = selectedItems.includes(product.id);
+            const isExpanded = expandedProducts.has(product.id);
+            const hasUnits = product.units && product.units.length > 0;
+            const searchLower = searchTerm?.toLowerCase() || '';
+            const matchedUnits = hasUnits && searchTerm 
+              ? product.units.filter((unit: any) => unitMatchesSearch(unit, searchTerm))
+              : [];
             
             return (
-              <TableRow 
-                key={product.id}
-                className={cn(
-                  "cursor-pointer hover:bg-muted/50 transition-colors",
-                  isSelected ? "bg-muted/50" : ""
-                )}
-                onClick={() => handleRowClick(product)}
-              >
-                <TableCell>
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(checked) => {
-                      onSelectItem(product.id);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={`Select ${product.brand} ${product.model}`}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-medium">
-                      {(() => {
-                        // Clean the brand and model by removing all color info in parentheses
-                        const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
-                        const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
-                        
-                        // Check if product has serial numbers with storage info
-                        let storage;
-                        if (product.serial_numbers && product.serial_numbers.length > 0) {
-                          const parsed = parseSerialString(product.serial_numbers[0]);
-                          storage = parsed.storage;
-                        }
-                        
-                        return formatProductName({ 
-                          brand: cleanBrand, 
-                          model: cleanModel, 
-                          storage 
-                        });
-                      })()}
-                    </div>
-                    {product.year && (
-                      <div className="text-sm text-muted-foreground">
-                        {product.year}
-                      </div>
-                    )}
-                    {product.barcode && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Barcode className="h-3 w-3" />
-                        {product.barcode}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {product.category ? (
-                    <Badge 
-                      variant="outline" 
-                      className={getCategoryBadgeColor(product.category.name)}
-                    >
-                      {product.category.name}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
+              <React.Fragment key={product.id}>
+                <TableRow 
+                  className={cn(
+                    "cursor-pointer hover:bg-muted/50 transition-colors",
+                    isSelected ? "bg-muted/50" : "",
+                    matchedUnits.length > 0 ? "bg-blue-50/30" : ""
                   )}
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
+                  onClick={() => handleRowClick(product)}
+                >
+                  <TableCell>
                     <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{product.stock}</span>
-                    </div>
-                    <Badge variant="outline" className={stockStatus.color}>
-                      {stockStatus.label}
-                    </Badge>
-                    {product.stock <= product.threshold && product.stock > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-amber-600">
-                        <AlertTriangle className="h-3 w-3" />
-                        Threshold: {product.threshold}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    {(() => {
-                      const pricingInfo = getProductPricingInfoSync({
-                        price: product.price || 0,
-                        has_serial: product.has_serial,
-                        min_price: product.min_price,
-                        max_price: product.max_price
-                      });
-                      
-                      return (
-                        <>
-                          <div className="text-sm">
-                            <span className={cn(
-                              "font-medium",
-                              pricingInfo.type === 'unit-pricing' ? "text-blue-600" : "text-primary",
-                              pricingInfo.type === 'no-price' ? "text-muted-foreground" : ""
-                            )}>
-                              {pricingInfo.display}
-                            </span>
-                          </div>
-                          {pricingInfo.type === 'unit-pricing' && (
-                            <div className="text-xs text-blue-600 flex items-center gap-1">
-                              <Euro className="h-3 w-3" />
-                              Click info to set unit prices
-                            </div>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          onSelectItem(product.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Select ${product.brand} ${product.model}`}
+                      />
+                      {hasUnits && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => toggleProductExpansion(product.id, e)}
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
                           )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="text-sm">
-                      {product.has_serial ? (
-                        <div className="flex items-center gap-1 text-green-600">
-                          <Package className="h-3 w-3" />
-                          Serial Tracking
-                        </div>
-                      ) : (
-                        <div className="text-muted-foreground">No Serial</div>
+                        </Button>
                       )}
                     </div>
-                    {product.serial_numbers && product.serial_numbers.length > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        {product.serial_numbers.length} unit{product.serial_numbers.length !== 1 ? 's' : ''}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium flex items-center gap-2">
+                        {(() => {
+                          const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
+                          const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
+                          
+                          let storage;
+                          if (product.serial_numbers && product.serial_numbers.length > 0) {
+                            const parsed = parseSerialString(product.serial_numbers[0]);
+                            storage = parsed.storage;
+                          }
+                          
+                          return formatProductName({ 
+                            brand: cleanBrand, 
+                            model: cleanModel, 
+                            storage 
+                          });
+                        })()}
+                        {matchedUnits.length > 0 && (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                            {matchedUnits.length} matched unit{matchedUnits.length !== 1 ? 's' : ''}
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProductForDetails(product);
-                        setDetailsDialogOpen(true);
-                      }}
-                      className="h-8 w-8 p-0"
-                      title="View details and manage unit pricing"
-                    >
-                      <Info className="h-4 w-4" />
-                    </Button>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <UnifiedInventoryLabels
-                        productIds={[product.id]}
-                        companyName="GOLDEN PHONE SRL"
-                        buttonText=""
-                        buttonClassName="h-8 w-8 p-0"
-                      />
+                      {product.year && (
+                        <div className="text-sm text-muted-foreground">
+                          {product.year}
+                        </div>
+                      )}
+                      {product.barcode && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Barcode className="h-3 w-3" />
+                          {product.barcode}
+                        </div>
+                      )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(product);
-                      }}
-                      disabled={product.has_serial && product.stock === 0}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(product.id);
-                      }}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>
+                    {product.category ? (
+                      <Badge 
+                        variant="outline" 
+                        className={getCategoryBadgeColor(product.category.name)}
+                      >
+                        {product.category.name}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{product.stock}</span>
+                      </div>
+                      <Badge variant="outline" className={stockStatus.color}>
+                        {stockStatus.label}
+                      </Badge>
+                      {product.stock <= product.threshold && product.stock > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <AlertTriangle className="h-3 w-3" />
+                          Threshold: {product.threshold}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {(() => {
+                        const pricingInfo = getProductPricingInfoSync({
+                          price: product.price || 0,
+                          has_serial: product.has_serial,
+                          min_price: product.min_price,
+                          max_price: product.max_price
+                        });
+                        
+                        return (
+                          <>
+                            <div className="text-sm">
+                              <span className={cn(
+                                "font-medium",
+                                pricingInfo.type === 'unit-pricing' ? "text-blue-600" : "text-primary",
+                                pricingInfo.type === 'no-price' ? "text-muted-foreground" : ""
+                              )}>
+                                {pricingInfo.display}
+                              </span>
+                            </div>
+                            {pricingInfo.type === 'unit-pricing' && (
+                              <div className="text-xs text-blue-600 flex items-center gap-1">
+                                <Euro className="h-3 w-3" />
+                                Click info to set unit prices
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="text-sm">
+                        {product.has_serial ? (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <Package className="h-3 w-3" />
+                            Serial Tracking
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground">No Serial</div>
+                        )}
+                      </div>
+                      {product.serial_numbers && product.serial_numbers.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          {product.serial_numbers.length} unit{product.serial_numbers.length !== 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProductForDetails(product);
+                          setDetailsDialogOpen(true);
+                        }}
+                        className="h-8 w-8 p-0"
+                        title="View details and manage unit pricing"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Button>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <UnifiedInventoryLabels
+                          productIds={[product.id]}
+                          companyName="GOLDEN PHONE SRL"
+                          buttonText=""
+                          buttonClassName="h-8 w-8 p-0"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(product);
+                        }}
+                        disabled={product.has_serial && product.stock === 0}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(product.id);
+                        }}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+                
+                {/* Expanded Unit Rows */}
+                {isExpanded && hasUnits && (
+                  <>
+                    {product.units.map((unit: any) => {
+                      const isMatched = searchTerm && unitMatchesSearch(unit, searchTerm);
+                      return (
+                        <TableRow 
+                          key={unit.id}
+                          className={cn(
+                            "bg-muted/20 border-l-4",
+                            isMatched ? "border-l-blue-500 bg-blue-50/50" : "border-l-transparent"
+                          )}
+                        >
+                          <TableCell></TableCell>
+                          <TableCell colSpan={2}>
+                            <div className="pl-8 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Hash className="h-3 w-3 text-muted-foreground" />
+                                <span className={cn(
+                                  "text-sm font-mono",
+                                  isMatched && "font-semibold text-blue-700"
+                                )}>
+                                  {unit.serial_number}
+                                </span>
+                                {isMatched && (
+                                  <Badge variant="secondary" className="bg-blue-500 text-white text-xs">
+                                    Match
+                                  </Badge>
+                                )}
+                              </div>
+                              {unit.barcode && (
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Barcode className="h-3 w-3" />
+                                  <span className={cn(
+                                    "font-mono",
+                                    isMatched && unit.barcode.toLowerCase().includes(searchLower) && "font-semibold text-blue-700"
+                                  )}>
+                                    {unit.barcode}
+                                  </span>
+                                </div>
+                              )}
+                              {(unit.color || unit.storage || unit.ram) && (
+                                <div className="flex gap-2 text-xs">
+                                  {unit.color && <Badge variant="outline">{unit.color}</Badge>}
+                                  {unit.storage && <Badge variant="outline">{unit.storage}GB</Badge>}
+                                  {unit.ram && <Badge variant="outline">{unit.ram}GB RAM</Badge>}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline"
+                              className={cn(
+                                unit.status === 'available' ? 'bg-green-100 text-green-800' : 
+                                unit.status === 'sold' ? 'bg-gray-100 text-gray-800' : 
+                                'bg-yellow-100 text-yellow-800'
+                              )}
+                            >
+                              {unit.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {unit.max_price ? (
+                                <span className="font-medium text-green-600">
+                                  €{unit.max_price.toFixed(2)}
+                                </span>
+                              ) : unit.price ? (
+                                <span className="text-muted-foreground">
+                                  €{unit.price.toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {unit.condition && (
+                              <Badge variant="outline" className="text-xs">
+                                {unit.condition}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell></TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </>
+                )}
+              </React.Fragment>
             );
           })}
         </TableBody>
