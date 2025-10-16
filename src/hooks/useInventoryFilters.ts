@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useDebounce } from './useDebounce';
 
 export type StockStatus = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 export type SerialFilter = 'all' | 'yes' | 'no';
@@ -65,6 +66,9 @@ export function useInventoryFilters() {
       console.error('Failed to save filters to localStorage:', error);
     }
   }, [filters]);
+
+  // Debounce search term for queries (300ms delay to avoid excessive queries)
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
 
   // Calculate date range based on preset
   const effectiveDateRange = useMemo(() => {
@@ -161,9 +165,14 @@ export function useInventoryFilters() {
 
   const hasActiveFilters = activeFilterCount > 0 || filters.searchTerm.length > 0;
 
+  // Determine if user is currently typing (search term differs from debounced version)
+  const isSearching = filters.searchTerm !== debouncedSearchTerm && filters.searchTerm.length > 0;
+
   return {
     filters,
+    debouncedSearchTerm,
     effectiveDateRange,
+    isSearching,
     setSearchTerm,
     setCategoryId,
     setStockStatus,

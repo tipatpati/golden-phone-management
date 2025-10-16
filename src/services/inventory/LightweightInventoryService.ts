@@ -278,6 +278,7 @@ export const useProducts = (filters?: {
     staleTime: 0, // Always fetch fresh data when filters change
     gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    refetchOnMount: 'always', // Ensure fresh data on component mount
   });
 };
 

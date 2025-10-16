@@ -32,11 +32,13 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
+  const { filters, debouncedSearchTerm, effectiveDateRange, hasActiveFilters, isSearching } = useInventoryFilters();
   
   const queryClient = useQueryClient();
+  // Use debounced search term for the actual query to avoid excessive requests
   const { data: products, isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
+    searchTerm: debouncedSearchTerm, // Use debounced version for query
     dateRange: effectiveDateRange,
   });
   const deleteProduct = useDeleteProduct();
@@ -203,6 +205,7 @@ export function InventoryContent({
           onAddProduct={onAddProduct}
           categories={categories}
           isFetching={isFetching}
+          isSearching={isSearching}
           resultCount={products?.length || 0}
         />
       </div>

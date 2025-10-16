@@ -18,6 +18,7 @@ interface InventoryFiltersProps {
   onAddProduct?: () => void;
   categories: Array<{ id: number; name: string }>;
   isFetching?: boolean;
+  isSearching?: boolean;
   resultCount?: number;
 }
 
@@ -27,6 +28,7 @@ export function InventoryFilters({
   onAddProduct,
   categories = [],
   isFetching = false,
+  isSearching = false,
   resultCount = 0
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -148,7 +150,11 @@ export function InventoryFilters({
             aria-label="Search inventory"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {filters.searchTerm && (
+            {/* Loading spinner when searching */}
+            {isSearching && (
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            )}
+            {filters.searchTerm && !isSearching && (
               <button 
                 type="button"
                 className="p-1 hover:bg-muted rounded transition-colors"
@@ -168,10 +174,17 @@ export function InventoryFilters({
         </div>
         {/* Search Status Indicator */}
         {filters.searchTerm && (
-          <div className="text-sm text-muted-foreground whitespace-nowrap min-w-fit">
-            <span className="font-medium">
-              {resultCount} {resultCount === 1 ? 'result' : 'results'}
-            </span>
+          <div className="text-sm text-muted-foreground whitespace-nowrap min-w-fit flex items-center gap-2">
+            {isSearching ? (
+              <span className="flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Searching...
+              </span>
+            ) : (
+              <span className="font-medium">
+                {resultCount} {resultCount === 1 ? 'result' : 'results'}
+              </span>
+            )}
           </div>
         )}
       </div>
