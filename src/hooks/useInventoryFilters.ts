@@ -9,6 +9,7 @@ export interface InventoryFilters {
   categoryId: number | 'all';
   stockStatus: StockStatus;
   hasSerial: SerialFilter;
+  searchTerm: string;
   datePreset: DatePreset;
   dateRange?: {
     start?: Date;
@@ -26,6 +27,7 @@ const DEFAULT_FILTERS: InventoryFilters = {
   categoryId: 'all',
   stockStatus: 'all',
   hasSerial: 'all',
+  searchTerm: '',
   datePreset: 'all',
   year: 'all',
   sortBy: 'newest',
@@ -124,6 +126,10 @@ export function useInventoryFilters() {
     setFilters(prev => ({ ...prev, sortBy }));
   }, []);
 
+  const setSearchTerm = useCallback((searchTerm: string) => {
+    setFilters(prev => ({ ...prev, searchTerm }));
+  }, []);
+
   const clearFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
   }, []);
@@ -140,6 +146,7 @@ export function useInventoryFilters() {
     if (filters.categoryId !== 'all') count++;
     if (filters.stockStatus !== 'all') count++;
     if (filters.hasSerial !== 'all') count++;
+    if (filters.searchTerm.trim()) count++;
     if (filters.datePreset !== 'all') count++;
     if (filters.priceRange && (filters.priceRange.min !== undefined || filters.priceRange.max !== undefined)) count++;
     if (filters.year !== 'all') count++;
@@ -154,6 +161,7 @@ export function useInventoryFilters() {
     setCategoryId,
     setStockStatus,
     setHasSerial,
+    setSearchTerm,
     setDatePreset,
     setCustomDateRange,
     setPriceRange,

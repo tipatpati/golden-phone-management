@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/enhanced-button";
 import { Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles } from "lucide-react";
@@ -8,6 +8,7 @@ import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
 import { useInventoryFilters, type DatePreset, type StockStatus, type SerialFilter, type SortOption } from "@/hooks/useInventoryFilters";
 import { cn } from "@/lib/utils";
+import { SearchBar } from "@/components/ui/search-bar";
 
 interface InventoryFiltersProps {
   onViewModeChange: (viewMode: "list" | "grid") => void;
@@ -32,6 +33,7 @@ export function InventoryFilters({
     setCategoryId,
     setStockStatus,
     setHasSerial,
+    setSearchTerm,
     setDatePreset,
     setPriceRange,
     setYear,
@@ -41,6 +43,16 @@ export function InventoryFilters({
     activeFilterCount,
     hasActiveFilters,
   } = useInventoryFilters();
+
+  const [localSearchTerm, setLocalSearchTerm] = useState(filters.searchTerm || '');
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearchTerm, setSearchTerm]);
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
 
@@ -80,6 +92,14 @@ export function InventoryFilters({
 
   return (
     <div className="flex flex-col gap-4 w-full">
+      {/* Search Bar - Full Width */}
+      <SearchBar
+        value={localSearchTerm}
+        onChange={setLocalSearchTerm}
+        placeholder="Cerca per marca, modello, numero di serie o codice a barre..."
+        className="w-full"
+      />
+
       {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Category Filter */}
@@ -297,6 +317,20 @@ export function InventoryFilters({
       {/* Active Filter Chips */}
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap gap-2">
+          {filters.searchTerm && (
+            <Badge variant="secondary" className="gap-1">
+              Ricerca: {filters.searchTerm}
+              <button 
+                onClick={() => {
+                  setLocalSearchTerm('');
+                  setSearchTerm('');
+                }}
+                className="ml-1 hover:bg-background/20 rounded-full p-0.5"
+              >
+                <FilterX className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
           {filters.categoryId !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               Categoria: {safeCategories.find(c => c.id === filters.categoryId)?.name}

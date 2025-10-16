@@ -7,6 +7,7 @@ class LightweightInventoryService {
     categoryId?: number | 'all';
     stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
     hasSerial?: 'all' | 'yes' | 'no';
+    searchTerm?: string;
     dateRange?: { start?: Date; end?: Date };
     priceRange?: { min?: number; max?: number };
     year?: number | 'all';
@@ -16,6 +17,7 @@ class LightweightInventoryService {
       categoryId = 'all',
       stockStatus = 'all',
       hasSerial = 'all',
+      searchTerm = '',
       dateRange,
       priceRange,
       year = 'all',
@@ -64,6 +66,12 @@ class LightweightInventoryService {
       query = query.eq('year', year);
     }
 
+    // Search across brand, model, and product units (serial numbers)
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      query = query.or(`brand.ilike.%${term}%,model.ilike.%${term}%`);
+    }
+
     switch (sortBy) {
       case 'newest':
         query = query.order('created_at', { ascending: false });
@@ -90,7 +98,28 @@ class LightweightInventoryService {
     const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    
+    let products = data || [];
+
+    // Client-side filtering for unit serial numbers/barcodes if search term exists
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      products = products.filter(product => {
+        // Check brand and model
+        const brandMatch = product.brand?.toLowerCase().includes(term);
+        const modelMatch = product.model?.toLowerCase().includes(term);
+        
+        // Check product units for serial/barcode match
+        const unitMatch = product.units?.some((unit: any) => 
+          unit.serial_number?.toLowerCase().includes(term) || 
+          unit.barcode?.toLowerCase().includes(term)
+        );
+        
+        return brandMatch || modelMatch || unitMatch;
+      });
+    }
+    
+    return products;
   }
 
   async createProduct(productData: any): Promise<Product> {
@@ -150,6 +179,7 @@ export const useProducts = (filters?: {
   categoryId?: number | 'all';
   stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
   hasSerial?: 'all' | 'yes' | 'no';
+  searchTerm?: string;
   dateRange?: { start?: Date; end?: Date };
   priceRange?: { min?: number; max?: number };
   year?: number | 'all';

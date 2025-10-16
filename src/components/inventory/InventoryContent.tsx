@@ -35,7 +35,7 @@ export function InventoryContent({
   const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
   const queryClient = useQueryClient();
-  const { data: products, isLoading, error, refetch, isFetching } = useProducts({
+  const { data: products = [], isLoading, error, refetch, isFetching } = useProducts({
     ...filters,
     dateRange: effectiveDateRange,
   });
@@ -202,6 +202,7 @@ export function InventoryContent({
         <InventoryTable
           products={products}
           viewMode={viewMode}
+          searchTerm={filters.searchTerm}
           onDelete={handleDelete}
           onEdit={setEditingProduct}
           selectedItems={selectedItems}
@@ -210,6 +211,7 @@ export function InventoryContent({
           onSelectAll={toggleSelectAll}
           onSelectItem={toggleSelectItem}
           isLoading={isFetching}
+          isFetching={isFetching}
         />
       </div>
 
