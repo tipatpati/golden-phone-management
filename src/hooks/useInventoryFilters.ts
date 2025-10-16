@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useDebounce } from './useDebounce';
 
 export type StockStatus = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 export type SerialFilter = 'all' | 'yes' | 'no';
@@ -7,7 +6,6 @@ export type SortOption = 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price
 export type DatePreset = 'all' | 'today' | 'week' | 'month' | 'quarter' | 'custom';
 
 export interface InventoryFilters {
-  searchTerm: string;
   categoryId: number | 'all';
   stockStatus: StockStatus;
   hasSerial: SerialFilter;
@@ -25,7 +23,6 @@ export interface InventoryFilters {
 }
 
 const DEFAULT_FILTERS: InventoryFilters = {
-  searchTerm: '', // Never persisted - always starts empty
   categoryId: 'all',
   stockStatus: 'all',
   hasSerial: 'all',
@@ -38,18 +35,15 @@ const STORAGE_KEY = 'inventory-filters';
 
 export function useInventoryFilters() {
   const [filters, setFilters] = useState<InventoryFilters>(() => {
-    // Load from localStorage (except searchTerm which always starts empty)
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Convert date strings back to Date objects
         if (parsed.dateRange) {
           if (parsed.dateRange.start) parsed.dateRange.start = new Date(parsed.dateRange.start);
           if (parsed.dateRange.end) parsed.dateRange.end = new Date(parsed.dateRange.end);
         }
-        // Always reset searchTerm to empty on mount
-        return { ...DEFAULT_FILTERS, ...parsed, searchTerm: '' };
+        return { ...DEFAULT_FILTERS, ...parsed };
       }
     } catch (error) {
       console.error('Failed to load filters from localStorage:', error);
@@ -57,20 +51,14 @@ export function useInventoryFilters() {
     return DEFAULT_FILTERS;
   });
 
-  // Save to localStorage (except searchTerm which should never persist)
   useEffect(() => {
     try {
-      const { searchTerm, ...persistedFilters } = filters;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedFilters));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
     } catch (error) {
       console.error('Failed to save filters to localStorage:', error);
     }
   }, [filters]);
 
-  // Debounce search term for queries (300ms delay to avoid excessive queries)
-  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
-
-  // Calculate date range based on preset
   const effectiveDateRange = useMemo(() => {
     if (filters.datePreset === 'custom') {
       return filters.dateRange;
@@ -96,10 +84,6 @@ export function useInventoryFilters() {
         return undefined;
     }
   }, [filters.datePreset, filters.dateRange]);
-
-  const setSearchTerm = useCallback((searchTerm: string) => {
-    setFilters(prev => ({ ...prev, searchTerm }));
-  }, []);
 
   const setCategoryId = useCallback((categoryId: number | 'all') => {
     setFilters(prev => ({ ...prev, categoryId }));
@@ -151,7 +135,6 @@ export function useInventoryFilters() {
     }));
   }, []);
 
-  // Count active filters (excluding search and sort)
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.categoryId !== 'all') count++;
@@ -163,17 +146,11 @@ export function useInventoryFilters() {
     return count;
   }, [filters]);
 
-  const hasActiveFilters = activeFilterCount > 0 || filters.searchTerm.length > 0;
-
-  // Determine if user is currently typing (search term differs from debounced version)
-  const isSearching = filters.searchTerm !== debouncedSearchTerm && filters.searchTerm.length > 0;
+  const hasActiveFilters = activeFilterCount > 0;
 
   return {
     filters,
-    debouncedSearchTerm,
     effectiveDateRange,
-    isSearching,
-    setSearchTerm,
     setCategoryId,
     setStockStatus,
     setHasSerial,
