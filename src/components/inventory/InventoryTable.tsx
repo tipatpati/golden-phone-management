@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { UnifiedInventoryLabels } from "./labels/UnifiedInventoryLabels";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { UnitDetailsDialog } from "./UnitDetailsDialog";
 import { InventoryCard } from "./InventoryCard";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
@@ -90,7 +91,9 @@ export function InventoryTable({
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [printUnitId, setPrintUnitId] = useState<string | null>(null);
   const [deleteUnitId, setDeleteUnitId] = useState<string | null>(null);
-  const [selectedUnitForDetails, setSelectedUnitForDetails] = useState<any>(null);
+  const [unitDetailsOpen, setUnitDetailsOpen] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<any>(null);
+  const [selectedProductForUnit, setSelectedProductForUnit] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -591,9 +594,9 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedUnitForDetails(unit);
-                                  setSelectedProductForDetails(product);
-                                  setDetailsDialogOpen(true);
+                                  setSelectedUnit(unit);
+                                  setSelectedProductForUnit(product);
+                                  setUnitDetailsOpen(true);
                                 }}
                                 className="h-7 w-7 p-0"
                                 title="View unit details"
@@ -617,9 +620,9 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedUnitForDetails(unit);
-                                  setSelectedProductForDetails(product);
-                                  setDetailsDialogOpen(true);
+                                  setSelectedUnit(unit);
+                                  setSelectedProductForUnit(product);
+                                  setUnitDetailsOpen(true);
                                 }}
                                 className="h-7 w-7 p-0"
                                 title="Edit unit"
@@ -736,6 +739,18 @@ export function InventoryTable({
         />
       );
     })()}
+
+    {/* Unit Details Dialog */}
+    <UnitDetailsDialog
+      unit={selectedUnit}
+      product={selectedProductForUnit}
+      open={unitDetailsOpen}
+      onOpenChange={setUnitDetailsOpen}
+      onPrint={(unitId) => {
+        setUnitDetailsOpen(false);
+        setPrintUnitId(unitId);
+      }}
+    />
 
     {/* Delete unit confirmation */}
     <AlertDialog open={!!deleteUnitId} onOpenChange={(open) => !open && setDeleteUnitId(null)}>
