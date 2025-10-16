@@ -133,7 +133,9 @@ class LightweightInventoryService {
     // Client-side search filtering - allows searching across all fields including product_units
     if (searchTerm.trim()) {
       const term = searchTerm.trim().toLowerCase();
-      console.log('🔍 Filtering search term:', term, 'from', results.length, 'products');
+      console.log('🔍 Starting search for term:', term);
+      console.log('📦 Products before filter:', results.length);
+      console.log('📦 Sample product with units:', results[0]);
       
       results = results.filter(product => {
         // Search in main product fields
@@ -148,15 +150,25 @@ class LightweightInventoryService {
         );
         
         // Search in product_units for serial numbers and barcodes
-        const unitsMatch = product.units?.some((unit: any) => 
-          unit.serial_number?.toLowerCase().includes(term) ||
-          unit.barcode?.toLowerCase().includes(term)
-        );
+        const unitsMatch = product.units?.some((unit: any) => {
+          const serialMatch = unit.serial_number?.toLowerCase().includes(term);
+          const unitBarcodeMatch = unit.barcode?.toLowerCase().includes(term);
+          if (serialMatch || unitBarcodeMatch) {
+            console.log('✅ Found match in unit:', unit.serial_number, unit.barcode);
+          }
+          return serialMatch || unitBarcodeMatch;
+        });
         
-        return brandMatch || modelMatch || barcodeMatch || descriptionMatch || serialArrayMatch || unitsMatch;
+        const hasMatch = brandMatch || modelMatch || barcodeMatch || descriptionMatch || serialArrayMatch || unitsMatch;
+        
+        if (hasMatch) {
+          console.log('✅ Product matched:', product.brand, product.model, 'Units:', product.units?.length);
+        }
+        
+        return hasMatch;
       });
       
-      console.log('✅ Search filtered to', results.length, 'products');
+      console.log('✅ Search complete. Results:', results.length);
     }
 
     return results;
