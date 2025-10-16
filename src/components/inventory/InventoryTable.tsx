@@ -33,6 +33,20 @@ import { InventoryCard } from "./InventoryCard";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
 import type { Product as UnifiedProduct } from "@/services/inventory/types";
+import { UnitBarcodeManager } from "@/components/shared/forms/UnitBarcodeManager";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
@@ -74,6 +88,11 @@ export function InventoryTable({
   const [printProductId, setPrintProductId] = useState<string | null>(null);
   const [renderKey, setRenderKey] = useState(0);
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [printUnitId, setPrintUnitId] = useState<string | null>(null);
+  const [deleteUnitId, setDeleteUnitId] = useState<string | null>(null);
+  const [selectedUnitForDetails, setSelectedUnitForDetails] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Force re-render when search term changes
   useEffect(() => {
@@ -147,6 +166,33 @@ export function InventoryTable({
     const lowerTerm = term.toLowerCase();
     return unit.serial_number?.toLowerCase().includes(lowerTerm) || 
            unit.barcode?.toLowerCase().includes(lowerTerm);
+  };
+
+  const handleDeleteUnit = async (unitId: string) => {
+    try {
+      const { error } = await supabase
+        .from('product_units')
+        .delete()
+        .eq('id', unitId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Unit deleted",
+        description: "Product unit has been successfully deleted.",
+      });
+
+      // Refresh product list
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setDeleteUnitId(null);
+    } catch (error) {
+      console.error('Error deleting unit:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete unit. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading || !products) {
@@ -545,8 +591,9 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Open unit details dialog
-                                  console.log('View unit details:', unit.id);
+                                  setSelectedUnitForDetails(unit);
+                                  setSelectedProductForDetails(product);
+                                  setDetailsDialogOpen(true);
                                 }}
                                 className="h-7 w-7 p-0"
                                 title="View unit details"
@@ -558,8 +605,7 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Print unit barcode
-                                  console.log('Print unit barcode:', unit.id);
+                                  setPrintUnitId(unit.id);
                                 }}
                                 className="h-7 w-7 p-0"
                                 title="Print barcode"
@@ -571,8 +617,9 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Open edit unit dialog
-                                  console.log('Edit unit:', unit.id);
+                                  setSelectedUnitForDetails(unit);
+                                  setSelectedProductForDetails(product);
+                                  setDetailsDialogOpen(true);
                                 }}
                                 className="h-7 w-7 p-0"
                                 title="Edit unit"
@@ -584,8 +631,7 @@ export function InventoryTable({
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Confirm and delete unit
-                                  console.log('Delete unit:', unit.id);
+                                  setDeleteUnitId(unit.id);
                                 }}
                                 className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                                 title="Delete unit"
@@ -649,7 +695,7 @@ export function InventoryTable({
       }}
     />
 
-    {/* Hidden label printer - opens when Print Labels is clicked */}
+    {/* Hidden label printer for products */}
     {printProductId && (
       <UnifiedInventoryLabels
         productIds={[printProductId]}
@@ -660,6 +706,57 @@ export function InventoryTable({
         onClose={() => setPrintProductId(null)}
       />
     )}
+
+    {/* Unit barcode printer */}
+    {printUnitId && (() => {
+      // Find the unit to print
+      const unitToPrint = productList
+        .flatMap(p => p.units || [])
+        .find((u: any) => u.id === printUnitId);
+      
+      if (!unitToPrint) return null;
+
+      return (
+        <UnitBarcodeManager
+          units={[{
+            serial: unitToPrint.serial_number,
+            color: unitToPrint.color,
+            storage: unitToPrint.storage,
+            ram: unitToPrint.ram,
+            battery_level: unitToPrint.battery_level,
+            price: unitToPrint.price
+          }]}
+          productId={unitToPrint.product_id}
+          existingUnitBarcodes={{ [unitToPrint.serial_number]: unitToPrint.barcode }}
+          showPrintButton={false}
+          onPrintRequested={(barcodes) => {
+            // Auto-trigger print after component mounts
+            setTimeout(() => setPrintUnitId(null), 1000);
+          }}
+        />
+      );
+    })()}
+
+    {/* Delete unit confirmation */}
+    <AlertDialog open={!!deleteUnitId} onOpenChange={(open) => !open && setDeleteUnitId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Unit</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this product unit? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => deleteUnitId && handleDeleteUnit(deleteUnitId)}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
