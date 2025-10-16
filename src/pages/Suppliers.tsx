@@ -21,7 +21,7 @@ import { PageLayout } from "@/components/common/PageLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 
 const Suppliers = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [globalSearchTerm, setGlobalSearchTerm] = useState("");
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
@@ -125,13 +125,13 @@ const Suppliers = () => {
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search suppliers..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={globalSearchTerm}
+                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
                     className="pl-8 text-sm"
                   />
                 </div>
               </div>
-              <SuppliersTable searchTerm={searchTerm} />
+              <SuppliersTable searchTerm={globalSearchTerm} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -182,14 +182,14 @@ const Suppliers = () => {
                 <div className="relative flex-1 max-w-xs sm:max-w-sm">
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search transactions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search transactions, serials, suppliers..."
+                    value={globalSearchTerm}
+                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
                     className="pl-8 text-sm"
                   />
                 </div>
               </div>
-              <TransactionsTable searchTerm={searchTerm} />
+              <TransactionsTable searchTerm={globalSearchTerm} />
             </CardContent>
           </Card>
         </TabsContent>

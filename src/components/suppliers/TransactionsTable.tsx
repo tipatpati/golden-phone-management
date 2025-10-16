@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
+import { useSupplierSearch } from "@/hooks/useSupplierSearch";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
@@ -14,6 +15,8 @@ import { SupplierAcquisitionPrintDialog } from "./dialogs/SupplierAcquisitionPri
 import type { TransactionSearchFilters, SupplierTransaction } from "@/services/suppliers/types";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 interface TransactionsTableProps {
   searchTerm: string;
@@ -30,6 +33,39 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   }, [searchTerm]);
   
   const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
+  const { results: searchResults, isSearching, hasResults } = useSupplierSearch(searchTerm);
+  
+  // Filter transactions based on unified search results
+  const filteredTransactions = React.useMemo(() => {
+    if (!searchTerm || searchTerm.trim().length === 0) {
+      return transactions || [];
+    }
+    
+    if (!hasResults) {
+      return [];
+    }
+    
+    // Get transaction IDs from search results
+    const transactionIds = new Set(
+      searchResults
+        .filter(r => r.type === 'transaction')
+        .map(r => r.transaction_id!)
+    );
+    
+    // Get transaction IDs from units found (show their transactions)
+    searchResults
+      .filter(r => r.type === 'unit' && r.transaction_id)
+      .forEach(r => {
+        const transaction = (transactions || []).find(
+          t => t.transaction_number === r.transaction_number
+        );
+        if (transaction) {
+          transactionIds.add(transaction.id);
+        }
+      });
+    
+    return (transactions || []).filter(t => transactionIds.has(t.id));
+  }, [searchTerm, transactions, searchResults, hasResults]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -184,7 +220,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     currentPage: mobilePage,
     totalPages: mobileTotalPages,
     goToPage: mobileGoToPage
-  } = usePagination({ data: transactions || [], itemsPerPage: 17 });
+  } = usePagination({ data: filteredTransactions || [], itemsPerPage: 17 });
 
   if (isLoading) {
     return (
@@ -204,6 +240,16 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       {/* Summary Stats */}
       <TransactionSummaryStats filters={filters} />
       
+      {/* Search Results Info */}
+      {searchTerm && hasResults && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Found {searchResults.length} result(s): {searchResults.filter(r => r.type === 'supplier').length} supplier(s), {searchResults.filter(r => r.type === 'transaction').length} transaction(s), {searchResults.filter(r => r.type === 'unit').length} unit(s)
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Advanced Filters */}
       <AdvancedTransactionFilters
         filters={filters}
@@ -212,14 +258,14 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       />
 
       {/* Bulk Selection */}
-      {transactions && transactions.length > 0 && (
+      {filteredTransactions && filteredTransactions.length > 0 && (
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center space-x-3">
             <Checkbox
-              checked={selectedIds.length === transactions.length && transactions.length > 0}
+              checked={selectedIds.length === filteredTransactions.length && filteredTransactions.length > 0}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedIds(transactions.map(t => t.id));
+                  setSelectedIds(filteredTransactions.map(t => t.id));
                 } else {
                   setSelectedIds([]);
                 }
@@ -227,8 +273,8 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
             />
             <span className="text-sm font-medium">
               {selectedIds.length > 0 
-                ? `${selectedIds.length} of ${transactions.length} selected`
-                : `Select transactions (${transactions.length} total)`
+                ? `${selectedIds.length} of ${filteredTransactions.length} selected`
+                : `Select transactions (${filteredTransactions.length} total)`
               }
             </span>
           </div>
@@ -243,7 +289,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
                 onClick={() => setShowPrintDialog(true)}
                 disabled={
                   !selectedIds.some(id => {
-                    const transaction = transactions?.find(t => t.id === id);
+                    const transaction = filteredTransactions?.find(t => t.id === id);
                     return transaction?.type === "purchase" && transaction?.status === "completed";
                   })
                 }
@@ -259,7 +305,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       {/* Data Table */}
       <div className="hidden md:block">
         <DataTable
-          data={transactions || []}
+          data={filteredTransactions || []}
           columns={columns}
           actions={actions}
           getRowKey={(transaction) => transaction.id}
@@ -345,13 +391,13 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         ))}
         
         {/* Mobile Pagination */}
-        {(transactions || []).length > 0 && (
+        {(filteredTransactions || []).length > 0 && (
           <TablePagination
             currentPage={mobilePage}
             totalPages={mobileTotalPages}
             onPageChange={mobileGoToPage}
             pageSize={17}
-            totalItems={transactions?.length || 0}
+            totalItems={filteredTransactions?.length || 0}
           />
         )}
       </div>
@@ -378,7 +424,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <SupplierAcquisitionPrintDialog
         transactions={
           selectedIds.length > 0 
-            ? (transactions || []).filter(t => selectedIds.includes(t.id))
+            ? (filteredTransactions || []).filter(t => selectedIds.includes(t.id))
             : selectedTransaction 
             ? [selectedTransaction]
             : []
