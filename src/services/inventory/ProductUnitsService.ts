@@ -241,4 +241,37 @@ export class ProductUnitsService {
       throw handleInventoryError(error);
     }
   }
+
+  /**
+   * Reassign a product unit to a different product
+   */
+  static async reassignUnitToProduct(
+    unitId: string,
+    newProductId: string
+  ): Promise<void> {
+    const { data: unit, error: fetchError } = await supabase
+      .from('product_units')
+      .select('product_id, serial_number')
+      .eq('id', unitId)
+      .single();
+
+    if (fetchError || !unit) {
+      throw new Error('Unit not found');
+    }
+
+    // Update the product_id
+    const { error: updateError } = await supabase
+      .from('product_units')
+      .update({ 
+        product_id: newProductId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', unitId);
+
+    if (updateError) {
+      throw new Error(`Failed to reassign unit: ${updateError.message}`);
+    }
+
+    console.log(`Unit ${unitId} reassigned from ${unit.product_id} to ${newProductId}`);
+  }
 }

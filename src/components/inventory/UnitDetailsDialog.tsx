@@ -6,11 +6,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/enhanced-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/enhanced-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -30,13 +41,17 @@ import {
   Calendar,
   Truck,
   Save,
-  Printer
+  Printer,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatProductName } from "@/utils/productNaming";
+import { ProductSearchSelector } from "@/components/suppliers/forms/ProductSearchSelector";
+import { ProductReassignmentService } from "@/services/inventory/ProductReassignmentService";
+import { ProductUnitsService } from "@/services/inventory/ProductUnitsService";
 
 interface UnitDetailsDialogProps {
   unit: any | null;
@@ -71,14 +86,94 @@ export function UnitDetailsDialog({
   const [unit, setUnit] = useState(initialUnit);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingProduct, setIsChangingProduct] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [showReassignConfirm, setShowReassignConfirm] = useState(false);
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch all serialized products for the selector
+  const { data: products = [] } = useQuery({
+    queryKey: ['products-for-reassignment'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, brand, model, has_serial')
+        .eq('has_serial', true)
+        .order('brand', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && isEditing
+  });
 
   useEffect(() => {
     if (initialUnit) {
       setUnit(initialUnit);
     }
   }, [initialUnit]);
+
+  const handleProductChange = async () => {
+    if (!selectedProductId || selectedProductId === product.id) {
+      setIsChangingProduct(false);
+      setSelectedProductId(null);
+      return;
+    }
+
+    // Validate reassignment
+    const validation = await ProductReassignmentService.validateReassignment(
+      unit.id!,
+      product.id,
+      selectedProductId,
+      unit.serial_number
+    );
+
+    if (!validation.isValid) {
+      toast({
+        title: "Cannot reassign unit",
+        description: validation.errors.join('. '),
+        variant: "destructive",
+      });
+      setIsChangingProduct(false);
+      setSelectedProductId(null);
+      return;
+    }
+
+    // Store warnings and show confirmation
+    setValidationWarnings(validation.warnings);
+    setShowReassignConfirm(true);
+  };
+
+  const confirmReassignment = async () => {
+    if (!selectedProductId) return;
+
+    setIsSaving(true);
+    try {
+      await ProductUnitsService.reassignUnitToProduct(unit.id!, selectedProductId);
+
+      toast({
+        title: "Success",
+        description: "Unit reassigned to new product successfully",
+      });
+
+      setIsChangingProduct(false);
+      setSelectedProductId(null);
+      setShowReassignConfirm(false);
+      setValidationWarnings([]);
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reassign unit",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!unit) return;
@@ -158,6 +253,66 @@ export function UnitDetailsDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Product Assignment Section - Only in edit mode */}
+          {isEditing && (
+            <>
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">PRODUCT ASSIGNMENT</h3>
+                {!isChangingProduct ? (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+                    <div>
+                      <div className="font-medium">{product.brand} {product.model}</div>
+                      <div className="text-xs text-muted-foreground">Current product</div>
+                    </div>
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => setIsChangingProduct(true)}
+                      disabled={unit.status === 'sold'}
+                    >
+                      Change Product
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Changing the product will reassign this unit. This action will be logged for audit purposes.
+                      </AlertDescription>
+                    </Alert>
+                    <ProductSearchSelector
+                      products={products}
+                      value={selectedProductId || ''}
+                      onChange={setSelectedProductId}
+                      placeholder="Search for new product..."
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleProductChange}
+                        disabled={!selectedProductId || selectedProductId === product.id}
+                      >
+                        Confirm Change
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        onClick={() => {
+                          setIsChangingProduct(false);
+                          setSelectedProductId(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Separator />
+            </>
+          )}
+
           {/* Identifiers Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground">IDENTIFIERS</h3>
@@ -449,6 +604,48 @@ export function UnitDetailsDialog({
           </div>
         )}
       </DialogContent>
+
+      {/* Reassignment Confirmation Dialog */}
+      <AlertDialog open={showReassignConfirm} onOpenChange={setShowReassignConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Product Reassignment</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Are you sure you want to reassign this unit from <strong>{product.brand} {product.model}</strong> to the selected product?
+              </p>
+              {validationWarnings.length > 0 && (
+                <Alert className="mt-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <ul className="list-disc list-inside text-xs space-y-1">
+                      {validationWarnings.map((warning, idx) => (
+                        <li key={idx}>{warning}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              <p className="text-xs mt-2 text-muted-foreground">
+                This action will be logged in the product unit history for audit purposes.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowReassignConfirm(false);
+              setIsChangingProduct(false);
+              setSelectedProductId(null);
+              setValidationWarnings([]);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReassignment} disabled={isSaving}>
+              {isSaving ? "Reassigning..." : "Confirm Reassignment"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
