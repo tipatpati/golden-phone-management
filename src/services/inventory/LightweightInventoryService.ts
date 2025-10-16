@@ -28,61 +28,47 @@ class LightweightInventoryService {
       sortBy = 'newest'
     } = filters;
 
-    const startTime = performance.now();
+    console.log('🔍 [SEARCH] getProducts called with:', { searchTerm, categoryId, stockStatus });
 
-    // SERVER-SIDE SEARCH: Use database function when search term exists
-    if (searchTerm.trim()) {
-      console.log(`[Search] Server-side search for: "${searchTerm}"`);
+    // SIMPLE SEARCH: If there's a search term, use it
+    if (searchTerm && searchTerm.trim().length > 0) {
+      console.log('🔍 [SEARCH] Searching for:', searchTerm.trim());
       
       const { data, error } = await supabase
         .rpc('search_inventory', { search_text: searchTerm.trim() });
 
       if (error) {
-        console.error('[Search] Database search error:', error);
+        console.error('❌ [SEARCH] Error:', error);
         throw error;
       }
 
-      // Transform RPC result to match Product interface
+      console.log('✅ [SEARCH] Raw results:', data?.length, 'products');
+      
+      // Transform to proper format
       const products = (data || []).map((item: any) => ({
         ...item,
-        category: { id: item.category_id, name: item.category_name || 'Unknown' },
+        category: item.category_name ? {
+          id: item.category_id,
+          name: item.category_name
+        } : null,
         units: item.unit_data || []
       }));
 
-      const elapsed = performance.now() - startTime;
-      console.log(`[Search] Found ${products.length} results in ${elapsed.toFixed(0)}ms`);
-      
+      console.log('✅ [SEARCH] Returning', products.length, 'products');
       return products;
     }
 
-    // REGULAR QUERY: No search term, use standard filtering
+    // NO SEARCH: Regular filtered query
+    console.log('📋 [QUERY] No search term, fetching with filters');
+    
     let query = supabase
       .from('products')
       .select(`
-        id,
-        brand,
-        model,
-        year,
-        category_id,
-        price,
-        min_price,
-        max_price,
-        stock,
-        threshold,
-        description,
-        supplier,
-        barcode,
-        has_serial,
-        serial_numbers,
-        created_at,
-        category:categories!inner (
-          id,
-          name
-        ),
+        *,
+        category:categories!inner(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
-    // Apply filters server-side
     if (categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
     }
@@ -144,15 +130,12 @@ class LightweightInventoryService {
     const { data, error } = await query;
 
     if (error) {
-      console.error('[Query] Database error:', error);
+      console.error('❌ [QUERY] Error:', error);
       throw error;
     }
 
-    const products = data || [];
-    const elapsed = performance.now() - startTime;
-    console.log(`[Query] Fetched ${products.length} products in ${elapsed.toFixed(0)}ms`);
-
-    return products;
+    console.log('✅ [QUERY] Returning', data?.length || 0, 'products');
+    return data || [];
   }
 
   /**
