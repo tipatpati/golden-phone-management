@@ -538,7 +538,63 @@ export function InventoryTable({
                               </Badge>
                             )}
                           </TableCell>
-                          <TableCell></TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Open unit details dialog
+                                  console.log('View unit details:', unit.id);
+                                }}
+                                className="h-7 w-7 p-0"
+                                title="View unit details"
+                              >
+                                <Info className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Print unit barcode
+                                  console.log('Print unit barcode:', unit.id);
+                                }}
+                                className="h-7 w-7 p-0"
+                                title="Print barcode"
+                              >
+                                <Printer className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Open edit unit dialog
+                                  console.log('Edit unit:', unit.id);
+                                }}
+                                className="h-7 w-7 p-0"
+                                title="Edit unit"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Confirm and delete unit
+                                  console.log('Delete unit:', unit.id);
+                                }}
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                title="Delete unit"
+                                disabled={unit.status === 'sold'}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
