@@ -45,7 +45,12 @@ export function InventoryContent({
   });
   
   const deleteProduct = useDeleteProduct();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
+  
+  // Debug: Log categories state
+  useEffect(() => {
+    console.log('📦 Categories state:', { categories, categoriesLoading, categoriesError });
+  }, [categories, categoriesLoading, categoriesError]);
 
   // Force refetch when search is triggered
   useEffect(() => {
