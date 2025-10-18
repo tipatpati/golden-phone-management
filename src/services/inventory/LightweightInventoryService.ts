@@ -12,7 +12,7 @@ class LightweightInventoryService {
     priceRange?: { min?: number; max?: number };
     year?: number | 'all';
     sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
-  } = {}, signal?: AbortSignal): Promise<Product[]> {
+  } = {}): Promise<Product[]> {
     const {
       categoryId = 'all',
       stockStatus = 'all',
@@ -30,8 +30,7 @@ class LightweightInventoryService {
         *,
         category:categories!inner(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
-      `)
-      .abortSignal(signal!);
+      `);
 
     // Server-side search for brand/model (only if searchTerm provided)
     if (searchTerm && searchTerm.trim()) {
@@ -214,15 +213,13 @@ export const useProducts = (filters?: {
 
   return useQuery({
     queryKey,
-    queryFn: ({ signal }) => service.getProducts(filters || {}, signal),
-    staleTime: 0, // Always treat data as stale for real-time updates
-    gcTime: 5 * 60 * 1000,
+    queryFn: () => service.getProducts(filters || {}),
+    staleTime: 0,
+    gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: true, // Refetch on mount
+    refetchOnMount: false,
     refetchOnReconnect: false,
-    refetchInterval: false, // No automatic polling
-    retry: false, // Fail fast on errors
-    placeholderData: undefined, // Don't keep old data while fetching
+    retry: 1,
   });
 };
 
