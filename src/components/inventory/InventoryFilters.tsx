@@ -15,6 +15,9 @@ interface InventoryFiltersProps {
   viewMode: "list" | "grid";
   onAddProduct?: () => void;
   categories: Array<{ id: number; name: string }>;
+  searchQuery: string;
+  onSearch: (query: string) => void;
+  onClearSearch: () => void;
 }
 
 export function InventoryFilters({ 
@@ -22,6 +25,9 @@ export function InventoryFilters({
   viewMode,
   onAddProduct,
   categories = [],
+  searchQuery,
+  onSearch,
+  onClearSearch,
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { data: currentRole } = useCurrentUserRole();
@@ -33,7 +39,6 @@ export function InventoryFilters({
     setCategoryId,
     setStockStatus,
     setHasSerial,
-    setSearchTerm,
     setDatePreset,
     setPriceRange,
     setYear,
@@ -44,17 +49,27 @@ export function InventoryFilters({
     hasActiveFilters,
   } = useInventoryFilters();
 
-  const [localSearchTerm, setLocalSearchTerm] = useState(filters.searchTerm || '');
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchQuery);
+
+  // Sync local search term with prop changes
+  useEffect(() => {
+    setLocalSearchTerm(searchQuery);
+  }, [searchQuery]);
 
   // Manual search - only trigger when user submits
   const handleSearch = () => {
-    setSearchTerm(localSearchTerm.trim());
+    onSearch(localSearchTerm.trim());
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchTerm('');
+    onClearSearch();
   };
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
@@ -332,16 +347,13 @@ export function InventoryFilters({
       )}
 
       {/* Active Filter Chips */}
-      {activeFilterCount > 0 && (
+      {(searchQuery || activeFilterCount > 0) && (
         <div className="flex flex-wrap gap-2">
-          {filters.searchTerm && (
+          {searchQuery && (
             <Badge variant="secondary" className="gap-1">
-              Ricerca: {filters.searchTerm}
+              Ricerca: {searchQuery}
               <button 
-                onClick={() => {
-                  setLocalSearchTerm('');
-                  setSearchTerm('');
-                }}
+                onClick={handleClearSearch}
                 className="ml-1 hover:bg-background/20 rounded-full p-0.5"
               >
                 <FilterX className="h-3 w-3" />

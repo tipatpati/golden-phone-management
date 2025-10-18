@@ -1,8 +1,9 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { InventoryTable } from "./InventoryTable";
 import { InventoryFilters } from "./InventoryFilters";
 import { useInventoryFilters } from "@/hooks/useInventoryFilters";
+import { useInventorySearch } from "@/hooks/useInventorySearch";
 import { AddProductDialog } from "./AddProductDialog";
 import { EditProductDialog } from "./EditProductDialog";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
@@ -32,18 +33,28 @@ export function InventoryContent({
 }: InventoryContentProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  
+  // Separate search and filters
+  const { searchQuery, searchTrigger, isSearching, executeSearch, clearSearch, completeSearch } = useInventorySearch();
   const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
   const queryClient = useQueryClient();
-  const { data: products = [], isLoading, error, refetch, isFetching } = useProducts({
+  const { data: products = [], isLoading, error, refetch, isFetching } = useProducts(searchQuery, {
     ...filters,
     dateRange: effectiveDateRange,
   });
   
-  // Show loading state during search/filtering
-  const isSearching = isFetching && !isLoading;
   const deleteProduct = useDeleteProduct();
   const { data: categories = [] } = useCategories();
+
+  // Force refetch when search is triggered
+  useEffect(() => {
+    if (searchTrigger > 0) {
+      refetch().then(() => {
+        completeSearch();
+      });
+    }
+  }, [searchTrigger, refetch, completeSearch]);
 
   const refreshTable = useCallback(() => {
     logger.debug('Refreshing inventory table', {}, 'InventoryContent');
@@ -106,14 +117,17 @@ export function InventoryContent({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-xl p-6">
-          <InventoryFilters
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-            onAddProduct={onAddProduct}
-            categories={categories}
-          />
-        </div>
+      <div className="bg-white rounded-xl shadow-xl p-6">
+        <InventoryFilters
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onAddProduct={onAddProduct}
+          categories={categories}
+          searchQuery={searchQuery}
+          onSearch={executeSearch}
+          onClearSearch={clearSearch}
+        />
+      </div>
         <LoadingState message="Loading inventory..." />
       </div>
     );
@@ -123,14 +137,17 @@ export function InventoryContent({
     logger.error('Failed to load inventory', error, 'InventoryContent');
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-xl p-6">
-          <InventoryFilters
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-            onAddProduct={onAddProduct}
-            categories={categories}
-          />
-        </div>
+      <div className="bg-white rounded-xl shadow-xl p-6">
+        <InventoryFilters
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onAddProduct={onAddProduct}
+          categories={categories}
+          searchQuery={searchQuery}
+          onSearch={executeSearch}
+          onClearSearch={clearSearch}
+        />
+      </div>
         <div className="text-center text-red-600">
           <p>Failed to load inventory. Please try again.</p>
         </div>
@@ -158,14 +175,17 @@ export function InventoryContent({
 
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-xl p-6">
-          <InventoryFilters
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-            onAddProduct={onAddProduct}
-            categories={categories}
-          />
-        </div>
+      <div className="bg-white rounded-xl shadow-xl p-6">
+        <InventoryFilters
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onAddProduct={onAddProduct}
+          categories={categories}
+          searchQuery={searchQuery}
+          onSearch={executeSearch}
+          onClearSearch={clearSearch}
+        />
+      </div>
         <EmptyState
           icon={<Package className="h-16 w-16 text-muted-foreground" />}
           title={title}
@@ -197,6 +217,9 @@ export function InventoryContent({
           onViewModeChange={handleViewModeChange}
           onAddProduct={canAddProduct ? onAddProduct : undefined}
           categories={categories}
+          searchQuery={searchQuery}
+          onSearch={executeSearch}
+          onClearSearch={clearSearch}
         />
       </div>
 
@@ -205,7 +228,7 @@ export function InventoryContent({
         <InventoryTable
           products={products}
           viewMode={viewMode}
-          searchTerm={filters.searchTerm}
+          searchTerm={searchQuery}
           onDelete={handleDelete}
           onEdit={setEditingProduct}
           selectedItems={selectedItems}
@@ -213,8 +236,8 @@ export function InventoryContent({
           isIndeterminate={isIndeterminate}
           onSelectAll={toggleSelectAll}
           onSelectItem={toggleSelectItem}
-          isLoading={isFetching}
-          isFetching={isFetching}
+          isLoading={isFetching || isSearching}
+          isFetching={isFetching || isSearching}
         />
       </div>
 

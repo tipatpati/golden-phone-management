@@ -186,23 +186,25 @@ class LightweightInventoryService {
 
 const service = new LightweightInventoryService();
 
-export const useProducts = (filters?: {
-  categoryId?: number | 'all';
-  stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
-  hasSerial?: 'all' | 'yes' | 'no';
-  searchTerm?: string;
-  dateRange?: { start?: Date; end?: Date };
-  priceRange?: { min?: number; max?: number };
-  year?: number | 'all';
-  sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
-}) => {
-  // Create a stable query key by extracting primitive values
+export const useProducts = (
+  searchQuery?: string,
+  filters?: {
+    categoryId?: number | 'all';
+    stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+    hasSerial?: 'all' | 'yes' | 'no';
+    dateRange?: { start?: Date; end?: Date };
+    priceRange?: { min?: number; max?: number };
+    year?: number | 'all';
+    sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+  }
+) => {
+  // Create a stable query key - search is separate from filters
   const queryKey = [
     'products',
+    searchQuery ?? '',
     filters?.categoryId ?? 'all',
     filters?.stockStatus ?? 'all',
     filters?.hasSerial ?? 'all',
-    filters?.searchTerm ?? '',
     filters?.dateRange?.start?.getTime() ?? null,
     filters?.dateRange?.end?.getTime() ?? null,
     filters?.priceRange?.min ?? null,
@@ -213,11 +215,11 @@ export const useProducts = (filters?: {
 
   return useQuery({
     queryKey,
-    queryFn: () => service.getProducts(filters || {}),
-    staleTime: 30 * 1000,
+    queryFn: () => service.getProducts({ ...filters, searchTerm: searchQuery }),
+    staleTime: 0, // Always fresh for search
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true, // Refetch on mount for search
     refetchOnReconnect: false,
     retry: 1,
   });
