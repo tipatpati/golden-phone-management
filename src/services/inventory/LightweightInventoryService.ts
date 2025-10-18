@@ -106,6 +106,7 @@ class LightweightInventoryService {
       // Separate products into categories for prioritized sorting
       const exactUnitMatches: typeof products = [];
       const brandModelMatches: typeof products = [];
+      const noMatches: typeof products = [];
       
       products.forEach(product => {
         // Check product brand/model
@@ -119,23 +120,26 @@ class LightweightInventoryService {
           unit.barcode?.toLowerCase().includes(term)
         );
         
-        // Prioritize: unit matches first, then brand/model matches
+        // Prioritize: unit matches first, then brand/model matches, then others
         if (unitMatch) {
           exactUnitMatches.push(product);
         } else if (brandModelMatch) {
           brandModelMatches.push(product);
+        } else {
+          noMatches.push(product);
         }
       });
       
-      // Return prioritized results: unit matches at top, then brand/model matches
-      products = [...exactUnitMatches, ...brandModelMatches];
+      // Return prioritized results: matching results at top, then rest
+      products = [...exactUnitMatches, ...brandModelMatches, ...noMatches];
       
       console.log('🔍 Search results prioritized:', {
         searchTerm: term,
         totalResults: products.length,
         unitMatches: exactUnitMatches.length,
         brandModelMatches: brandModelMatches.length,
-        order: 'Unit matches first, then brand/model matches'
+        noMatches: noMatches.length,
+        order: 'Unit matches → Brand/model matches → Others'
       });
     }
     
