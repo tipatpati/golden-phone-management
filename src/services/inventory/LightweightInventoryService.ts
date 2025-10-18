@@ -99,14 +99,13 @@ class LightweightInventoryService {
     
     let products = data || [];
 
-    // Client-side prioritization: unit matches (serial/barcode) appear first
+    // Client-side search filtering: only show matching results
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.trim().toLowerCase();
       
       // Separate products into categories for prioritized sorting
       const exactUnitMatches: typeof products = [];
       const brandModelMatches: typeof products = [];
-      const noMatches: typeof products = [];
       
       products.forEach(product => {
         // Check product brand/model
@@ -120,26 +119,22 @@ class LightweightInventoryService {
           unit.barcode?.toLowerCase().includes(term)
         );
         
-        // Prioritize: unit matches first, then brand/model matches, then others
+        // Only include products that match
         if (unitMatch) {
           exactUnitMatches.push(product);
         } else if (brandModelMatch) {
           brandModelMatches.push(product);
-        } else {
-          noMatches.push(product);
         }
       });
       
-      // Return prioritized results: matching results at top, then rest
-      products = [...exactUnitMatches, ...brandModelMatches, ...noMatches];
+      // Return ONLY matching results, prioritized by match type
+      products = [...exactUnitMatches, ...brandModelMatches];
       
-      console.log('🔍 Search results prioritized:', {
+      console.log('🔍 Search results:', {
         searchTerm: term,
-        totalResults: products.length,
+        totalMatches: products.length,
         unitMatches: exactUnitMatches.length,
         brandModelMatches: brandModelMatches.length,
-        noMatches: noMatches.length,
-        order: 'Unit matches → Brand/model matches → Others'
       });
     }
     
