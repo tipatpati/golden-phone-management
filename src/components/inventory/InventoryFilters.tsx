@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/enhanced-button";
-import { Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles } from "lucide-react";
+import { Grid, List, FilterX, Plus, ChevronDown, ChevronUp, Calendar, Sparkles, Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
@@ -46,12 +46,16 @@ export function InventoryFilters({
 
   const [localSearchTerm, setLocalSearchTerm] = useState(filters.searchTerm || '');
 
-  // Instant search with proper cleanup
-  useEffect(() => {
-    const trimmedTerm = localSearchTerm.trim();
-    // Update immediately for real-time results
-    setSearchTerm(trimmedTerm);
-  }, [localSearchTerm, setSearchTerm]);
+  // Manual search - only trigger when user submits
+  const handleSearch = () => {
+    setSearchTerm(localSearchTerm.trim());
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
 
@@ -92,12 +96,26 @@ export function InventoryFilters({
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* Search Bar - Full Width */}
-      <SearchBar
-        value={localSearchTerm}
-        onChange={setLocalSearchTerm}
-        placeholder="Cerca per marca, modello, numero di serie o codice a barre..."
-        className="w-full"
-      />
+      <div className="flex gap-2 w-full">
+        <div className="flex-1">
+          <SearchBar
+            value={localSearchTerm}
+            onChange={setLocalSearchTerm}
+            onKeyDown={handleKeyPress}
+            placeholder="Cerca per marca, modello, numero di serie o codice a barre..."
+            className="w-full"
+          />
+        </div>
+        <Button 
+          onClick={handleSearch}
+          variant="filled"
+          size="default"
+          className="h-10 px-6"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          Cerca
+        </Button>
+      </div>
 
       {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-2">

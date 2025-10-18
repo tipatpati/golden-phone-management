@@ -214,10 +214,10 @@ export const useProducts = (filters?: {
   return useQuery({
     queryKey,
     queryFn: () => service.getProducts(filters || {}),
-    staleTime: 0,
-    gcTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnReconnect: false,
     retry: 1,
   });

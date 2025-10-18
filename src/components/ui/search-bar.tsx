@@ -13,6 +13,7 @@ interface SearchBarProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export function SearchBar({
@@ -20,6 +21,7 @@ export function SearchBar({
   onChange,
   placeholder = "Search...",
   className,
+  onKeyDown,
 }: SearchBarProps) {
   return (
     <div className={cn("relative w-full", className)}>
@@ -29,6 +31,7 @@ export function SearchBar({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         className="pl-10 bg-surface-container-highest border-outline-variant"
       />
     </div>
