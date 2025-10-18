@@ -40,8 +40,13 @@ export function InventoryContent({
   
   const queryClient = useQueryClient();
   const { data: products = [], isLoading, error, refetch, isFetching } = useProducts(searchQuery, {
-    ...filters,
+    categoryId: filters.categoryId,
+    stockStatus: filters.stockStatus,
+    hasSerial: filters.hasSerial,
     dateRange: effectiveDateRange,
+    priceRange: filters.priceRange,
+    year: filters.year,
+    sortBy: filters.sortBy,
   });
   
   const deleteProduct = useDeleteProduct();
