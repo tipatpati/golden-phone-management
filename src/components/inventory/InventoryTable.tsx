@@ -261,11 +261,11 @@ export function InventoryTable({
       )}
 
       {/* Desktop Table Layout */}
-      <div key={`table-${renderKey}`} className="hidden lg:block rounded-md border relative">
+      <div key={`table-${renderKey}`} className="hidden lg:block rounded-md border relative transition-opacity duration-200">
         {/* Loading overlay */}
         {isFetching && !isLoading && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-md">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background px-4 py-2 rounded-lg shadow-lg">
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-md transition-all duration-200">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background px-4 py-2 rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95">
               <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               Loading results...
             </div>
