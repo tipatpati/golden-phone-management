@@ -122,6 +122,14 @@ export function InventoryTable({
     return list;
   }, [products]);
 
+  // Mobile pagination - must be called before any conditional returns
+  const {
+    paginatedData: paginatedMobileProducts,
+    currentPage: mobilePage,
+    totalPages: mobileTotalPages,
+    goToPage: mobileGoToPage
+  } = usePagination({ data: productList, itemsPerPage: 17 });
+
   const handleRowClick = (product: Product) => {
     setSelectedProductForDetails(product);
     setDetailsDialogOpen(true);
@@ -231,14 +239,6 @@ export function InventoryTable({
       </div>
     );
   }
-
-  // Mobile pagination
-  const {
-    paginatedData: paginatedMobileProducts,
-    currentPage: mobilePage,
-    totalPages: mobileTotalPages,
-    goToPage: mobileGoToPage
-  } = usePagination({ data: productList, itemsPerPage: 17 });
 
   return (
     <>
