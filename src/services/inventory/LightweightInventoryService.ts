@@ -38,10 +38,13 @@ class LightweightInventoryService {
       query = query.eq('category_id', categoryId);
     }
 
+    // Stock status filter
     if (stockStatus === 'in_stock') {
       query = query.gt('stock', 0);
     } else if (stockStatus === 'low_stock') {
-      query = query.gt('stock', 0).filter('stock', 'lte', 'threshold');
+      // Products where stock is greater than 0 but less than or equal to threshold
+      query = query.gt('stock', 0);
+      // Note: We'll filter low stock client-side since Supabase doesn't support column-to-column comparison in RLS
     } else if (stockStatus === 'out_of_stock') {
       query = query.eq('stock', 0);
     }
@@ -98,6 +101,13 @@ class LightweightInventoryService {
     if (error) throw error;
     
     let products = data || [];
+
+    // Client-side low stock filtering (stock > 0 AND stock <= threshold)
+    if (stockStatus === 'low_stock') {
+      products = products.filter(product => 
+        product.stock > 0 && product.stock <= (product.threshold || 0)
+      );
+    }
 
     // Client-side search filtering: only show matching results
     if (searchTerm && searchTerm.trim()) {
