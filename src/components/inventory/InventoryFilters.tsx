@@ -136,11 +136,11 @@ export function InventoryFilters({
       <div className="flex flex-wrap items-center gap-2">
         {/* Category Filter */}
         <Select 
-          value={filters.categoryId.toString()} 
+          value={filters.categoryId === 'all' ? 'all' : filters.categoryId.toString()} 
           onValueChange={(value) => setCategoryId(value === 'all' ? 'all' : parseInt(value))}
         >
           <SelectTrigger className="w-[180px] h-10">
-            <SelectValue placeholder="Categoria" />
+            <SelectValue placeholder="Tutte le categorie" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tutte le categorie</SelectItem>
