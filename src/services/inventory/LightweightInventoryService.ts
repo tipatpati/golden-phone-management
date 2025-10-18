@@ -129,6 +129,14 @@ class LightweightInventoryService {
       
       // Return prioritized results: unit matches at top, then brand/model matches
       products = [...exactUnitMatches, ...brandModelMatches];
+      
+      console.log('🔍 Search results prioritized:', {
+        searchTerm: term,
+        totalResults: products.length,
+        unitMatches: exactUnitMatches.length,
+        brandModelMatches: brandModelMatches.length,
+        order: 'Unit matches first, then brand/model matches'
+      });
     }
     
     return products;
