@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
-import { useSupplierSearch } from "@/hooks/useSupplierSearch";
+import { LightweightTransactionSearch } from "@/services/suppliers/LightweightTransactionSearch";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
@@ -33,39 +33,15 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   }, [searchTerm]);
   
   const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
-  const { results: searchResults, isSearching, hasResults } = useSupplierSearch(searchTerm);
   
-  // Filter transactions based on unified search results
+  // Lightweight client-side search
   const filteredTransactions = React.useMemo(() => {
     if (!searchTerm || searchTerm.trim().length === 0) {
       return transactions || [];
     }
     
-    if (!hasResults) {
-      return [];
-    }
-    
-    // Get transaction IDs from search results
-    const transactionIds = new Set(
-      searchResults
-        .filter(r => r.type === 'transaction')
-        .map(r => r.transaction_id!)
-    );
-    
-    // Get transaction IDs from units found (show their transactions)
-    searchResults
-      .filter(r => r.type === 'unit' && r.transaction_id)
-      .forEach(r => {
-        const transaction = (transactions || []).find(
-          t => t.transaction_number === r.transaction_number
-        );
-        if (transaction) {
-          transactionIds.add(transaction.id);
-        }
-      });
-    
-    return (transactions || []).filter(t => transactionIds.has(t.id));
-  }, [searchTerm, transactions, searchResults, hasResults]);
+    return LightweightTransactionSearch.searchTransactions(transactions || [], searchTerm);
+  }, [searchTerm, transactions]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -241,11 +217,20 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <TransactionSummaryStats filters={filters} />
       
       {/* Search Results Info */}
-      {searchTerm && hasResults && (
+      {searchTerm && filteredTransactions.length > 0 && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Found {searchResults.length} result(s): {searchResults.filter(r => r.type === 'supplier').length} supplier(s), {searchResults.filter(r => r.type === 'transaction').length} transaction(s), {searchResults.filter(r => r.type === 'unit').length} unit(s)
+            Showing {filteredTransactions.length} transaction(s) for "{searchTerm}"
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {searchTerm && filteredTransactions.length === 0 && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            No transactions found for "{searchTerm}"
           </AlertDescription>
         </Alert>
       )}
