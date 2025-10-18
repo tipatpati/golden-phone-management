@@ -29,6 +29,7 @@ export interface SupplierTransaction extends BaseEntity {
   suppliers?: {
     name: string;
   };
+  items?: SupplierTransactionItem[];
 }
 
 export interface SupplierTransactionItem extends BaseEntity {

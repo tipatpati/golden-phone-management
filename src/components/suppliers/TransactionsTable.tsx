@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
 import { LightweightTransactionSearch } from "@/services/suppliers/LightweightTransactionSearch";
+import { useDebounce } from "@/hooks/useDebounce";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
@@ -34,35 +35,48 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   
   const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
   
+  const [enrichedTransactions, setEnrichedTransactions] = React.useState<SupplierTransaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = React.useState<SupplierTransaction[]>([]);
-  const [isSearching, setIsSearching] = React.useState(false);
+  const [isEnriching, setIsEnriching] = React.useState(false);
+  
+  const debouncedSearchTerm = useDebounce(searchTerm || '', 300);
 
-  // Enhanced search with items, serial numbers, and product details
+  // Enrich transactions with unit data once when transactions are loaded
   React.useEffect(() => {
-    const performSearch = async () => {
-      if (!searchTerm || searchTerm.trim().length === 0) {
-        setFilteredTransactions(transactions || []);
-        setIsSearching(false);
+    const enrichData = async () => {
+      if (!transactions || transactions.length === 0) {
+        setEnrichedTransactions([]);
         return;
       }
 
-      setIsSearching(true);
+      setIsEnriching(true);
       try {
-        const results = await LightweightTransactionSearch.searchWithItems(
-          transactions || [], 
-          searchTerm
-        );
-        setFilteredTransactions(results);
+        const enriched = await LightweightTransactionSearch.enrichTransactionsWithUnits(transactions);
+        setEnrichedTransactions(enriched);
       } catch (error) {
-        console.error('Search error:', error);
-        setFilteredTransactions(transactions || []);
+        console.error('Error enriching transactions:', error);
+        setEnrichedTransactions(transactions);
       } finally {
-        setIsSearching(false);
+        setIsEnriching(false);
       }
     };
 
-    performSearch();
-  }, [searchTerm, transactions]);
+    enrichData();
+  }, [transactions]);
+
+  // Perform client-side search on enriched data
+  React.useEffect(() => {
+    if (!enrichedTransactions || enrichedTransactions.length === 0) {
+      setFilteredTransactions([]);
+      return;
+    }
+
+    const results = LightweightTransactionSearch.searchTransactions(
+      enrichedTransactions,
+      debouncedSearchTerm
+    );
+    setFilteredTransactions(results);
+  }, [enrichedTransactions, debouncedSearchTerm]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -219,7 +233,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     goToPage: mobileGoToPage
   } = usePagination({ data: filteredTransactions || [], itemsPerPage: 17 });
 
-  if (isLoading || isSearching) {
+  if (isLoading || isEnriching) {
     return (
       <div className="space-y-4">
         <TransactionSummaryStats filters={filters} />

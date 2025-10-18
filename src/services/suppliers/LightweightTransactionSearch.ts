@@ -2,12 +2,86 @@ import { supabase } from '@/integrations/supabase/client';
 import type { SupplierTransaction } from './types';
 
 /**
+ * Enhanced unit data for search
+ */
+interface EnrichedUnit {
+  id: string;
+  serial_number: string | null;
+  barcode: string | null;
+  product_id: string;
+}
+
+/**
  * Lightweight client-side search for supplier transactions
  * Optimized for performance - searches in-memory after initial data fetch
  */
 export class LightweightTransactionSearch {
+  private static unitCache = new Map<string, EnrichedUnit>();
+
   /**
-   * Search transactions by transaction number, supplier name, notes, or status
+   * Enrich transactions with product unit data (serial numbers, barcodes)
+   * Fetches all required units in a single query and caches results
+   */
+  static async enrichTransactionsWithUnits(
+    transactions: SupplierTransaction[]
+  ): Promise<SupplierTransaction[]> {
+    // Collect all unique unit IDs from all transaction items
+    const allUnitIds = new Set<string>();
+    
+    transactions.forEach(transaction => {
+      const items = (transaction as any).items || [];
+      items.forEach((item: any) => {
+        if (item.product_unit_ids && Array.isArray(item.product_unit_ids)) {
+          item.product_unit_ids.forEach((id: string) => allUnitIds.add(id));
+        }
+      });
+    });
+
+    // If no units to fetch, return transactions as-is
+    if (allUnitIds.size === 0) {
+      return transactions;
+    }
+
+    // Filter out already cached units
+    const uncachedUnitIds = Array.from(allUnitIds).filter(id => !this.unitCache.has(id));
+
+    // Fetch uncached units in a single query
+    if (uncachedUnitIds.length > 0) {
+      try {
+        const { data: units } = await supabase
+          .from('product_units')
+          .select('id, serial_number, barcode, product_id')
+          .in('id', uncachedUnitIds);
+
+        // Add to cache
+        units?.forEach(unit => {
+          this.unitCache.set(unit.id, unit as EnrichedUnit);
+        });
+      } catch (error) {
+        console.error('Error fetching product units for search:', error);
+      }
+    }
+
+    // Enrich transactions with unit data
+    return transactions.map(transaction => {
+      const items = (transaction as any).items || [];
+      const enrichedItems = items.map((item: any) => ({
+        ...item,
+        _enrichedUnits: (item.product_unit_ids || [])
+          .map((id: string) => this.unitCache.get(id))
+          .filter(Boolean)
+      }));
+
+      return {
+        ...transaction,
+        items: enrichedItems
+      } as SupplierTransaction;
+    });
+  }
+
+  /**
+   * Search transactions with prioritized matching
+   * Searches across transaction fields, supplier name, product details, and serial numbers
    */
   static searchTransactions(
     transactions: SupplierTransaction[],
@@ -18,113 +92,106 @@ export class LightweightTransactionSearch {
     }
 
     const term = searchTerm.trim().toLowerCase();
+    
+    // Priority buckets for results
+    const exactMatches: SupplierTransaction[] = [];
+    const highPriorityMatches: SupplierTransaction[] = [];
+    const mediumPriorityMatches: SupplierTransaction[] = [];
+    const lowPriorityMatches: SupplierTransaction[] = [];
 
-    return transactions.filter(transaction => {
-      // Search by transaction number
+    transactions.forEach(transaction => {
+      let matched = false;
+      let priority = 0;
+
+      // HIGHEST PRIORITY: Exact IMEI/SN matches
+      const items = (transaction as any).items || [];
+      const hasExactSerialMatch = items.some((item: any) => 
+        item._enrichedUnits?.some((unit: EnrichedUnit) => 
+          unit.serial_number?.toLowerCase() === term ||
+          unit.barcode?.toLowerCase() === term
+        )
+      );
+
+      if (hasExactSerialMatch) {
+        exactMatches.push(transaction);
+        return;
+      }
+
+      // HIGH PRIORITY: Transaction number, Supplier name
       if (transaction.transaction_number?.toLowerCase().includes(term)) {
-        return true;
+        matched = true;
+        priority = Math.max(priority, 3);
       }
 
-      // Search by supplier name (if available)
       if (transaction.suppliers?.name?.toLowerCase().includes(term)) {
-        return true;
+        matched = true;
+        priority = Math.max(priority, 3);
       }
 
-      // Search by notes
-      if (transaction.notes?.toLowerCase().includes(term)) {
-        return true;
+      // MEDIUM PRIORITY: Product brand/model, Partial serial/barcode match
+      const hasProductMatch = items.some((item: any) => 
+        item.products?.brand?.toLowerCase().includes(term) ||
+        item.products?.model?.toLowerCase().includes(term)
+      );
+
+      if (hasProductMatch) {
+        matched = true;
+        priority = Math.max(priority, 2);
       }
 
-      // Search by status
+      const hasPartialSerialMatch = items.some((item: any) => 
+        item._enrichedUnits?.some((unit: EnrichedUnit) => 
+          unit.serial_number?.toLowerCase().includes(term) ||
+          unit.barcode?.toLowerCase().includes(term)
+        )
+      );
+
+      if (hasPartialSerialMatch) {
+        matched = true;
+        priority = Math.max(priority, 2);
+      }
+
+      // LOW PRIORITY: Status, Type, Notes
       if (transaction.status?.toLowerCase().includes(term)) {
-        return true;
+        matched = true;
+        priority = Math.max(priority, 1);
       }
 
-      // Search by type
       if (transaction.type?.toLowerCase().includes(term)) {
-        return true;
+        matched = true;
+        priority = Math.max(priority, 1);
       }
 
-      return false;
+      if (transaction.notes?.toLowerCase().includes(term)) {
+        matched = true;
+        priority = Math.max(priority, 1);
+      }
+
+      // Add to appropriate priority bucket
+      if (matched) {
+        if (priority === 3) {
+          highPriorityMatches.push(transaction);
+        } else if (priority === 2) {
+          mediumPriorityMatches.push(transaction);
+        } else {
+          lowPriorityMatches.push(transaction);
+        }
+      }
     });
+
+    // Return results in priority order
+    return [
+      ...exactMatches,
+      ...highPriorityMatches,
+      ...mediumPriorityMatches,
+      ...lowPriorityMatches
+    ];
   }
 
   /**
-   * Enhanced search across transactions, items, serial numbers, and product details
+   * Clear the unit cache (useful when units are updated)
    */
-  static async searchWithItems(
-    transactions: SupplierTransaction[],
-    searchTerm: string
-  ): Promise<SupplierTransaction[]> {
-    if (!searchTerm || searchTerm.trim().length === 0) {
-      return transactions;
-    }
-
-    const term = searchTerm.trim().toLowerCase();
-    
-    // First do basic transaction search (includes supplier name, transaction number, etc.)
-    const basicResults = this.searchTransactions(transactions, searchTerm);
-    const basicResultIds = new Set(basicResults.map(t => t.id));
-
-    try {
-      // Search 1: Find product units by serial number or barcode (IMEI/SN search)
-      const { data: units } = await supabase
-        .from('product_units')
-        .select('id, serial_number, barcode')
-        .or(`serial_number.ilike.%${term}%,barcode.ilike.%${term}%`);
-
-      // Search 2: Find products by brand or model
-      const { data: products } = await supabase
-        .from('products')
-        .select('id')
-        .or(`brand.ilike.%${term}%,model.ilike.%${term}%`);
-
-      const matchedUnitIds = new Set(units?.map(u => u.id) || []);
-      const matchedProductIds = new Set(products?.map(p => p.id) || []);
-
-      if (matchedUnitIds.size === 0 && matchedProductIds.size === 0) {
-        return basicResults;
-      }
-
-      // Find transaction items that reference these units or products
-      const { data: transactionItems } = await supabase
-        .from('supplier_transaction_items')
-        .select('transaction_id, product_id, product_unit_ids');
-
-      if (!transactionItems || transactionItems.length === 0) {
-        return basicResults;
-      }
-
-      // Filter transaction items that match our search
-      const matchedTransactionIds = new Set<string>();
-      
-      transactionItems.forEach(item => {
-        // Check if product matches
-        if (matchedProductIds.has(item.product_id)) {
-          matchedTransactionIds.add(item.transaction_id);
-          return;
-        }
-
-        // Check if any unit in this item matches
-        if (item.product_unit_ids && Array.isArray(item.product_unit_ids)) {
-          const hasMatchingUnit = item.product_unit_ids.some((unitId: string) => 
-            matchedUnitIds.has(unitId)
-          );
-          if (hasMatchingUnit) {
-            matchedTransactionIds.add(item.transaction_id);
-          }
-        }
-      });
-
-      // Combine results
-      const itemResults = transactions.filter(t => 
-        matchedTransactionIds.has(t.id) && !basicResultIds.has(t.id)
-      );
-
-      return [...basicResults, ...itemResults];
-    } catch (error) {
-      console.error('Error searching transaction items:', error);
-      return basicResults;
-    }
+  static clearCache() {
+    this.unitCache.clear();
   }
 }

@@ -29,6 +29,7 @@ export const SUPPLIER_TRANSACTION_KEYS = {
 // ============= API FUNCTIONS =============
 export const supplierTransactionApi = {
   async getAll(filters: TransactionSearchFilters = {}): Promise<SupplierTransaction[]> {
+    // Fetch transactions with all related data in one comprehensive query
     let query = (supabase as any)
       .from("supplier_transactions")
       .select(`
@@ -39,10 +40,7 @@ export const supplierTransactionApi = {
       `)
       .order("created_at", { ascending: false });
 
-    // Apply filters
-    if (filters.searchTerm) {
-      query = query.or(`transaction_number.ilike.%${filters.searchTerm}%,suppliers.name.ilike.%${filters.searchTerm}%`);
-    }
+    // Apply filters (but NOT searchTerm - we'll handle that client-side)
     if (filters.type && filters.type !== 'all') {
       query = query.eq('type', filters.type);
     }
@@ -59,9 +57,39 @@ export const supplierTransactionApi = {
       query = query.lte('transaction_date', filters.dateTo);
     }
 
-    const { data, error } = await query;
+    const { data: transactions, error } = await query;
     if (error) throw error;
-    return data as SupplierTransaction[];
+
+    // Fetch all transaction items with product details
+    const transactionIds = transactions?.map(t => t.id) || [];
+    if (transactionIds.length === 0) {
+      return transactions as SupplierTransaction[];
+    }
+
+    const { data: items, error: itemsError } = await (supabase as any)
+      .from("supplier_transaction_items")
+      .select(`
+        *,
+        products (
+          brand,
+          model,
+          has_serial
+        )
+      `)
+      .in('transaction_id', transactionIds);
+
+    if (itemsError) {
+      console.error('Error fetching transaction items:', itemsError);
+      return transactions as SupplierTransaction[];
+    }
+
+    // Attach items to transactions
+    const transactionsWithItems = transactions.map(transaction => ({
+      ...transaction,
+      items: items?.filter(item => item.transaction_id === transaction.id) || []
+    }));
+
+    return transactionsWithItems as SupplierTransaction[];
   },
 
   async getById(id: string): Promise<SupplierTransaction | null> {
