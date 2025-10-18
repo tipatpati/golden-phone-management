@@ -182,12 +182,13 @@ export const useProducts = (filters?: {
   sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 }) => {
   return useQuery({
-    queryKey: ['products', filters],
+    queryKey: ['products', JSON.stringify(filters)],
     queryFn: () => service.getProducts(filters || {}),
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always',
+    refetchOnMount: true,
+    refetchOnReconnect: false,
   });
 };
 
