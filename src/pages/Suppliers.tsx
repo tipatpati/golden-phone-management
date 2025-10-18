@@ -17,6 +17,7 @@ import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/updated-dialog";
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
+import { useSupplierTransactionSearch } from "@/hooks/useSupplierTransactionSearch";
 import { PageLayout } from "@/components/common/PageLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 
@@ -30,6 +31,16 @@ const Suppliers = () => {
 
   // Enable real-time updates
   useRealtimeTransactions();
+
+  // Search state for transactions
+  const {
+    searchQuery,
+    searchTrigger,
+    isSearching,
+    executeSearch,
+    clearSearch,
+    completeSearch,
+  } = useSupplierTransactionSearch();
 
   const handleContactAllSuppliers = async () => {
     setIsContactingSuppliers(true);
@@ -182,14 +193,29 @@ const Suppliers = () => {
                 <div className="relative flex-1 max-w-xs sm:max-w-sm">
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search transactions, serials, suppliers..."
-                    value={globalSearchTerm}
-                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
+                    placeholder="Search by transaction #, supplier, product, IMEI/SN, barcode..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      if (!e.target.value.trim()) {
+                        clearSearch();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const target = e.target as HTMLInputElement;
+                        executeSearch(target.value);
+                      }
+                    }}
                     className="pl-8 text-sm"
                   />
                 </div>
               </div>
-              <TransactionsTable searchTerm={globalSearchTerm} />
+              <TransactionsTable 
+                searchQuery={searchQuery}
+                searchTrigger={searchTrigger}
+                isSearching={isSearching}
+                completeSearch={completeSearch}
+              />
             </CardContent>
           </Card>
         </TabsContent>

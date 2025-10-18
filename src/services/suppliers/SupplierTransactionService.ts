@@ -34,15 +34,22 @@ export const supplierTransactionApi = {
       .select(`
         *,
         suppliers (
+          id,
           name
+        ),
+        items:supplier_transaction_items (
+          *,
+          products (
+            id,
+            brand,
+            model,
+            has_serial
+          )
         )
       `)
       .order("created_at", { ascending: false });
 
-    // Apply filters
-    if (filters.searchTerm) {
-      query = query.or(`transaction_number.ilike.%${filters.searchTerm}%,notes.ilike.%${filters.searchTerm}%`);
-    }
+    // Apply filters (NOT search - that's client-side)
     if (filters.type && filters.type !== 'all') {
       query = query.eq('type', filters.type);
     }
@@ -63,6 +70,147 @@ export const supplierTransactionApi = {
     if (error) throw error;
 
     return data as SupplierTransaction[];
+  },
+
+  /**
+   * Enrich transactions with product unit details (serial numbers, barcodes)
+   */
+  async enrichTransactionUnits(transactions: SupplierTransaction[]): Promise<SupplierTransaction[]> {
+    // Collect all unit IDs across all transactions
+    const allUnitIds = transactions.flatMap(t => 
+      t.items?.flatMap(item => 
+        Array.isArray(item.product_unit_ids) ? item.product_unit_ids : []
+      ) || []
+    );
+
+    if (allUnitIds.length === 0) {
+      return transactions;
+    }
+
+    // Deduplicate unit IDs
+    const uniqueUnitIds = [...new Set(allUnitIds)];
+
+    // Single query for all units
+    const { data: units, error } = await supabase
+      .from('product_units')
+      .select('id, serial_number, barcode, product_id')
+      .in('id', uniqueUnitIds);
+
+    if (error) {
+      console.error('Error fetching units for enrichment:', error);
+      return transactions;
+    }
+
+    // Create lookup map
+    const unitsMap = new Map(units?.map(u => [u.id, u]) || []);
+
+    // Enrich transactions with unit data
+    return transactions.map(transaction => ({
+      ...transaction,
+      items: transaction.items?.map(item => ({
+        ...item,
+        _enrichedUnits: Array.isArray(item.product_unit_ids)
+          ? item.product_unit_ids
+              .map(id => unitsMap.get(id))
+              .filter(Boolean)
+          : []
+      })) || []
+    }));
+  },
+
+  /**
+   * Client-side search filtering with prioritized results
+   */
+  searchTransactions(
+    transactions: SupplierTransaction[], 
+    searchTerm: string
+  ): SupplierTransaction[] {
+    if (!searchTerm || !searchTerm.trim()) {
+      return transactions;
+    }
+
+    const term = searchTerm.trim().toLowerCase();
+    
+    const exactUnitMatches: SupplierTransaction[] = [];
+    const highPriorityMatches: SupplierTransaction[] = [];
+    const mediumPriorityMatches: SupplierTransaction[] = [];
+    const lowPriorityMatches: SupplierTransaction[] = [];
+
+    transactions.forEach(transaction => {
+      let matched = false;
+      
+      // Priority 1: Exact IMEI/SN or barcode match
+      const hasExactUnit = transaction.items?.some(item =>
+        item._enrichedUnits?.some((unit: any) =>
+          unit.serial_number?.toLowerCase() === term || 
+          unit.barcode?.toLowerCase() === term
+        )
+      );
+      
+      if (hasExactUnit) {
+        exactUnitMatches.push(transaction);
+        matched = true;
+      }
+      
+      if (!matched) {
+        // Priority 2: Supplier name or transaction number
+        const hasHighPriorityMatch = 
+          transaction.suppliers?.name?.toLowerCase().includes(term) ||
+          transaction.transaction_number?.toLowerCase().includes(term);
+        
+        if (hasHighPriorityMatch) {
+          highPriorityMatches.push(transaction);
+          matched = true;
+        }
+      }
+      
+      if (!matched) {
+        // Priority 3: Product brand/model or partial unit matches
+        const hasMediumPriorityMatch = transaction.items?.some(item =>
+          item.products?.brand?.toLowerCase().includes(term) ||
+          item.products?.model?.toLowerCase().includes(term) ||
+          item._enrichedUnits?.some((unit: any) =>
+            unit.serial_number?.toLowerCase().includes(term) ||
+            unit.barcode?.toLowerCase().includes(term)
+          )
+        );
+        
+        if (hasMediumPriorityMatch) {
+          mediumPriorityMatches.push(transaction);
+          matched = true;
+        }
+      }
+      
+      if (!matched) {
+        // Priority 4: Notes, status, or type
+        const hasLowPriorityMatch =
+          transaction.notes?.toLowerCase().includes(term) ||
+          transaction.status?.toLowerCase().includes(term) ||
+          transaction.type?.toLowerCase().includes(term);
+        
+        if (hasLowPriorityMatch) {
+          lowPriorityMatches.push(transaction);
+        }
+      }
+    });
+
+    const results = [
+      ...exactUnitMatches,
+      ...highPriorityMatches,
+      ...mediumPriorityMatches,
+      ...lowPriorityMatches
+    ];
+
+    console.log('🔍 Supplier Transaction Search:', {
+      searchTerm: term,
+      totalMatches: results.length,
+      exactUnitMatches: exactUnitMatches.length,
+      highPriorityMatches: highPriorityMatches.length,
+      mediumPriorityMatches: mediumPriorityMatches.length,
+      lowPriorityMatches: lowPriorityMatches.length,
+    });
+
+    return results;
   },
 
   async getById(id: string): Promise<SupplierTransaction | null> {
@@ -392,8 +540,21 @@ export const supplierTransactionApi = {
 };
 
 // ============= REACT QUERY HOOKS =============
-export function useSupplierTransactions(filters: TransactionSearchFilters = {}) {
+export function useSupplierTransactions(
+  searchQuery?: string,
+  filters: TransactionSearchFilters = {}
+) {
   const queryClient = useQueryClient();
+  
+  const queryKey = [
+    ...SUPPLIER_TRANSACTION_KEYS.lists(),
+    searchQuery ?? '',
+    filters.type ?? 'all',
+    filters.status ?? 'all',
+    filters.supplier_id ?? null,
+    filters.dateFrom ?? null,
+    filters.dateTo ?? null,
+  ];
   
   // Listen for cross-module events
   useEffect(() => {
@@ -407,9 +568,27 @@ export function useSupplierTransactions(filters: TransactionSearchFilters = {}) 
   }, [queryClient]);
   
   return useQuery({
-    queryKey: SUPPLIER_TRANSACTION_KEYS.list(filters),
-    queryFn: () => supplierTransactionApi.getAll(filters),
-    staleTime: 30000, // 30 seconds
+    queryKey,
+    queryFn: async () => {
+      // Fetch transactions with filters (NOT search)
+      const transactions = await supplierTransactionApi.getAll(filters);
+      
+      // Enrich with unit data
+      const enriched = await supplierTransactionApi.enrichTransactionUnits(transactions);
+      
+      // Apply client-side search if query exists
+      if (searchQuery && searchQuery.trim()) {
+        return supplierTransactionApi.searchTransactions(enriched, searchQuery);
+      }
+      
+      return enriched;
+    },
+    staleTime: 0, // Always fresh for search
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    retry: 1,
   });
 }
 

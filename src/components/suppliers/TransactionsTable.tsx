@@ -19,21 +19,37 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 interface TransactionsTableProps {
-  searchTerm: string;
+  searchQuery?: string;
+  searchTrigger?: number;
+  isSearching?: boolean;
+  completeSearch?: () => void;
 }
 
-export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
-  const debouncedSearchTerm = useDebounce(searchTerm || '', 300);
-  const [filters, setFilters] = useState<TransactionSearchFilters>({
-    searchTerm: debouncedSearchTerm,
-  });
+export function TransactionsTable({ 
+  searchQuery = '',
+  searchTrigger = 0,
+  isSearching = false,
+  completeSearch
+}: TransactionsTableProps) {
+  const [filters, setFilters] = useState<TransactionSearchFilters>({});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
-  React.useEffect(() => {
-    setFilters(prev => ({ ...prev, searchTerm: debouncedSearchTerm }));
-  }, [debouncedSearchTerm]);
+  const { 
+    data: transactions, 
+    isLoading, 
+    error,
+    refetch,
+    isFetching 
+  } = useSupplierTransactions(searchQuery, filters);
   
-  const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
+  // Search trigger effect - force refetch when search is executed
+  React.useEffect(() => {
+    if (searchTrigger > 0) {
+      refetch().then(() => {
+        completeSearch?.();
+      });
+    }
+  }, [searchTrigger, refetch, completeSearch]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -42,7 +58,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const resetFilters = () => {
-    setFilters({ searchTerm: "" });
+    setFilters({});
   };
 
   const handleActionComplete = () => {
@@ -190,14 +206,14 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     goToPage: mobileGoToPage
   } = usePagination({ data: transactions || [], itemsPerPage: 17 });
 
-  if (isLoading) {
+  const showLoading = isLoading || isFetching || isSearching;
+  
+  if (showLoading) {
     return (
       <div className="space-y-4">
         <TransactionSummaryStats filters={filters} />
-        <div className="animate-pulse space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-muted rounded-lg" />
-          ))}
+        <div className="text-center py-8 text-muted-foreground">
+          {isSearching ? 'Searching...' : 'Loading transactions...'}
         </div>
       </div>
     );
@@ -209,20 +225,20 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <TransactionSummaryStats filters={filters} />
       
       {/* Search Results Info */}
-      {searchTerm && transactions && transactions.length > 0 && (
+      {searchQuery && transactions && transactions.length > 0 && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Showing {transactions.length} transaction(s) for "{searchTerm}"
+            Showing {transactions.length} transaction(s) for "{searchQuery}"
           </AlertDescription>
         </Alert>
       )}
       
-      {searchTerm && (!transactions || transactions.length === 0) && (
+      {searchQuery && (!transactions || transactions.length === 0) && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            No transactions found for "{searchTerm}"
+            No transactions found for "{searchQuery}"
           </AlertDescription>
         </Alert>
       )}

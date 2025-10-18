@@ -38,6 +38,7 @@ export interface SupplierTransactionItem extends BaseEntity {
   quantity: number;
   unit_cost: number;
   total_cost: number;
+  product_unit_ids?: string[]; // For linking to specific units
   unit_details?: {
     barcodes?: string[];
     serial_numbers?: string[];
@@ -49,6 +50,13 @@ export interface SupplierTransactionItem extends BaseEntity {
     model: string;
     has_serial: boolean;
   };
+  // Enriched data (added by client-side enrichment)
+  _enrichedUnits?: Array<{
+    id: string;
+    serial_number?: string;
+    barcode?: string;
+    product_id: string;
+  }>;
 }
 
 // ============= FORM DATA TYPES =============
