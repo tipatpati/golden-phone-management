@@ -181,8 +181,23 @@ export const useProducts = (filters?: {
   year?: number | 'all';
   sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 }) => {
+  // Create a stable query key by extracting primitive values
+  const queryKey = [
+    'products',
+    filters?.categoryId ?? 'all',
+    filters?.stockStatus ?? 'all',
+    filters?.hasSerial ?? 'all',
+    filters?.searchTerm ?? '',
+    filters?.dateRange?.start?.getTime() ?? null,
+    filters?.dateRange?.end?.getTime() ?? null,
+    filters?.priceRange?.min ?? null,
+    filters?.priceRange?.max ?? null,
+    filters?.year ?? 'all',
+    filters?.sortBy ?? 'newest',
+  ];
+
   return useQuery({
-    queryKey: ['products', JSON.stringify(filters)],
+    queryKey,
     queryFn: () => service.getProducts(filters || {}),
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
