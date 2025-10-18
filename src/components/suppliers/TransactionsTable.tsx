@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
 import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
-import { LightweightTransactionSearch } from "@/services/suppliers/LightweightTransactionSearch";
 import { useDebounce } from "@/hooks/useDebounce";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
@@ -24,59 +23,17 @@ interface TransactionsTableProps {
 }
 
 export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
+  const debouncedSearchTerm = useDebounce(searchTerm || '', 300);
   const [filters, setFilters] = useState<TransactionSearchFilters>({
-    searchTerm,
+    searchTerm: debouncedSearchTerm,
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
   React.useEffect(() => {
-    setFilters(prev => ({ ...prev, searchTerm }));
-  }, [searchTerm]);
+    setFilters(prev => ({ ...prev, searchTerm: debouncedSearchTerm }));
+  }, [debouncedSearchTerm]);
   
   const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
-  
-  const [enrichedTransactions, setEnrichedTransactions] = React.useState<SupplierTransaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = React.useState<SupplierTransaction[]>([]);
-  const [isEnriching, setIsEnriching] = React.useState(false);
-  
-  const debouncedSearchTerm = useDebounce(searchTerm || '', 300);
-
-  // Enrich transactions with unit data once when transactions are loaded
-  React.useEffect(() => {
-    const enrichData = async () => {
-      if (!transactions || transactions.length === 0) {
-        setEnrichedTransactions([]);
-        return;
-      }
-
-      setIsEnriching(true);
-      try {
-        const enriched = await LightweightTransactionSearch.enrichTransactionsWithUnits(transactions);
-        setEnrichedTransactions(enriched);
-      } catch (error) {
-        console.error('Error enriching transactions:', error);
-        setEnrichedTransactions(transactions);
-      } finally {
-        setIsEnriching(false);
-      }
-    };
-
-    enrichData();
-  }, [transactions]);
-
-  // Perform client-side search on enriched data
-  React.useEffect(() => {
-    if (!enrichedTransactions || enrichedTransactions.length === 0) {
-      setFilteredTransactions([]);
-      return;
-    }
-
-    const results = LightweightTransactionSearch.searchTransactions(
-      enrichedTransactions,
-      debouncedSearchTerm
-    );
-    setFilteredTransactions(results);
-  }, [enrichedTransactions, debouncedSearchTerm]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -231,9 +188,9 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     currentPage: mobilePage,
     totalPages: mobileTotalPages,
     goToPage: mobileGoToPage
-  } = usePagination({ data: filteredTransactions || [], itemsPerPage: 17 });
+  } = usePagination({ data: transactions || [], itemsPerPage: 17 });
 
-  if (isLoading || isEnriching) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <TransactionSummaryStats filters={filters} />
@@ -252,16 +209,16 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <TransactionSummaryStats filters={filters} />
       
       {/* Search Results Info */}
-      {searchTerm && filteredTransactions.length > 0 && (
+      {searchTerm && transactions && transactions.length > 0 && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Showing {filteredTransactions.length} transaction(s) for "{searchTerm}"
+            Showing {transactions.length} transaction(s) for "{searchTerm}"
           </AlertDescription>
         </Alert>
       )}
       
-      {searchTerm && filteredTransactions.length === 0 && (
+      {searchTerm && (!transactions || transactions.length === 0) && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
@@ -278,14 +235,14 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       />
 
       {/* Bulk Selection */}
-      {filteredTransactions && filteredTransactions.length > 0 && (
+      {transactions && transactions.length > 0 && (
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center space-x-3">
             <Checkbox
-              checked={selectedIds.length === filteredTransactions.length && filteredTransactions.length > 0}
+              checked={selectedIds.length === transactions.length && transactions.length > 0}
               onCheckedChange={(checked) => {
                 if (checked) {
-                  setSelectedIds(filteredTransactions.map(t => t.id));
+                  setSelectedIds(transactions.map(t => t.id));
                 } else {
                   setSelectedIds([]);
                 }
@@ -293,8 +250,8 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
             />
             <span className="text-sm font-medium">
               {selectedIds.length > 0 
-                ? `${selectedIds.length} of ${filteredTransactions.length} selected`
-                : `Select transactions (${filteredTransactions.length} total)`
+                ? `${selectedIds.length} of ${transactions.length} selected`
+                : `Select transactions (${transactions.length} total)`
               }
             </span>
           </div>
@@ -309,7 +266,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
                 onClick={() => setShowPrintDialog(true)}
                 disabled={
                   !selectedIds.some(id => {
-                    const transaction = filteredTransactions?.find(t => t.id === id);
+                    const transaction = transactions?.find(t => t.id === id);
                     return transaction?.type === "purchase" && transaction?.status === "completed";
                   })
                 }
@@ -325,7 +282,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       {/* Data Table */}
       <div className="hidden md:block">
         <DataTable
-          data={filteredTransactions || []}
+          data={transactions || []}
           columns={columns}
           actions={actions}
           getRowKey={(transaction) => transaction.id}
@@ -411,13 +368,13 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
         ))}
         
         {/* Mobile Pagination */}
-        {(filteredTransactions || []).length > 0 && (
+        {(transactions || []).length > 0 && (
           <TablePagination
             currentPage={mobilePage}
             totalPages={mobileTotalPages}
             onPageChange={mobileGoToPage}
             pageSize={17}
-            totalItems={filteredTransactions?.length || 0}
+            totalItems={transactions?.length || 0}
           />
         )}
       </div>
@@ -444,7 +401,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
       <SupplierAcquisitionPrintDialog
         transactions={
           selectedIds.length > 0 
-            ? (filteredTransactions || []).filter(t => selectedIds.includes(t.id))
+            ? (transactions || []).filter(t => selectedIds.includes(t.id))
             : selectedTransaction 
             ? [selectedTransaction]
             : []
