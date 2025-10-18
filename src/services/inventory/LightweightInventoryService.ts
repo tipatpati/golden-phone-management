@@ -100,7 +100,13 @@ class LightweightInventoryService {
     // Client-side filtering for unit serial numbers/barcodes if search term exists
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.trim().toLowerCase();
-      products = products.filter(product => {
+      
+      // Separate products into categories for prioritized sorting
+      const exactUnitMatches: typeof products = [];
+      const brandModelMatches: typeof products = [];
+      const noMatches: typeof products = [];
+      
+      products.forEach(product => {
         // Check brand and model
         const brandMatch = product.brand?.toLowerCase().includes(term);
         const modelMatch = product.model?.toLowerCase().includes(term);
@@ -111,8 +117,18 @@ class LightweightInventoryService {
           unit.barcode?.toLowerCase().includes(term)
         );
         
-        return brandMatch || modelMatch || unitMatch;
+        // Prioritize: unit matches first, then brand/model matches
+        if (unitMatch) {
+          exactUnitMatches.push(product);
+        } else if (brandMatch || modelMatch) {
+          brandModelMatches.push(product);
+        } else {
+          noMatches.push(product);
+        }
       });
+      
+      // Return prioritized results: unit matches at top, then brand/model matches
+      products = [...exactUnitMatches, ...brandModelMatches];
     }
     
     return products;

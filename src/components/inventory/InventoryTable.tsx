@@ -115,11 +115,12 @@ export function InventoryTable({
     }
   }, [searchTerm, products]);
   
-  // Memoize product list to ensure fresh calculation on search
-  const productList = useMemo(() => 
-    Array.isArray(products) ? products : [],
-    [products, searchTerm]
-  );
+  // Memoize product list and ensure it updates with search changes
+  const productList = useMemo(() => {
+    const list = Array.isArray(products) ? products : [];
+    // Products are already sorted by priority in the service layer
+    return list;
+  }, [products]);
 
   const handleRowClick = (product: Product) => {
     setSelectedProductForDetails(product);
