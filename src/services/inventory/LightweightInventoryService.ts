@@ -217,7 +217,7 @@ export const useProducts = (filters?: {
     staleTime: 0,
     gcTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnReconnect: false,
     retry: 1,
   });
