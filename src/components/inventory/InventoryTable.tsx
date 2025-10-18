@@ -507,7 +507,11 @@ export function InventoryTable({
                 {/* Expanded Unit Rows */}
                 {isExpanded && hasUnits && (
                   <>
-                    {product.units.map((unit: any) => {
+                    {/* Show only matching units when searching, otherwise show all */}
+                    {(searchTerm && searchTerm.trim() 
+                      ? product.units.filter((unit: any) => unitMatchesSearch(unit, searchTerm))
+                      : product.units
+                    ).map((unit: any) => {
                       const isMatched = searchTerm && unitMatchesSearch(unit, searchTerm);
                       return (
                         <TableRow 
