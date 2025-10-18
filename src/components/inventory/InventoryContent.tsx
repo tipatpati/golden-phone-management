@@ -39,6 +39,9 @@ export function InventoryContent({
     ...filters,
     dateRange: effectiveDateRange,
   });
+  
+  // Show loading state during search/filtering
+  const isSearching = isFetching && !isLoading;
   const deleteProduct = useDeleteProduct();
   const { data: categories = [] } = useCategories();
 

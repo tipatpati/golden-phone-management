@@ -46,12 +46,9 @@ export function InventoryFilters({
 
   const [localSearchTerm, setLocalSearchTerm] = useState(filters.searchTerm || '');
 
-  // Debounce search term
+  // Instant search - no debounce for real-time results
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchTerm(localSearchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
+    setSearchTerm(localSearchTerm);
   }, [localSearchTerm, setSearchTerm]);
   
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
