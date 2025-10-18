@@ -32,11 +32,7 @@ class LightweightInventoryService {
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
-    // Server-side search for brand/model (only if searchTerm provided)
-    if (searchTerm && searchTerm.trim()) {
-      const term = `%${searchTerm.trim()}%`;
-      query = query.or(`brand.ilike.${term},model.ilike.${term}`);
-    }
+    // Note: Search is handled client-side to include unit serial/barcode matching
 
     if (categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
@@ -112,16 +108,21 @@ class LightweightInventoryService {
       const brandModelMatches: typeof products = [];
       
       products.forEach(product => {
+        // Check product brand/model
+        const brandModelMatch = 
+          product.brand?.toLowerCase().includes(term) ||
+          product.model?.toLowerCase().includes(term);
+          
         // Check product units for serial/barcode match
         const unitMatch = product.units?.some((unit: any) => 
           unit.serial_number?.toLowerCase().includes(term) || 
           unit.barcode?.toLowerCase().includes(term)
         );
         
-        // Prioritize: unit matches first, then brand/model matches (already filtered by server)
+        // Prioritize: unit matches first, then brand/model matches
         if (unitMatch) {
           exactUnitMatches.push(product);
-        } else {
+        } else if (brandModelMatch) {
           brandModelMatches.push(product);
         }
       });

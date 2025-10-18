@@ -159,10 +159,12 @@ export function InventoryContent({
     logger.info('No products found', { filters, hasActiveFilters }, 'InventoryContent');
     
     const getEmptyStateContent = () => {
-      if (hasActiveFilters) {
+      if (hasActiveFilters || searchQuery) {
         return {
           title: "No Products Match Filters",
-          description: "No products match your current filters. Try adjusting or clearing filters.",
+          description: searchQuery 
+            ? `No products found for "${searchQuery}". Try a different search term.`
+            : "No products match your current filters. Try adjusting or clearing filters.",
         };
       }
       return {
