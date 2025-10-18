@@ -140,15 +140,25 @@ export function InventoryFilters({
           onValueChange={(value) => setCategoryId(value === 'all' ? 'all' : parseInt(value))}
         >
           <SelectTrigger className="w-[180px] h-10">
-            <SelectValue placeholder="Tutte le categorie" />
+            <SelectValue>
+              {filters.categoryId === 'all' 
+                ? 'Tutte le categorie' 
+                : safeCategories.find(c => c.id === filters.categoryId)?.name || 'Tutte le categorie'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tutte le categorie</SelectItem>
-            {safeCategories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id.toString()}>
-                {cat.name}
+            {safeCategories.length > 0 ? (
+              safeCategories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id.toString()}>
+                  {cat.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="no-categories" disabled>
+                Nessuna categoria disponibile
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
 
