@@ -32,6 +32,12 @@ class LightweightInventoryService {
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `);
 
+    // Server-side search for brand/model (only if searchTerm provided)
+    if (searchTerm && searchTerm.trim()) {
+      const term = `%${searchTerm.trim()}%`;
+      query = query.or(`brand.ilike.${term},model.ilike.${term}`);
+    }
+
     if (categoryId !== 'all') {
       query = query.eq('category_id', categoryId);
     }
@@ -97,33 +103,26 @@ class LightweightInventoryService {
     
     let products = data || [];
 
-    // Client-side filtering for unit serial numbers/barcodes if search term exists
+    // Client-side prioritization: unit matches (serial/barcode) appear first
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.trim().toLowerCase();
       
       // Separate products into categories for prioritized sorting
       const exactUnitMatches: typeof products = [];
       const brandModelMatches: typeof products = [];
-      const noMatches: typeof products = [];
       
       products.forEach(product => {
-        // Check brand and model
-        const brandMatch = product.brand?.toLowerCase().includes(term);
-        const modelMatch = product.model?.toLowerCase().includes(term);
-        
         // Check product units for serial/barcode match
         const unitMatch = product.units?.some((unit: any) => 
           unit.serial_number?.toLowerCase().includes(term) || 
           unit.barcode?.toLowerCase().includes(term)
         );
         
-        // Prioritize: unit matches first, then brand/model matches
+        // Prioritize: unit matches first, then brand/model matches (already filtered by server)
         if (unitMatch) {
           exactUnitMatches.push(product);
-        } else if (brandMatch || modelMatch) {
-          brandModelMatches.push(product);
         } else {
-          noMatches.push(product);
+          brandModelMatches.push(product);
         }
       });
       
@@ -215,11 +214,12 @@ export const useProducts = (filters?: {
   return useQuery({
     queryKey,
     queryFn: () => service.getProducts(filters || {}),
-    staleTime: 0,
+    staleTime: 0, // Always treat data as stale for real-time updates
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: 'always', // Always refetch on mount to ensure fresh data
     refetchOnReconnect: false,
+    refetchInterval: false, // No automatic polling
   });
 };
 
