@@ -34,13 +34,34 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
   
   const { data: transactions, isLoading, error, refetch } = useSupplierTransactions(filters);
   
-  // Lightweight client-side search
-  const filteredTransactions = React.useMemo(() => {
-    if (!searchTerm || searchTerm.trim().length === 0) {
-      return transactions || [];
-    }
-    
-    return LightweightTransactionSearch.searchTransactions(transactions || [], searchTerm);
+  const [filteredTransactions, setFilteredTransactions] = React.useState<SupplierTransaction[]>([]);
+  const [isSearching, setIsSearching] = React.useState(false);
+
+  // Enhanced search with items, serial numbers, and product details
+  React.useEffect(() => {
+    const performSearch = async () => {
+      if (!searchTerm || searchTerm.trim().length === 0) {
+        setFilteredTransactions(transactions || []);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await LightweightTransactionSearch.searchWithItems(
+          transactions || [], 
+          searchTerm
+        );
+        setFilteredTransactions(results);
+      } catch (error) {
+        console.error('Search error:', error);
+        setFilteredTransactions(transactions || []);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    performSearch();
   }, [searchTerm, transactions]);
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
@@ -198,7 +219,7 @@ export function TransactionsTable({ searchTerm }: TransactionsTableProps) {
     goToPage: mobileGoToPage
   } = usePagination({ data: filteredTransactions || [], itemsPerPage: 17 });
 
-  if (isLoading) {
+  if (isLoading || isSearching) {
     return (
       <div className="space-y-4">
         <TransactionSummaryStats filters={filters} />
