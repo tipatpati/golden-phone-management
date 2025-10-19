@@ -161,9 +161,9 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
           <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
           
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch">
             {/* Left Section - Logo and User Info */}
-            <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-6">
+            <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-6 h-full">
               {/* Logo */}
               <div className="flex justify-center lg:justify-start">
                 <img 
@@ -201,7 +201,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             </div>
             
             {/* Center Section - Date & Time (Hero Feature) */}
-            <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center">
+            <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center h-full">
               <div className="w-full max-w-lg bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-6 py-8 lg:py-10 border-2 border-white/50 hover:border-white/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3)] hover:scale-[1.01] relative overflow-hidden">
                 {/* Inner glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-[2rem]"></div>
@@ -239,7 +239,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             </div>
             
             {/* Right Section - Store Info */}
-            <div className="lg:col-span-3 xl:col-span-3 flex items-stretch">
+            <div className="lg:col-span-3 xl:col-span-3 flex items-stretch h-full">
               <div className="w-full bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-6 py-7 border border-white/30 hover:border-white/40 hover:from-white/20 hover:to-white/10 transition-all duration-300 flex flex-col justify-center shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:scale-[1.02]">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/20">
