@@ -1,29 +1,41 @@
-
 import React from "react";
-import { Card, CardContent } from "@/components/ui/updated-card";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { SearchBar } from "@/components/ui/search-bar";
+import { Button } from "@/components/ui/button";
 
 interface ClientsSearchBarProps {
-  searchTerm: string;
+  searchQuery: string;
   onSearchChange: (value: string) => void;
+  onSearch: () => void;
+  onClear: () => void;
 }
 
-export const ClientsSearchBar = ({ searchTerm, onSearchChange }: ClientsSearchBarProps) => {
+export const ClientsSearchBar = ({ 
+  searchQuery, 
+  onSearchChange, 
+  onSearch,
+  onClear 
+}: ClientsSearchBarProps) => {
   return (
-    <Card className="border-0 shadow-xl">
-      <CardContent className="pt-6">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cerca clienti per nome, email o telefono..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8"
-            type="search"
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-2">
+      <SearchBar
+        value={searchQuery}
+        onChange={onSearchChange}
+        placeholder="Cerca clienti per nome, email o telefono..."
+        className="flex-1"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            onSearch();
+          }
+        }}
+      />
+      <Button onClick={onSearch} variant="default">
+        Cerca
+      </Button>
+      {searchQuery && (
+        <Button onClick={onClear} variant="outline">
+          Cancella
+        </Button>
+      )}
+    </div>
   );
 };
