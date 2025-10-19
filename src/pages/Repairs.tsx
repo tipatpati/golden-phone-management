@@ -10,9 +10,10 @@ import { PageLayout } from "@/components/common/PageLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 
 const Repairs = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const { data: repairs = [], isLoading, error } = useRepairs(searchTerm);
+  const { data: repairs = [], isLoading, error } = useRepairs(activeSearchQuery);
 
   if (error) {
     console.error('Error loading repairs:', error);
@@ -77,6 +78,15 @@ const Repairs = () => {
     setStatusFilter(filter === statusFilter ? null : filter);
   };
 
+  const handleSearch = () => {
+    setActiveSearchQuery(localSearchQuery);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    setActiveSearchQuery('');
+  };
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -106,7 +116,12 @@ const Repairs = () => {
       />
 
       {/* Search */}
-      <RepairSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <RepairSearchBar 
+        searchTerm={localSearchQuery} 
+        onSearchChange={setLocalSearchQuery}
+        onSearch={handleSearch}
+        onClear={handleClearSearch}
+      />
 
       {/* Repairs List */}
       <RepairsList repairs={filteredRepairs} />

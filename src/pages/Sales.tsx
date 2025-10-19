@@ -30,15 +30,22 @@ const Garentille = () => {
   const [selectedSaleForDelete, setSelectedSaleForDelete] = React.useState<Sale | null>(null);
   const [showBulkEdit, setShowBulkEdit] = React.useState(false);
   const [selectedSales, setSelectedSales] = React.useState<Sale[]>([]);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState("");
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
   
   const {
-    searchTerm,
+    searchTerm: _,
     setSearchTerm,
     sales: garentille,
     isLoading,
     isSearching,
     error
   } = useDebouncedSalesSearch();
+  
+  // Update the search hook with active query
+  React.useEffect(() => {
+    setSearchTerm(activeSearchQuery);
+  }, [activeSearchQuery, setSearchTerm]);
   
   // Check if user is super admin to see analytics
   const canViewAnalytics = userRole === 'super_admin';
@@ -119,6 +126,17 @@ const Garentille = () => {
     trackInteraction('bulk_edit_success');
   };
 
+  const handleSearch = () => {
+    setActiveSearchQuery(localSearchQuery);
+    trackInteraction('search', { query: localSearchQuery });
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    setActiveSearchQuery('');
+    trackInteraction('search_clear');
+  };
+
   if (isLoading && !garentille.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -181,8 +199,10 @@ const Garentille = () => {
       )}
       
       <SalesSearchBar 
-        searchTerm={searchTerm} 
-        onSearchChange={setSearchTerm} 
+        searchTerm={localSearchQuery} 
+        onSearchChange={setLocalSearchQuery} 
+        onSearch={handleSearch}
+        onClear={handleClearSearch}
         isSearching={isSearching}
       />
       

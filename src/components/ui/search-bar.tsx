@@ -32,7 +32,7 @@ export function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        className="pl-10 bg-surface-container-highest border-outline-variant"
+        className="pl-10 h-12 bg-surface-container-highest border-outline-variant"
       />
     </div>
   );

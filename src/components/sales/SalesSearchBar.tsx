@@ -1,44 +1,50 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { SearchBar } from "@/components/ui/search-bar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info, Loader2 } from "lucide-react";
 
 interface SalesSearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearch: () => void;
+  onClear: () => void;
   isSearching?: boolean;
 }
 
-export function SalesSearchBar({ searchTerm, onSearchChange, isSearching = false }: SalesSearchBarProps) {
+export function SalesSearchBar({ 
+  searchTerm, 
+  onSearchChange, 
+  onSearch, 
+  onClear, 
+  isSearching = false 
+}: SalesSearchBarProps) {
   return (
-    <Card className="border-0 shadow-xl bg-white">
-      <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            {isSearching ? (
-              <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
-            ) : (
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            )}
-            <Input
-              placeholder="Cerca per numero garentille, nome cliente o note..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-          <Button variant="outline" className="h-12 px-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all">
-            <Filter className="mr-2 h-4 w-4" />
-            Filtri Avanzati
-          </Button>
-        </div>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <SearchBar
+          value={searchTerm}
+          onChange={onSearchChange}
+          placeholder="Cerca per numero garentille, nome cliente o note..."
+          className="flex-1"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              onSearch();
+            }
+          }}
+        />
+        <Button onClick={onSearch} variant="filled" disabled={isSearching} className="h-12">
+          {isSearching && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          <span className="hidden sm:inline">Cerca</span>
+          <span className="sm:hidden">Cerca</span>
+        </Button>
         {searchTerm && (
-          <p className="text-sm text-muted-foreground mt-2">
-            {isSearching ? "Ricerca in corso..." : `Ricerca: "${searchTerm}"`}
-          </p>
+          <Button onClick={onClear} variant="outlined" className="h-12">
+            <span className="hidden sm:inline">Cancella</span>
+            <span className="sm:hidden">×</span>
+          </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

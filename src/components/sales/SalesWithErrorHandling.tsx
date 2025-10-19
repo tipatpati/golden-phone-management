@@ -13,7 +13,9 @@ import { useDebouncedSearch } from '@/utils/performanceOptimizations';
 export function SalesWithErrorHandling() {
   const { handleError } = useErrorHandler('Sales');
   const { searchTerm, debouncedSearchTerm, setSearchTerm } = useDebouncedSearch();
-  const { data: sales = [], isLoading, error } = useSales(debouncedSearchTerm);
+  const [localSearchQuery, setLocalSearchQuery] = React.useState("");
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
+  const { data: sales = [], isLoading, error } = useSales(activeSearchQuery);
   
   // Ensure sales is always an array
   const salesArray = Array.isArray(sales) ? sales : [];
@@ -29,6 +31,15 @@ export function SalesWithErrorHandling() {
     handleError(error, 'sales_component_error', true);
   }, [handleError]);
 
+  const handleSearch = () => {
+    setActiveSearchQuery(localSearchQuery);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    setActiveSearchQuery('');
+  };
+
   return (
     <ErrorBoundaryWithRetry onError={handleSalesError}>
       <EnhancedLoading
@@ -36,7 +47,7 @@ export function SalesWithErrorHandling() {
         error={error ? error.message : null}
         isEmpty={salesArray.length === 0}
         onRetry={() => window.location.reload()}
-        emptyText={searchTerm ? `No sales found for "${searchTerm}"` : 'No sales found'}
+        emptyText={activeSearchQuery ? `No sales found for "${activeSearchQuery}"` : 'No sales found'}
       >
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-3 sm:p-4 lg:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -49,7 +60,12 @@ export function SalesWithErrorHandling() {
             </ErrorBoundaryWithRetry>
             
             <ErrorBoundaryWithRetry>
-              <SalesSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+              <SalesSearchBar 
+                searchTerm={localSearchQuery} 
+                onSearchChange={setLocalSearchQuery}
+                onSearch={handleSearch}
+                onClear={handleClearSearch}
+              />
             </ErrorBoundaryWithRetry>
             
             <ErrorBoundaryWithRetry>

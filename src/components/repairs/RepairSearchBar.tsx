@@ -1,31 +1,43 @@
-
 import React from "react";
-import { Card, CardContent } from "@/components/ui/enhanced-card";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { SearchBar } from "@/components/ui/search-bar";
+import { Button } from "@/components/ui/button";
 
 interface RepairSearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearch: () => void;
+  onClear: () => void;
 }
 
 export const RepairSearchBar: React.FC<RepairSearchBarProps> = ({
   searchTerm,
   onSearchChange,
+  onSearch,
+  onClear,
 }) => {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cerca per cliente, dispositivo, ID riparazione o IMEI..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-2">
+      <SearchBar
+        value={searchTerm}
+        onChange={onSearchChange}
+        placeholder="Cerca per cliente, dispositivo, ID riparazione o IMEI..."
+        className="flex-1"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            onSearch();
+          }
+        }}
+      />
+      <Button onClick={onSearch} variant="filled" className="h-12">
+        <span className="hidden sm:inline">Cerca</span>
+        <span className="sm:hidden">Cerca</span>
+      </Button>
+      {searchTerm && (
+        <Button onClick={onClear} variant="outlined" className="h-12">
+          <span className="hidden sm:inline">Cancella</span>
+          <span className="sm:hidden">×</span>
+        </Button>
+      )}
+    </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
-import { Button } from "@/components/ui/updated-button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { SearchBar } from "@/components/ui/search-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuppliersTable } from "@/components/suppliers/SuppliersTable";
 import { NotificationCenter } from "@/components/suppliers/NotificationCenter";
@@ -9,18 +9,19 @@ import { NewSupplierDialog } from "@/components/suppliers/NewSupplierDialog";
 import { TransactionsTable } from "@/components/suppliers/TransactionsTable";
 import { NewTransactionDialog } from "@/components/suppliers/NewTransactionDialog";
 import { OrphanedUnitsRecoveryDialog } from "@/components/suppliers/OrphanedUnitsRecoveryDialog";
-import { Search, Plus, Building2, Receipt, Mail, Loader2, ShoppingCart, Package2 } from "lucide-react";
+import { Plus, Building2, Receipt, Mail, Loader2, ShoppingCart, Package2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/updated-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 import { PageLayout } from "@/components/common/PageLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 
 const Suppliers = () => {
-  const [globalSearchTerm, setGlobalSearchTerm] = useState("");
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
@@ -29,6 +30,15 @@ const Suppliers = () => {
 
   // Enable real-time updates
   useRealtimeTransactions();
+
+  const handleSearch = () => {
+    setActiveSearchQuery(localSearchQuery);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    setActiveSearchQuery('');
+  };
 
   const handleContactAllSuppliers = async () => {
     setIsContactingSuppliers(true);
@@ -66,15 +76,13 @@ const Suppliers = () => {
 
       <Tabs defaultValue="suppliers" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-2 h-auto">
-          <TabsTrigger value="suppliers" className="flex items-center gap-2 text-xs sm:text-sm p-2 sm:p-3">
+          <TabsTrigger value="suppliers" className="flex items-center gap-2 p-3 sm:p-4 min-h-12">
             <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Suppliers</span>
-            <span className="sm:hidden">Suppliers</span>
+            <span>Suppliers</span>
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="flex items-center gap-2 text-xs sm:text-sm p-2 sm:p-3">
+          <TabsTrigger value="transactions" className="flex items-center gap-2 p-3 sm:p-4 min-h-12">
             <Receipt className="h-4 w-4" />
-            <span className="hidden sm:inline">Transactions</span>
-            <span className="sm:hidden">Transactions</span>
+            <span>Transactions</span>
           </TabsTrigger>
         </TabsList>
 
@@ -119,18 +127,30 @@ const Suppliers = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="relative flex-1 max-w-xs sm:max-w-sm">
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search suppliers..."
-                    value={globalSearchTerm}
-                    onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                    className="pl-8 text-sm"
-                  />
-                </div>
+              <div className="flex items-center gap-2">
+                <SearchBar
+                  value={localSearchQuery}
+                  onChange={setLocalSearchQuery}
+                  placeholder="Search suppliers..."
+                  className="flex-1 max-w-xs sm:max-w-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
+                />
+                <Button onClick={handleSearch} variant="filled" className="h-12">
+                  <span className="hidden sm:inline">Cerca</span>
+                  <span className="sm:hidden">Cerca</span>
+                </Button>
+                {localSearchQuery && (
+                  <Button onClick={handleClearSearch} variant="outlined" className="h-12">
+                    <span className="hidden sm:inline">Cancella</span>
+                    <span className="sm:hidden">×</span>
+                  </Button>
+                )}
               </div>
-              <SuppliersTable searchTerm={globalSearchTerm} />
+              <SuppliersTable searchTerm={activeSearchQuery} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -194,11 +214,11 @@ const Suppliers = () => {
       />
 
       <Dialog open={showAcquisitionDialog} onOpenChange={setShowAcquisitionDialog}>
-        <DialogContent className="max-w-7xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-xl">Supplier Acquisition</DialogTitle>
+        <DialogContent className="w-[95vw] sm:w-full max-w-7xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl sm:text-2xl">Supplier Acquisition</DialogTitle>
           </DialogHeader>
-          <div className="mt-2">
+          <div className="mt-4">
             <AcquisitionForm
               onSuccess={() => {
                 setShowAcquisitionDialog(false);
