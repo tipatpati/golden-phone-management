@@ -212,31 +212,31 @@ export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
                 {/* Inner glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-300/10 via-transparent to-white/5 rounded-[2rem]"></div>
                 
-                <div className="relative text-center space-y-3">
+                <div className="relative text-center space-y-4">
                   {/* Date Header */}
-                  <div className="flex items-center gap-3 w-full max-w-sm mx-auto">
+                  <div className="flex items-center justify-center gap-3 w-full max-w-md mx-auto">
                     <div className="bg-white/30 rounded-xl p-2 backdrop-blur-sm border border-white/40 shadow-lg flex-shrink-0">
                       <Calendar className="h-5 w-5 text-white drop-shadow-lg" />
                     </div>
-                    <span className="text-sm sm:text-base text-white font-bold tracking-wide drop-shadow-lg flex-1 text-left">{currentDate}</span>
+                    <span className="text-sm sm:text-base text-white font-bold tracking-wide drop-shadow-lg flex-1 text-center">{currentDate}</span>
                   </div>
                   
                   {/* Time Display */}
-                  <div className="flex items-center gap-3 w-full max-w-sm mx-auto">
+                  <div className="flex items-center justify-center gap-3 w-full max-w-md mx-auto">
                     <div className="bg-gradient-to-br from-white/30 to-white/20 rounded-2xl p-2.5 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex-shrink-0">
                       <Clock className="h-7 w-7 sm:h-8 sm:w-8 text-white drop-shadow-2xl" />
                     </div>
                     <div className="relative flex-1">
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/30 to-white/20 blur-2xl"></div>
-                      <span className="relative text-4xl sm:text-5xl font-black text-white tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] [text-shadow:_0_0_30px_rgb(255_255_255_/_40%)] text-left block">
+                      <span className="relative text-4xl sm:text-5xl font-black text-white tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] [text-shadow:_0_0_30px_rgb(255_255_255_/_40%)] text-center block">
                         {currentTime}
                       </span>
                     </div>
                   </div>
                   
                   {/* Label */}
-                  <div className="pt-2">
-                    <div className="inline-block px-4 py-1.5 bg-amber-400/20 rounded-full backdrop-blur-sm border border-amber-300/40">
+                  <div className="w-full max-w-md mx-auto flex items-center justify-center">
+                    <div className="px-4 py-1.5 bg-amber-400/20 rounded-full backdrop-blur-sm border border-amber-300/40">
                       <span className="text-[11px] text-amber-100 uppercase tracking-[0.25em] font-black drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">Ora Corrente</span>
                     </div>
                   </div>
