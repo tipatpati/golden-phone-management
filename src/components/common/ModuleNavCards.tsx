@@ -77,38 +77,66 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
           
-          // Define color scheme for each module matching dashboard
-          const getModuleColors = (module: string) => {
+          // Define neon styling for each module matching dashboard
+          const getModuleStyle = (module: string) => {
             switch (module) {
               case 'sales':
-                return 'bg-blue-600 hover:bg-blue-700 text-white';
-              case 'clients':
-                return 'bg-purple-600 hover:bg-purple-700 text-white';
+                return {
+                  bg: 'bg-gradient-to-br from-blue-600 to-blue-700',
+                  shadow: 'shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:shadow-[0_0_60px_rgba(59,130,246,0.7)]',
+                  border: 'border-2 border-blue-400/50'
+                };
               case 'repairs':
-                return 'bg-orange-600 hover:bg-orange-700 text-white';
-              case 'suppliers':
-                return 'bg-yellow-600 hover:bg-yellow-700 text-white';
+                return {
+                  bg: 'bg-gradient-to-br from-rose-600 to-rose-700',
+                  shadow: 'shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:shadow-[0_0_60px_rgba(244,63,94,0.7)]',
+                  border: 'border-2 border-rose-400/50'
+                };
               case 'inventory':
-                return 'bg-green-600 hover:bg-green-700 text-white';
+                return {
+                  bg: 'bg-gradient-to-br from-green-600 to-green-700',
+                  shadow: 'shadow-[0_0_40px_rgba(34,197,94,0.5)] hover:shadow-[0_0_60px_rgba(34,197,94,0.7)]',
+                  border: 'border-2 border-green-400/50'
+                };
+              case 'clients':
+                return {
+                  bg: 'bg-gradient-to-br from-cyan-600 to-cyan-700',
+                  shadow: 'shadow-[0_0_40px_rgba(8,145,178,0.5)] hover:shadow-[0_0_60px_rgba(8,145,178,0.7)]',
+                  border: 'border-2 border-cyan-400/50'
+                };
+              case 'suppliers':
+                return {
+                  bg: 'bg-gradient-to-br from-amber-600 to-amber-700',
+                  shadow: 'shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:shadow-[0_0_60px_rgba(245,158,11,0.7)]',
+                  border: 'border-2 border-amber-400/50'
+                };
               default:
-                return 'bg-primary hover:bg-primary/90 text-primary-foreground';
+                return {
+                  bg: 'bg-gradient-to-br from-primary to-primary-variant',
+                  shadow: 'shadow-xl hover:shadow-2xl',
+                  border: 'border-2 border-primary/50'
+                };
             }
           };
+          
+          const style = getModuleStyle(action.module);
           
           return (
             <button
               key={index}
               onClick={() => navigate(action.href)}
               className={`
-                ${getModuleColors(action.module)}
-                rounded-2xl p-6 
+                ${style.bg}
+                ${style.shadow}
+                ${style.border}
+                text-white
+                rounded-3xl p-6 
                 md-motion-smooth hover:scale-105
                 min-h-[120px]
                 flex flex-col items-center justify-center text-center
                 font-semibold text-lg
                 active:scale-95
-                shadow-xl hover:shadow-2xl
-                border border-white/10
+                backdrop-blur-sm
               `}
             >
               <IconComponent className="h-10 w-10 mb-3 drop-shadow-lg" />
