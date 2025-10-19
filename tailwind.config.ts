@@ -19,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
-				display: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
+				sans: ['Exo 2', 'ui-sans-serif', 'system-ui'],
+				display: ['Exo 2', 'ui-sans-serif', 'system-ui'],
 			},
 			spacing: {
 				'1': 'var(--spacing-1)',    /* 4dp */
