@@ -169,7 +169,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                 <img 
                   src={goldenPhoneLogo} 
                   alt="Golden Phone Logo" 
-                  className="h-16 sm:h-20 lg:h-24 xl:h-28 w-auto drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  className="w-full max-w-[200px] sm:max-w-[250px] lg:max-w-[300px] h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                 />
               </div>
               
