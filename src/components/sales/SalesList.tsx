@@ -35,7 +35,24 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const [selectedSaleForDetails, setSelectedSaleForDetails] = useState<Sale | null>(null);
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
+  const [expandedSales, setExpandedSales] = useState<Set<string>>(new Set());
   const deleteSaleMutation = useDeleteSale();
+
+  // Auto-expand sales with matching products when search is active
+  React.useEffect(() => {
+    if (searchTerm && searchTerm.trim()) {
+      const salesWithMatches = new Set<string>();
+      sales.forEach(sale => {
+        const hasMatchingItem = sale.sale_items?.some(item => itemMatchesSearch(item));
+        if (hasMatchingItem) {
+          salesWithMatches.add(sale.id);
+        }
+      });
+      setExpandedSales(salesWithMatches);
+    } else {
+      setExpandedSales(new Set());
+    }
+  }, [searchTerm, sales]);
 
   const isSelectionMode = userRole === 'super_admin';
   const selectedSalesArray = sales.filter(sale => selectedSales.has(sale.id));
@@ -155,6 +172,17 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
     const productName = `${item.product?.brand || ''} ${item.product?.model || ''}`.toLowerCase();
     const serialNumber = (item.serial_number || '').toLowerCase();
     return productName.includes(term) || serialNumber.includes(term);
+  };
+
+  // Toggle expanded state for a sale
+  const toggleExpanded = (saleId: string) => {
+    const newExpanded = new Set(expandedSales);
+    if (newExpanded.has(saleId)) {
+      newExpanded.delete(saleId);
+    } else {
+      newExpanded.add(saleId);
+    }
+    setExpandedSales(newExpanded);
   };
 
   // Define table columns for desktop view
@@ -361,103 +389,157 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
       {/* Mobile & Tablet Card Layout */}
       <div className="lg:hidden space-y-4">
         <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-          {paginatedMobileSales.map((sale) => (
-          <div key={sale.id} className="relative">
-            {isSelectionMode && (
-              <div className="absolute top-4 left-4 z-10">
-                <Checkbox
-                  checked={selectedSales.has(sale.id)}
-                  onCheckedChange={(checked) => handleSelectSale(sale.id, checked as boolean)}
-                  className="bg-background border-2"
-                />
-              </div>
-            )}
-            <DataCard
-              key={sale.id}
-              title={`Sale #${sale.sale_number}`}
-              subtitle={(typeof sale.salesperson === 'object' && sale.salesperson ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson") as string}
-              icon={<Receipt className="h-5 w-5 text-primary" />}
-              badge={{
-                text: sale.status.charAt(0).toUpperCase() + sale.status.slice(1),
-                variant: getStatusColor(sale.status) as any
-              }}
-            headerActions={
-              userRole === 'super_admin' ? (
-                <ComprehensiveEditSaleDialog sale={sale} />
-              ) : null
-            }
-            fields={[
-              {
-                label: "Cliente",
-                value: (() => {
-                  const client = sale.client;
-                  if (!client) return <span className="text-muted-foreground">Cliente Anonimo</span>;
-                  const name = client.type === 'business' 
-                    ? client.company_name 
-                    : `${client.first_name || ''} ${client.last_name || ''}`.trim();
-                  return (
-                    <div className="space-y-1">
-                      <div className="font-medium">{name || 'Cliente Anonimo'}</div>
-                      {client.phone && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {client.phone}
-                        </div>
-                      )}
-                      {client.email && (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {client.email}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()
-              },
-              {
-                label: "Prodotti",
-                value: (() => {
-                  const items = sale.sale_items || [];
-                  const matchedItems = items.filter(item => itemMatchesSearch(item));
-                  const hasMatch = matchedItems.length > 0;
-                  const displayItems = hasMatch ? matchedItems : items.slice(0, 2);
-                  
-                  return (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1">
-                        <Package className={`h-3 w-3 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <span className={`text-sm font-medium ${hasMatch ? 'text-primary' : ''}`}>
-                          {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
-                          {hasMatch && ` (${matchedItems.length} corrispond${matchedItems.length === 1 ? 'e' : 'ono'})`}
-                        </span>
-                      </div>
-                      {items.length > 0 && (
-                        <div className="text-xs space-y-0.5">
-                          {displayItems.map((item, idx) => {
-                            const isMatched = itemMatchesSearch(item);
-                            return (
-                              <div 
-                                key={idx} 
-                                className={`flex justify-between ${isMatched ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-                              >
-                                <span>
-                                  {isMatched && '✓ '}
-                                  {item.product?.brand} {item.product?.model}
-                                  {item.serial_number && ` (${item.serial_number})`}
-                                </span>
-                                <span>€{item.total_price.toFixed(2)}</span>
+          {paginatedMobileSales.map((sale) => {
+            const matchedItems = sale.sale_items?.filter(item => itemMatchesSearch(item)) || [];
+            const hasMatch = matchedItems.length > 0;
+            const isExpanded = expandedSales.has(sale.id);
+            
+            return (
+              <div key={sale.id} className="relative">
+                {isSelectionMode && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <Checkbox
+                      checked={selectedSales.has(sale.id)}
+                      onCheckedChange={(checked) => handleSelectSale(sale.id, checked as boolean)}
+                      className="bg-background border-2"
+                    />
+                  </div>
+                )}
+                <DataCard
+                  key={sale.id}
+                  title={`Sale #${sale.sale_number}`}
+                  subtitle={(typeof sale.salesperson === 'object' && sale.salesperson ? sale.salesperson.username || "Unknown" : sale.salesperson || "Unknown Salesperson") as string}
+                  icon={<Receipt className={`h-5 w-5 ${hasMatch ? 'text-primary' : 'text-primary'}`} />}
+                  badge={{
+                    text: sale.status.charAt(0).toUpperCase() + sale.status.slice(1),
+                    variant: getStatusColor(sale.status) as any
+                  }}
+                  headerActions={
+                    userRole === 'super_admin' ? (
+                      <ComprehensiveEditSaleDialog sale={sale} />
+                    ) : null
+                  }
+                  fields={[
+                    {
+                      label: "Cliente",
+                      value: (() => {
+                        const client = sale.client;
+                        if (!client) return <span className="text-muted-foreground">Cliente Anonimo</span>;
+                        const name = client.type === 'business' 
+                          ? client.company_name 
+                          : `${client.first_name || ''} ${client.last_name || ''}`.trim();
+                        return (
+                          <div className="space-y-1">
+                            <div className="font-medium">{name || 'Cliente Anonimo'}</div>
+                            {client.phone && (
+                              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {client.phone}
                               </div>
-                            );
-                          })}
-                          {!hasMatch && items.length > 2 && (
-                            <div className="text-muted-foreground">+{items.length - 2} altri prodotti...</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()
-              },
+                            )}
+                            {client.email && (
+                              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                {client.email}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()
+                    },
+                    {
+                      label: "Prodotti",
+                      value: (() => {
+                        const items = sale.sale_items || [];
+                        const displayItems = hasMatch ? matchedItems : items.slice(0, 2);
+                        
+                        return (
+                          <div className="space-y-2">
+                            <div 
+                              className="flex items-center gap-1 cursor-pointer hover:text-primary"
+                              onClick={() => toggleExpanded(sale.id)}
+                            >
+                              <Package className={`h-3 w-3 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
+                              <span className={`text-sm font-medium ${hasMatch ? 'text-primary' : ''}`}>
+                                {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
+                                {hasMatch && ` (${matchedItems.length} corrispond${matchedItems.length === 1 ? 'e' : 'ono'})`}
+                              </span>
+                              {items.length > 0 && (
+                                <span className="text-xs text-muted-foreground ml-auto">
+                                  {isExpanded ? '▼' : '▶'}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Expanded matched items */}
+                            {isExpanded && hasMatch && (
+                              <div className="ml-4 space-y-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                                <div className="text-xs font-semibold text-primary uppercase tracking-wide">
+                                  Prodotti Trovati
+                                </div>
+                                {matchedItems.map((item, idx) => (
+                                  <div 
+                                    key={idx} 
+                                    className="p-2 bg-background border border-primary/30 rounded"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-primary text-sm">
+                                          ✓ {item.product?.brand} {item.product?.model}
+                                        </div>
+                                        {item.serial_number && (
+                                          <div className="text-xs text-muted-foreground font-mono mt-1">
+                                            IMEI: {item.serial_number}
+                                          </div>
+                                        )}
+                                        {item.product?.year && (
+                                          <div className="text-xs text-muted-foreground mt-0.5">
+                                            Anno: {item.product.year}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="font-semibold text-primary">
+                                          €{item.total_price.toFixed(2)}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          Qtà: {item.quantity}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Regular item display */}
+                            {!isExpanded && items.length > 0 && (
+                              <div className="text-xs space-y-0.5">
+                                {displayItems.map((item, idx) => {
+                                  const isMatched = itemMatchesSearch(item);
+                                  return (
+                                    <div 
+                                      key={idx} 
+                                      className={`flex justify-between ${isMatched ? 'text-primary font-medium' : 'text-muted-foreground'}`}
+                                    >
+                                      <span className="truncate">
+                                        {isMatched && '✓ '}
+                                        {item.product?.brand} {item.product?.model}
+                                        {item.serial_number && ` (${item.serial_number.slice(-4)})`}
+                                      </span>
+                                      <span>€{item.total_price.toFixed(2)}</span>
+                                    </div>
+                                  );
+                                })}
+                                {!hasMatch && items.length > 2 && (
+                                  <div className="text-muted-foreground">+{items.length - 2} altri prodotti...</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()
+                    },
               {
                 label: "Totale",
                 value: <span className="text-base font-bold text-primary">€{sale.total_amount.toFixed(2)}</span>,
@@ -532,7 +614,8 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
             ]}
             />
           </div>
-        ))}
+            );
+          })}
         </div>
         
         {/* Mobile Pagination */}
