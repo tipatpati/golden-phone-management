@@ -28,7 +28,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
     
     const searchPattern = `%${searchTerm.trim()}%`;
     
-    // First, search in sale fields (sale_number, notes, client info)
+    // First, search in sale fields (sale_number, notes)
     const directQuery = this.supabase
       .from(this.tableName as any)
       .select(this.selectQuery)
@@ -37,29 +37,53 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
     
     const directSales = await this.performQuery(directQuery, 'searching');
     
-    // Second, search for sales containing matching products or serial numbers
-    // Get all sale_items that match the search term
-    const { data: matchingSaleItems } = await supabase
+    // Second, search for sales by serial number in sale_items
+    const { data: serialMatches, error: serialError } = await supabase
       .from('sale_items')
-      .select(`
-        sale_id,
-        product:products!inner(brand, model, year)
-      `)
-      .or(`serial_number.ilike.${searchPattern},product.brand.ilike.${searchPattern},product.model.ilike.${searchPattern}`)
-      .order('created_at', { ascending: false });
+      .select('sale_id')
+      .ilike('serial_number', searchPattern);
     
-    if (!matchingSaleItems || matchingSaleItems.length === 0) {
+    if (serialError) {
+      console.error('Error searching serial numbers:', serialError);
+    }
+    
+    // Third, search for products by brand or model
+    const { data: productMatches, error: productError } = await supabase
+      .from('products')
+      .select('id')
+      .or(`brand.ilike.${searchPattern},model.ilike.${searchPattern}`);
+    
+    if (productError) {
+      console.error('Error searching products:', productError);
+    }
+    
+    // Get sale_ids from product matches
+    let productSaleIds: string[] = [];
+    if (productMatches && productMatches.length > 0) {
+      const productIds = productMatches.map(p => p.id);
+      const { data: productSaleItems } = await supabase
+        .from('sale_items')
+        .select('sale_id')
+        .in('product_id', productIds);
+      
+      if (productSaleItems) {
+        productSaleIds = productSaleItems.map(item => item.sale_id);
+      }
+    }
+    
+    // Combine all matched sale IDs
+    const serialSaleIds = serialMatches?.map(item => item.sale_id) || [];
+    const allMatchedSaleIds = [...new Set([...serialSaleIds, ...productSaleIds])];
+    
+    if (allMatchedSaleIds.length === 0) {
       return Array.isArray(directSales) ? directSales : [];
     }
     
-    // Get unique sale IDs from matched items
-    const matchedSaleIds = [...new Set(matchingSaleItems.map(item => item.sale_id))];
-    
-    // Fetch full sale data for these IDs
+    // Fetch full sale data for matched IDs
     const productMatchQuery = this.supabase
       .from(this.tableName as any)
       .select(this.selectQuery)
-      .in('id', matchedSaleIds)
+      .in('id', allMatchedSaleIds)
       .order('created_at', { ascending: false });
     
     const productSales = await this.performQuery(productMatchQuery, 'searching products');
