@@ -69,7 +69,40 @@ export const supplierTransactionApi = {
     const { data, error } = await query;
     if (error) throw error;
 
-    return data as SupplierTransaction[];
+    const transactions = data as SupplierTransaction[];
+    
+    // Enrich all transactions with unit data for proper searching
+    const allUnitIds: string[] = [];
+    transactions.forEach(transaction => {
+      transaction.items?.forEach(item => {
+        if (Array.isArray(item.product_unit_ids)) {
+          allUnitIds.push(...item.product_unit_ids);
+        }
+      });
+    });
+    
+    if (allUnitIds.length > 0) {
+      const { data: units, error: unitsError } = await supabase
+        .from('product_units')
+        .select('id, serial_number, barcode, product_id')
+        .in('id', [...new Set(allUnitIds)]);
+      
+      if (!unitsError && units) {
+        const unitsMap = new Map(units.map(u => [u.id, u]));
+        
+        transactions.forEach(transaction => {
+          transaction.items?.forEach(item => {
+            if (Array.isArray(item.product_unit_ids) && item.product_unit_ids.length > 0) {
+              item._enrichedUnits = item.product_unit_ids
+                .map(id => unitsMap.get(id))
+                .filter((u): u is NonNullable<typeof u> => !!u);
+            }
+          });
+        });
+      }
+    }
+
+    return transactions;
   },
 
   /**
@@ -104,7 +137,7 @@ export const supplierTransactionApi = {
         return true;
       }
       
-      // Search items (products and unit details)
+      // Search items (products and enriched unit details)
       const itemMatch = transaction.items?.some(item => {
         // Search product brand/model
         if (item.products?.brand?.toLowerCase().includes(term) ||
@@ -112,7 +145,18 @@ export const supplierTransactionApi = {
           return true;
         }
         
-        // Search unit details (serial numbers, barcodes from JSONB)
+        // Search enriched units (serial numbers and barcodes)
+        if (item._enrichedUnits && item._enrichedUnits.length > 0) {
+          const unitMatch = item._enrichedUnits.some(unit => {
+            return unit.serial_number?.toLowerCase().includes(term) ||
+                   unit.barcode?.toLowerCase().includes(term);
+          });
+          if (unitMatch) {
+            return true;
+          }
+        }
+        
+        // Fallback: also search unit_details JSONB field for legacy data
         if (item.unit_details) {
           const details = item.unit_details as any;
           
@@ -120,6 +164,15 @@ export const supplierTransactionApi = {
           if (Array.isArray(details.barcodes)) {
             if (details.barcodes.some((barcode: string) => 
               barcode?.toLowerCase().includes(term)
+            )) {
+              return true;
+            }
+          }
+          
+          // Check serial numbers array
+          if (Array.isArray(details.serial_numbers)) {
+            if (details.serial_numbers.some((serial: string) => 
+              serial?.toLowerCase().includes(term)
             )) {
               return true;
             }
