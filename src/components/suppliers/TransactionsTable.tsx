@@ -1,9 +1,27 @@
-import React, { useState } from "react";
-import { DataTable } from "@/components/common";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { 
+  Calendar, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Printer, 
+  ChevronDown, 
+  ChevronRight,
+  Package,
+  Hash,
+  Barcode
+} from "lucide-react";
 import { useSupplierTransactions, supplierTransactionApi } from "@/services/suppliers/SupplierTransactionService";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -17,6 +35,8 @@ import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/currency";
 
 interface TransactionsTableProps {
   searchQuery?: string;
@@ -31,6 +51,7 @@ export function TransactionsTable({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [activeSearchQuery, setActiveSearchQuery] = useState('');
+  const [expandedTransactions, setExpandedTransactions] = useState<Set<string>>(new Set());
   
   const {  
     data: allTransactions,
@@ -38,13 +59,33 @@ export function TransactionsTable({
     error
   } = useSupplierTransactions(filters);
 
-  // Client-side search filtering
+  // Client-side search filtering with priority ordering
   const transactions = React.useMemo(() => {
     if (!allTransactions) return [];
     if (!activeSearchQuery.trim()) return allTransactions;
     
     return supplierTransactionApi.searchTransactions(allTransactions, activeSearchQuery);
   }, [allTransactions, activeSearchQuery]);
+  
+  // Auto-expand transactions with matching items when searching
+  useEffect(() => {
+    if (activeSearchQuery && activeSearchQuery.trim()) {
+      const term = activeSearchQuery.trim().toLowerCase();
+      const transactionsWithMatches = transactions.filter(t => 
+        t.items?.some(item => 
+          item.products?.brand?.toLowerCase().includes(term) ||
+          item.products?.model?.toLowerCase().includes(term) ||
+          item._enrichedUnits?.some(unit =>
+            unit.serial_number?.toLowerCase().includes(term) ||
+            unit.barcode?.toLowerCase().includes(term)
+          )
+        )
+      );
+      setExpandedTransactions(new Set(transactionsWithMatches.map(t => t.id)));
+    } else {
+      setExpandedTransactions(new Set());
+    }
+  }, [activeSearchQuery, transactions]);
   
   const handleSearch = () => {
     setActiveSearchQuery(localSearchQuery);
@@ -69,174 +110,107 @@ export function TransactionsTable({
     setSelectedIds([]);
   };
 
-  const columns = [
-    {
-      key: "select" as keyof SupplierTransaction,
-      header: "Select",
-      render: (value: any, transaction: SupplierTransaction) => (
-        <Checkbox
-          checked={selectedIds.includes(transaction.id)}
-          onCheckedChange={(checked) => {
-            if (checked) {
-              setSelectedIds(prev => [...prev, transaction.id]);
-            } else {
-              setSelectedIds(prev => prev.filter(id => id !== transaction.id));
-            }
-          }}
-        />
-      ),
-    },
-    {
-      key: "transaction_number" as keyof SupplierTransaction,
-      header: "Transaction #",
-      render: (value: string) => <div className="font-medium">{value}</div>,
-    },
-    {
-      key: "suppliers" as keyof SupplierTransaction,
-      header: "Supplier",
-      render: (value: any, transaction: SupplierTransaction) => (
-        <div className="font-medium">{transaction.suppliers?.name || 'Unknown'}</div>
-      ),
-    },
-    {
-      key: "type" as keyof SupplierTransaction,
-      header: "Type",
-      render: (value: string) => (
-        <Badge variant={getTypeColor(value)}>
-          {value}
-        </Badge>
-      ),
-    },
-    {
-      key: "total_amount" as keyof SupplierTransaction,
-      header: "Amount",
-      render: (value: number) => (
-        <div className="font-medium">€{value.toFixed(2)}</div>
-      ),
-    },
-    {
-      key: "transaction_date" as keyof SupplierTransaction,
-      header: "Date",
-      render: (value: string) => (
-        <div className="flex items-center space-x-1">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>{new Date(value).toLocaleDateString()}</span>
-        </div>
-      ),
-    },
-    {
-      key: "created_at" as keyof SupplierTransaction,
-      header: "Created",
-      render: (value: string) => (
-        <div className="text-sm">
-          <div>{new Date(value).toLocaleDateString()}</div>
-          <div className="text-muted-foreground">{new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-        </div>
-      ),
-    },
-    {
-      key: "status" as keyof SupplierTransaction,
-      header: "Status",
-      render: (value: string) => (
-        <Badge variant={getStatusColor(value)}>
-          {value}
-        </Badge>
-      ),
-    },
-  ];
+  const toggleTransactionExpansion = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedTransactions(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
-  const actions = [
-    {
-      icon: <Eye className="h-4 w-4" />,
-      label: "View Details",
-      onClick: (transaction: SupplierTransaction) => {
-        setSelectedTransaction(transaction);
-        setShowDetailsDialog(true);
-      },
-    },
-    {
-      icon: <Edit className="h-4 w-4" />,
-      label: "Edit",
-      onClick: (transaction: SupplierTransaction) => {
-        setSelectedTransaction(transaction);
-        setShowEditDialog(true);
-      },
-    },
-    {
-      icon: <Printer className="h-4 w-4" />,
-      label: "Print Labels",
-      onClick: (transaction: SupplierTransaction) => {
-        setSelectedTransaction(transaction);
-        setShowPrintDialog(true);
-      },
-      disabled: (transaction: SupplierTransaction) => 
-        transaction.type !== "purchase" || transaction.status !== "completed",
-    },
-    {
-      icon: <Trash2 className="h-4 w-4" />,
-      label: "Delete",
-      onClick: (transaction: SupplierTransaction) => {
-        setSelectedTransaction(transaction);
-        setShowDeleteDialog(true);
-      },
-      variant: "destructive" as const,
-    },
-  ];
+  const itemMatchesSearch = (item: any, term: string) => {
+    const searchLower = term.toLowerCase();
+    
+    // Check product brand/model
+    if (item.products?.brand?.toLowerCase().includes(searchLower) ||
+        item.products?.model?.toLowerCase().includes(searchLower)) {
+      return true;
+    }
+    
+    // Check enriched units
+    if (item._enrichedUnits?.some((unit: any) =>
+      unit.serial_number?.toLowerCase().includes(searchLower) ||
+      unit.barcode?.toLowerCase().includes(searchLower)
+    )) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  const unitMatchesSearch = (unit: any, term: string) => {
+    const searchLower = term.toLowerCase();
+    return unit.serial_number?.toLowerCase().includes(searchLower) ||
+           unit.barcode?.toLowerCase().includes(searchLower);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed": return "default";
-      case "pending": return "secondary";
-      case "cancelled": return "destructive";
-      default: return "outline";
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "purchase": return "default";
-      case "payment": return "secondary";
-      case "return": return "destructive";
-      default: return "outline";
+      case 'purchase':
+        return 'bg-blue-100 text-blue-800';
+      case 'payment':
+        return 'bg-purple-100 text-purple-800';
+      case 'return':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Mobile pagination
-  const {
-    paginatedData: mobilePaginatedTransactions,
-    currentPage: mobilePage,
-    totalPages: mobileTotalPages,
-    goToPage: mobileGoToPage
-  } = usePagination({ data: transactions || [], itemsPerPage: 17 });
+  const { 
+    paginatedData, 
+    currentPage, 
+    totalPages, 
+    goToPage 
+  } = usePagination({ 
+    data: transactions, 
+    itemsPerPage: 20 
+  });
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="space-y-4">
-        <TransactionSummaryStats filters={filters} />
-        <div className="text-center py-8 text-muted-foreground">
-          Loading transactions...
-        </div>
-      </div>
+      <Alert variant="destructive">
+        <AlertDescription>
+          Error loading transactions: {error.message}
+        </AlertDescription>
+      </Alert>
     );
   }
 
+  const searchTerm = activeSearchQuery;
+
   return (
-    <div className="space-y-6">
-      {/* Summary Stats */}
-      <TransactionSummaryStats filters={filters} />
-      
+    <div className="space-y-4">
       {/* Search Bar */}
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <SearchBar
           value={localSearchQuery}
           onChange={setLocalSearchQuery}
-          placeholder="Search by transaction #, supplier, product, serial/IMEI, barcode..."
+          placeholder="Search by transaction #, supplier, product, IMEI, barcode..."
+          className="flex-1"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               handleSearch();
             }
           }}
-          className="flex-1"
         />
         <Button onClick={handleSearch} variant="default">
           Search
@@ -247,208 +221,346 @@ export function TransactionsTable({
           </Button>
         )}
       </div>
-      
-      {/* Search Results Info */}
-      {activeSearchQuery && transactions && transactions.length > 0 && (
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Found {transactions.length} transaction(s) for "{activeSearchQuery}"
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {activeSearchQuery && (!transactions || transactions.length === 0) && (
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            No transactions found for "{activeSearchQuery}"
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {/* Advanced Filters */}
+
+      {/* Filters */}
       <AdvancedTransactionFilters
         filters={filters}
         onFiltersChange={setFilters}
         onReset={resetFilters}
       />
 
-      {/* Bulk Selection */}
-      {transactions && transactions.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              checked={selectedIds.length === transactions.length && transactions.length > 0}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  setSelectedIds(transactions.map(t => t.id));
-                } else {
-                  setSelectedIds([]);
-                }
-              }}
-            />
-            <span className="text-sm font-medium">
-              {selectedIds.length > 0 
-                ? `${selectedIds.length} of ${transactions.length} selected`
-                : `Select transactions (${transactions.length} total)`
-              }
-            </span>
-          </div>
-          {selectedIds.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline">
-                {selectedIds.length} selected
-              </Badge>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => setShowPrintDialog(true)}
-                disabled={
-                  !selectedIds.some(id => {
-                    const transaction = transactions?.find(t => t.id === id);
-                    return transaction?.type === "purchase" && transaction?.status === "completed";
-                  })
-                }
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Labels
-              </Button>
-            </div>
-          )}
-        </div>
+      {/* Summary Stats */}
+      <TransactionSummaryStats filters={filters} />
+
+      {/* Results Info */}
+      {activeSearchQuery && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            {transactions.length > 0 
+              ? `Showing ${transactions.length} transaction(s) for "${activeSearchQuery}"`
+              : `No transactions found for "${activeSearchQuery}"`
+            }
+          </AlertDescription>
+        </Alert>
       )}
 
-      {/* Data Table */}
-      <div className="hidden md:block">
-        <DataTable
-          data={transactions || []}
-          columns={columns}
-          actions={actions}
-          getRowKey={(transaction) => transaction.id}
-        />
+      {/* Table */}
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedIds(paginatedData.map(t => t.id));
+                    } else {
+                      setSelectedIds([]);
+                    }
+                  }}
+                />
+              </TableHead>
+              <TableHead>Transaction</TableHead>
+              <TableHead>Supplier</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8">
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  {activeSearchQuery 
+                    ? `No transactions found for "${activeSearchQuery}"`
+                    : 'No transactions found'
+                  }
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedData.map((transaction) => {
+                const isSelected = selectedIds.includes(transaction.id);
+                const isExpanded = expandedTransactions.has(transaction.id);
+                const hasItems = transaction.items && transaction.items.length > 0;
+                const matchedItems = searchTerm
+                  ? transaction.items?.filter(item => itemMatchesSearch(item, searchTerm)) || []
+                  : [];
+
+                return (
+                  <React.Fragment key={transaction.id}>
+                    {/* Main Transaction Row */}
+                    <TableRow 
+                      className={cn(
+                        "cursor-pointer hover:bg-muted/50 transition-colors",
+                        isSelected && "bg-muted/50",
+                        matchedItems.length > 0 && "bg-blue-50/30"
+                      )}
+                      onClick={() => {
+                        setSelectedTransaction(transaction);
+                        setShowDetailsDialog(true);
+                      }}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedIds(prev => [...prev, transaction.id]);
+                              } else {
+                                setSelectedIds(prev => prev.filter(id => id !== transaction.id));
+                              }
+                            }}
+                          />
+                          {hasItems && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => toggleTransactionExpansion(transaction.id, e)}
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium font-mono">{transaction.transaction_number}</div>
+                          {matchedItems.length > 0 && (
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                              {matchedItems.length} matched item{matchedItems.length !== 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{transaction.suppliers?.name || 'Unknown'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getTypeColor(transaction.type)}>
+                          {transaction.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(transaction.status)}>
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(transaction.transaction_date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{formatCurrency(transaction.total_amount)}</div>
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowDetailsDialog(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowEditDialog(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowDeleteDialog(true);
+                            }}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {transaction.type === 'purchase' && transaction.status === 'completed' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTransaction(transaction);
+                                setShowPrintDialog(true);
+                              }}
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Expanded Items */}
+                    {isExpanded && hasItems && (
+                      <>
+                        {(searchTerm && searchTerm.trim()
+                          ? transaction.items!.filter(item => itemMatchesSearch(item, searchTerm))
+                          : transaction.items!
+                        ).map((item) => {
+                          const isItemMatched = searchTerm && itemMatchesSearch(item, searchTerm);
+                          const hasUnits = item._enrichedUnits && item._enrichedUnits.length > 0;
+
+                          return (
+                            <React.Fragment key={item.id}>
+                              {/* Item Row */}
+                              <TableRow 
+                                className={cn(
+                                  "bg-muted/10 border-l-4",
+                                  isItemMatched ? "border-l-blue-400 bg-blue-50/30" : "border-l-transparent"
+                                )}
+                              >
+                                <TableCell></TableCell>
+                                <TableCell colSpan={3}>
+                                  <div className="pl-8 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Package className="h-4 w-4 text-muted-foreground" />
+                                      <span className={cn(
+                                        "font-medium",
+                                        isItemMatched && "text-blue-700"
+                                      )}>
+                                        {item.products?.brand} {item.products?.model}
+                                      </span>
+                                      {isItemMatched && !hasUnits && (
+                                        <Badge variant="secondary" className="bg-blue-500 text-white text-xs">
+                                          Match
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Qty: {item.quantity} × {formatCurrency(item.unit_cost)} = {formatCurrency(item.total_cost)}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell colSpan={4}></TableCell>
+                              </TableRow>
+
+                              {/* Unit Rows */}
+                              {hasUnits && item._enrichedUnits!.map((unit) => {
+                                const isUnitMatched = searchTerm && unitMatchesSearch(unit, searchTerm);
+                                const searchLower = searchTerm?.toLowerCase() || '';
+
+                                return (
+                                  <TableRow
+                                    key={unit.id}
+                                    className={cn(
+                                      "bg-muted/20 border-l-4",
+                                      isUnitMatched ? "border-l-blue-500 bg-blue-50/50" : "border-l-transparent"
+                                    )}
+                                  >
+                                    <TableCell></TableCell>
+                                    <TableCell colSpan={4}>
+                                      <div className="pl-16 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                          <Hash className="h-3 w-3 text-muted-foreground" />
+                                          <span className={cn(
+                                            "text-sm font-mono",
+                                            isUnitMatched && "font-semibold text-blue-700"
+                                          )}>
+                                            {unit.serial_number}
+                                          </span>
+                                          {isUnitMatched && (
+                                            <Badge variant="secondary" className="bg-blue-500 text-white text-xs">
+                                              Match
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        {unit.barcode && (
+                                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Barcode className="h-3 w-3" />
+                                            <span className={cn(
+                                              "font-mono",
+                                              isUnitMatched && unit.barcode.toLowerCase().includes(searchLower) && "font-semibold text-blue-700"
+                                            )}>
+                                              {unit.barcode}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell colSpan={3}></TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </React.Fragment>
+                          );
+                        })}
+                      </>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
-        {mobilePaginatedTransactions.map((transaction: SupplierTransaction) => (
-          <div key={transaction.id} className="border rounded-lg p-4 space-y-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-medium">{transaction.transaction_number}</h3>
-                <p className="text-sm text-muted-foreground">{transaction.suppliers?.name || 'Unknown Supplier'}</p>
-              </div>
-              <div className="flex gap-2">
-                <Badge variant={getTypeColor(transaction.type)}>{transaction.type}</Badge>
-                <Badge variant={getStatusColor(transaction.status)}>{transaction.status}</Badge>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>Amount: €{transaction.total_amount.toFixed(2)}</div>
-              <div>Date: {new Date(transaction.transaction_date).toLocaleDateString()}</div>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Created: {new Date(transaction.created_at).toLocaleDateString()} at {new Date(transaction.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  console.log('Transaction View clicked:', transaction.id);
-                  setSelectedTransaction(transaction); 
-                  setShowDetailsDialog(true); 
-                }}
-              >
-                View
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  console.log('Transaction Edit clicked:', transaction.id);
-                  setSelectedTransaction(transaction); 
-                  setShowEditDialog(true); 
-                }}
-              >
-                Edit
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  setSelectedTransaction(transaction); 
-                  setShowPrintDialog(true); 
-                }}
-                disabled={transaction.type !== "purchase" || transaction.status !== "completed"}
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  console.log('Transaction Delete clicked:', transaction.id);
-                  setSelectedTransaction(transaction); 
-                  setShowDeleteDialog(true); 
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        ))}
-        
-        {/* Mobile Pagination */}
-        {(transactions || []).length > 0 && (
-          <TablePagination
-            currentPage={mobilePage}
-            totalPages={mobileTotalPages}
-            onPageChange={mobileGoToPage}
-            pageSize={17}
-            totalItems={transactions?.length || 0}
-          />
-        )}
-      </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          pageSize={20}
+          totalItems={transactions.length}
+        />
+      )}
 
       {/* Dialogs */}
-      <EditTransactionDialogV2
-        transaction={selectedTransaction}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-      />
-
       <TransactionDetailsDialog
         transaction={selectedTransaction}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
       />
 
-      <DeleteTransactionDialog
-        transaction={selectedTransaction}
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-      />
+      {selectedTransaction && (
+        <>
+          <EditTransactionDialogV2
+            open={showEditDialog}
+            onOpenChange={setShowEditDialog}
+            transaction={selectedTransaction}
+          />
 
-      <SupplierAcquisitionPrintDialog
-        transactions={
-          selectedIds.length > 0 
-            ? (transactions || []).filter(t => selectedIds.includes(t.id))
-            : selectedTransaction 
-            ? [selectedTransaction]
-            : []
-        }
-        open={showPrintDialog}
-        onOpenChange={setShowPrintDialog}
-      />
+          <DeleteTransactionDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            transaction={selectedTransaction}
+          />
+
+          <SupplierAcquisitionPrintDialog
+            open={showPrintDialog}
+            onOpenChange={setShowPrintDialog}
+            transactions={[selectedTransaction]}
+          />
+        </>
+      )}
     </div>
   );
 }

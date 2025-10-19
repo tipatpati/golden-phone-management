@@ -106,8 +106,7 @@ export const supplierTransactionApi = {
   },
 
   /**
-   * Simple comprehensive client-side search
-   * Searches across: transaction number, supplier name, product brand/model, serial numbers, barcodes, notes, status, type
+   * Search with priority ordering - matched transactions appear at top
    */
   searchTransactions(
     transactions: SupplierTransaction[], 
@@ -118,23 +117,27 @@ export const supplierTransactionApi = {
     }
 
     const term = searchTerm.trim().toLowerCase();
+    const matched: SupplierTransaction[] = [];
+    const notMatched: SupplierTransaction[] = [];
     
-    return transactions.filter(transaction => {
+    transactions.forEach(transaction => {
+      let hasMatch = false;
+      
       // Search transaction number
       if (transaction.transaction_number?.toLowerCase().includes(term)) {
-        return true;
+        hasMatch = true;
       }
       
       // Search supplier name
       if (transaction.suppliers?.name?.toLowerCase().includes(term)) {
-        return true;
+        hasMatch = true;
       }
       
       // Search notes, status, type
       if (transaction.notes?.toLowerCase().includes(term) ||
           transaction.status?.toLowerCase().includes(term) ||
           transaction.type?.toLowerCase().includes(term)) {
-        return true;
+        hasMatch = true;
       }
       
       // Search items (products and enriched unit details)
@@ -189,11 +192,18 @@ export const supplierTransactionApi = {
       });
       
       if (itemMatch) {
-        return true;
+        hasMatch = true;
       }
       
-      return false;
+      if (hasMatch) {
+        matched.push(transaction);
+      } else {
+        notMatched.push(transaction);
+      }
     });
+    
+    // Return matched first, then not matched
+    return [...matched, ...notMatched];
   },
 
   async getById(id: string): Promise<SupplierTransaction | null> {
