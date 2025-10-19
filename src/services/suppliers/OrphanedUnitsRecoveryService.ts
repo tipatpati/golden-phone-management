@@ -12,6 +12,8 @@ export interface OrphanedUnit {
   created_at: string;
   product_brand: string;
   product_model: string;
+  orphan_type: 'no_supplier' | 'no_transaction';
+  supplier_name?: string;
 }
 
 export interface RecoveryTransaction {
@@ -23,12 +25,15 @@ export interface RecoveryTransaction {
 
 class OrphanedUnitsRecoveryService {
   /**
-   * Find all orphaned product units (units without supplier_id that were created recently)
+   * Find all orphaned product units
+   * Type 1: Units without supplier_id
+   * Type 2: Units with supplier_id but not linked to any transaction
    */
   async findOrphanedUnits(sinceDate?: Date): Promise<OrphanedUnit[]> {
-    const since = sinceDate || new Date(Date.now() - 24 * 60 * 60 * 1000); // Last 24 hours by default
+    const since = sinceDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Last 30 days by default
     
-    const { data, error } = await supabase
+    // Type 1: Units with NULL supplier_id
+    const { data: unitsWithoutSupplier, error: error1 } = await supabase
       .from('product_units')
       .select(`
         id,
@@ -47,12 +52,68 @@ class OrphanedUnitsRecoveryService {
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false });
 
-    if (error) {
-      logger.error('Failed to find orphaned units', { error });
-      throw new Error(`Failed to find orphaned units: ${error.message}`);
+    if (error1) {
+      logger.error('Failed to find units without supplier', { error: error1 });
+      throw new Error(`Failed to find orphaned units: ${error1.message}`);
     }
 
-    return (data || []).map(unit => ({
+    // Type 2: Units with supplier_id but not in any transaction
+    const { data: allUnitsWithSupplier, error: error2 } = await supabase
+      .from('product_units')
+      .select(`
+        id,
+        product_id,
+        serial_number,
+        price,
+        purchase_price,
+        supplier_id,
+        created_at,
+        products!inner(
+          brand,
+          model
+        ),
+        suppliers(
+          name
+        )
+      `)
+      .not('supplier_id', 'is', null)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error2) {
+      logger.error('Failed to find units with supplier', { error: error2 });
+      throw new Error(`Failed to find orphaned units: ${error2.message}`);
+    }
+
+    // Check which units are not in any transaction
+    const unitsWithSupplierButNoTransaction: OrphanedUnit[] = [];
+    
+    for (const unit of allUnitsWithSupplier || []) {
+      const { data: transactionItems } = await supabase
+        .from('supplier_transaction_items')
+        .select('id')
+        .contains('product_unit_ids', [unit.id])
+        .limit(1);
+
+      if (!transactionItems || transactionItems.length === 0) {
+        unitsWithSupplierButNoTransaction.push({
+          id: unit.id,
+          product_id: unit.product_id,
+          serial_number: unit.serial_number,
+          price: unit.price || 0,
+          purchase_price: unit.purchase_price,
+          supplier_id: unit.supplier_id,
+          created_at: unit.created_at,
+          product_brand: unit.products.brand,
+          product_model: unit.products.model,
+          orphan_type: 'no_transaction',
+          supplier_name: unit.suppliers?.name
+        });
+      }
+    }
+
+    // Combine both types
+    const type1Units: OrphanedUnit[] = (unitsWithoutSupplier || []).map(unit => ({
       id: unit.id,
       product_id: unit.product_id,
       serial_number: unit.serial_number,
@@ -61,8 +122,19 @@ class OrphanedUnitsRecoveryService {
       supplier_id: unit.supplier_id,
       created_at: unit.created_at,
       product_brand: unit.products.brand,
-      product_model: unit.products.model
+      product_model: unit.products.model,
+      orphan_type: 'no_supplier' as const
     }));
+
+    const allOrphans = [...type1Units, ...unitsWithSupplierButNoTransaction];
+
+    logger.info('Found orphaned units', {
+      type1_no_supplier: type1Units.length,
+      type2_no_transaction: unitsWithSupplierButNoTransaction.length,
+      total: allOrphans.length
+    });
+
+    return allOrphans;
   }
 
   /**
@@ -97,16 +169,15 @@ class OrphanedUnitsRecoveryService {
       // Validate units exist and are orphaned
       const { data: units, error: unitsError } = await supabase
         .from('product_units')
-        .select('id, product_id, serial_number, price, purchase_price')
-        .in('id', data.unit_ids)
-        .is('supplier_id', null);
+        .select('id, product_id, serial_number, price, purchase_price, supplier_id')
+        .in('id', data.unit_ids);
 
       if (unitsError) {
         throw new Error(`Failed to validate units: ${unitsError.message}`);
       }
 
       if (!units || units.length !== data.unit_ids.length) {
-        throw new Error('Some units not found or already have suppliers assigned');
+        throw new Error('Some units not found');
       }
 
       // Calculate total amount

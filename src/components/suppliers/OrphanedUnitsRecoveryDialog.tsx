@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Package, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { orphanedUnitsRecoveryService, type OrphanedUnit } from '@/services/suppliers/OrphanedUnitsRecoveryService';
@@ -259,18 +260,31 @@ export function OrphanedUnitsRecoveryDialog({
                 <div className="space-y-4 max-h-64 overflow-y-auto">
                   {orphanedUnits.map((unit) => (
                     <div key={unit.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <Checkbox
                           checked={selectedUnitIds.includes(unit.id)}
                           onCheckedChange={(checked) => handleUnitToggle(unit.id, checked as boolean)}
                         />
-                        <div>
-                          <p className="font-medium text-sm">
-                            {unit.product_brand} {unit.product_model}
-                          </p>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">
+                              {unit.product_brand} {unit.product_model}
+                            </p>
+                            <Badge 
+                              variant={unit.orphan_type === 'no_supplier' ? 'destructive' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {unit.orphan_type === 'no_supplier' ? 'No Supplier' : 'No Transaction'}
+                            </Badge>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             Serial: {unit.serial_number}
                           </p>
+                          {unit.supplier_name && (
+                            <p className="text-xs text-muted-foreground">
+                              Supplier: {unit.supplier_name}
+                            </p>
+                          )}
                           <p className="text-xs text-muted-foreground">
                             Created: {new Date(unit.created_at).toLocaleString()}
                           </p>
