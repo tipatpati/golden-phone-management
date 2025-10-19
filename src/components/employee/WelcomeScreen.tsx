@@ -161,15 +161,15 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
           <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
           
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
             {/* Left Section - Logo and User Info */}
-            <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-6 h-full">
+            <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-4 h-full">
               {/* Logo */}
               <div className="flex justify-center lg:justify-start">
                 <img 
                   src={goldenPhoneLogo} 
                   alt="Golden Phone Logo" 
-                  className="w-full max-w-[200px] sm:max-w-[250px] lg:max-w-[300px] h-auto drop-shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:drop-shadow-[0_0_50px_rgba(251,191,36,0.6)] hover:scale-105 transition-all duration-300"
+                  className="w-full max-w-[160px] sm:max-w-[200px] lg:max-w-[240px] h-auto drop-shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:drop-shadow-[0_0_50px_rgba(251,191,36,0.6)] hover:scale-105 transition-all duration-300"
                 />
               </div>
               
@@ -202,11 +202,11 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             
             {/* Center Section - Date & Time (Hero Feature) */}
             <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center h-full">
-              <div className="w-full max-w-lg bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-6 py-8 lg:py-10 border-2 border-amber-300/40 hover:border-amber-300/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2),0_0_40px_rgba(251,191,36,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3),0_0_60px_rgba(251,191,36,0.35)] hover:scale-[1.01] relative overflow-hidden">
+              <div className="w-full max-w-md bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-5 py-6 lg:py-8 border-2 border-amber-300/40 hover:border-amber-300/60 transition-all duration-300 shadow-[0_20px_50px_rgba(255,255,255,0.15),0_0_35px_rgba(251,191,36,0.2)] hover:shadow-[0_25px_60px_rgba(255,255,255,0.25),0_0_50px_rgba(251,191,36,0.3)] hover:scale-[1.01] relative overflow-hidden">
                 {/* Inner glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-300/10 via-transparent to-white/5 rounded-[2rem]"></div>
                 
-                <div className="relative text-center space-y-5">
+                <div className="relative text-center space-y-3">
                   {/* Date Header */}
                   <div className="flex items-center justify-center gap-3">
                     <div className="bg-white/30 rounded-xl p-2 backdrop-blur-sm border border-white/40 shadow-lg">
@@ -215,14 +215,14 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                     <span className="text-sm sm:text-base text-white font-bold tracking-wide drop-shadow-lg">{currentDate}</span>
                   </div>
                   
-                  {/* Time Display - Main Hero */}
-                  <div className="flex items-center justify-center gap-4 lg:gap-5">
-                    <div className="bg-gradient-to-br from-white/30 to-white/20 rounded-2xl p-3 backdrop-blur-sm border-2 border-white/40 shadow-2xl">
-                      <Clock className="h-9 w-9 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white drop-shadow-2xl" />
+                  {/* Time Display */}
+                  <div className="flex items-center justify-center gap-3 lg:gap-4">
+                    <div className="bg-gradient-to-br from-white/30 to-white/20 rounded-2xl p-2.5 backdrop-blur-sm border-2 border-white/40 shadow-2xl">
+                      <Clock className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 text-white drop-shadow-2xl" />
                     </div>
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/30 to-white/20 blur-2xl"></div>
-                      <span className="relative text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-white tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] [text-shadow:_0_0_30px_rgb(255_255_255_/_40%)]">
+                      <span className="relative text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] [text-shadow:_0_0_30px_rgb(255_255_255_/_40%)]">
                         {currentTime}
                       </span>
                     </div>
@@ -264,7 +264,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
         </div>
 
         {/* Module Buttons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {availableModules.map((module, index) => {
             const IconComponent = module.icon;
             return (
@@ -276,19 +276,19 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                   ${module.color}
                   backdrop-blur-md
                   border-2
-                  rounded-3xl p-8 
-                  transform hover:scale-105 
+                  rounded-3xl p-10 lg:p-12
+                  transform hover:scale-110
                   transition-all duration-300 
-                  min-h-[140px]
+                  min-h-[160px] lg:min-h-[180px]
                   flex flex-col items-center justify-center
-                  font-bold text-xl
+                  font-bold text-xl lg:text-2xl
                   active:scale-95
                   drop-shadow-2xl
                   animate-fade-in
                 `}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <IconComponent className="h-12 w-12 mb-4" />
+                <IconComponent className="h-14 w-14 lg:h-16 lg:w-16 mb-4 drop-shadow-2xl" />
                 <span className="text-center leading-tight">
                   {module.title}
                 </span>
