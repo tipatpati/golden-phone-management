@@ -83,23 +83,25 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 sm:h-14 px-2 sm:px-4 font-medium text-xs sm:text-sm text-on-surface-variant bg-surface-container md-orchestrated-change md-focus-smooth whitespace-nowrap",
+      // Mobile-friendly heights and padding
+      "h-11 sm:h-12 md:h-14 px-3 sm:px-4 font-medium text-xs sm:text-sm text-on-surface-variant bg-surface-container md-orchestrated-change md-focus-smooth",
       align === 'left' && "text-left",
       align === 'center' && "text-center", 
       align === 'right' && "text-right",
-      sortable && "cursor-pointer hover:bg-surface-container-high select-none md-state-layer-refined",
+      // Touch-friendly sortable headers
+      sortable && "cursor-pointer hover:bg-surface-container-high select-none md-state-layer-refined min-h-[44px]",
       "[&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
   >
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {children}
       {sortable && (
         <div className="flex flex-col">
           <svg
             className={cn(
-              "w-3 h-3 md-motion-smooth",
+              "w-3 h-3 sm:w-4 sm:h-4 md-motion-smooth",
               sortDirection === 'asc' ? "text-primary transform rotate-0" : "text-on-surface-variant opacity-50"
             )}
             fill="currentColor"
@@ -109,7 +111,7 @@ const TableHead = React.forwardRef<
           </svg>
           <svg
             className={cn(
-              "w-3 h-3 md-motion-smooth -mt-1",
+              "w-3 h-3 sm:w-4 sm:h-4 md-motion-smooth -mt-1",
               sortDirection === 'desc' ? "text-primary transform rotate-0" : "text-on-surface-variant opacity-50"
             )}
             fill="currentColor"
@@ -133,11 +135,14 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-2 sm:px-4 py-2 sm:py-3 align-middle text-xs sm:text-sm text-on-surface whitespace-nowrap",
+      // Mobile-friendly padding and sizing
+      "px-3 sm:px-4 py-3 sm:py-3 align-middle text-xs sm:text-sm text-on-surface",
       align === 'left' && "text-left",
       align === 'center' && "text-center",
       align === 'right' && "text-right",
-      "[&:has([role=checkbox])]:pr-0", 
+      "[&:has([role=checkbox])]:pr-0",
+      // Better wrapping on mobile
+      "break-words max-w-[200px] sm:max-w-none",
       className
     )}
     {...props}

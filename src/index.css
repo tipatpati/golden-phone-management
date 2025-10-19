@@ -1373,3 +1373,6 @@
       --glow-angle: 360deg;
     }
   }
+
+/* Import responsive utilities */
+@import './styles/responsive-utilities.css';

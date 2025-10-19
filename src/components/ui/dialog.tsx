@@ -36,18 +36,26 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background shadow-lg rounded-xl",
-        "p-6 sm:p-6", // Mobile: 6, SM and up: 6 (consistent)
-        "m-4 sm:m-0", // Mobile: margin 4 for edge padding, SM and up: no margin 
-        "max-h-[85vh] sm:max-h-[90vh]", // Mobile: smaller height, SM and up: larger
+        // Mobile-first: full-screen on mobile, centered on desktop
+        "fixed z-50 grid w-full gap-4 bg-background shadow-lg",
+        // Mobile: full-screen modal
+        "inset-0 sm:inset-auto",
+        "sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]",
+        "sm:max-w-lg sm:rounded-xl sm:border",
+        // Padding: less on mobile, more on desktop
+        "p-4 sm:p-6",
+        // Height: full on mobile, constrained on desktop
+        "max-h-[100vh] sm:max-h-[90vh]",
         "overflow-y-auto",
+        // Mobile: rounded corners only at top
+        "rounded-t-2xl sm:rounded-xl",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 flex items-center justify-center rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
+      <DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto rounded-full sm:rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <X className="h-5 w-5 sm:h-4 sm:w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -75,7 +83,11 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-0 sm:space-x-2",
+      // Mobile: full-width buttons, Desktop: auto-width
+      "[&>button]:w-full sm:[&>button]:w-auto",
+      // Mobile: larger touch targets
+      "[&>button]:min-h-[44px]",
       className
     )}
     {...props}

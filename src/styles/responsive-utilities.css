@@ -1,0 +1,149 @@
+/**
+ * Responsive Utility Classes
+ * Mobile-first responsive design utilities
+ */
+
+/* Touch-friendly interactive elements */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-sm {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+.touch-target-lg {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Responsive text sizes */
+.text-responsive-sm {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-base {
+  @apply text-base sm:text-lg;
+}
+
+.text-responsive-lg {
+  @apply text-lg sm:text-xl;
+}
+
+.text-responsive-xl {
+  @apply text-xl sm:text-2xl;
+}
+
+/* Responsive spacing */
+.spacing-responsive {
+  @apply space-y-3 sm:space-y-4;
+}
+
+.gap-responsive {
+  @apply gap-3 sm:gap-4 md:gap-6;
+}
+
+.padding-responsive {
+  @apply p-4 sm:p-6;
+}
+
+/* Responsive grid layouts */
+.grid-responsive-cards {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+}
+
+.grid-responsive-2col {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
+}
+
+.grid-responsive-3col {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+}
+
+/* Full-width on mobile, auto on desktop */
+.w-responsive {
+  @apply w-full sm:w-auto;
+}
+
+/* Horizontal scroll wrapper for tables */
+.table-scroll {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+}
+
+.table-scroll > table {
+  @apply min-w-full;
+}
+
+/* Hide/show based on screen size */
+.mobile-only {
+  @apply block sm:hidden;
+}
+
+.desktop-only {
+  @apply hidden sm:block;
+}
+
+.tablet-up {
+  @apply hidden md:block;
+}
+
+/* Responsive flex direction */
+.flex-responsive {
+  @apply flex flex-col sm:flex-row;
+}
+
+/* Safe area for mobile devices (notch, home indicator) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Responsive container with proper padding */
+.container-responsive {
+  @apply container mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Stack on mobile, inline on desktop */
+.stack-mobile {
+  @apply flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4;
+}
+
+/* Form field responsive sizing */
+.form-field-responsive {
+  @apply w-full sm:w-auto min-w-0 sm:min-w-[200px];
+}
+
+/* Responsive modal/dialog */
+.dialog-responsive {
+  @apply fixed inset-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2;
+  @apply w-full sm:max-w-lg sm:rounded-xl;
+  @apply max-h-screen sm:max-h-[90vh];
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+}
