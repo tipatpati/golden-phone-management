@@ -173,20 +173,18 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
               </div>
               
               {/* User Info Card */}
-              <div className="w-full bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:bg-white/15 transition-all duration-200">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-white/20 rounded-full p-2">
-                    <UserCheck className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-white/70 uppercase tracking-wide font-medium">Utente Attivo</div>
-                    <div className="text-lg font-bold text-white">{config.name}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/20">
+              <div className="w-full bg-white/10 backdrop-blur-md rounded-2xl px-5 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="text-xs text-white/70 uppercase tracking-wide font-medium">Utente Attivo</div>
                   <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold text-white">
                     admin
                   </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 rounded-full p-2">
+                    <UserCheck className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-lg font-bold text-white">{config.name}</div>
                 </div>
               </div>
             </div>
