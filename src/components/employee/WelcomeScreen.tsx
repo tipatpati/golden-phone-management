@@ -63,7 +63,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: ShoppingCart,
       route: "/sales",
       color: "text-white",
-      bgColor: "bg-[#2563eb]/30 hover:bg-[#2563eb]/40 border-[#2563eb]/50 hover:border-[#2563eb] shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:shadow-[0_0_50px_rgba(37,99,235,0.8)]", // Blue neon
+      bgColor: "bg-[#2563eb]/30 hover:bg-[#2563eb]/40 border-[#2563eb] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(37,99,235,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(37,99,235,0.9)]", // Blue neon with white glow
       feature: ["gestione_vendite", "elaborazione_vendite", "supervisione_vendite"]
     },
     {
@@ -71,7 +71,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: CircuitBoard,
       route: "/repairs",
       color: "text-white",
-      bgColor: "bg-[#dc2626]/30 hover:bg-[#dc2626]/40 border-[#dc2626]/50 hover:border-[#dc2626] shadow-[0_0_30px_rgba(220,38,38,0.5)] hover:shadow-[0_0_50px_rgba(220,38,38,0.8)]", // Red neon
+      bgColor: "bg-[#dc2626]/30 hover:bg-[#dc2626]/40 border-[#dc2626] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(220,38,38,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(220,38,38,0.9)]", // Red neon with white glow
       feature: "gestione_riparazioni"
     },
     {
@@ -79,7 +79,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Package,
       route: "/inventory",
       color: "text-white",
-      bgColor: "bg-[#059669]/30 hover:bg-[#059669]/40 border-[#059669]/50 hover:border-[#059669] shadow-[0_0_30px_rgba(5,150,105,0.5)] hover:shadow-[0_0_50px_rgba(5,150,105,0.8)]", // Green neon
+      bgColor: "bg-[#059669]/30 hover:bg-[#059669]/40 border-[#059669] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(5,150,105,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(5,150,105,0.9)]", // Green neon with white glow
       feature: "gestione_completa_inventario"
     },
     {
@@ -87,7 +87,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Users,
       route: "/clients",
       color: "text-white",
-      bgColor: "bg-[#0891b2]/30 hover:bg-[#0891b2]/40 border-[#0891b2]/50 hover:border-[#0891b2] shadow-[0_0_30px_rgba(8,145,178,0.5)] hover:shadow-[0_0_50px_rgba(8,145,178,0.8)]", // Cyan neon
+      bgColor: "bg-[#0891b2]/30 hover:bg-[#0891b2]/40 border-[#0891b2] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(8,145,178,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(8,145,178,0.9)]", // Cyan neon with white glow
       feature: "gestione_clienti"
     },
     {
@@ -95,7 +95,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Building2,
       route: "/suppliers",
       color: "text-white",
-      bgColor: "bg-[#f59e0b]/30 hover:bg-[#f59e0b]/40 border-[#f59e0b]/50 hover:border-[#f59e0b] shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:shadow-[0_0_50px_rgba(245,158,11,0.8)]", // Orange neon
+      bgColor: "bg-[#f59e0b]/30 hover:bg-[#f59e0b]/40 border-[#f59e0b] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(245,158,11,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(245,158,11,0.9)]", // Orange neon with white glow
       feature: "gestione_ordini"
     },
     {
@@ -103,7 +103,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: UserCheck,
       route: "/employees",
       color: "text-white",
-      bgColor: "bg-[#6b7280]/30 hover:bg-[#6b7280]/40 border-[#6b7280]/50 hover:border-[#6b7280] shadow-[0_0_30px_rgba(107,114,128,0.5)] hover:shadow-[0_0_50px_rgba(107,114,128,0.8)]", // Gray neon
+      bgColor: "bg-[#6b7280]/30 hover:bg-[#6b7280]/40 border-[#6b7280] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(107,114,128,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(107,114,128,0.9)]", // Gray neon with white glow
       feature: "gestione_dipendenti"
     },
     {
@@ -111,7 +111,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Euro,
       route: "/finances",
       color: "text-white",
-      bgColor: "bg-[#7c3aed]/30 hover:bg-[#7c3aed]/40 border-[#7c3aed]/50 hover:border-[#7c3aed] shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.8)]", // Purple neon
+      bgColor: "bg-[#7c3aed]/30 hover:bg-[#7c3aed]/40 border-[#7c3aed] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(124,58,237,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(124,58,237,0.9)]", // Purple neon with white glow
       feature: "gestione_finanziaria"
     },
     {
@@ -119,7 +119,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Settings,
       route: "/profile",
       color: "text-white",
-      bgColor: "bg-[#1f2937]/30 hover:bg-[#1f2937]/40 border-[#1f2937]/50 hover:border-[#1f2937] shadow-[0_0_30px_rgba(31,41,55,0.5)] hover:shadow-[0_0_50px_rgba(31,41,55,0.8)]" // Dark neon
+      bgColor: "bg-[#1f2937]/30 hover:bg-[#1f2937]/40 border-[#94a3b8] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(148,163,184,0.6)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(148,163,184,0.9)]" // Light gray neon with white glow
     }
   ];
 
