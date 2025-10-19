@@ -145,13 +145,20 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 p-6 relative overflow-hidden">
+      {/* Enhanced Background Pattern */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-56 h-56 bg-white rounded-full blur-3xl"></div>
+        <div className="absolute top-3/4 left-1/2 w-40 h-40 bg-white/50 rounded-full blur-2xl"></div>
+      </div>
+      
       {/* Header */}
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 rounded-2xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-8 mb-8 relative overflow-hidden transition-all duration-500 hover:bg-white/15 hover:border-white/30">
           {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
           
           <div className="relative z-10">
             {/* Centered Logo */}
@@ -166,7 +173,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             {/* Info Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* User Info */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+               <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
                 <div className="flex items-center gap-2 mb-2">
                   <UserCheck className="h-4 w-4 text-white" />
                   <span className="text-xs text-white/70 uppercase tracking-wide">Utente</span>
@@ -176,7 +183,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
               </div>
               
               {/* Date and Time */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+               <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar className="h-4 w-4 text-white" />
                   <span className="text-xs text-white/90">{currentDate}</span>
@@ -188,7 +195,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
               </div>
               
               {/* Store Info */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Store className="h-4 w-4 text-white" />
                   <span className="text-xs text-white/70 uppercase tracking-wide">Negozio</span>
@@ -232,7 +239,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-12 text-gray-500 text-sm">
+        <div className="text-center mt-12 text-white/50 text-sm drop-shadow-sm">
           © 2025 GOLDEN TRADE O&A SRL. Tutti i diritti sono riservati.
         </div>
       </div>
