@@ -223,7 +223,7 @@ export function InventoryContent({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-xl p-6">
+      <div className="bg-white rounded-xl shadow-xl p-4 sm:p-6">
         <InventoryFilters
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}

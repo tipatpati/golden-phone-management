@@ -132,14 +132,14 @@ export function InventoryFilters({
         </Button>
       </div>
 
-      {/* Filters Row */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Filters Row - Stack on mobile, wrap on tablet/desktop */}
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-2">
         {/* Category Filter */}
         <Select 
           value={filters.categoryId === 'all' ? 'all' : filters.categoryId.toString()} 
           onValueChange={(value) => setCategoryId(value === 'all' ? 'all' : parseInt(value))}
         >
-          <SelectTrigger className="w-[180px] h-10">
+          <SelectTrigger className="w-full sm:w-[180px] h-10">
             <SelectValue>
               {filters.categoryId === 'all' 
                 ? 'Tutte le categorie' 
@@ -167,7 +167,7 @@ export function InventoryFilters({
           value={filters.stockStatus} 
           onValueChange={(value) => setStockStatus(value as StockStatus)}
         >
-          <SelectTrigger className="w-[160px] h-10">
+          <SelectTrigger className="w-full sm:w-[160px] h-10">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -185,7 +185,7 @@ export function InventoryFilters({
           onValueChange={(value) => setDatePreset(value as DatePreset)}
         >
           <SelectTrigger className={cn(
-            "w-[180px] h-10",
+            "w-full sm:w-[180px] h-10",
             filters.datePreset !== 'all' && "border-primary"
           )}>
             <Calendar className="h-4 w-4 mr-2" />
@@ -201,62 +201,67 @@ export function InventoryFilters({
           </SelectContent>
         </Select>
 
-        {/* Clear Filters */}
-        {hasActiveFilters && (
+        {/* Clear Filters & Advanced - Row on mobile */}
+        <div className="flex w-full sm:w-auto gap-2">
+          {hasActiveFilters && (
+            <Button 
+              variant="text" 
+              size="sm"
+              onClick={clearFilters}
+              className="h-10 flex-1 sm:flex-none"
+            >
+              <FilterX className="h-4 w-4 mr-2" />
+              Cancella filtri
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          )}
+
+          {/* Advanced Filters Toggle */}
           <Button 
-            variant="text" 
+            variant="outlined" 
             size="sm"
-            onClick={clearFilters}
-            className="h-10"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={cn("h-10", hasActiveFilters ? "flex-1 sm:flex-none" : "w-full sm:w-auto")}
           >
-            <FilterX className="h-4 w-4 mr-2" />
-            Cancella filtri
-            {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {activeFilterCount}
-              </Badge>
-            )}
+            {showAdvanced ? <ChevronUp className="h-4 w-4 mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
+            Avanzati
           </Button>
-        )}
+        </div>
 
-        {/* Advanced Filters Toggle */}
-        <Button 
-          variant="outlined" 
-          size="sm"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="h-10"
-        >
-          {showAdvanced ? <ChevronUp className="h-4 w-4 mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
-          Avanzati
-        </Button>
+        <div className="hidden sm:block sm:flex-1" />
 
-        <div className="flex-1" />
-
-        {/* View Mode & Add Product */}
-        <div className="flex items-center gap-2">
+        {/* View Mode & Add Product - Full row on mobile */}
+        <div className="flex w-full sm:w-auto items-center gap-2">
           {canModifyProducts && onAddProduct && (
-            <Button onClick={onAddProduct} variant="filled" className="flex items-center gap-2 h-10">
+            <Button onClick={onAddProduct} variant="filled" className="flex items-center gap-2 h-10 flex-1 sm:flex-none">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Aggiungi</span>
+              <span className="sm:hidden">Nuovo Prodotto</span>
             </Button>
           )}
           
-          <Button 
-            variant={viewMode === "grid" ? "filled" : "outlined"} 
-            size="icon"
-            onClick={() => onViewModeChange("grid")}
-            className="h-10 w-10"
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant={viewMode === "list" ? "filled" : "outlined"} 
-            size="icon"
-            onClick={() => onViewModeChange("list")}
-            className="h-10 w-10"
-          >
-            <List className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant={viewMode === "grid" ? "filled" : "outlined"} 
+              size="icon"
+              onClick={() => onViewModeChange("grid")}
+              className="h-10 w-10"
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant={viewMode === "list" ? "filled" : "outlined"} 
+              size="icon"
+              onClick={() => onViewModeChange("list")}
+              className="h-10 w-10"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
