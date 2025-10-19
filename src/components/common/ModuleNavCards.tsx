@@ -81,15 +81,15 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
           const getModuleColors = (module: string) => {
             switch (module) {
               case 'sales':
-                return 'bg-green-600 hover:bg-green-700 text-white';
+                return 'bg-blue-600 hover:bg-blue-700 text-white';
               case 'clients':
                 return 'bg-purple-600 hover:bg-purple-700 text-white';
               case 'repairs':
                 return 'bg-orange-600 hover:bg-orange-700 text-white';
               case 'suppliers':
-                return 'bg-cyan-600 hover:bg-cyan-700 text-white';
+                return 'bg-yellow-600 hover:bg-yellow-700 text-white';
               case 'inventory':
-                return 'bg-blue-600 hover:bg-blue-700 text-white';
+                return 'bg-green-600 hover:bg-green-700 text-white';
               default:
                 return 'bg-primary hover:bg-primary/90 text-primary-foreground';
             }
