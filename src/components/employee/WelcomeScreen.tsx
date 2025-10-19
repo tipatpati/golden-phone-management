@@ -6,7 +6,7 @@ import {
   ShoppingCart, 
   Package, 
   Users, 
-  Wrench, 
+  Zap, 
   TrendingUp, 
   FileText, 
   Building2,
@@ -65,7 +65,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
     },
     {
       title: "RIPARAZIONI",
-      icon: Wrench,
+      icon: Zap,
       route: "/repairs",
       color: "text-white",
       bgColor: "bg-[#dc2626] hover:bg-[#b91c1c]", // Red like "RIPARAZIONE" in reference
