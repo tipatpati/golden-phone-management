@@ -4,64 +4,70 @@
 
 @layer base {
   :root {
-    /* Futuristic Tech Color Tokens - Light Theme */
-    --background: 210 100% 98%;
-    --foreground: 222 20% 15%;
+    /* Futuristic Neon Color Tokens - Light Theme */
+    --background: 220 40% 98%;
+    --foreground: 222 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 20% 15%;
+    --card-foreground: 222 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 20% 15%;
+    --popover-foreground: 222 25% 12%;
 
-    /* Primary Colors - Electric Blue */
-    --primary: 217 91% 60%;
+    /* Primary Colors - Electric Neon Blue */
+    --primary: 217 100% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-container: 217 100% 97%;
-    --on-primary-container: 217 91% 25%;
-    --primary-variant: 220 85% 65%;
+    --primary-container: 217 100% 98%;
+    --on-primary-container: 217 100% 20%;
+    --primary-variant: 230 100% 60%;
 
-    /* Secondary Colors - Tech Purple */
-    --secondary: 258 70% 65%;
+    /* Secondary Colors - Neon Purple */
+    --secondary: 280 90% 60%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-container: 258 100% 97%;
-    --on-secondary-container: 258 70% 25%;
+    --secondary-container: 280 100% 98%;
+    --on-secondary-container: 280 90% 20%;
 
-    /* Tertiary Colors - Cyan Accent */
-    --tertiary: 190 85% 60%;
+    /* Tertiary Colors - Neon Cyan */
+    --tertiary: 180 100% 50%;
     --tertiary-foreground: 0 0% 100%;
-    --tertiary-container: 190 100% 97%;
-    --on-tertiary-container: 190 85% 25%;
+    --tertiary-container: 180 100% 98%;
+    --on-tertiary-container: 180 100% 20%;
 
-    /* Surface Colors - Ultra Light with Subtle Blue Tint */
-    --surface: 210 50% 99%;
-    --surface-dim: 210 40% 96%;
+    /* Surface Colors - Clean White/Light */
+    --surface: 220 30% 99%;
+    --surface-dim: 220 25% 96%;
     --surface-bright: 0 0% 100%;
-    --surface-container-lowest: 210 60% 99%;
-    --surface-container-low: 210 50% 98%;
-    --surface-container: 210 45% 97%;
-    --surface-container-high: 210 40% 96%;
-    --surface-container-highest: 210 35% 95%;
-    --on-surface: 222 20% 20%;
-    --on-surface-variant: 222 15% 45%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 220 30% 98%;
+    --surface-container: 220 25% 97%;
+    --surface-container-high: 220 20% 96%;
+    --surface-container-highest: 220 15% 95%;
+    --on-surface: 222 25% 15%;
+    --on-surface-variant: 222 15% 40%;
 
-    /* Glassmorphism Effects */
-    --glass-bg: 0 0% 100% / 0.4;
-    --glass-border: 217 91% 60% / 0.15;
-    --glass-shadow: 217 91% 40% / 0.08;
-    --glass-backdrop-blur: 12px;
+    /* Neon Glassmorphism Effects */
+    --glass-bg: 255 255 255 / 0.6;
+    --glass-border: 217 100% 55% / 0.2;
+    --glass-shadow: 217 100% 50% / 0.1;
+    --glass-backdrop-blur: 16px;
     
     /* Legacy compatibility */
-    --accent: 190 85% 60%;
+    --accent: 180 100% 50%;
     --accent-foreground: 0 0% 100%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 222 15% 50%;
-    --destructive: 0 85% 65%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 222 15% 45%;
+    --destructive: 0 90% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 217 30% 88%;
-    --input: 217 30% 92%;
-    --ring: 217 91% 60%;
-    --outline-variant: 217 20% 85%;
+    --border: 220 20% 90%;
+    --input: 220 20% 94%;
+    --ring: 217 100% 55%;
+    --outline-variant: 220 15% 88%;
+
+    /* Neon Glow Colors */
+    --neon-blue: 217 100% 55%;
+    --neon-purple: 280 90% 60%;
+    --neon-cyan: 180 100% 50%;
+    --neon-pink: 330 90% 60%;
 
     /* Material Design 3 Enhanced Motion System */
     --motion-duration-extra-short: 25ms;      /* 25ms for instantaneous feedback */
@@ -99,11 +105,11 @@
 
     --radius: 0.5rem;
 
-    /* Tech Gradient Colors */
-    --gradient-tech-start: 217 91% 60%;
-    --gradient-tech-end: 190 85% 60%;
-    --gradient-accent-start: 258 70% 65%;
-    --gradient-accent-end: 217 91% 60%;
+    /* Neon Gradient Colors */
+    --gradient-neon-blue: 217 100% 55%;
+    --gradient-neon-cyan: 180 100% 50%;
+    --gradient-neon-purple: 280 90% 60%;
+    --gradient-neon-pink: 330 90% 60%;
 
     /* Material Design 8dp Grid System */
     --spacing-1: 0.25rem;    /* 4dp */
@@ -687,47 +693,51 @@
     backdrop-filter: blur(var(--glass-backdrop-blur));
     -webkit-backdrop-filter: blur(var(--glass-backdrop-blur));
     border: 1px solid hsl(var(--glass-border));
-    box-shadow: 0 8px 32px 0 hsl(var(--glass-shadow));
+    box-shadow: 0 8px 32px 0 hsl(var(--glass-shadow)),
+                0 0 20px 0 hsl(var(--neon-blue) / 0.05);
   }
 
   .glass-card {
-    @apply glass rounded-xl md-motion-smooth;
+    @apply glass rounded-2xl md-motion-smooth;
   }
 
   .glass-card:hover {
-    background: hsl(var(--glass-bg) / 0.6);
-    border-color: hsl(var(--glass-border) / 0.3);
-    box-shadow: 0 12px 40px 0 hsl(var(--glass-shadow) / 1.2);
+    background: hsl(var(--glass-bg) / 0.8);
+    border-color: hsl(var(--neon-blue) / 0.3);
+    box-shadow: 0 12px 40px 0 hsl(var(--glass-shadow) / 1.2),
+                0 0 30px 0 hsl(var(--neon-blue) / 0.15);
     transform: translateY(-2px);
   }
 
   .glass-intense {
-    background: hsl(var(--glass-bg) / 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--glass-border) / 0.3);
+    background: hsl(var(--glass-bg) / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--glass-border) / 0.4);
+    box-shadow: 0 8px 32px 0 hsl(var(--glass-shadow)),
+                0 0 40px 0 hsl(var(--neon-cyan) / 0.1);
   }
 
-  /* Tech Gradient Utilities */
+  /* Neon Gradient Utilities */
   .gradient-tech {
-    background: linear-gradient(135deg, hsl(var(--gradient-tech-start)), hsl(var(--gradient-tech-end)));
+    background: linear-gradient(135deg, hsl(var(--neon-blue)), hsl(var(--neon-cyan)));
   }
 
   .gradient-tech-text {
-    background: linear-gradient(135deg, hsl(var(--gradient-tech-start)), hsl(var(--gradient-tech-end)));
+    background: linear-gradient(135deg, hsl(var(--neon-blue)), hsl(var(--neon-cyan)));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--gradient-accent-start)), hsl(var(--gradient-accent-end)));
+    background: linear-gradient(135deg, hsl(var(--neon-purple)), hsl(var(--neon-pink)));
   }
 
-  /* Futuristic Border Glow */
+  /* Neon Border Glow */
   .border-glow {
     position: relative;
-    border: 1px solid hsl(var(--primary) / 0.3);
+    border: 1px solid hsl(var(--neon-blue) / 0.2);
   }
 
   .border-glow::before {
@@ -736,7 +746,11 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--tertiary)));
+    background: linear-gradient(135deg, 
+      hsl(var(--neon-blue)), 
+      hsl(var(--neon-cyan)),
+      hsl(var(--neon-purple))
+    );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -745,31 +759,16 @@
   }
 
   .border-glow:hover::before {
-    opacity: 1;
+    opacity: 0.6;
   }
 
-  /* Subtle Scan Line Effect */
-  .scan-lines {
-    position: relative;
-    overflow: hidden;
+  /* Neon Text Glow */
+  .neon-text {
+    text-shadow: 0 0 10px hsl(var(--neon-blue) / 0.5),
+                 0 0 20px hsl(var(--neon-blue) / 0.3),
+                 0 0 30px hsl(var(--neon-blue) / 0.2);
   }
 
-  .scan-lines::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(var(--primary) / 0.03) 2px,
-      hsl(var(--primary) / 0.03) 4px
-    );
-    pointer-events: none;
-  }
 
 /* Aurora Background Effect */
 .aurora-background {
