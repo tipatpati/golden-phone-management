@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { logger } from "@/utils/logger";
+import goldenPhoneLogo from "@/assets/golden-phone-logo.png";
 import { 
   ShoppingCart, 
   Package, 
@@ -161,9 +162,11 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
               </div>
               
               <div>
-                <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-2">
-                  GOLDEN TRADE O&A SRL
-                </h1>
+                <img 
+                  src={goldenPhoneLogo} 
+                  alt="Golden Phone Logo" 
+                  className="h-12 lg:h-16 xl:h-20 w-auto mb-2"
+                />
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
                     <UserCheck className="h-4 w-4 text-white" />
