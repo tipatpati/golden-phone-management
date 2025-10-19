@@ -14,29 +14,34 @@ export const ClientsStats = ({ clients }: ClientsStatsProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card className="card-glow border-0 shadow-xl bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-blue-700">Individual</CardTitle>
-          <div className="rounded-full bg-gradient-to-br from-blue-500 to-blue-600 p-2.5 shadow-md">
-            <User className="h-4 w-4 text-primary-foreground" />
+          <CardTitle className="text-sm font-medium text-on-surface">Individual</CardTitle>
+          <div className="rounded-full bg-primary/10 p-2.5 ring-1 ring-primary/20">
+            <User className="h-4 w-4 text-primary" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-900">{individualClients.length}</div>
-          <div className="text-sm text-blue-600">Personal Clients</div>
+          <div className="text-3xl font-semibold tracking-tight gradient-tech-text">{individualClients.length}</div>
+          <div className="text-sm text-on-surface-variant mt-1">Personal Clients</div>
         </CardContent>
       </Card>
       
-      <Card className="card-glow border-0 shadow-xl bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-purple-700">Business</CardTitle>
-          <div className="rounded-full bg-gradient-to-br from-purple-500 to-purple-600 p-2.5 shadow-md">
-            <Building className="h-4 w-4 text-primary-foreground" />
+          <CardTitle className="text-sm font-medium text-on-surface">Business</CardTitle>
+          <div className="rounded-full bg-secondary/10 p-2.5 ring-1 ring-secondary/20">
+            <Building className="h-4 w-4 text-secondary" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-purple-900">{businessClients.length}</div>
-          <div className="text-sm text-purple-600">Business Clients</div>
+          <div className="text-3xl font-semibold tracking-tight gradient-accent" style={{
+            background: 'linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--tertiary)))',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>{businessClients.length}</div>
+          <div className="text-sm text-on-surface-variant mt-1">Business Clients</div>
         </CardContent>
       </Card>
     </div>

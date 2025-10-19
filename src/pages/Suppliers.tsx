@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/ui/search-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -87,11 +87,11 @@ const Suppliers = () => {
         </TabsList>
 
         <TabsContent value="suppliers" className="space-y-4 sm:space-y-6">
-          <Card>
+          <Card variant="elevated" className="glass-card border-glow">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Building2 className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-on-surface">
+                  <Building2 className="h-5 w-5 text-primary" />
                   Supplier Management
                 </CardTitle>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -156,11 +156,11 @@ const Suppliers = () => {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4 sm:space-y-6">
-          <Card>
+          <Card variant="elevated" className="glass-card border-glow">
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Receipt className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-on-surface">
+                  <Receipt className="h-5 w-5 text-primary" />
                   Transaction History
                 </CardTitle>
                 <div className="flex gap-2">
