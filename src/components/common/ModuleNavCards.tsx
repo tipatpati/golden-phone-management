@@ -77,25 +77,6 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
           
-          // Define neon gradients using design tokens
-          const getModuleGradient = (title: string) => {
-            switch (title.toLowerCase()) {
-              case 'crea garentille':
-                return "from-primary to-primary-variant";
-              case 'trova cliente':
-                return "from-tertiary to-primary";
-              case 'visualizza inventario':
-                return "from-primary to-tertiary";
-              case 'nuova riparazione':
-                return "from-secondary to-tertiary";
-              case 'fornitori':
-                return "from-primary-variant to-secondary";
-              default:
-                return "from-primary to-secondary";
-            }
-          };
-          
-          const gradientClasses = getModuleGradient(action.title);
           
           return (
             <button
@@ -103,8 +84,8 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
               onClick={() => navigate(action.href)}
               className={`
                 glass-intense border-glow
-                bg-gradient-to-br ${gradientClasses}
-                text-white
+                bg-primary
+                text-primary-foreground
                 rounded-2xl p-6 
                 md-motion-smooth hover:scale-105
                 min-h-[120px]
@@ -112,7 +93,6 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
                 font-semibold text-lg
                 active:scale-95
                 shadow-lg hover:shadow-2xl
-                ring-1 ring-white/20
               `}
             >
               <IconComponent className="h-10 w-10 mb-3 drop-shadow-lg" />
