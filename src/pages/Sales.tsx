@@ -8,11 +8,12 @@ import { SalesList } from "@/components/sales/SalesList";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleUtils } from "@/utils/roleUtils";
-import { Card, CardContent } from "@/components/ui/updated-card";
-import { Button } from "@/components/ui/updated-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/common/PageLayout";
 import { AlertCircle } from "lucide-react";
-import { useDebouncedSalesSearch } from "@/components/sales/hooks/useDebouncedSalesSearch";
+import { useSales } from "@/services/sales/SalesReactQueryService";
+import { useSalesSearch } from "@/hooks/useSalesSearch";
 import { SalesDataService } from "@/services/sales/SalesDataService";
 import { SalesAnalyticsDashboard } from "@/components/sales/SalesAnalyticsDashboard";
 import { EnhancedSalesFilters, type SalesFilters } from "@/components/sales/EnhancedSalesFilters";
@@ -20,6 +21,7 @@ import { useSalesMonitoring } from "@/components/sales/SalesMonitoringService";
 import { AdvancedEditSaleDialog } from "@/components/sales/AdvancedEditSaleDialog";
 import { EnhancedDeleteDialog } from "@/components/sales/EnhancedDeleteDialog";
 import { BulkEditSaleDialog } from "@/components/sales/BulkEditSaleDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Garentille = () => {
   const { userRole } = useAuth();
@@ -31,21 +33,28 @@ const Garentille = () => {
   const [showBulkEdit, setShowBulkEdit] = React.useState(false);
   const [selectedSales, setSelectedSales] = React.useState<Sale[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = React.useState("");
-  const [activeSearchQuery, setActiveSearchQuery] = React.useState("");
   
-  const {
-    searchTerm: _,
-    setSearchTerm,
-    sales: garentille,
-    isLoading,
-    isSearching,
-    error
-  } = useDebouncedSalesSearch();
+  // Separate search and filters (matching inventory pattern)
+  const { searchQuery, searchTrigger, isSearching, executeSearch, clearSearch, completeSearch } = useSalesSearch();
+  const queryClient = useQueryClient();
+  const { data: salesData = [], isLoading, error, refetch } = useSales(searchQuery);
   
-  // Update the search hook with active query
+  // Ensure garentille is always an array
+  const garentille = Array.isArray(salesData) ? salesData : [];
+  
+  // Sync local search term with query changes
   React.useEffect(() => {
-    setSearchTerm(activeSearchQuery);
-  }, [activeSearchQuery, setSearchTerm]);
+    setLocalSearchQuery(searchQuery);
+  }, [searchQuery]);
+  
+  // Force refetch when search is triggered (matching inventory pattern)
+  React.useEffect(() => {
+    if (searchTrigger > 0) {
+      refetch().then(() => {
+        completeSearch();
+      });
+    }
+  }, [searchTrigger, refetch, completeSearch]);
   
   // Check if user is super admin to see analytics
   const canViewAnalytics = userRole === 'super_admin';
@@ -127,13 +136,13 @@ const Garentille = () => {
   };
 
   const handleSearch = () => {
-    setActiveSearchQuery(localSearchQuery);
+    executeSearch(localSearchQuery);
     trackInteraction('search', { query: localSearchQuery });
   };
 
   const handleClearSearch = () => {
     setLocalSearchQuery('');
-    setActiveSearchQuery('');
+    clearSearch();
     trackInteraction('search_clear');
   };
 
