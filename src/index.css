@@ -4,56 +4,64 @@
 
 @layer base {
   :root {
-    /* Material Design 3 Color Tokens */
-    --background: 0 0% 100%;
-    --foreground: 11 10% 14%;
+    /* Futuristic Tech Color Tokens - Light Theme */
+    --background: 210 100% 98%;
+    --foreground: 222 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 11 10% 14%;
+    --card-foreground: 222 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 11 10% 14%;
+    --popover-foreground: 222 20% 15%;
 
-    /* Material Design 3 Primary Colors - Blue */
+    /* Primary Colors - Electric Blue */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-container: 217 91% 95%;
-    --on-primary-container: 217 91% 10%;
+    --primary-container: 217 100% 97%;
+    --on-primary-container: 217 91% 25%;
+    --primary-variant: 220 85% 65%;
 
-    /* Material Design 3 Secondary Colors */
-    --secondary: 258 25% 25%;
+    /* Secondary Colors - Tech Purple */
+    --secondary: 258 70% 65%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-container: 258 25% 90%;
-    --on-secondary-container: 258 25% 10%;
+    --secondary-container: 258 100% 97%;
+    --on-secondary-container: 258 70% 25%;
 
-    /* Material Design 3 Tertiary Colors */
-    --tertiary: 45 100% 51%;
-    --tertiary-foreground: 0 0% 0%;
-    --tertiary-container: 45 100% 95%;
-    --on-tertiary-container: 45 100% 10%;
+    /* Tertiary Colors - Cyan Accent */
+    --tertiary: 190 85% 60%;
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-container: 190 100% 97%;
+    --on-tertiary-container: 190 85% 25%;
 
-    /* Material Design 3 Surface Colors */
-    --surface: 0 0% 99%;
-    --surface-dim: 0 0% 95%;
+    /* Surface Colors - Ultra Light with Subtle Blue Tint */
+    --surface: 210 50% 99%;
+    --surface-dim: 210 40% 96%;
     --surface-bright: 0 0% 100%;
-    --surface-container-lowest: 0 0% 100%;
-    --surface-container-low: 0 0% 97%;
-    --surface-container: 0 0% 95%;
-    --surface-container-high: 0 0% 92%;
-    --surface-container-highest: 0 0% 90%;
-    --on-surface: 11 10% 14%;
-    --on-surface-variant: 47 9% 43%;
+    --surface-container-lowest: 210 60% 99%;
+    --surface-container-low: 210 50% 98%;
+    --surface-container: 210 45% 97%;
+    --surface-container-high: 210 40% 96%;
+    --surface-container-highest: 210 35% 95%;
+    --on-surface: 222 20% 20%;
+    --on-surface-variant: 222 15% 45%;
 
+    /* Glassmorphism Effects */
+    --glass-bg: 0 0% 100% / 0.4;
+    --glass-border: 217 91% 60% / 0.15;
+    --glass-shadow: 217 91% 40% / 0.08;
+    --glass-backdrop-blur: 12px;
+    
     /* Legacy compatibility */
-    --accent: 217 91% 60%;
+    --accent: 190 85% 60%;
     --accent-foreground: 0 0% 100%;
-    --muted: 0 0% 95%;
-    --muted-foreground: 47 9% 43%;
-    --destructive: 5 85% 60%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 222 15% 50%;
+    --destructive: 0 85% 65%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5% 84%;
-    --input: 240 5% 84%;
+    --border: 217 30% 88%;
+    --input: 217 30% 92%;
     --ring: 217 91% 60%;
+    --outline-variant: 217 20% 85%;
 
     /* Material Design 3 Enhanced Motion System */
     --motion-duration-extra-short: 25ms;      /* 25ms for instantaneous feedback */
@@ -91,14 +99,11 @@
 
     --radius: 0.5rem;
 
-    /* Forest Theme Colors */
-    --forest-primary: 123 63% 35%;
-    --forest-primary-light: 123 63% 45%;
-    --forest-secondary: 142 52% 25%;
-    --forest-accent: 88 50% 53%;
-    --forest-muted: 120 15% 85%;
-    --glass-bg: 255 255 255 / 0.1;
-    --glass-border: 255 255 255 / 0.2;
+    /* Tech Gradient Colors */
+    --gradient-tech-start: 217 91% 60%;
+    --gradient-tech-end: 190 85% 60%;
+    --gradient-accent-start: 258 70% 65%;
+    --gradient-accent-end: 217 91% 60%;
 
     /* Material Design 8dp Grid System */
     --spacing-1: 0.25rem;    /* 4dp */
@@ -151,34 +156,57 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-glow: 230 100% 85%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --primary-variant: 220 85% 65%;
+    --primary-glow: 217 100% 75%;
 
-    --secondary: 217.2 32.6% 40%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 258 70% 65%;
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 172 92% 32%;
+    --tertiary: 190 85% 60%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --accent: 190 85% 60%;
     --accent-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 85% 65%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 217 32% 20%;
+    --input: 217 32% 20%;
+    --ring: 217 91% 60%;
+    --outline-variant: 217 20% 25%;
+
+    /* Surface Colors - Dark with Blue Tint */
+    --surface: 222 47% 10%;
+    --surface-dim: 222 47% 6%;
+    --surface-bright: 222 47% 16%;
+    --surface-container-lowest: 222 47% 8%;
+    --surface-container-low: 222 47% 11%;
+    --surface-container: 222 47% 13%;
+    --surface-container-high: 222 47% 15%;
+    --surface-container-highest: 222 47% 18%;
+    --on-surface: 210 40% 98%;
+    --on-surface-variant: 215 20% 75%;
+
+    /* Glassmorphism Effects - Dark */
+    --glass-bg: 222 47% 11% / 0.5;
+    --glass-border: 217 91% 60% / 0.2;
+    --glass-shadow: 217 91% 40% / 0.15;
+    --glass-backdrop-blur: 16px;
     
     --sidebar-background: 222.2 84% 10%;
     --sidebar-foreground: 210 40% 98%;
@@ -649,6 +677,96 @@
   .md-focus-smooth:focus-visible {
     outline-color: hsl(var(--primary));
     outline-offset: 4px;
+  }
+
+  /* Glassmorphism Utilities */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--glass-backdrop-blur));
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: 0 8px 32px 0 hsl(var(--glass-shadow));
+  }
+
+  .glass-card {
+    @apply glass rounded-xl md-motion-smooth;
+  }
+
+  .glass-card:hover {
+    background: hsl(var(--glass-bg) / 0.6);
+    border-color: hsl(var(--glass-border) / 0.3);
+    box-shadow: 0 12px 40px 0 hsl(var(--glass-shadow) / 1.2);
+    transform: translateY(-2px);
+  }
+
+  .glass-intense {
+    background: hsl(var(--glass-bg) / 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border) / 0.3);
+  }
+
+  /* Tech Gradient Utilities */
+  .gradient-tech {
+    background: linear-gradient(135deg, hsl(var(--gradient-tech-start)), hsl(var(--gradient-tech-end)));
+  }
+
+  .gradient-tech-text {
+    background: linear-gradient(135deg, hsl(var(--gradient-tech-start)), hsl(var(--gradient-tech-end)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--gradient-accent-start)), hsl(var(--gradient-accent-end)));
+  }
+
+  /* Futuristic Border Glow */
+  .border-glow {
+    position: relative;
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  .border-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--tertiary)));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--motion-duration-medium-2) var(--motion-emphasized);
+  }
+
+  .border-glow:hover::before {
+    opacity: 1;
+  }
+
+  /* Subtle Scan Line Effect */
+  .scan-lines {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-lines::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--primary) / 0.03) 2px,
+      hsl(var(--primary) / 0.03) 4px
+    );
+    pointer-events: none;
   }
 
 /* Aurora Background Effect */

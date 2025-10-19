@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
   title: string;
@@ -19,14 +20,17 @@ export function PageHeader({
   className = "" 
 }: PageHeaderProps) {
   return (
-    <div className={`bg-surface-container-highest rounded-xl sm:rounded-2xl md-elevation-1 p-4 sm:p-6 lg:p-8 border-0 ${className}`}>
+    <div className={cn(
+      "glass-card p-4 sm:p-6 lg:p-8 border-glow",
+      className
+    )}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight gradient-tech-text">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-on-surface-variant mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg leading-relaxed">
+            <p className="text-on-surface-variant mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg leading-relaxed font-light">
               {subtitle}
             </p>
           )}
