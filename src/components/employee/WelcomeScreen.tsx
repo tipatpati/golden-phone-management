@@ -155,84 +155,111 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       
       {/* Header */}
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-4 sm:p-6 lg:p-10 mb-8 relative overflow-hidden transition-all duration-500 hover:bg-white/15 hover:border-white/30 animate-fade-in">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-5 sm:p-7 lg:p-12 mb-10 relative overflow-hidden transition-all duration-500 hover:bg-white/15 hover:border-white/30 animate-fade-in">
           {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
           
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-stretch">
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Left Section - Logo and User Info */}
-            <div className="lg:col-span-3 flex flex-col gap-5">
-              {/* Logo */}
+            <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-6">
+              {/* Logo Container */}
               <div className="flex justify-center lg:justify-start">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105">
+                <div className="group relative bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(255,255,255,0.2)]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <img 
                     src={goldenPhoneLogo} 
                     alt="Golden Phone Logo" 
-                    className="h-14 lg:h-16 xl:h-18 w-auto"
+                    className="relative h-14 sm:h-16 lg:h-20 w-auto drop-shadow-2xl"
                   />
                 </div>
               </div>
               
               {/* User Info Card */}
-              <div className="flex-1 bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3.5 border border-white/30 hover:bg-white/15 hover:border-white/40 transition-all duration-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="text-[10px] sm:text-xs text-white/70 uppercase tracking-wider font-semibold">Utente Attivo</div>
-                  <div className="px-2.5 py-1 bg-white/20 rounded-full text-[10px] sm:text-xs font-bold text-white backdrop-blur-sm border border-white/20">
-                    admin
+              <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:border-white/40 hover:from-white/20 hover:to-white/10 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:scale-[1.02]">
+                {/* Header Row */}
+                <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)] animate-pulse"></div>
+                    <span className="text-[11px] text-white/80 uppercase tracking-[0.15em] font-bold">Utente Attivo</span>
+                  </div>
+                  <div className="px-3 py-1.5 bg-white/25 hover:bg-white/30 rounded-full text-xs font-black text-white backdrop-blur-sm border border-white/30 shadow-inner transition-colors duration-200">
+                    ADMIN
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-br from-white/25 to-white/10 rounded-xl p-2 border border-white/20">
-                    <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-lg" />
+                
+                {/* User Details */}
+                <div className="flex items-center gap-3.5">
+                  <div className="relative bg-gradient-to-br from-white/30 to-white/15 rounded-xl p-2.5 border border-white/30 shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 to-white/20 rounded-xl"></div>
+                    <UserCheck className="relative h-5 w-5 text-white drop-shadow-lg" />
                   </div>
-                  <div className="text-base sm:text-lg lg:text-xl font-bold text-white drop-shadow-md">{config.name}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-lg sm:text-xl font-black text-white drop-shadow-lg truncate">{config.name}</div>
+                    <div className="text-xs text-white/70 font-medium">Sistema di Gestione</div>
+                  </div>
                 </div>
               </div>
             </div>
             
             {/* Center Section - Date & Time (Hero Feature) */}
-            <div className="lg:col-span-6 flex items-center">
-              <div className="w-full bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-lg rounded-3xl px-6 py-8 lg:py-10 border-2 border-white/40 hover:border-white/50 transition-all duration-300 shadow-[0_20px_60px_rgba(255,255,255,0.15)] hover:shadow-[0_25px_70px_rgba(255,255,255,0.25)] hover:scale-[1.02]">
-                <div className="text-center space-y-4">
-                  {/* Date */}
-                  <div className="flex items-center justify-center gap-2.5">
-                    <div className="bg-white/20 rounded-lg p-1.5 backdrop-blur-sm">
-                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center">
+              <div className="w-full max-w-2xl bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-8 py-10 lg:py-12 border-2 border-white/50 hover:border-white/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3)] hover:scale-[1.01] relative overflow-hidden">
+                {/* Inner glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-[2rem]"></div>
+                
+                <div className="relative text-center space-y-5">
+                  {/* Date Header */}
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="bg-white/30 rounded-xl p-2 backdrop-blur-sm border border-white/40 shadow-lg">
+                      <Calendar className="h-5 w-5 text-white drop-shadow-lg" />
                     </div>
-                    <span className="text-xs sm:text-sm text-white/95 font-semibold tracking-wide">{currentDate}</span>
+                    <span className="text-sm sm:text-base text-white font-bold tracking-wide drop-shadow-lg">{currentDate}</span>
                   </div>
                   
-                  {/* Time - Main Feature */}
-                  <div className="flex items-center justify-center gap-3 lg:gap-4">
-                    <div className="bg-white/20 rounded-xl p-2 backdrop-blur-sm border border-white/30">
-                      <Clock className="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-white drop-shadow-lg" />
+                  {/* Time Display - Main Hero */}
+                  <div className="flex items-center justify-center gap-4 lg:gap-5">
+                    <div className="bg-gradient-to-br from-white/30 to-white/20 rounded-2xl p-3 backdrop-blur-sm border-2 border-white/40 shadow-2xl">
+                      <Clock className="h-9 w-9 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white drop-shadow-2xl" />
                     </div>
-                    <span className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white tracking-tighter drop-shadow-2xl">
-                      {currentTime}
-                    </span>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/30 to-white/20 blur-2xl"></div>
+                      <span className="relative text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-white tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] [text-shadow:_0_0_30px_rgb(255_255_255_/_40%)]">
+                        {currentTime}
+                      </span>
+                    </div>
                   </div>
                   
                   {/* Label */}
                   <div className="pt-2">
-                    <span className="text-[10px] sm:text-xs text-white/70 uppercase tracking-[0.2em] font-bold">Ora Corrente</span>
+                    <div className="inline-block px-4 py-1.5 bg-white/20 rounded-full backdrop-blur-sm border border-white/30">
+                      <span className="text-[11px] text-white/90 uppercase tracking-[0.25em] font-black">Ora Corrente</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
             {/* Right Section - Store Info */}
-            <div className="lg:col-span-3 flex items-stretch">
-              <div className="w-full bg-white/10 backdrop-blur-md rounded-2xl px-5 py-6 border border-white/30 hover:bg-white/15 hover:border-white/40 transition-all duration-200 flex flex-col justify-center shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-gradient-to-br from-white/25 to-white/10 rounded-xl p-2.5 border border-white/20">
-                    <Store className="h-5 w-5 text-white drop-shadow-lg" />
+            <div className="lg:col-span-3 xl:col-span-3 flex items-stretch">
+              <div className="w-full bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-6 py-7 border border-white/30 hover:border-white/40 hover:from-white/20 hover:to-white/10 transition-all duration-300 flex flex-col justify-center shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:scale-[1.02]">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/20">
+                  <div className="relative bg-gradient-to-br from-white/30 to-white/15 rounded-xl p-2.5 border border-white/30 shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 to-white/20 rounded-xl"></div>
+                    <Store className="relative h-5 w-5 text-white drop-shadow-lg" />
                   </div>
-                  <span className="text-[10px] sm:text-xs text-white/70 uppercase tracking-wider font-semibold">Punto Vendita</span>
+                  <span className="text-[11px] text-white/80 uppercase tracking-[0.15em] font-bold">Punto Vendita</span>
                 </div>
-                <div className="space-y-1.5 pl-1">
-                  <div className="text-xs sm:text-sm font-semibold text-white/90 tracking-wide">Nome du magasin</div>
-                  <div className="text-2xl sm:text-3xl font-black text-white drop-shadow-md tracking-tight">CORSO</div>
+                
+                {/* Store Details */}
+                <div className="space-y-2 pl-0.5">
+                  <div className="text-xs sm:text-sm font-semibold text-white/80 tracking-wide">Nome du magasin</div>
+                  <div className="text-3xl sm:text-4xl font-black text-white drop-shadow-lg tracking-tight leading-none">CORSO</div>
+                  <div className="flex items-center gap-2 pt-2">
+                    <div className="flex-1 h-1 bg-gradient-to-r from-white/40 via-white/20 to-transparent rounded-full"></div>
+                  </div>
                 </div>
               </div>
             </div>
