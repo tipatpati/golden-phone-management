@@ -77,14 +77,30 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
           
+          // Define color scheme for each module matching dashboard
+          const getModuleColors = (module: string) => {
+            switch (module) {
+              case 'sales':
+                return 'bg-green-600 hover:bg-green-700 text-white';
+              case 'clients':
+                return 'bg-purple-600 hover:bg-purple-700 text-white';
+              case 'repairs':
+                return 'bg-orange-600 hover:bg-orange-700 text-white';
+              case 'suppliers':
+                return 'bg-cyan-600 hover:bg-cyan-700 text-white';
+              case 'inventory':
+                return 'bg-blue-600 hover:bg-blue-700 text-white';
+              default:
+                return 'bg-primary hover:bg-primary/90 text-primary-foreground';
+            }
+          };
           
           return (
             <button
               key={index}
               onClick={() => navigate(action.href)}
               className={`
-                bg-primary
-                text-primary-foreground
+                ${getModuleColors(action.module)}
                 rounded-2xl p-6 
                 md-motion-smooth hover:scale-105
                 min-h-[120px]
@@ -92,7 +108,7 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
                 font-semibold text-lg
                 active:scale-95
                 shadow-xl hover:shadow-2xl
-                border border-primary-foreground/10
+                border border-white/10
               `}
             >
               <IconComponent className="h-10 w-10 mb-3 drop-shadow-lg" />
