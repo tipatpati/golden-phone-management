@@ -155,53 +155,72 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       
       {/* Header */}
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-8 mb-8 relative overflow-hidden transition-all duration-500 hover:bg-white/15 hover:border-white/30">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] p-6 lg:p-8 mb-8 relative overflow-hidden transition-all duration-500 hover:bg-white/15 hover:border-white/30">
           {/* Decorative background elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
           
-          <div className="relative z-10">
-            {/* Centered Logo */}
-            <div className="flex justify-center mb-6">
-              <img 
-                src={goldenPhoneLogo} 
-                alt="Golden Phone Logo" 
-                className="h-20 lg:h-24 xl:h-28 w-auto"
-              />
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Left Section - Logo and User Info */}
+            <div className="lg:col-span-4 flex flex-col items-center lg:items-start gap-4">
+              {/* Logo */}
+              <div className="flex justify-center lg:justify-start w-full">
+                <img 
+                  src={goldenPhoneLogo} 
+                  alt="Golden Phone Logo" 
+                  className="h-16 lg:h-20 w-auto transform hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              
+              {/* User Info Card */}
+              <div className="w-full bg-white/10 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:bg-white/15 transition-all duration-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white/20 rounded-full p-2">
+                    <UserCheck className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-white/70 uppercase tracking-wide font-medium">Utente Attivo</div>
+                    <div className="text-lg font-bold text-white">{config.name}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/20">
+                  <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold text-white">
+                    admin
+                  </div>
+                </div>
+              </div>
             </div>
             
-            {/* Info Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* User Info */}
-               <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <UserCheck className="h-4 w-4 text-white" />
-                  <span className="text-xs text-white/70 uppercase tracking-wide">Utente</span>
-                </div>
-                <div className="font-semibold text-white">{config.name}</div>
-                <div className="text-sm text-white/80">admin</div>
-              </div>
-              
-              {/* Date and Time */}
-               <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-white" />
-                  <span className="text-xs text-white/90">{currentDate}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-white" />
-                  <span className="text-2xl font-bold text-white">{currentTime}</span>
+            {/* Center Section - Date & Time (Large Feature) */}
+            <div className="lg:col-span-5">
+              <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-3xl px-6 py-6 border border-white/30 hover:border-white/40 transition-all duration-200 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <Calendar className="h-5 w-5 text-white/90" />
+                    <span className="text-sm text-white/90 font-medium">{currentDate}</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <Clock className="h-8 w-8 text-white" />
+                    <span className="text-5xl font-bold text-white tracking-tight drop-shadow-lg">{currentTime}</span>
+                  </div>
+                  <div className="text-xs text-white/60 uppercase tracking-widest">Ora Corrente</div>
                 </div>
               </div>
-              
-              {/* Store Info */}
-              <div className="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/15 transition-all duration-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Store className="h-4 w-4 text-white" />
-                  <span className="text-xs text-white/70 uppercase tracking-wide">Negozio</span>
+            </div>
+            
+            {/* Right Section - Store Info */}
+            <div className="lg:col-span-3">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl px-5 py-5 border border-white/30 hover:bg-white/15 transition-all duration-200 h-full flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/20 rounded-full p-2">
+                    <Store className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 uppercase tracking-wide font-medium">Punto Vendita</span>
                 </div>
-                <div className="font-semibold text-white">Nome du magasin</div>
-                <div className="text-lg font-bold text-white">CORSO</div>
+                <div className="space-y-1">
+                  <div className="text-sm font-semibold text-white/90">Nome du magasin</div>
+                  <div className="text-2xl font-bold text-white">CORSO</div>
+                </div>
               </div>
             </div>
           </div>
