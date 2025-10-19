@@ -63,7 +63,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: ShoppingCart,
       route: "/sales",
       color: "text-white",
-      bgColor: "bg-[#2563eb] hover:bg-[#1e40af]", // Blue like "GARANZIA" in reference
+      bgColor: "bg-[#2563eb]/20 hover:bg-[#2563eb]/30 border-[#2563eb]/30 hover:border-[#2563eb]/50", // Blue glassmorphism
       feature: ["gestione_vendite", "elaborazione_vendite", "supervisione_vendite"]
     },
     {
@@ -71,7 +71,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: CircuitBoard,
       route: "/repairs",
       color: "text-white",
-      bgColor: "bg-[#dc2626] hover:bg-[#b91c1c]", // Red like "RIPARAZIONE" in reference
+      bgColor: "bg-[#dc2626]/20 hover:bg-[#dc2626]/30 border-[#dc2626]/30 hover:border-[#dc2626]/50", // Red glassmorphism
       feature: "gestione_riparazioni"
     },
     {
@@ -79,7 +79,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Package,
       route: "/inventory",
       color: "text-white",
-      bgColor: "bg-[#059669] hover:bg-[#047857]", // Green like "MAGAZZINO" in reference
+      bgColor: "bg-[#059669]/20 hover:bg-[#059669]/30 border-[#059669]/30 hover:border-[#059669]/50", // Green glassmorphism
       feature: "gestione_completa_inventario"
     },
     {
@@ -87,7 +87,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Users,
       route: "/clients",
       color: "text-white",
-      bgColor: "bg-[#0891b2] hover:bg-[#0e7490]", // Cyan like "Stato Garanzia" in reference
+      bgColor: "bg-[#0891b2]/20 hover:bg-[#0891b2]/30 border-[#0891b2]/30 hover:border-[#0891b2]/50", // Cyan glassmorphism
       feature: "gestione_clienti"
     },
     {
@@ -95,7 +95,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Building2,
       route: "/suppliers",
       color: "text-white",
-      bgColor: "bg-[#f59e0b] hover:bg-[#d97706]", // Orange/Yellow like "ORDINE" in reference
+      bgColor: "bg-[#f59e0b]/20 hover:bg-[#f59e0b]/30 border-[#f59e0b]/30 hover:border-[#f59e0b]/50", // Orange glassmorphism
       feature: "gestione_ordini"
     },
     {
@@ -103,7 +103,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: UserCheck,
       route: "/employees",
       color: "text-white",
-      bgColor: "bg-[#6b7280] hover:bg-[#4b5563]", // Gray like "Statistiche" in reference
+      bgColor: "bg-[#6b7280]/20 hover:bg-[#6b7280]/30 border-[#6b7280]/30 hover:border-[#6b7280]/50", // Gray glassmorphism
       feature: "gestione_dipendenti"
     },
     {
@@ -111,7 +111,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Euro,
       route: "/finances",
       color: "text-white",
-      bgColor: "bg-[#7c3aed] hover:bg-[#6d28d9]", // Purple like "PANORAMICA" in reference
+      bgColor: "bg-[#7c3aed]/20 hover:bg-[#7c3aed]/30 border-[#7c3aed]/30 hover:border-[#7c3aed]/50", // Purple glassmorphism
       feature: "gestione_finanziaria"
     },
     {
@@ -119,7 +119,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Settings,
       route: "/profile",
       color: "text-white",
-      bgColor: "bg-[#1f2937] hover:bg-[#111827]" // Dark like "Documento di Garanzia" in reference
+      bgColor: "bg-[#1f2937]/20 hover:bg-[#1f2937]/30 border-[#1f2937]/30 hover:border-[#1f2937]/50" // Dark glassmorphism
     }
   ];
 
@@ -218,16 +218,21 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                 className={`
                   ${module.bgColor}
                   ${module.color}
-                  rounded-2xl p-8 
-                  shadow-xl hover:shadow-2xl 
+                  backdrop-blur-md
+                  border-2
+                  rounded-3xl p-8 
+                  shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]
+                  hover:shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)]
                   transform hover:scale-105 
                   transition-all duration-300 
-                  border-0
                   min-h-[140px]
                   flex flex-col items-center justify-center
                   font-bold text-xl
                   active:scale-95
+                  drop-shadow-lg
+                  animate-fade-in
                 `}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <IconComponent className="h-12 w-12 mb-4" />
                 <span className="text-center leading-tight">
