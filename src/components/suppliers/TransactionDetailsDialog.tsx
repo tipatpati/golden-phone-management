@@ -335,54 +335,32 @@ export function TransactionDetailsDialog({
                                     <div>
                                       <span className="font-medium">Total Cost:</span> {formatCurrency(item.total_cost)}
                                     </div>
-                                    {item.unit_details && Object.keys(item.unit_details).length > 0 && (
+                                    {item._enrichedUnits && item._enrichedUnits.length > 0 && (
                                       <div className="col-span-2">
                                         <span className="font-medium">Unit Details:</span>
-                                        <div className="mt-2 space-y-2">
-                                          {item.unit_details.barcodes && item.unit_details.barcodes.length > 0 && (
-                                            <div className="flex flex-wrap gap-1">
-                                              <span className="text-xs text-muted-foreground">Barcodes:</span>
-                                              {item.unit_details.barcodes.map((barcode: string, idx: number) => (
-                                                <Badge key={idx} variant="outline" className="text-xs font-mono">
-                                                  {barcode}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {item.unit_details.serial_numbers && item.unit_details.serial_numbers.length > 0 && (
-                                            <div className="flex flex-wrap gap-1">
-                                              <span className="text-xs text-muted-foreground">Serials:</span>
-                                              {item.unit_details.serial_numbers.map((serial: string, idx: number) => (
-                                                <Badge key={idx} variant="outline" className="text-xs font-mono">
-                                                  {serial}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {item.unit_details.product_unit_ids && item.unit_details.product_unit_ids.length > 0 && (
-                                            <div className="space-y-1">
-                                              <span className="text-xs font-medium text-muted-foreground">IMEI:</span>
-                                              {item.unit_details.product_unit_ids.map((id: string, idx: number) => (
-                                                <div key={idx} className="text-xs font-mono bg-background border rounded px-2 py-1">
-                                                  {id}
+                                        <div className="mt-2 space-y-3">
+                                          {item._enrichedUnits.map((unit, idx) => (
+                                            <Card key={unit.id} className="bg-muted/30">
+                                              <CardContent className="p-3 space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                  <span className="text-xs font-medium text-muted-foreground">Unit {idx + 1}</span>
+                                                  {unit.serial_number && (
+                                                    <Badge variant="outline" className="text-xs font-mono">
+                                                      {unit.serial_number}
+                                                    </Badge>
+                                                  )}
                                                 </div>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {Object.entries(item.unit_details)
-                                            .filter(([key]) => !['barcodes', 'serial_numbers', 'product_unit_ids'].includes(key))
-                                            .map(([key, value]) => (
-                                              <div key={key} className="text-xs">
-                                                <span className="font-medium text-muted-foreground capitalize">{key.replace(/_/g, ' ')}:</span>
-                                                <span className="ml-2">
-                                                  {typeof value === 'object' && value !== null
-                                                    ? Array.isArray(value)
-                                                      ? value.join(', ')
-                                                      : Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(', ')
-                                                    : String(value)}
-                                                </span>
-                                              </div>
-                                            ))}
+                                                {unit.barcode && (
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-muted-foreground">Barcode:</span>
+                                                    <Badge variant="secondary" className="text-xs font-mono">
+                                                      {unit.barcode}
+                                                    </Badge>
+                                                  </div>
+                                                )}
+                                              </CardContent>
+                                            </Card>
+                                          ))}
                                         </div>
                                       </div>
                                     )}

@@ -330,7 +330,37 @@ export const supplierTransactionApi = {
       .order("created_at", { ascending: true });
     
     if (error) throw error;
-    return data as SupplierTransactionItem[];
+    
+    const items = data as SupplierTransactionItem[];
+    
+    // Enrich items with actual unit data
+    const allUnitIds: string[] = [];
+    items.forEach(item => {
+      if (Array.isArray(item.product_unit_ids)) {
+        allUnitIds.push(...item.product_unit_ids);
+      }
+    });
+    
+    if (allUnitIds.length > 0) {
+      const { data: units, error: unitsError } = await supabase
+        .from('product_units')
+        .select('id, serial_number, barcode, product_id')
+        .in('id', [...new Set(allUnitIds)]);
+      
+      if (!unitsError && units) {
+        const unitsMap = new Map(units.map(u => [u.id, u]));
+        
+        items.forEach(item => {
+          if (Array.isArray(item.product_unit_ids) && item.product_unit_ids.length > 0) {
+            item._enrichedUnits = item.product_unit_ids
+              .map(id => unitsMap.get(id))
+              .filter((u): u is NonNullable<typeof u> => !!u);
+          }
+        });
+      }
+    }
+    
+    return items;
   },
 
   async replaceItems(transactionId: string, items: EditableTransactionItem[]): Promise<void> {
