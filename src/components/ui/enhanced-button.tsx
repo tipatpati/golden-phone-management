@@ -13,20 +13,20 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Material Design 3 variants with glassmorphism
-        filled: "gradient-tech text-white shadow-md hover:shadow-xl hover:scale-105 border border-white/20",
-        "filled-tonal": "glass-intense text-primary hover:shadow-md hover:border-primary/40 border-glow",
-        elevated: "glass-card text-on-surface shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-        outlined: "border-2 border-primary/40 bg-transparent text-primary hover:bg-primary/10 hover:border-primary/60 backdrop-blur-sm",
-        text: "text-primary hover:bg-primary/10 backdrop-blur-sm",
+        // Material Design 3 variants - solid backgrounds for clarity
+        filled: "bg-primary text-primary-foreground shadow-md hover:shadow-xl hover:scale-105",
+        "filled-tonal": "bg-secondary text-secondary-foreground shadow-md hover:shadow-lg hover:scale-[1.02]",
+        elevated: "bg-surface-container-high text-on-surface shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-outline-variant/30",
+        outlined: "border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:border-primary",
+        text: "text-primary hover:bg-primary/10",
         // Special variants
-        destructive: "bg-destructive text-white shadow-md hover:shadow-xl hover:bg-destructive/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-md hover:shadow-xl hover:bg-destructive/90",
         success: "bg-green-600 text-white shadow-md hover:shadow-xl hover:bg-green-700",
         warning: "bg-yellow-600 text-white shadow-md hover:shadow-xl hover:bg-yellow-700",
         // Legacy compatibility
-        default: "gradient-tech text-white shadow-md hover:shadow-xl hover:scale-105",
-        secondary: "bg-secondary text-white hover:bg-secondary/90 shadow-md hover:shadow-lg",
-        ghost: "hover:bg-accent/10 hover:text-accent-foreground backdrop-blur-sm",
+        default: "bg-primary text-primary-foreground shadow-md hover:shadow-xl hover:scale-105",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-md hover:shadow-lg",
+        ghost: "hover:bg-accent/10 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

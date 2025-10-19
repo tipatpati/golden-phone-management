@@ -71,8 +71,8 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
   if (filteredActions.length === 0) return null;
 
   return (
-    <div className="glass-card border-glow p-6">
-      <h3 className="text-2xl font-semibold gradient-tech-text mb-6">Navigazione Rapida</h3>
+    <div className="bg-surface-container border border-outline-variant/30 rounded-3xl p-6 shadow-lg">
+      <h3 className="text-2xl font-semibold text-on-surface mb-6">Navigazione Rapida</h3>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredActions.map((action, index) => {
           const IconComponent = action.icon;
@@ -83,16 +83,16 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
               key={index}
               onClick={() => navigate(action.href)}
               className={`
-                glass-intense border-glow
                 bg-primary
                 text-primary-foreground
                 rounded-2xl p-6 
                 md-motion-smooth hover:scale-105
                 min-h-[120px]
-                flex flex-col items-center justify-center
+                flex flex-col items-center justify-center text-center
                 font-semibold text-lg
                 active:scale-95
-                shadow-lg hover:shadow-2xl
+                shadow-xl hover:shadow-2xl
+                border border-primary-foreground/10
               `}
             >
               <IconComponent className="h-10 w-10 mb-3 drop-shadow-lg" />

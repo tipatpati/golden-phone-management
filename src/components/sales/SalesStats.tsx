@@ -17,7 +17,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
 
   return (
     <section aria-label="Sales statistics" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
+      <Card variant="elevated" className="bg-surface-container-high border border-outline-variant/30 shadow-lg md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-on-surface">Total Revenue</CardTitle>
           <div className="rounded-full bg-primary/10 p-2.5 ring-1 ring-primary/20">
@@ -30,7 +30,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
         </CardContent>
       </Card>
 
-      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
+      <Card variant="elevated" className="bg-surface-container-high border border-outline-variant/30 shadow-lg md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-on-surface">Total Sales</CardTitle>
           <div className="rounded-full bg-secondary/10 p-2.5 ring-1 ring-secondary/20">
@@ -43,7 +43,7 @@ export function SalesStats({ sales }: SalesStatsProps) {
         </CardContent>
       </Card>
 
-      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
+      <Card variant="elevated" className="bg-surface-container-high border border-outline-variant/30 shadow-lg md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-on-surface">Avg. Sale Value</CardTitle>
           <div className="rounded-full bg-tertiary/10 p-2.5 ring-1 ring-tertiary/20">

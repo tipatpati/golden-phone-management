@@ -21,12 +21,12 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn(
-      "glass-card p-4 sm:p-6 lg:p-8 border-glow",
+      "bg-surface-container border border-outline-variant/30 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg",
       className
     )}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight gradient-tech-text">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-on-surface">
             {title}
           </h1>
           {subtitle && (

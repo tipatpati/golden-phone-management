@@ -14,7 +14,7 @@ export const ClientsStats = ({ clients }: ClientsStatsProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
+      <Card variant="elevated" className="bg-surface-container-high border border-outline-variant/30 shadow-lg md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-on-surface">Individual</CardTitle>
           <div className="rounded-full bg-primary/10 p-2.5 ring-1 ring-primary/20">
@@ -27,7 +27,7 @@ export const ClientsStats = ({ clients }: ClientsStatsProps) => {
         </CardContent>
       </Card>
       
-      <Card variant="elevated" className="glass-card border-glow md-motion-smooth hover:scale-[1.02]">
+      <Card variant="elevated" className="bg-surface-container-high border border-outline-variant/30 shadow-lg md-motion-smooth hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-on-surface">Business</CardTitle>
           <div className="rounded-full bg-secondary/10 p-2.5 ring-1 ring-secondary/20">
