@@ -169,16 +169,16 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                 <img 
                   src={goldenPhoneLogo} 
                   alt="Golden Phone Logo" 
-                  className="w-full max-w-[200px] sm:max-w-[250px] lg:max-w-[300px] h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                  className="w-full max-w-[200px] sm:max-w-[250px] lg:max-w-[300px] h-auto drop-shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:drop-shadow-[0_0_50px_rgba(251,191,36,0.6)] hover:scale-105 transition-all duration-300"
                 />
               </div>
               
               {/* User Info Card */}
-              <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:border-white/40 hover:from-white/20 hover:to-white/10 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:scale-[1.02]">
+              <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:border-amber-300/50 hover:from-white/20 hover:to-white/10 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2),0_0_30px_rgba(251,191,36,0.2)] hover:scale-[1.02]">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/20">
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)] animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse"></div>
                     <span className="text-[11px] text-white/80 uppercase tracking-[0.15em] font-bold">Utente Attivo</span>
                   </div>
                   <div className="px-3 py-1.5 bg-white/25 hover:bg-white/30 rounded-full text-xs font-black text-white backdrop-blur-sm border border-white/30 shadow-inner transition-colors duration-200">
@@ -202,9 +202,9 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             
             {/* Center Section - Date & Time (Hero Feature) */}
             <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center h-full">
-              <div className="w-full max-w-lg bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-6 py-8 lg:py-10 border-2 border-white/50 hover:border-white/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3)] hover:scale-[1.01] relative overflow-hidden">
+              <div className="w-full max-w-lg bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-6 py-8 lg:py-10 border-2 border-amber-300/40 hover:border-amber-300/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2),0_0_40px_rgba(251,191,36,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3),0_0_60px_rgba(251,191,36,0.35)] hover:scale-[1.01] relative overflow-hidden">
                 {/* Inner glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-[2rem]"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-300/10 via-transparent to-white/5 rounded-[2rem]"></div>
                 
                 <div className="relative text-center space-y-5">
                   {/* Date Header */}
@@ -230,8 +230,8 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                   
                   {/* Label */}
                   <div className="pt-2">
-                    <div className="inline-block px-4 py-1.5 bg-white/20 rounded-full backdrop-blur-sm border border-white/30">
-                      <span className="text-[11px] text-white/90 uppercase tracking-[0.25em] font-black">Ora Corrente</span>
+                    <div className="inline-block px-4 py-1.5 bg-amber-400/20 rounded-full backdrop-blur-sm border border-amber-300/40">
+                      <span className="text-[11px] text-amber-100 uppercase tracking-[0.25em] font-black drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">Ora Corrente</span>
                     </div>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             
             {/* Right Section - Store Info */}
             <div className="lg:col-span-3 xl:col-span-3 flex items-stretch h-full">
-              <div className="w-full bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-6 py-7 border border-white/30 hover:border-white/40 hover:from-white/20 hover:to-white/10 transition-all duration-300 flex flex-col justify-center shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2)] hover:scale-[1.02]">
+              <div className="w-full bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-6 py-7 border border-white/30 hover:border-amber-300/50 hover:from-white/20 hover:to-white/10 transition-all duration-300 flex flex-col justify-center shadow-[0_10px_40px_rgba(0,0,0,0.15),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2),0_0_30px_rgba(251,191,36,0.2)] hover:scale-[1.02]">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/20">
                   <div className="relative bg-gradient-to-br from-white/30 to-white/15 rounded-xl p-2.5 border border-white/30 shadow-lg">
@@ -255,7 +255,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                   <div className="text-xs sm:text-sm font-semibold text-white/80 tracking-wide">Nome du magasin</div>
                   <div className="text-3xl sm:text-4xl font-black text-white drop-shadow-lg tracking-tight leading-none">CORSO</div>
                   <div className="flex items-center gap-2 pt-2">
-                    <div className="flex-1 h-1 bg-gradient-to-r from-white/40 via-white/20 to-transparent rounded-full"></div>
+                    <div className="flex-1 h-1 bg-gradient-to-r from-amber-400/40 via-amber-300/20 to-transparent rounded-full shadow-[0_0_10px_rgba(251,191,36,0.3)]"></div>
                   </div>
                 </div>
               </div>
