@@ -243,26 +243,64 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
         
         const matchedItems = value.filter(item => itemMatchesSearch(item));
         const hasMatch = matchedItems.length > 0;
-        const firstItem = hasMatch ? matchedItems[0] : value[0];
-        const productName = firstItem.product 
-          ? `${firstItem.product.brand || ''} ${firstItem.product.model || ''}`.trim()
-          : 'Unknown';
+        const isExpanded = expandedSales.has(sale.id);
         
         return (
           <div className="min-w-0 w-full">
-            <div className="flex items-center gap-1.5">
+            <div 
+              className="flex items-center gap-1.5 cursor-pointer hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpanded(sale.id);
+              }}
+            >
               <Package className={`h-3.5 w-3.5 flex-shrink-0 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
               <span className={`text-sm font-medium whitespace-nowrap ${hasMatch ? 'text-primary' : ''}`}>
                 {itemCount} prodott{itemCount === 1 ? 'o' : 'i'}
+                {hasMatch && ` (${matchedItems.length})`}
               </span>
+              {itemCount > 0 && (
+                <span className="text-xs text-muted-foreground ml-1">
+                  {isExpanded ? '▼' : '▶'}
+                </span>
+              )}
             </div>
-            <div className={`text-xs truncate mt-0.5 ${hasMatch ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
-              {hasMatch && <span className="text-primary">✓ </span>}
-              {productName}{itemCount > 1 ? ` +${itemCount - 1}` : ''}
-            </div>
-            {hasMatch && matchedItems.length > 1 && (
-              <div className="text-xs text-primary mt-0.5">
-                +{matchedItems.length - 1} altri corrispond{matchedItems.length === 2 ? 'e' : 'ono'}
+            
+            {/* Expanded matched items for desktop */}
+            {isExpanded && hasMatch && (
+              <div className="mt-2 space-y-1 p-2 bg-primary/5 border border-primary/20 rounded max-w-md">
+                {matchedItems.map((item, idx) => (
+                  <div 
+                    key={idx} 
+                    className="p-1.5 bg-background border border-primary/30 rounded text-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="font-medium text-primary">
+                          ✓ {item.product?.brand} {item.product?.model}
+                        </div>
+                        {item.serial_number && (
+                          <div className="text-muted-foreground font-mono mt-0.5">
+                            {item.serial_number}
+                          </div>
+                        )}
+                      </div>
+                      <div className="font-semibold text-primary whitespace-nowrap">
+                        €{item.total_price.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Compact view when not expanded */}
+            {!isExpanded && (
+              <div className={`text-xs truncate mt-0.5 ${hasMatch ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                {hasMatch && <span className="text-primary">✓ </span>}
+                {value[0].product 
+                  ? `${value[0].product.brand || ''} ${value[0].product.model || ''}`.trim()
+                  : 'Unknown'}{itemCount > 1 ? ` +${itemCount - 1}` : ''}
               </div>
             )}
           </div>
@@ -383,6 +421,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
           columns={columns}
           actions={actions}
           getRowKey={(sale) => sale.id}
+          onRowClick={(sale) => setSelectedSaleForDetails(sale)}
         />
       </div>
 
@@ -419,6 +458,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
                       <ComprehensiveEditSaleDialog sale={sale} />
                     ) : null
                   }
+                  onClick={() => setSelectedSaleForDetails(sale)}
                   fields={[
                     {
                       label: "Cliente",
@@ -457,7 +497,10 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
                           <div className="space-y-2">
                             <div 
                               className="flex items-center gap-1 cursor-pointer hover:text-primary"
-                              onClick={() => toggleExpanded(sale.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpanded(sale.id);
+                              }}
                             >
                               <Package className={`h-3 w-3 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
                               <span className={`text-sm font-medium ${hasMatch ? 'text-primary' : ''}`}>
