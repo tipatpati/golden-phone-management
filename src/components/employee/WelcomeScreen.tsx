@@ -164,16 +164,13 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Left Section - Logo and User Info */}
             <div className="lg:col-span-3 xl:col-span-3 flex flex-col gap-6">
-              {/* Logo Container */}
+              {/* Logo */}
               <div className="flex justify-center lg:justify-start">
-                <div className="group relative bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(255,255,255,0.2)]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <img 
-                    src={goldenPhoneLogo} 
-                    alt="Golden Phone Logo" 
-                    className="relative h-14 sm:h-16 lg:h-20 w-auto drop-shadow-2xl"
-                  />
-                </div>
+                <img 
+                  src={goldenPhoneLogo} 
+                  alt="Golden Phone Logo" 
+                  className="h-16 sm:h-20 lg:h-24 xl:h-28 w-auto drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                />
               </div>
               
               {/* User Info Card */}
