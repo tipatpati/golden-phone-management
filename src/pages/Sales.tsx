@@ -219,6 +219,7 @@ const Garentille = () => {
         sales={formattedGarentille} 
         onEdit={userRole === 'super_admin' ? handleEditSale : undefined}
         onDelete={userRole === 'super_admin' ? handleDeleteSale : undefined}
+        searchTerm={searchQuery}
       />
 
       {/* Enhanced CRUD Dialogs */}

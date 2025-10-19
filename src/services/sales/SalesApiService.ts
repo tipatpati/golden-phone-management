@@ -28,13 +28,54 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
     
     const searchPattern = `%${searchTerm.trim()}%`;
     
-    const query = this.supabase
+    // First, search in sale fields (sale_number, notes, client info)
+    const directQuery = this.supabase
       .from(this.tableName as any)
       .select(this.selectQuery)
       .or(`sale_number.ilike.${searchPattern},notes.ilike.${searchPattern}`)
       .order('created_at', { ascending: false });
     
-    return this.performQuery(query, 'searching');
+    const directSales = await this.performQuery(directQuery, 'searching');
+    
+    // Second, search for sales containing matching products or serial numbers
+    // Get all sale_items that match the search term
+    const { data: matchingSaleItems } = await supabase
+      .from('sale_items')
+      .select(`
+        sale_id,
+        product:products!inner(brand, model, year)
+      `)
+      .or(`serial_number.ilike.${searchPattern},product.brand.ilike.${searchPattern},product.model.ilike.${searchPattern}`)
+      .order('created_at', { ascending: false });
+    
+    if (!matchingSaleItems || matchingSaleItems.length === 0) {
+      return Array.isArray(directSales) ? directSales : [];
+    }
+    
+    // Get unique sale IDs from matched items
+    const matchedSaleIds = [...new Set(matchingSaleItems.map(item => item.sale_id))];
+    
+    // Fetch full sale data for these IDs
+    const productMatchQuery = this.supabase
+      .from(this.tableName as any)
+      .select(this.selectQuery)
+      .in('id', matchedSaleIds)
+      .order('created_at', { ascending: false });
+    
+    const productSales = await this.performQuery(productMatchQuery, 'searching products');
+    
+    // Ensure both are arrays
+    const directSalesArray = Array.isArray(directSales) ? directSales : [];
+    const productSalesArray = Array.isArray(productSales) ? productSales : [];
+    
+    // Combine and deduplicate results (prioritize direct matches)
+    const directSaleIds = new Set(directSalesArray.map(s => s.id));
+    const combinedSales = [
+      ...directSalesArray,
+      ...productSalesArray.filter(s => !directSaleIds.has(s.id))
+    ];
+    
+    return combinedSales;
   }
 
   static async createSale(saleData: CreateSaleData): Promise<Sale> {

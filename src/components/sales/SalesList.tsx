@@ -24,9 +24,10 @@ interface SalesListProps {
   onEdit?: (sale: Sale) => void;
   onDelete?: (sale: Sale) => void;
   onViewDetails?: (sale: Sale) => void;
+  searchTerm?: string;
 }
 
-export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListProps) {
+export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }: SalesListProps) {
   const { userRole } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -147,6 +148,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     }
   };
 
+  // Helper to check if an item matches the search term
+  const itemMatchesSearch = (item: any): boolean => {
+    if (!searchTerm || !searchTerm.trim()) return false;
+    const term = searchTerm.toLowerCase();
+    const productName = `${item.product?.brand || ''} ${item.product?.model || ''}`.toLowerCase();
+    const serialNumber = (item.serial_number || '').toLowerCase();
+    return productName.includes(term) || serialNumber.includes(term);
+  };
+
   // Define table columns for desktop view
   const columns = [
     ...(isSelectionMode ? [{
@@ -199,11 +209,13 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
     {
       key: 'sale_items' as keyof Sale,
       header: 'Prodotti',
-      render: (value: any[]) => {
+      render: (value: any[], sale: Sale) => {
         const itemCount = value?.length || 0;
         if (itemCount === 0) return <span className="text-muted-foreground text-sm">-</span>;
         
-        const firstItem = value[0];
+        const matchedItems = value.filter(item => itemMatchesSearch(item));
+        const hasMatch = matchedItems.length > 0;
+        const firstItem = hasMatch ? matchedItems[0] : value[0];
         const productName = firstItem.product 
           ? `${firstItem.product.brand || ''} ${firstItem.product.model || ''}`.trim()
           : 'Unknown';
@@ -211,12 +223,20 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
         return (
           <div className="min-w-0 w-full">
             <div className="flex items-center gap-1.5">
-              <Package className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm font-medium whitespace-nowrap">{itemCount} prodott{itemCount === 1 ? 'o' : 'i'}</span>
+              <Package className={`h-3.5 w-3.5 flex-shrink-0 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`text-sm font-medium whitespace-nowrap ${hasMatch ? 'text-primary' : ''}`}>
+                {itemCount} prodott{itemCount === 1 ? 'o' : 'i'}
+              </span>
             </div>
-            <div className="text-xs text-muted-foreground truncate mt-0.5">
+            <div className={`text-xs truncate mt-0.5 ${hasMatch ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+              {hasMatch && <span className="text-primary">✓ </span>}
               {productName}{itemCount > 1 ? ` +${itemCount - 1}` : ''}
             </div>
+            {hasMatch && matchedItems.length > 1 && (
+              <div className="text-xs text-primary mt-0.5">
+                +{matchedItems.length - 1} altri corrispond{matchedItems.length === 2 ? 'e' : 'ono'}
+              </div>
+            )}
           </div>
         );
       }
@@ -396,27 +416,47 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails }: SalesListP
               },
               {
                 label: "Prodotti",
-                value: (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1">
-                      <Package className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm font-medium">
-                        {sale.sale_items?.length || 0} {sale.sale_items?.length === 1 ? 'prodotto' : 'prodotti'}
-                      </span>
-                    </div>
-                    {sale.sale_items && sale.sale_items.length > 0 && (
-                      <div className="text-xs text-muted-foreground space-y-0.5">
-                        {sale.sale_items.slice(0, 2).map((item, idx) => (
-                          <div key={idx} className="flex justify-between">
-                            <span>{item.product?.brand} {item.product?.model}</span>
-                            <span>€{item.total_price.toFixed(2)}</span>
-                          </div>
-                        ))}
-                        {sale.sale_items.length > 2 && <div>+{sale.sale_items.length - 2} altri prodotti...</div>}
+                value: (() => {
+                  const items = sale.sale_items || [];
+                  const matchedItems = items.filter(item => itemMatchesSearch(item));
+                  const hasMatch = matchedItems.length > 0;
+                  const displayItems = hasMatch ? matchedItems : items.slice(0, 2);
+                  
+                  return (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Package className={`h-3 w-3 ${hasMatch ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-medium ${hasMatch ? 'text-primary' : ''}`}>
+                          {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
+                          {hasMatch && ` (${matchedItems.length} corrispond${matchedItems.length === 1 ? 'e' : 'ono'})`}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                )
+                      {items.length > 0 && (
+                        <div className="text-xs space-y-0.5">
+                          {displayItems.map((item, idx) => {
+                            const isMatched = itemMatchesSearch(item);
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`flex justify-between ${isMatched ? 'text-primary font-medium' : 'text-muted-foreground'}`}
+                              >
+                                <span>
+                                  {isMatched && '✓ '}
+                                  {item.product?.brand} {item.product?.model}
+                                  {item.serial_number && ` (${item.serial_number})`}
+                                </span>
+                                <span>€{item.total_price.toFixed(2)}</span>
+                              </div>
+                            );
+                          })}
+                          {!hasMatch && items.length > 2 && (
+                            <div className="text-muted-foreground">+{items.length - 2} altri prodotti...</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
               },
               {
                 label: "Totale",

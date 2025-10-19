@@ -15,7 +15,7 @@ class SalesReactQueryServiceClass extends BaseReactQueryService<Sale, CreateSale
   }
 
   protected getSearchFields(): string[] {
-    return ['sale_number', 'notes'];
+    return ['sale_number', 'notes', 'client_name', 'product_brand', 'product_model', 'serial_number'];
   }
 
   // Custom method for invalidating related queries

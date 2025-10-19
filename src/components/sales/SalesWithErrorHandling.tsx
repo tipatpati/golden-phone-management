@@ -83,7 +83,7 @@ export function SalesWithErrorHandling() {
             </ErrorBoundaryWithRetry>
             
             <ErrorBoundaryWithRetry>
-              <SalesList sales={salesArray} />
+              <SalesList sales={salesArray} searchTerm={searchQuery} />
             </ErrorBoundaryWithRetry>
           </div>
         </div>
