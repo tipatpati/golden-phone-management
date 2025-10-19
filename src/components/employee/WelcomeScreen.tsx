@@ -63,7 +63,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: ShoppingCart,
       route: "/sales",
       color: "text-white",
-      bgColor: "bg-[#2563eb]/20 hover:bg-[#2563eb]/30 border-[#2563eb]/30 hover:border-[#2563eb]/50", // Blue glassmorphism
+      bgColor: "bg-[#2563eb]/30 hover:bg-[#2563eb]/40 border-[#2563eb]/50 hover:border-[#2563eb] shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:shadow-[0_0_50px_rgba(37,99,235,0.8)]", // Blue neon
       feature: ["gestione_vendite", "elaborazione_vendite", "supervisione_vendite"]
     },
     {
@@ -71,7 +71,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: CircuitBoard,
       route: "/repairs",
       color: "text-white",
-      bgColor: "bg-[#dc2626]/20 hover:bg-[#dc2626]/30 border-[#dc2626]/30 hover:border-[#dc2626]/50", // Red glassmorphism
+      bgColor: "bg-[#dc2626]/30 hover:bg-[#dc2626]/40 border-[#dc2626]/50 hover:border-[#dc2626] shadow-[0_0_30px_rgba(220,38,38,0.5)] hover:shadow-[0_0_50px_rgba(220,38,38,0.8)]", // Red neon
       feature: "gestione_riparazioni"
     },
     {
@@ -79,7 +79,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Package,
       route: "/inventory",
       color: "text-white",
-      bgColor: "bg-[#059669]/20 hover:bg-[#059669]/30 border-[#059669]/30 hover:border-[#059669]/50", // Green glassmorphism
+      bgColor: "bg-[#059669]/30 hover:bg-[#059669]/40 border-[#059669]/50 hover:border-[#059669] shadow-[0_0_30px_rgba(5,150,105,0.5)] hover:shadow-[0_0_50px_rgba(5,150,105,0.8)]", // Green neon
       feature: "gestione_completa_inventario"
     },
     {
@@ -87,7 +87,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Users,
       route: "/clients",
       color: "text-white",
-      bgColor: "bg-[#0891b2]/20 hover:bg-[#0891b2]/30 border-[#0891b2]/30 hover:border-[#0891b2]/50", // Cyan glassmorphism
+      bgColor: "bg-[#0891b2]/30 hover:bg-[#0891b2]/40 border-[#0891b2]/50 hover:border-[#0891b2] shadow-[0_0_30px_rgba(8,145,178,0.5)] hover:shadow-[0_0_50px_rgba(8,145,178,0.8)]", // Cyan neon
       feature: "gestione_clienti"
     },
     {
@@ -95,7 +95,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Building2,
       route: "/suppliers",
       color: "text-white",
-      bgColor: "bg-[#f59e0b]/20 hover:bg-[#f59e0b]/30 border-[#f59e0b]/30 hover:border-[#f59e0b]/50", // Orange glassmorphism
+      bgColor: "bg-[#f59e0b]/30 hover:bg-[#f59e0b]/40 border-[#f59e0b]/50 hover:border-[#f59e0b] shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:shadow-[0_0_50px_rgba(245,158,11,0.8)]", // Orange neon
       feature: "gestione_ordini"
     },
     {
@@ -103,7 +103,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: UserCheck,
       route: "/employees",
       color: "text-white",
-      bgColor: "bg-[#6b7280]/20 hover:bg-[#6b7280]/30 border-[#6b7280]/30 hover:border-[#6b7280]/50", // Gray glassmorphism
+      bgColor: "bg-[#6b7280]/30 hover:bg-[#6b7280]/40 border-[#6b7280]/50 hover:border-[#6b7280] shadow-[0_0_30px_rgba(107,114,128,0.5)] hover:shadow-[0_0_50px_rgba(107,114,128,0.8)]", // Gray neon
       feature: "gestione_dipendenti"
     },
     {
@@ -111,7 +111,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Euro,
       route: "/finances",
       color: "text-white",
-      bgColor: "bg-[#7c3aed]/20 hover:bg-[#7c3aed]/30 border-[#7c3aed]/30 hover:border-[#7c3aed]/50", // Purple glassmorphism
+      bgColor: "bg-[#7c3aed]/30 hover:bg-[#7c3aed]/40 border-[#7c3aed]/50 hover:border-[#7c3aed] shadow-[0_0_30px_rgba(124,58,237,0.5)] hover:shadow-[0_0_50px_rgba(124,58,237,0.8)]", // Purple neon
       feature: "gestione_finanziaria"
     },
     {
@@ -119,7 +119,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
       icon: Settings,
       route: "/profile",
       color: "text-white",
-      bgColor: "bg-[#1f2937]/20 hover:bg-[#1f2937]/30 border-[#1f2937]/30 hover:border-[#1f2937]/50" // Dark glassmorphism
+      bgColor: "bg-[#1f2937]/30 hover:bg-[#1f2937]/40 border-[#1f2937]/50 hover:border-[#1f2937] shadow-[0_0_30px_rgba(31,41,55,0.5)] hover:shadow-[0_0_50px_rgba(31,41,55,0.8)]" // Dark neon
     }
   ];
 
@@ -221,15 +221,13 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
                   backdrop-blur-md
                   border-2
                   rounded-3xl p-8 
-                  shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]
-                  hover:shadow-[0_35px_60px_-12px_rgba(0,0,0,0.3)]
                   transform hover:scale-105 
                   transition-all duration-300 
                   min-h-[140px]
                   flex flex-col items-center justify-center
                   font-bold text-xl
                   active:scale-95
-                  drop-shadow-lg
+                  drop-shadow-2xl
                   animate-fade-in
                 `}
                 style={{ animationDelay: `${index * 50}ms` }}
