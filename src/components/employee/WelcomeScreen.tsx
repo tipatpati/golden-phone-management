@@ -202,7 +202,7 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
             
             {/* Center Section - Date & Time (Hero Feature) */}
             <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center">
-              <div className="w-full max-w-2xl bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-8 py-10 lg:py-12 border-2 border-white/50 hover:border-white/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3)] hover:scale-[1.01] relative overflow-hidden">
+              <div className="w-full max-w-lg bg-gradient-to-br from-white/25 via-white/15 to-white/5 backdrop-blur-xl rounded-[2rem] px-6 py-8 lg:py-10 border-2 border-white/50 hover:border-white/60 transition-all duration-300 shadow-[0_25px_70px_rgba(255,255,255,0.2)] hover:shadow-[0_30px_80px_rgba(255,255,255,0.3)] hover:scale-[1.01] relative overflow-hidden">
                 {/* Inner glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-[2rem]"></div>
                 
