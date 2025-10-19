@@ -15,7 +15,9 @@ import {
   Euro,
   CheckCircle,
   Calendar,
-  UserCheck
+  UserCheck,
+  Clock,
+  Store
 } from "lucide-react";
 
 interface WelcomeScreenProps {
@@ -145,30 +147,56 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                GOLDEN TRADE O&A SRL
-              </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-lg text-blue-600 font-semibold">
-                  Utente Connesso: {config.name}
-                </span>
-                <span className="text-gray-600">admin</span>
+        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 rounded-2xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative z-10 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+            {/* Left section - Logo and Company Info */}
+            <div className="flex items-center gap-6">
+              {/* Logo placeholder */}
+              <div className="flex-shrink-0 w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-xl shadow-lg flex items-center justify-center">
+                <Building2 className="h-10 w-10 lg:h-12 lg:w-12 text-blue-600" />
+              </div>
+              
+              <div>
+                <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-2">
+                  GOLDEN TRADE O&A SRL
+                </h1>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
+                    <UserCheck className="h-4 w-4 text-white" />
+                    <span className="text-sm font-semibold text-white">
+                      {config.name}
+                    </span>
+                  </div>
+                  <span className="text-white/80 text-sm">admin</span>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="flex items-center gap-2 text-blue-600 mb-1">
-                <Calendar className="h-5 w-5" />
-                <span className="font-semibold">Data: {currentDate}</span>
+            
+            {/* Right section - Date, Time and Store */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-4 sm:gap-6 lg:gap-3">
+              {/* Date and Time */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-white" />
+                  <span className="text-sm text-white/90">{currentDate}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-white" />
+                  <span className="text-xl font-bold text-white">{currentTime}</span>
+                </div>
               </div>
-              <div className="text-2xl font-bold text-blue-600">
-                {currentTime}
-              </div>
-              <div className="text-right mt-2">
-                <span className="text-blue-600 font-semibold">Nome du magasin</span>
-                <div className="text-gray-600">CORSO</div>
+              
+              {/* Store Info */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <Store className="h-4 w-4 text-white" />
+                  <span className="text-sm font-semibold text-white">Nome du magasin</span>
+                </div>
+                <div className="text-lg font-bold text-white">CORSO</div>
               </div>
             </div>
           </div>
