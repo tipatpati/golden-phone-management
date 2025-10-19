@@ -153,52 +153,47 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
           
-          <div className="relative z-10 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
-            {/* Left section - Logo and Company Info */}
-            <div className="flex items-center gap-6">
-              {/* Logo placeholder */}
-              <div className="flex-shrink-0 w-16 h-16 lg:w-20 lg:h-20 bg-white rounded-xl shadow-lg flex items-center justify-center">
-                <Building2 className="h-10 w-10 lg:h-12 lg:w-12 text-blue-600" />
-              </div>
-              
-              <div>
-                <img 
-                  src={goldenPhoneLogo} 
-                  alt="Golden Phone Logo" 
-                  className="h-12 lg:h-16 xl:h-20 w-auto mb-2"
-                />
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
-                    <UserCheck className="h-4 w-4 text-white" />
-                    <span className="text-sm font-semibold text-white">
-                      {config.name}
-                    </span>
-                  </div>
-                  <span className="text-white/80 text-sm">admin</span>
-                </div>
-              </div>
+          <div className="relative z-10">
+            {/* Centered Logo */}
+            <div className="flex justify-center mb-6">
+              <img 
+                src={goldenPhoneLogo} 
+                alt="Golden Phone Logo" 
+                className="h-20 lg:h-24 xl:h-28 w-auto"
+              />
             </div>
             
-            {/* Right section - Date, Time and Store */}
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-4 sm:gap-6 lg:gap-3">
+            {/* Info Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* User Info */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <UserCheck className="h-4 w-4 text-white" />
+                  <span className="text-xs text-white/70 uppercase tracking-wide">Utente</span>
+                </div>
+                <div className="font-semibold text-white">{config.name}</div>
+                <div className="text-sm text-white/80">admin</div>
+              </div>
+              
               {/* Date and Time */}
               <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar className="h-4 w-4 text-white" />
-                  <span className="text-sm text-white/90">{currentDate}</span>
+                  <span className="text-xs text-white/90">{currentDate}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-white" />
-                  <span className="text-xl font-bold text-white">{currentTime}</span>
+                  <Clock className="h-5 w-5 text-white" />
+                  <span className="text-2xl font-bold text-white">{currentTime}</span>
                 </div>
               </div>
               
               {/* Store Info */}
               <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2">
                   <Store className="h-4 w-4 text-white" />
-                  <span className="text-sm font-semibold text-white">Nome du magasin</span>
+                  <span className="text-xs text-white/70 uppercase tracking-wide">Negozio</span>
                 </div>
+                <div className="font-semibold text-white">Nome du magasin</div>
                 <div className="text-lg font-bold text-white">CORSO</div>
               </div>
             </div>
