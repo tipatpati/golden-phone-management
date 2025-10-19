@@ -19,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Poppins', 'ui-sans-serif', 'system-ui'],
-				title: ['Sora', 'ui-sans-serif', 'system-ui'],
+				sans: ['Outfit', 'ui-sans-serif', 'system-ui'],
+				display: ['Outfit', 'ui-sans-serif', 'system-ui'],
 			},
 			spacing: {
 				'1': 'var(--spacing-1)',    /* 4dp */
