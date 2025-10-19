@@ -62,17 +62,6 @@ export function AdvancedTransactionFilters({
 
   return (
     <div className="flex flex-col sm:flex-row gap-2 mb-4">
-      {/* Search Input */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search transactions or suppliers..."
-          value={filters.searchTerm || ""}
-          onChange={(e) => updateFilter("searchTerm", e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
       {/* Advanced Filters */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
