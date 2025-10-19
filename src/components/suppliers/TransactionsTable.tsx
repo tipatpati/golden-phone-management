@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Eye, Edit, Trash2, Printer } from "lucide-react";
-import { useSupplierTransactions } from "@/services/suppliers/SupplierTransactionService";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSupplierTransactions, supplierTransactionApi } from "@/services/suppliers/SupplierTransactionService";
 import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
+import { SearchBar } from "@/components/ui/search-bar";
 import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
 import { AdvancedTransactionFilters } from "./AdvancedTransactionFilters";
@@ -20,36 +20,40 @@ import { Info } from "lucide-react";
 
 interface TransactionsTableProps {
   searchQuery?: string;
-  searchTrigger?: number;
-  isSearching?: boolean;
-  completeSearch?: () => void;
+  onSearch?: (query: string) => void;
 }
 
 export function TransactionsTable({ 
   searchQuery = '',
-  searchTrigger = 0,
-  isSearching = false,
-  completeSearch
+  onSearch
 }: TransactionsTableProps) {
   const [filters, setFilters] = useState<TransactionSearchFilters>({});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState('');
   
-  const { 
-    data: transactions, 
-    isLoading, 
-    error,
-    refetch,
-    isFetching 
-  } = useSupplierTransactions(searchQuery, filters);
+  const {  
+    data: allTransactions,
+    isLoading,
+    error
+  } = useSupplierTransactions(filters);
+
+  // Client-side search filtering
+  const transactions = React.useMemo(() => {
+    if (!allTransactions) return [];
+    if (!activeSearchQuery.trim()) return allTransactions;
+    
+    return supplierTransactionApi.searchTransactions(allTransactions, activeSearchQuery);
+  }, [allTransactions, activeSearchQuery]);
   
-  // Search trigger effect - force refetch when search is executed
-  React.useEffect(() => {
-    if (searchTrigger > 0) {
-      refetch().then(() => {
-        completeSearch?.();
-      });
-    }
-  }, [searchTrigger, refetch, completeSearch]);
+  const handleSearch = () => {
+    setActiveSearchQuery(localSearchQuery);
+  };
+  
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    setActiveSearchQuery('');
+  };
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -62,7 +66,6 @@ export function TransactionsTable({
   };
 
   const handleActionComplete = () => {
-    refetch();
     setSelectedIds([]);
   };
 
@@ -206,14 +209,12 @@ export function TransactionsTable({
     goToPage: mobileGoToPage
   } = usePagination({ data: transactions || [], itemsPerPage: 17 });
 
-  const showLoading = isLoading || isFetching || isSearching;
-  
-  if (showLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <TransactionSummaryStats filters={filters} />
         <div className="text-center py-8 text-muted-foreground">
-          {isSearching ? 'Searching...' : 'Loading transactions...'}
+          Loading transactions...
         </div>
       </div>
     );
@@ -224,21 +225,44 @@ export function TransactionsTable({
       {/* Summary Stats */}
       <TransactionSummaryStats filters={filters} />
       
+      {/* Search Bar */}
+      <div className="flex gap-2">
+        <SearchBar
+          value={localSearchQuery}
+          onChange={setLocalSearchQuery}
+          placeholder="Search by transaction #, supplier, product, serial/IMEI, barcode..."
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSearch();
+            }
+          }}
+          className="flex-1"
+        />
+        <Button onClick={handleSearch} variant="default">
+          Search
+        </Button>
+        {activeSearchQuery && (
+          <Button onClick={handleClearSearch} variant="outline">
+            Clear
+          </Button>
+        )}
+      </div>
+      
       {/* Search Results Info */}
-      {searchQuery && transactions && transactions.length > 0 && (
+      {activeSearchQuery && transactions && transactions.length > 0 && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Showing {transactions.length} transaction(s) for "{searchQuery}"
+            Found {transactions.length} transaction(s) for "{activeSearchQuery}"
           </AlertDescription>
         </Alert>
       )}
       
-      {searchQuery && (!transactions || transactions.length === 0) && (
+      {activeSearchQuery && (!transactions || transactions.length === 0) && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            No transactions found for "{searchQuery}"
+            No transactions found for "{activeSearchQuery}"
           </AlertDescription>
         </Alert>
       )}
@@ -307,7 +331,7 @@ export function TransactionsTable({
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {mobilePaginatedTransactions.map((transaction) => (
+        {mobilePaginatedTransactions.map((transaction: SupplierTransaction) => (
           <div key={transaction.id} className="border rounded-lg p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div>
