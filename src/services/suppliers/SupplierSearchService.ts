@@ -136,42 +136,98 @@ export class SupplierSearchService {
   }
 
   /**
-   * Search product units by serial number, IMEI, last 4 digits, or barcode
+   * Search product units by serial number, IMEI, last 4 digits, or barcode (includes sold units)
    */
   private static async searchUnits(term: string): Promise<SupplierSearchResult[]> {
-    // Search by exact serial, partial serial (last 4), or barcode
-    const { data, error } = await supabase
-      .from('product_units')
-      .select(`
-        id,
-        serial_number,
-        barcode,
-        status,
-        purchase_price,
-        supplier_id,
-        product_id,
-        products (
-          brand,
-          model
-        ),
-        suppliers (
+    // Search both active and sold units in parallel
+    const [activeUnitsResult, soldUnitsResult] = await Promise.all([
+      supabase
+        .from('product_units')
+        .select(`
           id,
-          name
-        )
-      `)
-      .or(`serial_number.ilike.%${term}%,barcode.ilike.%${term}%`)
-      .order('created_at', { ascending: false });
+          serial_number,
+          barcode,
+          status,
+          purchase_price,
+          supplier_id,
+          product_id,
+          products (
+            brand,
+            model
+          ),
+          suppliers (
+            id,
+            name
+          )
+        `)
+        .or(`serial_number.ilike.%${term}%,barcode.ilike.%${term}%`)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('sold_product_units')
+        .select(`
+          product_unit_id,
+          serial_number,
+          barcode,
+          original_purchase_price,
+          supplier_name,
+          sold_at
+        `)
+        .or(`serial_number.ilike.%${term}%,barcode.ilike.%${term}%`)
+        .order('sold_at', { ascending: false })
+    ]);
 
-    if (error) {
-      console.error('Error searching units:', error);
-      return [];
+    if (activeUnitsResult.error) {
+      console.error('Error searching active units:', activeUnitsResult.error);
     }
 
-    const units = data || [];
+    if (soldUnitsResult.error) {
+      console.error('Error searching sold units:', soldUnitsResult.error);
+    }
+
+    const units = activeUnitsResult.data || [];
+    const soldUnits = soldUnitsResult.data || [];
+
+    // Get product info for sold units
+    const soldUnitsWithProducts = await Promise.all(
+      soldUnits.map(async (soldUnit) => {
+        const { data: unitData } = await supabase
+          .from('product_units')
+          .select(`
+            id,
+            product_id,
+            supplier_id,
+            products (
+              brand,
+              model
+            ),
+            suppliers (
+              id,
+              name
+            )
+          `)
+          .eq('id', soldUnit.product_unit_id)
+          .single();
+
+        return {
+          id: soldUnit.product_unit_id,
+          serial_number: soldUnit.serial_number,
+          barcode: soldUnit.barcode,
+          status: 'sold',
+          purchase_price: soldUnit.original_purchase_price,
+          supplier_id: unitData?.supplier_id,
+          product_id: unitData?.product_id,
+          products: unitData?.products,
+          suppliers: unitData?.suppliers,
+          sold_at: soldUnit.sold_at
+        };
+      })
+    );
+
+    const allUnits = [...units, ...soldUnitsWithProducts];
 
     // For each unit, find its transaction
     const unitsWithTransactions = await Promise.all(
-      units.map(async (unit) => {
+      allUnits.map(async (unit) => {
         // Find the transaction that includes this unit
         const { data: transactionItems } = await supabase
           .from('supplier_transaction_items')

@@ -13,7 +13,7 @@ export class ProductTracingService {
     const cleanSerial = serialNumber.trim();
 
     try {
-      // First, find the product unit
+      // First, try to find the product unit (might be sold)
       const { data: productUnit, error: unitError } = await supabase
         .from('product_units')
         .select(`
@@ -31,14 +31,61 @@ export class ProductTracingService {
           )
         `)
         .eq('serial_number', cleanSerial)
-        .single();
+        .maybeSingle();
 
+      // If not found in active units, check sold units
       if (unitError || !productUnit) {
-        return null;
+        const { data: soldUnit } = await supabase
+          .from('sold_product_units')
+          .select('*')
+          .eq('serial_number', cleanSerial)
+          .single();
+
+        if (!soldUnit) {
+          return null;
+        }
+
+        // Get the original product unit data
+        const { data: originalUnit } = await supabase
+          .from('product_units')
+          .select(`
+            *,
+            products!inner (
+              id,
+              brand,
+              model,
+              description,
+              barcode,
+              category_id,
+              categories (
+                name
+              )
+            )
+          `)
+          .eq('id', soldUnit.product_unit_id)
+          .single();
+
+        if (!originalUnit) {
+          return null;
+        }
+
+        // Continue with the original unit data
+        return this.buildTraceResultFromUnit(originalUnit, cleanSerial);
       }
 
-      // Get acquisition history from supplier transactions
-      const { data: acquisitionData } = await supabase
+      return this.buildTraceResultFromUnit(productUnit, cleanSerial);
+    } catch (error) {
+      console.error('Error tracing product:', error);
+      throw new Error('Failed to trace product');
+    }
+  }
+
+  /**
+   * Build trace result from a product unit
+   */
+  private static async buildTraceResultFromUnit(productUnit: any, cleanSerial: string): Promise<ProductTraceResult> {
+    // Get acquisition history from supplier transactions
+    const { data: acquisitionData } = await supabase
         .from('supplier_transaction_items')
         .select(`
           id,
@@ -283,10 +330,6 @@ export class ProductTracingService {
       };
 
       return traceResult;
-    } catch (error) {
-      console.error('Error tracing product:', error);
-      throw new Error('Failed to trace product');
-    }
   }
 
   /**
@@ -340,23 +383,39 @@ export class ProductTracingService {
   }
 
   /**
-   * Search for serial numbers with suggestions
+   * Search for serial numbers with suggestions (includes sold units)
    */
   static async searchSerialSuggestions(query: string, limit: number = 10): Promise<string[]> {
     if (!query || query.length < 2) return [];
 
-    const { data, error } = await supabase
-      .from('product_units')
-      .select('serial_number')
-      .ilike('serial_number', `%${query}%`)
-      .limit(limit);
+    // Search both active and sold units in parallel
+    const [activeUnits, soldUnits] = await Promise.all([
+      supabase
+        .from('product_units')
+        .select('serial_number')
+        .ilike('serial_number', `%${query}%`)
+        .limit(limit),
+      supabase
+        .from('sold_product_units')
+        .select('serial_number')
+        .ilike('serial_number', `%${query}%`)
+        .limit(limit)
+    ]);
 
-    if (error) {
-      console.error('Error searching serial suggestions:', error);
-      return [];
+    const results = new Set<string>();
+
+    // Add active units
+    if (activeUnits.data) {
+      activeUnits.data.forEach(item => results.add(item.serial_number));
     }
 
-    return data.map(item => item.serial_number);
+    // Add sold units
+    if (soldUnits.data) {
+      soldUnits.data.forEach(item => results.add(item.serial_number));
+    }
+
+    // Return unique serial numbers, limited to requested amount
+    return Array.from(results).slice(0, limit);
   }
 
   /**
