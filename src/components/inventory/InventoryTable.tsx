@@ -464,7 +464,7 @@ export function InventoryTable({
                           setSelectedProductForDetails(product);
                           setDetailsDialogOpen(true);
                         }}
-                        className="h-9 w-9 sm:h-8 sm:w-8 p-0 flex-shrink-0"
+                        className="h-8 w-8 p-0"
                         title="View details and manage unit pricing"
                       >
                         <Info className="h-4 w-4" />
@@ -603,10 +603,10 @@ export function InventoryTable({
                                   setSelectedProductForUnit(product);
                                   setUnitDetailsOpen(true);
                                 }}
-                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 flex-shrink-0"
+                                className="h-7 w-7 p-0"
                                 title="View unit details"
                               >
-                                <Info className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                                <Info className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -615,10 +615,10 @@ export function InventoryTable({
                                   e.stopPropagation();
                                   setPrintUnitId(unit.id);
                                 }}
-                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 flex-shrink-0"
+                                className="h-7 w-7 p-0"
                                 title="Print barcode"
                               >
-                                <Printer className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                                <Printer className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 variant="ghost"
