@@ -23,6 +23,7 @@ import {
 
 interface WelcomeScreenProps {
   userRole: UserRole;
+  username?: string | null;
 }
 
 interface ModuleButton {
@@ -35,7 +36,7 @@ interface ModuleButton {
   permission?: string;
 }
 
-export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
+export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
   const navigate = useNavigate();
   
   logger.debug('WelcomeScreen Debug', { userRole, availableRoles: Object.keys(ROLE_CONFIGS) }, 'WelcomeScreen');
@@ -177,9 +178,14 @@ export function WelcomeScreen({ userRole }: WelcomeScreenProps) {
               <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl px-5 py-4 border border-white/30 hover:border-amber-300/50 hover:from-white/20 hover:to-white/10 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15),0_0_20px_rgba(251,191,36,0.1)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.2),0_0_30px_rgba(251,191,36,0.2)] hover:scale-[1.02]">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/20">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse"></div>
-                    <span className="text-[11px] text-white/80 uppercase tracking-[0.15em] font-bold">Utente Attivo</span>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse"></div>
+                      <span className="text-[11px] text-white/80 uppercase tracking-[0.15em] font-bold">Utente Attivo</span>
+                    </div>
+                    {username && (
+                      <span className="text-sm text-white font-semibold pl-3.5 drop-shadow-md">{username}</span>
+                    )}
                   </div>
                   <div className="px-3 py-1.5 bg-white/25 hover:bg-white/30 rounded-full text-xs font-black text-white backdrop-blur-sm border border-white/30 shadow-inner transition-colors duration-200">
                     ADMIN
