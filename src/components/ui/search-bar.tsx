@@ -25,14 +25,14 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <div className={cn("relative w-full", className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant/60" />
       <Input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        className="pl-10 h-12 bg-surface-container-highest border-outline-variant"
+        className="pl-11 h-12 glass-card border-outline-variant/30 hover:border-primary/30 font-light"
       />
     </div>
   );

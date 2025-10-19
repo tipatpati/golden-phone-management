@@ -7,14 +7,15 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden",
+  "rounded-2xl border text-card-foreground overflow-hidden md-motion-smooth",
   {
     variants: {
       variant: {
-        default: "",
-        elevated: "shadow-md hover:shadow-lg transition-shadow duration-200",
-        outlined: "border-2",
-        filled: "bg-surface-container",
+        default: "glass-card",
+        elevated: "glass-intense md-elevation-2 hover:md-elevation-3",
+        outlined: "border-2 border-outline-variant bg-surface-container-lowest/50 backdrop-blur-sm hover:border-primary/30",
+        filled: "bg-surface-container-high/80 backdrop-blur-md border-border/50",
+        glass: "glass-card",
       },
       padding: {
         none: "",
@@ -30,7 +31,7 @@ const cardVariants = cva(
       },
       interactive: {
         false: "",
-        true: "cursor-pointer hover:bg-accent/5 transition-colors duration-200",
+        true: "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200",
       }
     },
     defaultVariants: {
@@ -86,8 +87,8 @@ const CardTitle = React.forwardRef<
   }
 >(({ className, level = 3, ...props }, ref) => {
   const sizeClasses = {
-    1: "text-2xl font-bold",
-    2: "text-xl font-semibold", 
+    1: "text-2xl font-medium",
+    2: "text-xl font-medium", 
     3: "text-lg font-medium",
     4: "text-base font-medium",
   };
@@ -206,8 +207,8 @@ export function DataCard({
 }: React.ComponentProps<typeof Card>) {
   return (
     <Card 
-      variant="elevated" 
-      className={cn("bg-surface-container", className)}
+      variant="glass" 
+      className={className}
       {...props}
     >
       {children}
@@ -222,10 +223,10 @@ export function StatsCard({
 }: React.ComponentProps<typeof Card>) {
   return (
     <Card 
-      variant="filled" 
+      variant="elevated" 
       padding="md"
       spacing="sm"
-      className={cn("text-center", className)}
+      className={cn("text-center border-glow", className)}
       {...props}
     >
       {children}
@@ -243,7 +244,7 @@ export function InteractiveCard({
     <Card 
       variant="outlined" 
       interactive
-      className={cn("hover:border-primary/50", className)}
+      className={cn("hover:border-primary/60 border-glow", className)}
       onClick={onClick}
       {...props}
     >

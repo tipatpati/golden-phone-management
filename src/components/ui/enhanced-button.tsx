@@ -9,24 +9,24 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden md-motion-smooth",
   {
     variants: {
       variant: {
-        // Material Design 3 variants
-        filled: "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:bg-primary/90",
-        "filled-tonal": "bg-secondary-container text-on-secondary-container hover:shadow-sm hover:bg-secondary-container/80",
-        elevated: "bg-surface-container-low text-primary shadow-md hover:shadow-lg border border-border",
-        outlined: "border border-border bg-transparent text-primary hover:bg-primary/10",
-        text: "text-primary hover:bg-primary/10",
+        // Material Design 3 variants with glassmorphism
+        filled: "gradient-tech text-white shadow-md hover:shadow-xl hover:scale-105 border border-white/20",
+        "filled-tonal": "glass-intense text-primary hover:shadow-md hover:border-primary/40 border-glow",
+        elevated: "glass-card text-on-surface shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+        outlined: "border-2 border-primary/40 bg-transparent text-primary hover:bg-primary/10 hover:border-primary/60 backdrop-blur-sm",
+        text: "text-primary hover:bg-primary/10 backdrop-blur-sm",
         // Special variants
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:shadow-md hover:bg-destructive/90",
-        success: "bg-green-600 text-white shadow-sm hover:shadow-md hover:bg-green-700",
-        warning: "bg-yellow-600 text-white shadow-sm hover:shadow-md hover:bg-yellow-700",
+        destructive: "bg-destructive text-white shadow-md hover:shadow-xl hover:bg-destructive/90",
+        success: "bg-green-600 text-white shadow-md hover:shadow-xl hover:bg-green-700",
+        warning: "bg-yellow-600 text-white shadow-md hover:shadow-xl hover:bg-yellow-700",
         // Legacy compatibility
-        default: "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:bg-primary/90",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        default: "gradient-tech text-white shadow-md hover:shadow-xl hover:scale-105",
+        secondary: "bg-secondary text-white hover:bg-secondary/90 shadow-md hover:shadow-lg",
+        ghost: "hover:bg-accent/10 hover:text-accent-foreground backdrop-blur-sm",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
