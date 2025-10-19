@@ -340,17 +340,39 @@ class UniversalProductServiceClass {
     console.log(`🗑️ UNIVERSAL: Deleting product from ${options.source}:`, productId);
     
     try {
-      // First delete all units
+      // Check if product exists first
+      const { data: product, error: checkError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('id', productId)
+        .maybeSingle();
+
+      if (checkError) {
+        throw new Error(`Failed to check product: ${checkError.message}`);
+      }
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      // Step 1: Delete all product units
       const { error: unitsError } = await supabase
         .from('product_units')
         .delete()
         .eq('product_id', productId);
 
       if (unitsError) {
+        console.error('Error deleting units:', unitsError);
         throw new Error(`Failed to delete product units: ${unitsError.message}`);
       }
 
-      // Then delete the product
+      // Step 2: Delete product recommendations (silently ignore errors)
+      await supabase
+        .from('product_recommendations')
+        .delete()
+        .or(`product_id.eq.${productId},related_product_id.eq.${productId}`);
+
+      // Step 3: Delete the product
       const { error: productError } = await supabase
         .from('products')
         .delete()
@@ -376,9 +398,10 @@ class UniversalProductServiceClass {
       console.log('✅ UNIVERSAL: Product deleted successfully:', productId);
       return { success: true, errors: [] };
       
-    } catch (error) {
-      console.error('❌ UNIVERSAL: Failed to delete product:', error);
-      return { success: false, errors: [error.message] };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Unknown error occurred';
+      console.error('❌ UNIVERSAL: Failed to delete product:', errorMessage);
+      return { success: false, errors: [errorMessage] };
     }
   }
 
