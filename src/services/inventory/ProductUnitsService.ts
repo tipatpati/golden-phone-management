@@ -259,6 +259,8 @@ export class ProductUnitsService {
       throw new Error('Unit not found');
     }
 
+    const oldProductId = unit.product_id;
+
     // Update the product_id
     const { error: updateError } = await supabase
       .from('product_units')
@@ -272,6 +274,15 @@ export class ProductUnitsService {
       throw new Error(`Failed to reassign unit: ${updateError.message}`);
     }
 
-    console.log(`Unit ${unitId} reassigned from ${unit.product_id} to ${newProductId}`);
+    console.log(`Unit ${unitId} reassigned from ${oldProductId} to ${newProductId}`);
+
+    // Trigger events for both products to update their counts
+    const { UnifiedProductCoordinator } = await import('../shared/UnifiedProductCoordinator');
+    UnifiedProductCoordinator.notifyEvent({
+      type: 'unit_updated',
+      source: 'inventory',
+      entityId: unitId,
+      metadata: { oldProductId, newProductId, reassignment: true }
+    });
   }
 }

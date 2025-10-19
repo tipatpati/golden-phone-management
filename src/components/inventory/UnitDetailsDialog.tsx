@@ -147,11 +147,22 @@ export function UnitDetailsDialog({
   };
 
   const confirmReassignment = async () => {
-    if (!selectedProductId) return;
+    if (!selectedProductId || !unit.id) return;
 
+    const oldProductId = unit.product_id;
     setIsSaving(true);
+    
     try {
-      await ProductUnitsService.reassignUnitToProduct(unit.id!, selectedProductId);
+      await ProductUnitsService.reassignUnitToProduct(unit.id, selectedProductId);
+
+      // Invalidate both old and new product queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['products'] }),
+        queryClient.invalidateQueries({ queryKey: ['product', oldProductId] }),
+        queryClient.invalidateQueries({ queryKey: ['product', selectedProductId] }),
+        queryClient.invalidateQueries({ queryKey: ['product-units', oldProductId] }),
+        queryClient.invalidateQueries({ queryKey: ['product-units', selectedProductId] })
+      ]);
 
       toast({
         title: "Success",
@@ -162,7 +173,6 @@ export function UnitDetailsDialog({
       setSelectedProductId(null);
       setShowReassignConfirm(false);
       setValidationWarnings([]);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
       onOpenChange(false);
     } catch (error: any) {
       toast({
