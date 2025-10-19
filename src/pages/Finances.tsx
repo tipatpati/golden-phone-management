@@ -6,11 +6,12 @@ import { DiscountManager } from "@/components/finances/DiscountManager";
 import { BillCalculator } from "@/components/finances/BillCalculator";
 import { FinancialReports } from "@/components/finances/FinancialReports";
 import { PageHeader } from "@/components/common/PageHeader";
+import { PageLayout } from "@/components/common/PageLayout";
 import { Receipt, Calculator, Percent, FileText } from "lucide-react";
 
 export default function Finances() {
   return (
-    <div className="space-y-6 p-6">
+    <PageLayout>
       <PageHeader 
         title="Gestione Finanziaria" 
         subtitle="Gestisci tasse, sconti e calcoli finanziari"
@@ -52,6 +53,6 @@ export default function Finances() {
           <FinancialReports />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 }
