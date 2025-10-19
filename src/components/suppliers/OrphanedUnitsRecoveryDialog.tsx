@@ -116,13 +116,7 @@ export function OrphanedUnitsRecoveryDialog({
   };
 
   const calculateTotalValue = () => {
-    // Sum up the actual prices of all selected units
     return selectedUnits.reduce((sum, unit) => sum + (unit.price || 0), 0);
-  };
-
-  const calculateAveragePrice = () => {
-    if (selectedUnits.length === 0) return 0;
-    return calculateTotalValue() / selectedUnits.length;
   };
 
   const handleSubmit = async () => {
@@ -319,21 +313,9 @@ export function OrphanedUnitsRecoveryDialog({
                     <span>Selected Units:</span>
                     <span className="font-medium">{selectedUnitIds.length}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Average Price per Unit:</span>
-                    <span className="font-medium">€{calculateAveragePrice().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Est. Purchase Price per Unit:</span>
-                    <span className="font-medium">€{estimatedPrice.toFixed(2)}</span>
-                  </div>
                   <div className="flex justify-between border-t pt-2">
-                    <span className="font-medium">Total Current Value:</span>
+                    <span className="font-medium">Total Value:</span>
                     <span className="font-bold">€{calculateTotalValue().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Total Est. Purchase Cost:</span>
-                    <span className="font-bold text-muted-foreground">€{(selectedUnitIds.length * estimatedPrice).toFixed(2)}</span>
                   </div>
                 </div>
                 
