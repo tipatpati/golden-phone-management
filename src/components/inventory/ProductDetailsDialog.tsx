@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { formatProductName, parseSerialString, formatProductUnitDisplay } from "@/utils/productNaming";
 import {
   Dialog,
@@ -21,7 +21,9 @@ import {
   Euro,
   Edit,
   Printer,
-  History
+  History,
+  Search,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProductUnitManagementService } from "@/services/shared/ProductUnitManagementService";
@@ -31,6 +33,7 @@ import { ProductHistoryView } from "./ProductHistoryView";
 import { SoldProductsHistoryTab } from "./SoldProductsHistoryTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useSuppliers } from "@/services";
+import { Input } from "@/components/ui/input";
 
 interface Product {
   id: string;
@@ -72,9 +75,21 @@ export function ProductDetailsDialog({
   const [unitPricingOpen, setUnitPricingOpen] = useState(false);
   const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(product);
+  const [unitSearchQuery, setUnitSearchQuery] = useState("");
   
   // Fetch suppliers for display in unit badges
   const { data: suppliers = [] } = useSuppliers();
+
+  // Filter units by search query (IMEI/Serial)
+  const filteredUnits = useMemo(() => {
+    if (!unitSearchQuery.trim()) return productUnits;
+    
+    const query = unitSearchQuery.toLowerCase().trim();
+    return productUnits.filter(unit => 
+      unit.serial_number?.toLowerCase().includes(query) ||
+      unit.barcode?.toLowerCase().includes(query)
+    );
+  }, [productUnits, unitSearchQuery]);
 
   // Refresh product data when dialog opens to get latest pricing
   useEffect(() => {
@@ -360,16 +375,47 @@ export function ProductDetailsDialog({
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium">
-                    Product Units {productUnits.length > 0 && `(${productUnits.length} units)`}
+                    Product Units {productUnits.length > 0 && `(${filteredUnits.length} of ${productUnits.length})`}
                   </CardTitle>
                   {isLoadingUnits && (
                     <CardDescription>Loading unit details...</CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
-                  {productUnits.length > 0 ? (
+                  {/* Search Input */}
+                  {productUnits.length > 0 && (
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="text"
+                          placeholder="Search by IMEI or Serial..."
+                          value={unitSearchQuery}
+                          onChange={(e) => setUnitSearchQuery(e.target.value)}
+                          className="pl-9 pr-9"
+                        />
+                        {unitSearchQuery && (
+                          <button
+                            onClick={() => setUnitSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                      {unitSearchQuery && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {filteredUnits.length === 0 
+                            ? "No units found matching your search" 
+                            : `Showing ${filteredUnits.length} of ${productUnits.length} units`}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {filteredUnits.length > 0 ? (
                     <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {productUnits.map((unit) => (
+                      {filteredUnits.map((unit) => (
                         <div
                           key={unit.id}
                           className="flex items-start justify-between p-4 bg-muted/30 rounded-lg border border-border/50"
@@ -485,6 +531,19 @@ export function ProductDetailsDialog({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : unitSearchQuery ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No units found matching "{unitSearchQuery}"</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setUnitSearchQuery("")}
+                        className="mt-2"
+                      >
+                        Clear search
+                      </Button>
                     </div>
                   ) : currentProduct.serial_numbers && currentProduct.serial_numbers.length > 0 ? (
                     <div className="space-y-2">
