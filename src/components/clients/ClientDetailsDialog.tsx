@@ -11,9 +11,17 @@ import type { Client } from '@/services';
 interface ClientDetailsDialogProps {
   client: Client;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProps) {
+export function ClientDetailsDialog({ client, trigger, open: controlledOpen, onOpenChange }: ClientDetailsDialogProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
+
   const getStatusColor = (status: string) => {
     return status === "active" ? "default" : "secondary";
   };
@@ -25,15 +33,17 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outlined" size="sm">
-            <Eye className="h-4 w-4 mr-2" />
-            View Details
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {!controlledOpen && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="outlined" size="sm">
+              <Eye className="h-4 w-4 mr-2" />
+              Visualizza Dettagli
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -42,7 +52,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
             ) : (
               <User className="h-5 w-5" />
             )}
-            Client Details - {getClientDisplayName(client)}
+            Dettagli Cliente - {getClientDisplayName(client)}
           </DialogTitle>
         </DialogHeader>
 
@@ -56,33 +66,33 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
                 ) : (
                   <User className="h-5 w-5 text-primary" />
                 )}
-                Client Information
+                Informazioni Cliente
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Name</div>
+                  <div className="text-sm font-medium text-muted-foreground">Nome</div>
                   <div className="font-medium">{getClientDisplayName(client)}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Type</div>
+                  <div className="text-sm font-medium text-muted-foreground">Tipo</div>
                   <Badge variant="outline" className="border-primary/20 text-primary">
-                    {client.type === 'business' ? 'Business (B2B)' : 'Individual (B2C)'}
+                    {client.type === 'business' ? 'Business (B2B)' : 'Individuale (B2C)'}
                   </Badge>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Status</div>
+                  <div className="text-sm font-medium text-muted-foreground">Stato</div>
                   <Badge variant={getStatusColor(client.status)}>
-                    {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
+                    {client.status === 'active' ? 'Attivo' : 'Inattivo'}
                   </Badge>
                 </div>
 
                 {client.type === "business" && client.contact_person && (
                   <div className="space-y-2">
-                    <div className="text-sm font-medium text-muted-foreground">Contact Person</div>
+                    <div className="text-sm font-medium text-muted-foreground">Persona di Contatto</div>
                     <div>{client.contact_person}</div>
                   </div>
                 )}
@@ -95,7 +105,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Mail className="h-5 w-5 text-primary" />
-                Contact Information
+                Informazioni di Contatto
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -114,7 +124,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Phone className="h-4 w-4" />
-                      Phone
+                      Telefono
                     </div>
                     <div>{client.phone}</div>
                   </div>
@@ -124,7 +134,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
                   <div className="space-y-2 md:col-span-2">
                     <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      Address
+                      Indirizzo
                     </div>
                     <div>{client.address}</div>
                   </div>
@@ -139,7 +149,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
-                  Additional Information
+                  Informazioni Aggiuntive
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -148,7 +158,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
-                        Tax ID
+                        Partita IVA
                       </div>
                       <div>{client.tax_id}</div>
                     </div>
@@ -156,7 +166,7 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
 
                   {client.notes && (
                     <div className="space-y-2 md:col-span-2">
-                      <div className="text-sm font-medium text-muted-foreground">Notes</div>
+                      <div className="text-sm font-medium text-muted-foreground">Note</div>
                       <div className="text-sm bg-muted/50 p-3 rounded-lg">{client.notes}</div>
                     </div>
                   )}
@@ -170,19 +180,19 @@ export function ClientDetailsDialog({ client, trigger }: ClientDetailsDialogProp
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <CalendarDays className="h-5 w-5 text-primary" />
-                System Information
+                Informazioni di Sistema
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Created At</div>
-                  <div>{client.created_at ? format(new Date(client.created_at), "PPpp") : "N/A"}</div>
+                  <div className="text-sm font-medium text-muted-foreground">Creato il</div>
+                  <div>{client.created_at ? format(new Date(client.created_at), "dd/MM/yyyy HH:mm") : "N/A"}</div>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Last Updated</div>
-                  <div>{client.updated_at ? format(new Date(client.updated_at), "PPpp") : "N/A"}</div>
+                  <div className="text-sm font-medium text-muted-foreground">Ultimo Aggiornamento</div>
+                  <div>{client.updated_at ? format(new Date(client.updated_at), "dd/MM/yyyy HH:mm") : "N/A"}</div>
                 </div>
               </div>
             </CardContent>

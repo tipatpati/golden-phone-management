@@ -2,13 +2,22 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/updated-button";
-import { Building, User, Phone, Mail, Edit2, Trash2, Eye } from "lucide-react";
+import { Building, User, Phone, Mail, Edit2, Trash2, Eye, MoreVertical } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
 import { type Client } from "@/services";
 import { ClientDetailsDialog } from "./ClientDetailsDialog";
+import { EditClientDialog } from "./EditClientDialog";
 import { format } from "date-fns";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ClientsListProps {
   clients: Client[];
@@ -18,6 +27,7 @@ interface ClientsListProps {
 
 export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => {
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Client>();
+  const [viewingClient, setViewingClient] = React.useState<Client | null>(null);
 
   const getClientDisplayName = (client: Client) => {
     return client.type === "business" 
@@ -33,8 +43,8 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
     if (onDelete) {
       showConfirmDialog({
         item: client,
-        title: "Delete Client",
-        message: `Are you sure you want to delete "${getClientDisplayName(client)}"? This action cannot be undone.`,
+        title: "Elimina Cliente",
+        message: `Sei sicuro di voler eliminare "${getClientDisplayName(client)}"? Questa azione non può essere annullata.`,
         onConfirm: () => onDelete(client)
       });
     }
@@ -44,7 +54,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
   const columns = [
     {
       key: 'name' as keyof Client,
-      header: 'Client',
+      header: 'Cliente',
       render: (value: any, client: Client) => (
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-full ${client.type === "business" ? "bg-purple-100" : "bg-blue-100"}`}>
@@ -58,7 +68,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
             <div className="font-medium">{getClientDisplayName(client)}</div>
             {client.type === "business" && client.contact_person && (
               <div className="text-sm text-muted-foreground">
-                Contact: {client.contact_person}
+                Contatto: {client.contact_person}
               </div>
             )}
           </div>
@@ -67,13 +77,13 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
     },
     {
       key: 'email' as keyof Client,
-      header: 'Contact',
+      header: 'Contatto',
       render: (value: any, client: Client) => (
         <div className="space-y-1">
           {client.email && (
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-3 w-3 text-muted-foreground" />
-              {client.email}
+              <span className="truncate max-w-[200px]">{client.email}</span>
             </div>
           )}
           {client.phone && (
@@ -87,56 +97,69 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
     },
     {
       key: 'type' as keyof Client,
-      header: 'Type',
+      header: 'Tipo',
       render: (value: string) => (
-        <Badge variant="outline" className={value === 'business' ? 'border-purple-200 text-purple-700' : 'border-blue-200 text-blue-700'}>
+        <Badge variant="outline" className={value === 'business' ? 'border-purple-200 text-purple-700 bg-purple-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
           {value === 'business' ? 'B2B' : 'B2C'}
         </Badge>
       )
     },
     {
       key: 'status' as keyof Client,
-      header: 'Status',
+      header: 'Stato',
       render: (value: string) => (
-        <Badge variant={getStatusColor(value)}>
-          {value.charAt(0).toUpperCase() + value.slice(1)}
+        <Badge variant={getStatusColor(value)} className={value === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>
+          {value === 'active' ? 'Attivo' : 'Inattivo'}
         </Badge>
       )
     },
     {
       key: 'created_at' as keyof Client,
-      header: 'Created',
+      header: 'Creato',
       align: 'right' as const,
       render: (value: string) => (
-        <div className="text-sm">
-          {format(new Date(value), "MMM dd, yyyy")}
+        <div className="text-sm text-muted-foreground">
+          {format(new Date(value), "dd/MM/yyyy")}
         </div>
       )
     }
   ];
 
-  // Define actions
-  const actions = [
-    {
-      icon: <Eye className="h-4 w-4" />,
-      label: "View",
-      onClick: () => {}, // Required but not used when renderCustom is provided
-      renderCustom: (client: Client) => <ClientDetailsDialog client={client} />
-    },
-    ...(onEdit && onDelete ? [
-      {
-        icon: <Edit2 className="h-4 w-4" />,
-        label: "Edit",
-        onClick: onEdit
-      },
-      {
-        icon: <Trash2 className="h-4 w-4" />,
-        label: "Delete",
-        onClick: handleDeleteClient,
-        variant: "destructive" as const
-      }
-    ] : [])
-  ];
+  // Custom actions column with improved button layout
+  const renderActions = (client: Client) => (
+    <div className="flex items-center justify-end gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+        onClick={() => setViewingClient(client)}
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+      
+      {onEdit && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+          onClick={() => onEdit(client)}
+        >
+          <Edit2 className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {onDelete && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-colors"
+          onClick={() => handleDeleteClient(client)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
 
   // Mobile pagination
   const {
@@ -153,7 +176,14 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
         <DataTable
           data={clients}
           columns={columns}
-          actions={actions}
+          actions={[
+            {
+              icon: <Eye className="h-4 w-4" />,
+              label: "Visualizza",
+              onClick: () => {},
+              renderCustom: renderActions
+            }
+          ]}
           getRowKey={(client) => client.id}
         />
       </div>
@@ -165,33 +195,58 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
           <DataCard
             key={client.id}
             title={getClientDisplayName(client)}
-            subtitle={client.type === "business" && client.contact_person ? `Contact: ${client.contact_person}` : undefined}
+            subtitle={client.type === "business" && client.contact_person ? `Contatto: ${client.contact_person}` : undefined}
             icon={client.type === "business" ? 
               <Building className="h-5 w-5 text-purple-600" /> : 
               <User className="h-5 w-5 text-blue-600" />
             }
             badge={{
-              text: client.status.charAt(0).toUpperCase() + client.status.slice(1),
+              text: client.status === 'active' ? 'Attivo' : 'Inattivo',
               variant: getStatusColor(client.status) as any
             }}
             headerActions={
-              <ClientDetailsDialog 
-                client={client} 
-                trigger={
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary border border-border/50 bg-background/80 backdrop-blur-sm shadow-sm"
+                    className="h-8 w-8 p-0 hover:bg-primary/10"
                   >
-                    <Eye className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" />
                   </Button>
-                }
-              />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setViewingClient(client)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Visualizza Dettagli
+                  </DropdownMenuItem>
+                  {onEdit && (
+                    <DropdownMenuItem onClick={() => onEdit(client)}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Modifica
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteClient(client)}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Elimina
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             }
             fields={[
               {
-                label: "Type",
-                value: <Badge variant="outline" className={client.type === 'business' ? 'border-purple-200 text-purple-700' : 'border-blue-200 text-blue-700'}>
+                label: "Tipo",
+                value: <Badge variant="outline" className={client.type === 'business' ? 'border-purple-200 text-purple-700 bg-purple-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
                   {client.type === 'business' ? 'B2B' : 'B2C'}
                 </Badge>
               },
@@ -200,12 +255,12 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
                 value: (
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="h-3 w-3 text-muted-foreground" />
-                    {client.email}
+                    <span className="truncate">{client.email}</span>
                   </div>
                 )
               }] : []),
               ...(client.phone ? [{
-                label: "Phone",
+                label: "Telefono",
                 value: (
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-3 w-3 text-muted-foreground" />
@@ -214,25 +269,9 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
                 )
               }] : []),
               {
-                label: "Created",
-                value: format(new Date(client.created_at!), "MMM dd, yyyy")
+                label: "Creato",
+                value: format(new Date(client.created_at!), "dd/MM/yyyy")
               }
-            ]}
-            actions={[
-              ...(onEdit && onDelete ? [
-                {
-                  icon: <Edit2 className="h-3 w-3 mr-1" />,
-                  label: "Edit",
-                  onClick: () => onEdit(client)
-                },
-                {
-                  icon: <Trash2 className="h-3 w-3 mr-1" />,
-                  label: "Delete",
-                  onClick: () => handleDeleteClient(client),
-                  variant: "outlined" as const,
-                  className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-                }
-              ] : [])
             ]}
           />
           ))}
@@ -250,6 +289,15 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
         )}
       </div>
 
+      {/* View Client Details Dialog */}
+      {viewingClient && (
+        <ClientDetailsDialog 
+          client={viewingClient}
+          open={true}
+          onOpenChange={(open) => !open && setViewingClient(null)}
+        />
+      )}
+
       {/* Confirm Dialog */}
       <ConfirmDialog
         open={dialogState.isOpen}
@@ -258,7 +306,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
         title={dialogState.title}
         message={dialogState.message}
         variant="destructive"
-        confirmText="Delete"
+        confirmText="Elimina"
       />
     </>
   );
