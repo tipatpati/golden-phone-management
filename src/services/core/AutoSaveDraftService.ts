@@ -221,7 +221,7 @@ export class AutoSaveDraftService {
       case 'product':
         return ['brand', 'model', 'price'];
       case 'client':
-        return ['name', 'type'];
+        return ['type', 'first_name', 'last_name', 'company_name', 'email', 'phone'];
       case 'employee':
         return ['name', 'email', 'role'];
       case 'sale':

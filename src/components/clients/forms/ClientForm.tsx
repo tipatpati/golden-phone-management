@@ -24,17 +24,18 @@ export function ClientForm({
     isAutoSaving,
     lastSavedAt,
     restoreDraft,
-    deleteDraft
+    deleteDraft,
+    currentDraft
   } = useClientForm({ initialData, onSubmit });
 
   const [showDraftDialog, setShowDraftDialog] = React.useState(false);
 
   // Check for draft on mount
   React.useEffect(() => {
-    if (isDraftAvailable && !initialData) {
+    if (isDraftAvailable && !initialData && currentDraft) {
       setShowDraftDialog(true);
     }
-  }, [isDraftAvailable, initialData]);
+  }, [isDraftAvailable, initialData, currentDraft]);
 
   // Expose handleSubmit to parent components
   React.useEffect(() => {
@@ -104,17 +105,7 @@ export function ClientForm({
       <DraftRestoreDialog
         isOpen={showDraftDialog}
         onOpenChange={setShowDraftDialog}
-        draft={isDraftAvailable ? { 
-          id: 'client-draft',
-          formType: 'client',
-          timestamp: Date.now(),
-          version: '1.0',
-          formData,
-          metadata: {
-            completionPercentage: 75, // Calculate based on filled fields
-            lastSavedField: 'email'
-          }
-        } : null}
+        draft={currentDraft}
         onRestore={() => {
           restoreDraft();
           setShowDraftDialog(false);

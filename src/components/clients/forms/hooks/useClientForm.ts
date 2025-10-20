@@ -27,6 +27,7 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentDraft, setCurrentDraft] = useState<any>(null);
   const { validateForm, clearErrors, getFieldError, hasErrors } = useClientValidation();
   const { 
     isDraftAvailable, 
@@ -35,7 +36,7 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
     saveDraft, 
     loadDraft, 
     deleteDraft,
-    restoreDraft 
+    restoreDraft: restoreDraftFromService
   } = useAutoSaveDraft('client', formData, { 
     enabled: enableDraftSaving,
     debounceMs: 10000, // 10 seconds
@@ -46,6 +47,16 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
       console.error('Draft save error:', error);
     }
   });
+
+  // Load the draft on mount if available
+  useEffect(() => {
+    if (isDraftAvailable && !initialData && !currentDraft) {
+      const draft = loadDraft();
+      if (draft) {
+        setCurrentDraft(draft);
+      }
+    }
+  }, [isDraftAvailable, initialData, loadDraft, currentDraft]);
 
   // Update form data when initial data changes
   useEffect(() => {
@@ -126,7 +137,27 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
       status: 'active',
     });
     clearErrors();
+    setCurrentDraft(null);
   }, [clearErrors]);
+
+  // Enhanced restoreDraft that actually updates form state
+  const restoreDraft = useCallback(() => {
+    const draft = restoreDraftFromService();
+    if (draft && draft.formData) {
+      setFormData(draft.formData);
+      setCurrentDraft(draft);
+      toast.success("Bozza ripristinata");
+      return draft;
+    }
+    return null;
+  }, [restoreDraftFromService]);
+
+  // Enhanced deleteDraft that also resets form and current draft
+  const deleteDraftAndReset = useCallback(() => {
+    deleteDraft();
+    resetForm();
+    setCurrentDraft(null);
+  }, [deleteDraft, resetForm]);
 
   return {
     formData,
@@ -143,7 +174,8 @@ export function useClientForm({ initialData, onSubmit, enableDraftSaving = true 
     lastSavedAt,
     saveDraft,
     loadDraft,
-    deleteDraft,
-    restoreDraft
+    deleteDraft: deleteDraftAndReset,
+    restoreDraft,
+    currentDraft
   };
 }
