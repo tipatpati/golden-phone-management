@@ -1,20 +1,24 @@
 import React, { useState } from "react";
-import { useClients, type Client } from "@/services";
+import { useClients, useDeleteClient, type Client } from "@/services";
 import { ClientsHeader } from "@/components/clients/ClientsHeader";
 import { ClientsSearchBar } from "@/components/clients/ClientsSearchBar";
 import { ClientsStats } from "@/components/clients/ClientsStats";
 import { ClientsList } from "@/components/clients/ClientsList";
 import { EmptyClientsList } from "@/components/clients/EmptyClientsList";
+import { EditClientDialog } from "@/components/clients/EditClientDialog";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { PageLayout } from "@/components/common/PageLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/components/ui/sonner";
 import { Info } from "lucide-react";
 
 const Clients = () => {
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   
   const { data: clientsData = [], isLoading, error } = useClients(activeSearchQuery);
+  const deleteClient = useDeleteClient();
 
   // Ensure clientsData is always an array and properly typed
   const clients: Client[] = Array.isArray(clientsData) ? clientsData.map(client => ({
@@ -30,6 +34,22 @@ const Clients = () => {
   const handleClearSearch = () => {
     setLocalSearchQuery('');
     setActiveSearchQuery('');
+  };
+
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+  };
+
+  const handleDelete = async (client: Client) => {
+    try {
+      await deleteClient.mutateAsync(client.id);
+      const clientName = client.type === "business" 
+        ? client.company_name 
+        : `${client.first_name} ${client.last_name}`;
+      toast.success(`Cliente "${clientName}" eliminato con successo!`);
+    } catch (error: any) {
+      toast.error(`Errore nell'eliminazione del cliente: ${error.message}`);
+    }
   };
 
   if (isLoading) {
@@ -80,7 +100,20 @@ const Clients = () => {
       {clients.length === 0 ? (
         <EmptyClientsList searchTerm={activeSearchQuery} />
       ) : (
-        <ClientsList clients={clients} />
+        <ClientsList 
+          clients={clients} 
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
+
+      {/* Edit Client Dialog */}
+      {editingClient && (
+        <EditClientDialog 
+          client={editingClient} 
+          open={true}
+          onOpenChange={(open) => !open && setEditingClient(null)}
+        />
       )}
     </PageLayout>
   );

@@ -29,12 +29,14 @@ export const DeleteClientDialog = ({ client }: DeleteClientDialogProps) => {
       : `${client.first_name} ${client.last_name}`;
   };
 
-  const handleDelete = () => {
-    deleteClient.mutate(client.id, {
-      onSuccess: () => {
-        setOpen(false);
-      },
-    });
+  const handleDelete = async () => {
+    try {
+      await deleteClient.mutateAsync(client.id);
+      setOpen(false);
+    } catch (error) {
+      // Error is handled by the mutation's onError callback
+      console.error('Delete failed:', error);
+    }
   };
 
   return (
@@ -46,20 +48,20 @@ export const DeleteClientDialog = ({ client }: DeleteClientDialogProps) => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Client</AlertDialogTitle>
+          <AlertDialogTitle>Elimina Cliente</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the client "{getClientDisplayName(client)}"? 
-            This action cannot be undone and will permanently remove all client data.
+            Sei sicuro di voler eliminare il cliente "{getClientDisplayName(client)}"? 
+            Questa azione non può essere annullata e rimuoverà permanentemente tutti i dati del cliente.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Annulla</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleDelete}
             disabled={deleteClient.isPending}
             className="bg-red-600 hover:bg-red-700"
           >
-            {deleteClient.isPending ? "Deleting..." : "Delete Client"}
+            {deleteClient.isPending ? "Eliminazione..." : "Elimina Cliente"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

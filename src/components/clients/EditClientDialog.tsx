@@ -9,11 +9,17 @@ import { Button } from "@/components/ui/updated-button";
 
 interface EditClientDialogProps {
   client: Client;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function EditClientDialog({ client }: EditClientDialogProps) {
-  const [open, setOpen] = React.useState(false);
+export function EditClientDialog({ client, open: controlledOpen, onOpenChange }: EditClientDialogProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const updateClient = useUpdateClient();
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   const handleSubmit = async (data: ClientFormData) => {
     try {
@@ -22,10 +28,17 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         data: data 
       });
       
-      toast.success("Client updated successfully!");
+      toast.success("Cliente aggiornato con successo!");
       setOpen(false);
     } catch (error: any) {
-      toast.error(`Failed to update client: ${error.message}`);
+      toast.error(`Errore nell'aggiornamento del cliente: ${error.message}`);
+    }
+  };
+
+  const handleDialogSubmit = async () => {
+    // Trigger the form's submit handler via the global reference
+    if ((window as any).__currentFormSubmit) {
+      await (window as any).__currentFormSubmit();
     }
   };
 
@@ -50,32 +63,56 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
     status: client.status,
   };
 
-  return (
-    <>
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-        onClick={() => setOpen(true)}
-      >
-        <Edit className="h-4 w-4" />
-      </Button>
+  // If not using controlled state, show a button trigger
+  if (controlledOpen === undefined) {
+    return (
+      <>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+          onClick={() => setOpen(true)}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
 
-      <FormDialog
-        title={`Edit ${getClientDisplayName()}`}
-        open={open}
-        onClose={() => setOpen(false)}
-        isLoading={updateClient.isPending}
-        submitText="Update Client"
-        size="lg"
-      >
-        <ClientForm
-          initialData={initialData}
-          onSubmit={handleSubmit}
+        <FormDialog
+          title={`Modifica ${getClientDisplayName()}`}
+          open={open}
+          onClose={() => setOpen(false)}
+          onSubmit={handleDialogSubmit}
           isLoading={updateClient.isPending}
-          submitText="Update Client"
-        />
-      </FormDialog>
-    </>
+          submitText="Aggiorna Cliente"
+          size="lg"
+        >
+          <ClientForm
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            isLoading={updateClient.isPending}
+            submitText="Aggiorna Cliente"
+          />
+        </FormDialog>
+      </>
+    );
+  }
+
+  // Controlled mode - only show dialog
+  return (
+    <FormDialog
+      title={`Modifica ${getClientDisplayName()}`}
+      open={open}
+      onClose={() => setOpen(false)}
+      onSubmit={handleDialogSubmit}
+      isLoading={updateClient.isPending}
+      submitText="Aggiorna Cliente"
+      size="lg"
+    >
+      <ClientForm
+        initialData={initialData}
+        onSubmit={handleSubmit}
+        isLoading={updateClient.isPending}
+        submitText="Aggiorna Cliente"
+      />
+    </FormDialog>
   );
 }
