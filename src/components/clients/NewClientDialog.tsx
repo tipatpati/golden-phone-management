@@ -26,6 +26,13 @@ export function NewClientDialog() {
     }
   };
 
+  const handleDialogSubmit = async () => {
+    // Trigger the form's submit handler via the global reference
+    if ((window as any).__currentFormSubmit) {
+      await (window as any).__currentFormSubmit();
+    }
+  };
+
   return (
     <>
       <Button onClick={() => setOpen(true)}>
@@ -37,6 +44,7 @@ export function NewClientDialog() {
         title="Aggiungi Nuovo Cliente"
         open={open}
         onClose={() => setOpen(false)}
+        onSubmit={handleDialogSubmit}
         isLoading={createClient.isPending}
         submitText="Aggiungi Cliente"
         size="lg"
