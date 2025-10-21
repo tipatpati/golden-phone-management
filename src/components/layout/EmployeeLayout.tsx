@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useIsMobile, useIsTablet, useIsDesktop } from "@/hooks/use-mobile";
 import { SideNavigation } from "./SideNavigation";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface EmployeeLayoutProps {
   children: React.ReactNode;
@@ -34,24 +35,30 @@ export function EmployeeLayout({ children, userRole }: EmployeeLayoutProps) {
             size="icon"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="h-8 w-8 md:h-9 md:w-9"
+            aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
           >
             {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
           <Separator orientation="vertical" className="h-4" />
-            <Breadcrumb className="hidden md:flex">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/" className="text-sm">
-                    Dashboard
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="text-sm font-medium">Golden Phone Management</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </header>
+          <Breadcrumb className="hidden md:flex flex-1">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/" className="text-sm">
+                  Dashboard
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-sm font-medium">Golden Phone Management</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          
+          {/* Theme Toggle */}
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
+        </header>
           
         
         <div className="flex-1 overflow-auto">
