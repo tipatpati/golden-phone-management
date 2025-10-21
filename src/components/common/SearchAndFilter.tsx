@@ -39,7 +39,7 @@ export function SearchAndFilter({
   };
 
   return (
-    <div className={`bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-6 ${className}`}>
+    <div className={`bg-surface-container-low rounded-lg sm:rounded-xl p-3 sm:p-6 ${className}`}>
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         {/* Search Input */}
         <div className="relative flex-1">

@@ -1,9 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/updated-button";
 import { Edit, Trash2, User, Building, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 interface ClientCardProps {
   name: string;
@@ -44,15 +44,9 @@ export function ClientCard({
     <Card className={cn("relative overflow-hidden", className)}>
       {/* Status Indicator */}
       <div className="absolute top-3 right-3">
-        <Badge 
-          variant={isActive ? "default" : "secondary"}
-          className={cn(
-            isActive ? "bg-green-100 text-green-800 border-green-200" : 
-            "bg-gray-100 text-gray-600 border-gray-200"
-          )}
-        >
+        <StatusBadge status={isActive ? "active" : "inactive"}>
           {status}
-        </Badge>
+        </StatusBadge>
       </div>
 
       <CardHeader className="pb-3">
@@ -60,7 +54,7 @@ export function ClientCard({
           {/* Client Type Icon */}
           <div className={cn(
             "flex items-center justify-center w-10 h-10 rounded-full",
-            type === 'business' ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+            type === 'business' ? "bg-info-container text-info" : "bg-secondary-container text-secondary"
           )}>
             {type === 'business' ? (
               <Building className="h-5 w-5" />

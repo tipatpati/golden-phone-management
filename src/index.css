@@ -63,6 +63,24 @@
     --ring: 217 100% 55%;
     --outline-variant: 220 15% 88%;
 
+    /* Success Colors - Green */
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 142 76% 95%;
+    --on-success-container: 142 76% 20%;
+    
+    /* Warning Colors - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-container: 38 92% 95%;
+    --on-warning-container: 38 92% 20%;
+    
+    /* Info Colors - Blue */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    --info-container: 199 89% 95%;
+    --on-info-container: 199 89% 20%;
+
     /* Neon Glow Colors */
     --neon-blue: 217 100% 55%;
     --neon-purple: 280 90% 60%;
@@ -195,6 +213,24 @@
     --input: 217 32% 20%;
     --ring: 217 91% 60%;
     --outline-variant: 217 20% 25%;
+
+    /* Success Colors - Dark Mode */
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 100%;
+    --success-container: 142 70% 15%;
+    --on-success-container: 142 70% 85%;
+    
+    /* Warning Colors - Dark Mode */
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 100%;
+    --warning-container: 38 92% 15%;
+    --on-warning-container: 38 92% 85%;
+    
+    /* Info Colors - Dark Mode */
+    --info: 199 89% 55%;
+    --info-foreground: 0 0% 100%;
+    --info-container: 199 89% 15%;
+    --on-info-container: 199 89% 85%;
 
     /* Surface Colors - Dark with Blue Tint */
     --surface: 222 47% 10%;

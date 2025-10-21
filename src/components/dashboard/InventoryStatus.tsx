@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/updated-button";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export function InventoryStatus() {
   const { data: allProducts = [] } = useProducts();
@@ -30,14 +30,9 @@ export function InventoryStatus() {
 
   const getStockLevel = (current: number, threshold: number) => {
     const percentage = threshold > 0 ? (current / threshold) * 100 : 100;
-    if (percentage <= 20) return { color: "bg-red-500", level: "Critica", bgColor: "bg-red-100" };
-    if (percentage <= 50) return { color: "bg-yellow-500", level: "Bassa", bgColor: "bg-yellow-100" };
-    return { color: "bg-green-500", level: "Buona", bgColor: "bg-green-100" };
-  };
-
-  const getStockBadgeVariant = (level: string) => {
-    if (level === "Critica") return "destructive";
-    return "outline";
+    if (percentage <= 20) return { color: "bg-destructive", level: "Critica", badgeStatus: "error" as const, bgColor: "bg-destructive/10" };
+    if (percentage <= 50) return { color: "bg-warning", level: "Bassa", badgeStatus: "warning" as const, bgColor: "bg-warning-container" };
+    return { color: "bg-success", level: "Buona", badgeStatus: "success" as const, bgColor: "bg-success-container" };
   };
 
   return (
@@ -56,7 +51,7 @@ export function InventoryStatus() {
               const percentValue = item.threshold > 0 ? (item.stock / item.threshold) * 100 : 100;
               
               return (
-                <div key={item.id} className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
+                <div key={item.id} className="p-2 sm:p-3 rounded-lg bg-surface-container">
                   <div className="flex items-center justify-between mb-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium truncate">{`${item.brand} ${item.model}`}</p>
@@ -66,9 +61,9 @@ export function InventoryStatus() {
                           `ID: ${item.id.slice(0, 8)}...`}
                       </p>
                     </div>
-                    <Badge variant={getStockBadgeVariant(stockStatus.level)} className="text-xs flex-shrink-0 ml-2">
+                    <StatusBadge status={stockStatus.badgeStatus} size="sm" className="flex-shrink-0 ml-2">
                       {item.stock} rimasti
-                    </Badge>
+                    </StatusBadge>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`flex-1 ${stockStatus.bgColor} rounded-full h-1.5 sm:h-2 overflow-hidden`}>
@@ -87,8 +82,8 @@ export function InventoryStatus() {
           </div>
         ) : (
           <div className="text-center py-6 sm:py-8">
-            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-success-container rounded-full flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>

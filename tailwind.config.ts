@@ -102,6 +102,24 @@ export default {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
 				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
+					container: 'hsl(var(--success-container))',
+					'on-container': 'hsl(var(--on-success-container))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))',
+					container: 'hsl(var(--warning-container))',
+					'on-container': 'hsl(var(--on-warning-container))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))',
+					container: 'hsl(var(--info-container))',
+					'on-container': 'hsl(var(--on-info-container))'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'

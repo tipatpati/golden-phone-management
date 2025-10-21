@@ -85,15 +85,15 @@ export function RecentSales() {
       <CardContent>
         <div className="space-y-3 sm:space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-gray-50 animate-pulse">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded-full flex-shrink-0"></div>
+            <div key={i} className="flex items-center gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-surface-container animate-pulse">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 bg-surface-container-high rounded-full flex-shrink-0"></div>
               <div className="flex-1 min-w-0">
-                <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/3 mb-1 sm:mb-2"></div>
-                <div className="h-2 sm:h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 sm:h-4 bg-surface-container-high rounded w-1/3 mb-1 sm:mb-2"></div>
+                <div className="h-2 sm:h-3 bg-surface-container-high rounded w-1/2"></div>
               </div>
               <div className="text-right flex-shrink-0">
-                <div className="h-3 sm:h-4 bg-gray-200 rounded w-12 sm:w-16 mb-1 sm:mb-2"></div>
-                <div className="h-2 sm:h-3 bg-gray-200 rounded w-8 sm:w-12"></div>
+                <div className="h-3 sm:h-4 bg-surface-container-high rounded w-12 sm:w-16 mb-1 sm:mb-2"></div>
+                <div className="h-2 sm:h-3 bg-surface-container-high rounded w-8 sm:w-12"></div>
               </div>
             </div>
           ))}
@@ -120,10 +120,10 @@ export function RecentSales() {
               const initials = getClientInitials(sale.client);
               
               return (
-                <div key={sale.id} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all">
+                <div key={sale.id} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-all">
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                      <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-medium text-xs sm:text-sm">
+                      <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-variant text-primary-foreground font-medium text-xs sm:text-sm">
                         {initials}
                       </div>
                     </Avatar>
@@ -144,8 +144,8 @@ export function RecentSales() {
           </div>
         ) : (
           <div className="text-center py-6 sm:py-8">
-            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-info-container rounded-full flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>

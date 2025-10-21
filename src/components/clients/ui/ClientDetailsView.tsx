@@ -1,7 +1,7 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Separator } from "@/components/ui/separator";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { 
   User, 
   Building, 
@@ -57,7 +57,7 @@ export function ClientDetailsView({ client, className, actions }: ClientDetailsV
             {/* Client Type Icon */}
             <div className={cn(
               "flex items-center justify-center w-12 h-12 rounded-full",
-              client.type === 'business' ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+              client.type === 'business' ? "bg-info-container text-info" : "bg-secondary-container text-secondary"
             )}>
               {client.type === 'business' ? (
                 <Building className="h-6 w-6" />
@@ -69,15 +69,9 @@ export function ClientDetailsView({ client, className, actions }: ClientDetailsV
             <div>
               <CardTitle className="text-xl">{getClientName()}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge 
-                  variant={isActive ? "default" : "secondary"}
-                  className={cn(
-                    isActive ? "bg-green-100 text-green-800 border-green-200" : 
-                    "bg-gray-100 text-gray-600 border-gray-200"
-                  )}
-                >
+                <StatusBadge status={isActive ? "active" : "inactive"}>
                   {client.status}
-                </Badge>
+                </StatusBadge>
                 <span className="text-sm text-muted-foreground capitalize">
                   {client.type} Client
                 </span>

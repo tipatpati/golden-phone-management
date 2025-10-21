@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useRepairs } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { logger } from "@/utils/logger";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted" | "cancelled";
 
@@ -33,20 +33,20 @@ export function RepairStatus() {
     repair.status !== 'completed' && repair.status !== 'cancelled'
   ).slice(0, 5); // Show only first 5
 
-  const getStatusColor = (status: RepairStatusType) => {
+  const getStatusBadgeType = (status: RepairStatusType): "info" | "warning" | "success" | "default" | "inactive" => {
     switch (status) {
       case "in_progress":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "info";
       case "awaiting_parts":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        return "warning";
       case "completed":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "success";
       case "quoted":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "default";
       case "cancelled":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "inactive";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "default";
     }
   };
 
@@ -102,33 +102,29 @@ export function RepairStatus() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600">ID</th>
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600">Client</th>
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600">Device</th>
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600">Status</th>
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600 hidden sm:table-cell">Technician</th>
-                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-gray-600">Due</th>
+                <tr className="border-b border-border">
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground">ID</th>
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground">Client</th>
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground">Device</th>
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground">Status</th>
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground hidden sm:table-cell">Technician</th>
+                  <th className="pb-2 sm:pb-3 pr-2 sm:pr-4 font-medium text-muted-foreground">Due</th>
                 </tr>
               </thead>
               <tbody>
                 {activeRepairs.map((repair) => (
-                  <tr key={repair.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                  <tr key={repair.id} className="border-b border-border last:border-0 hover:bg-surface-container-low">
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4 font-mono text-[10px] sm:text-xs">{repair.repair_number}</td>
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4 truncate max-w-[100px] sm:max-w-none">{getClientName(repair.client)}</td>
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4 truncate max-w-[80px] sm:max-w-none">{repair.device}</td>
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4">
-                      <span
-                        className={`inline-block rounded-full px-2 py-1 text-[10px] sm:text-xs font-medium ${getStatusColor(
-                          repair.status as RepairStatusType
-                        )}`}
-                      >
+                      <StatusBadge status={getStatusBadgeType(repair.status as RepairStatusType)} size="sm">
                         {getStatusDisplayName(repair.status as RepairStatusType)}
-                      </span>
+                      </StatusBadge>
                     </td>
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4 hidden sm:table-cell">{getTechnicianName(repair.technician)}</td>
                     <td className="py-2 sm:py-3 pr-2 sm:pr-4">
-                      <span className={formatDueDate(repair.estimated_completion_date).includes('overdue') ? 'text-red-600 font-medium' : ''}>
+                      <span className={formatDueDate(repair.estimated_completion_date).includes('overdue') ? 'text-destructive font-medium' : ''}>
                         {formatDueDate(repair.estimated_completion_date)}
                       </span>
                     </td>
@@ -139,8 +135,8 @@ export function RepairStatus() {
           </div>
         ) : (
           <div className="text-center py-6 sm:py-8">
-            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-success-container rounded-full flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>

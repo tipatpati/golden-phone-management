@@ -70,7 +70,7 @@ export function EditClientDialog({ client, open: controlledOpen, onOpenChange }:
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+          className="h-9 w-9 hover:bg-primary-container hover:text-primary transition-colors"
           onClick={() => setOpen(true)}
         >
           <Edit className="h-4 w-4" />

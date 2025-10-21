@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/updated-button";
 import { Building, User, Phone, Mail, Edit2, Trash2, Eye, MoreVertical } from "lucide-react";
 import { DataCard, DataTable, ConfirmDialog, useConfirmDialog } from "@/components/common";
@@ -10,6 +9,7 @@ import { EditClientDialog } from "./EditClientDialog";
 import { format } from "date-fns";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,11 +57,11 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
       header: 'Cliente',
       render: (value: any, client: Client) => (
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full ${client.type === "business" ? "bg-purple-100" : "bg-blue-100"}`}>
+          <div className={`p-2 rounded-full ${client.type === "business" ? "bg-info-container" : "bg-secondary-container"}`}>
             {client.type === "business" ? (
-              <Building className="h-4 w-4 text-purple-600" />
+              <Building className="h-4 w-4 text-info" />
             ) : (
-              <User className="h-4 w-4 text-blue-600" />
+              <User className="h-4 w-4 text-secondary" />
             )}
           </div>
           <div>
@@ -99,18 +99,18 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
       key: 'type' as keyof Client,
       header: 'Tipo',
       render: (value: string) => (
-        <Badge variant="outline" className={value === 'business' ? 'border-purple-200 text-purple-700 bg-purple-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
+        <StatusBadge status={value === 'business' ? 'business' : 'individual'}>
           {value === 'business' ? 'B2B' : 'B2C'}
-        </Badge>
+        </StatusBadge>
       )
     },
     {
       key: 'status' as keyof Client,
       header: 'Stato',
       render: (value: string) => (
-        <Badge variant={getStatusColor(value)} className={value === 'active' ? 'bg-green-50 text-green-700 border-green-200' : ''}>
+        <StatusBadge status={value === 'active' ? 'active' : 'inactive'}>
           {value === 'active' ? 'Attivo' : 'Inattivo'}
-        </Badge>
+        </StatusBadge>
       )
     },
     {
@@ -131,7 +131,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+        className="h-8 w-8 hover:bg-info-container hover:text-info transition-colors"
         onClick={() => setViewingClient(client)}
       >
         <Eye className="h-4 w-4" />
@@ -141,7 +141,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+          className="h-8 w-8 hover:bg-primary-container hover:text-primary transition-colors"
           onClick={() => onEdit(client)}
         >
           <Edit2 className="h-4 w-4" />
@@ -152,7 +152,7 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-red-50 hover:text-red-600 transition-colors"
+          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors"
           onClick={() => handleDeleteClient(client)}
         >
           <Trash2 className="h-4 w-4" />
@@ -246,9 +246,9 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
             fields={[
               {
                 label: "Tipo",
-                value: <Badge variant="outline" className={client.type === 'business' ? 'border-purple-200 text-purple-700 bg-purple-50' : 'border-blue-200 text-blue-700 bg-blue-50'}>
+                value: <StatusBadge status={client.type === 'business' ? 'business' : 'individual'}>
                   {client.type === 'business' ? 'B2B' : 'B2C'}
-                </Badge>
+                </StatusBadge>
               },
               ...(client.email ? [{
                 label: "Email",

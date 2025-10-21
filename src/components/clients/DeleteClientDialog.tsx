@@ -42,7 +42,7 @@ export const DeleteClientDialog = ({ client }: DeleteClientDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors">
+        <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-destructive/10 hover:text-destructive transition-colors">
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
