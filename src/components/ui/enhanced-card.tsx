@@ -31,7 +31,7 @@ const cardVariants = cva(
       },
       interactive: {
         false: "",
-        true: "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200",
+        true: "cursor-pointer hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       }
     },
     defaultVariants: {

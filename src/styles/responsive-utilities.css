@@ -19,6 +19,23 @@
   min-width: 48px;
 }
 
+/* Enhanced touch targets with expanded tap areas using pseudo-elements */
+.touch-target-enhanced {
+  position: relative;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-enhanced::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  z-index: -1;
+}
+
 /* Responsive text sizes */
 .text-responsive-sm {
   @apply text-sm sm:text-base;

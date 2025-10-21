@@ -9,6 +9,7 @@ import { EditClientDialog } from "@/components/clients/EditClientDialog";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { PageLayout } from "@/components/common/PageLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DataCardSkeleton } from "@/components/common/OptimizedLoadingBoundary";
 import { toast } from "@/components/ui/sonner";
 import { Info } from "lucide-react";
 
@@ -56,6 +57,11 @@ const Clients = () => {
     return (
       <PageLayout>
         <ClientsHeader />
+        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 mt-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <DataCardSkeleton key={i} />
+          ))}
+        </div>
       </PageLayout>
     );
   }
