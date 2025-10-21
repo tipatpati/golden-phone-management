@@ -30,7 +30,7 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
       )}
       
       <div className="flex flex-1 items-center justify-center gap-2 sm:gap-4 min-w-0">
-        <div className="relative w-full max-w-[200px] sm:max-w-sm lg:max-w-md">
+        <div className="relative w-full max-w-[280px] sm:max-w-sm lg:max-w-md">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <Input 
             type="search" 

@@ -17,7 +17,7 @@ const buttonVariants = cva(
         filled: "bg-primary text-primary-foreground shadow-md hover:shadow-xl hover:scale-105",
         "filled-tonal": "bg-secondary text-secondary-foreground shadow-md hover:shadow-lg hover:scale-[1.02]",
         elevated: "bg-surface-container-high text-on-surface shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-outline-variant/30",
-        outlined: "border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:border-primary",
+        outlined: "border-2 border-primary bg-surface text-primary hover:bg-primary/10 hover:border-primary dark:bg-surface dark:text-primary",
         text: "text-primary hover:bg-primary/10",
         // Special variants
         destructive: "bg-destructive text-destructive-foreground shadow-md hover:shadow-xl hover:bg-destructive/90",

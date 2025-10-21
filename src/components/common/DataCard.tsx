@@ -88,7 +88,7 @@ export function DataCard({
       
       <CardContent className="pt-0 space-y-2 md:space-y-2">
         {/* Information Grid - Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
           {fields.map((field, index) => (
             <div key={index} className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

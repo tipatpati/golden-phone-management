@@ -65,8 +65,8 @@ export default function Login() {
               <Logo size={160} className="mx-auto drop-shadow-lg" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight drop-shadow-md">Bentornato!</h1>
-              <p className="text-white/90 text-sm sm:text-base leading-relaxed drop-shadow-sm">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Bentornato!</h1>
+              <p className="text-white/90 text-sm sm:text-base leading-relaxed" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
                 Accedi al Sistema di Gestione GOLDEN PHONE
               </p>
             </div>
@@ -76,7 +76,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white text-sm font-medium flex items-center gap-2 drop-shadow-sm">
+              <Label htmlFor="email" className="text-white text-sm font-medium flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 <Mail className="h-4 w-4 text-white/90" />
                 Indirizzo Email
               </Label>
@@ -94,7 +94,7 @@ export default function Login() {
             
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white text-sm font-medium flex items-center gap-2 drop-shadow-sm">
+              <Label htmlFor="password" className="text-white text-sm font-medium flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 <Lock className="h-4 w-4 text-white/90" />
                 Password
               </Label>
@@ -144,7 +144,7 @@ export default function Login() {
 
             {/* Additional Info */}
             <div className="text-center pt-2">
-              <p className="text-xs text-white/80 leading-relaxed drop-shadow-sm">
+              <p className="text-xs text-white/80 leading-relaxed" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 Inserisci le tue credenziali per accedere al sistema. Il tuo ruolo e i permessi verranno rilevati automaticamente.
               </p>
             </div>

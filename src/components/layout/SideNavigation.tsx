@@ -189,8 +189,8 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium truncate">{username || 'Utente'}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  <p className="text-xs sm:text-sm font-medium truncate" title={username || 'Utente'}>{username || 'Utente'}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate" title={currentRole ? roleUtils.getRoleName(currentRole) : 'Sconosciuto'}>
                     {currentRole ? roleUtils.getRoleName(currentRole) : 'Sconosciuto'}
                   </p>
                 </div>
