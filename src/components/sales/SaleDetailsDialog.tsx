@@ -6,16 +6,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+  DialogFooter,
+} from '@/components/ui/updated-dialog';
+import { Button } from '@/components/ui/updated-button';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { DetailsCard, DetailField } from '@/components/ui/details-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, AlertCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/currency';
@@ -44,16 +46,25 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   const itemsCount = sale.sale_items?.length || 0;
   const avgItemPrice = itemsCount > 0 ? sale.subtotal / itemsCount : 0;
 
-  const getStatusColorClass = (status: string) => {
+  const getStatusType = (status: string): 'success' | 'warning' | 'error' | 'default' => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'warning';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'error';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'default';
+    }
+  };
+
+  const getStatusColorClass = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-success-container text-success';
+      case 'pending': return 'bg-warning-container text-warning';
+      case 'cancelled': return 'bg-destructive/10 text-destructive';
+      default: return 'bg-muted/50 text-muted-foreground';
     }
   };
 
@@ -61,16 +72,18 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
     <Dialog>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-9 px-3 font-medium">
+          <Button variant="outlined" size="sm" className="h-9 px-3 font-medium">
             <Eye className="h-4 w-4 mr-2" />
             Dettagli Garentille
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+      <DialogContent size="xl" className="custom-scrollbar">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary neon-border-primary">
+              <Receipt className="h-5 w-5" />
+            </div>
             Dettagli Garentille - {sale.sale_number}
           </DialogTitle>
           <DialogDescription>
@@ -78,151 +91,143 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col px-6 sm:px-8">
+          <TabsList className="grid w-full grid-cols-4 glass-surface">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <FileText className="h-4 w-4" />
-              Overview
+              <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="items" className="flex items-center gap-2">
+            <TabsTrigger value="items" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <Package className="h-4 w-4" />
-              Articoli ({itemsCount})
+              <span className="hidden sm:inline">Articoli</span> ({itemsCount})
             </TabsTrigger>
-            <TabsTrigger value="client" className="flex items-center gap-2">
+            <TabsTrigger value="client" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <User className="h-4 w-4" />
-              Cliente
+              <span className="hidden sm:inline">Cliente</span>
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
+            <TabsTrigger value="timeline" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <Clock className="h-4 w-4" />
-              Timeline
+              <span className="hidden sm:inline">Timeline</span>
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-hidden">
-            <TabsContent value="overview" className="space-y-6 h-full overflow-auto">
+          <div className="flex-1 overflow-hidden mt-6">
+            <TabsContent value="overview" className="space-y-6 h-full overflow-auto custom-scrollbar">
               {/* Header Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Euro className="h-4 w-4" />
-                      Importo Totale
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(sale.total_amount)}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {itemsCount} articol{itemsCount !== 1 ? 'i' : 'o'}
-                    </p>
-                  </CardContent>
-                </Card>
+                <DetailsCard 
+                  title="Importo Totale"
+                  icon={Euro}
+                  accentColor="primary"
+                  delay={0}
+                  variant="glass"
+                >
+                  <div className="text-3xl font-bold text-primary">{formatCurrency(sale.total_amount)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {itemsCount} articol{itemsCount !== 1 ? 'i' : 'o'}
+                  </p>
+                </DetailsCard>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" />
-                      Stato & Pagamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge className={cn("text-sm", getStatusColorClass(sale.status))}>
-                      {statusDisplay}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {paymentMethodDisplay}
-                    </p>
-                  </CardContent>
-                </Card>
+                <DetailsCard 
+                  title="Stato & Pagamento"
+                  icon={CreditCard}
+                  accentColor={getStatusType(sale.status) === 'success' ? 'success' : getStatusType(sale.status) === 'warning' ? 'warning' : 'destructive'}
+                  delay={1}
+                  variant="glass"
+                >
+                  <StatusBadge status={getStatusType(sale.status)} className="text-sm">
+                    {statusDisplay}
+                  </StatusBadge>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {paymentMethodDisplay}
+                  </p>
+                </DetailsCard>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Prezzo Medio Articolo
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xl font-semibold">{formatCurrency(avgItemPrice)}</div>
-                    <p className="text-xs text-muted-foreground">per articolo</p>
-                  </CardContent>
-                </Card>
+                <DetailsCard 
+                  title="Prezzo Medio"
+                  icon={TrendingUp}
+                  accentColor="success"
+                  delay={2}
+                  variant="glass"
+                >
+                  <div className="text-2xl font-semibold">{formatCurrency(avgItemPrice)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">per articolo</p>
+                </DetailsCard>
               </div>
 
               {/* Sale Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Hash className="h-4 w-4" />
-                    Informazioni Garentille
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Numero Garentille</label>
-                      <p className="font-mono text-sm">{sale.sale_number}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Data Garentille</label>
-                      <p className="text-sm">{format(new Date(sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm")}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Venditore</label>
-                      <p className="text-sm">{sale.salesperson?.username || "Unknown"}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Metodo di Pagamento</label>
-                      <div className="mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {paymentMethodDisplay}
-                        </Badge>
-                      </div>
+              <DetailsCard 
+                title="Informazioni Garentille"
+                icon={Hash}
+                delay={3}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailField
+                    label="Numero Garentille"
+                    value={<span className="font-mono">{sale.sale_number}</span>}
+                    copyable
+                  />
+                  <DetailField
+                    label="Data Garentille"
+                    value={format(new Date(sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm")}
+                    icon={CalendarDays}
+                  />
+                  <DetailField
+                    label="Venditore"
+                    value={sale.salesperson?.username || "Unknown"}
+                    icon={User}
+                  />
+                  <DetailField
+                    label="Metodo di Pagamento"
+                    value={
+                      <StatusBadge status="default">
+                        {paymentMethodDisplay}
+                      </StatusBadge>
+                    }
+                    icon={CreditCard}
+                  />
+                </div>
+
+                {sale.notes && (
+                  <div className="mt-6">
+                    <label className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">Note</label>
+                    <div className="glass-card bg-surface-container/40 p-4 mt-2">
+                      <p className="text-sm leading-relaxed">{sale.notes}</p>
                     </div>
                   </div>
-
-                  {sale.notes && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Note</label>
-                      <div className="bg-muted/30 rounded-md p-3 mt-1">
-                        <p className="text-sm">{sale.notes}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+              </DetailsCard>
 
               {/* Financial Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Euro className="h-4 w-4" />
-                    Riepilogo Finanziario
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Subtotale</span>
-                      <span className="font-medium">{formatCurrency(sale.subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Importo IVA</span>
-                      <span className="font-medium">{formatCurrency(sale.tax_amount)}</span>
-                    </div>
-                    {sale.discount_amount > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Sconto</span>
-                        <span className="font-medium text-green-600">-{formatCurrency(sale.discount_amount)}</span>
-                      </div>
-                    )}
-                    <Separator />
-                    <div className="flex justify-between items-center text-lg">
-                      <span className="font-semibold">Importo Totale</span>
-                      <span className="font-bold text-primary">{formatCurrency(sale.total_amount)}</span>
-                    </div>
+              <DetailsCard 
+                title="Riepilogo Finanziario"
+                icon={Euro}
+                accentColor="success"
+                delay={4}
+                variant="glass"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <span className="text-muted-foreground">Subtotale</span>
+                    <span className="font-medium">{formatCurrency(sale.subtotal)}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <span className="text-muted-foreground">Importo IVA</span>
+                    <span className="font-medium">{formatCurrency(sale.tax_amount)}</span>
+                  </div>
+                  {sale.discount_amount > 0 && (
+                    <div className="flex justify-between items-center text-sm sm:text-base">
+                      <span className="text-muted-foreground">Sconto</span>
+                      <span className="font-medium text-success">-{formatCurrency(sale.discount_amount)}</span>
+                    </div>
+                  )}
+                  <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent my-2" />
+                  <div className="flex justify-between items-center text-lg sm:text-xl pt-2">
+                    <span className="font-semibold">Importo Totale</span>
+                    <span className="font-bold text-primary text-2xl sm:text-3xl">{formatCurrency(sale.total_amount)}</span>
+                  </div>
+                </div>
+              </DetailsCard>
 
               {/* Technical Details Collapsible */}
               <Collapsible open={showTechnicalDetails} onOpenChange={setShowTechnicalDetails}>
@@ -274,125 +279,133 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               </Collapsible>
             </TabsContent>
 
-            <TabsContent value="items" className="h-full overflow-auto">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Articoli Garentille
-                  </CardTitle>
-                  <CardDescription>
-                    {itemsCount} articol{itemsCount !== 1 ? "i" : "o"} in questa garentille
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {sale.sale_items && sale.sale_items.length > 0 ? (
-                    <ScrollArea className="h-96">
-                      <div className="space-y-4">
-                        {sale.sale_items.map((item, index) => (
-                          <Card key={item.id || index} className="border-l-4 border-l-primary/20">
-                            <CardContent className="pt-4">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <h4 className="font-medium">
-                                    {item.product ? `${item.product.brand} ${item.product.model}` : "Prodotto"}
-                                    {item.product?.year && ` (${item.product.year})`}
-                                  </h4>
-                                  <div className="grid grid-cols-2 gap-4 mt-2 text-sm text-muted-foreground">
-                                    <div>
-                                      <span className="font-medium">Quantità:</span> {item.quantity}
+            <TabsContent value="items" className="h-full overflow-auto custom-scrollbar">
+              <DetailsCard 
+                title="Articoli Garentille"
+                icon={ShoppingCart}
+                delay={0}
+              >
+                <p className="text-sm text-muted-foreground mb-4">
+                  {itemsCount} articol{itemsCount !== 1 ? "i" : "o"} in questa garentille
+                </p>
+                
+                {sale.sale_items && sale.sale_items.length > 0 ? (
+                  <ScrollArea className="h-96">
+                    <div className="space-y-4">
+                      {sale.sale_items.map((item, index) => (
+                        <div 
+                          key={item.id || index} 
+                          className="glass-card neon-border-left p-4 stagger-fade-in"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-base sm:text-lg mb-3">
+                                {item.product ? `${item.product.brand} ${item.product.model}` : "Prodotto"}
+                                {item.product?.year && ` (${item.product.year})`}
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <DetailField
+                                  label="Quantità"
+                                  value={item.quantity}
+                                />
+                                <DetailField
+                                  label="Prezzo Unitario"
+                                  value={formatCurrency(item.unit_price)}
+                                />
+                                <DetailField
+                                  label="Prezzo Totale"
+                                  value={<span className="text-primary font-semibold">{formatCurrency(item.total_price)}</span>}
+                                />
+                                {item.serial_number && (
+                                  <div className="col-span-1 sm:col-span-2">
+                                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">IMEI / Serial</label>
+                                    <div className="glass-card bg-surface-container/60 font-mono text-xs px-3 py-2 mt-1">
+                                      {item.serial_number}
                                     </div>
-                                    <div>
-                                      <span className="font-medium">Prezzo Unitario:</span> {formatCurrency(item.unit_price)}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Prezzo Totale:</span> {formatCurrency(item.total_price)}
-                                    </div>
-                                    {item.serial_number && (
-                                      <div className="col-span-2">
-                                        <span className="font-medium text-muted-foreground">IMEI:</span>
-                                        <div className="text-xs font-mono bg-background border rounded px-2 py-1 mt-1">
-                                          {item.serial_number}
-                                        </div>
-                                      </div>
-                                    )}
                                   </div>
-                                </div>
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Nessun articolo trovato per questa garentille
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </ScrollArea>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                    <p>Nessun articolo trovato per questa garentille</p>
+                  </div>
+                )}
+              </DetailsCard>
             </TabsContent>
 
-            <TabsContent value="client" className="h-full overflow-auto">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Informazioni Cliente
-                  </CardTitle>
-                  <CardDescription>
-                    Dettagli completi del cliente per questa garentille
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+            <TabsContent value="client" className="h-full overflow-auto custom-scrollbar">
+              <DetailsCard 
+                title="Informazioni Cliente"
+                icon={User}
+                accentColor="primary"
+                delay={0}
+              >
+                <p className="text-sm text-muted-foreground mb-6">
+                  Dettagli completi del cliente per questa garentille
+                </p>
+                
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Nome Cliente</label>
-                      <p className="font-semibold text-lg">{clientInfo.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Tipo Cliente</label>
-                      <div className="pt-1">
-                        <Badge variant="outline" className="text-sm">
+                    <DetailField
+                      label="Nome Cliente"
+                      value={<span className="text-lg">{clientInfo.name}</span>}
+                    />
+                    <DetailField
+                      label="Tipo Cliente"
+                      value={
+                        <StatusBadge status="default">
                           {clientInfo.displayType}
-                        </Badge>
-                      </div>
-                    </div>
+                        </StatusBadge>
+                      }
+                    />
                   </div>
 
                   {clientInfo.contact && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        Persona di Contatto
-                      </label>
-                      <p className="font-medium">{clientInfo.contact}</p>
-                    </div>
+                    <DetailField
+                      label="Persona di Contatto"
+                      value={clientInfo.contact}
+                      icon={User}
+                    />
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {clientInfo.email && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          Email
-                        </label>
-                        <p className="font-medium text-sm">{clientInfo.email}</p>
-                      </div>
+                      <DetailField
+                        label="Email"
+                        value={clientInfo.email}
+                        icon={Mail}
+                        copyable
+                      />
                     )}
 
                     {clientInfo.phone && (
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          Telefono
-                        </label>
-                        <p className="font-medium">{clientInfo.phone}</p>
-                      </div>
+                      <DetailField
+                        label="Telefono"
+                        value={clientInfo.phone}
+                        icon={Phone}
+                        copyable
+                      />
                     )}
                   </div>
-                </CardContent>
-              </Card>
+
+                  {clientInfo.address && (
+                    <DetailField
+                      label="Indirizzo"
+                      value={clientInfo.address}
+                      icon={MapPin}
+                      className="mt-4"
+                    />
+                  )}
+                </div>
+              </DetailsCard>
             </TabsContent>
 
             <TabsContent value="timeline" className="h-full overflow-auto">

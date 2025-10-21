@@ -36,14 +36,12 @@ export function BaseDialog({
 }: BaseDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent size={size} className="p-0 gap-0">
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
-          <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground leading-tight">
-            {title}
-          </DialogTitle>
+      <DialogContent size={size} className="p-0 gap-0 custom-scrollbar">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
-        <div className="px-4 sm:px-6 py-2 flex-1 overflow-y-auto">
+        <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto">
           {children}
         </div>
 
