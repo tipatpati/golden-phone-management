@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrchestrationProvider } from "@/services/core/OrchestrationProvider";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
+import { PWAUpdatePrompt } from "@/components/pwa/PWAUpdatePrompt";
 import { logger } from "@/utils/logger";
 
 interface AppProvidersProps {
@@ -36,12 +39,16 @@ export function AppProviders({ children, includeAuth = true }: AppProvidersProps
 
     return (
       <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <OrchestrationProvider>
-            {content}
-            <Toaster />
-          </OrchestrationProvider>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <OrchestrationProvider>
+              {content}
+              <Toaster />
+              <PWAInstallPrompt />
+              <PWAUpdatePrompt />
+            </OrchestrationProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
       </BrowserRouter>
     );
   } catch (error) {

@@ -149,14 +149,16 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
           shouldBehaveLikeMobile && !menuIsOpen ? "-translate-x-full" : "translate-x-0"
         )}
         style={{ boxShadow: 'var(--elevation-3)' }}
+        role="navigation"
+        aria-label="Menu principale"
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-center border-b border-border px-4">
             <Logo size={112} className="mx-auto max-h-12 max-w-[140px]" />
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4 md-stagger-container">  {/* 16dp */}
-            <ul className="space-y-2">  {/* 8dp gaps */}
+          <nav className="flex-1 overflow-y-auto p-4 md-stagger-container" aria-label="Menu di navigazione">
+            <ul className="space-y-2" role="list">
               {filteredNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
