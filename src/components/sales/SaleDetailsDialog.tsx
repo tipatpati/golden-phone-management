@@ -399,72 +399,85 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               </DetailsCard>
             </TabsContent>
 
-            <TabsContent value="timeline" className="h-full overflow-auto">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Timeline Garentille
-                  </CardTitle>
-                  <CardDescription>
-                    Cronologia degli eventi per questa garentille
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-l-2 border-muted-foreground/20 pl-4 space-y-4">
-                    <div className="relative">
-                      <div className="absolute -left-6 w-3 h-3 bg-primary rounded-full"></div>
-                      <div>
-                        <h4 className="font-medium">Garentille Creata</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(sale.created_at || sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
-                        </p>
-                      </div>
-                    </div>
-
-                    {sale.updated_at && sale.updated_at !== (sale.created_at || sale.sale_date) && (
-                      <div className="relative">
-                        <div className="absolute -left-6 w-3 h-3 bg-muted-foreground rounded-full"></div>
-                        <div>
-                          <h4 className="font-medium">Ultimo Aggiornamento</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(sale.updated_at), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(sale.updated_at))} fa
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="relative">
-                      <div className="absolute -left-6 w-3 h-3 bg-green-500 rounded-full"></div>
-                      <div>
-                        <h4 className="font-medium">Stato Attuale</h4>
-                        <Badge className={cn("text-sm mt-1", getStatusColorClass(sale.status))}>
-                          {statusDisplay}
-                        </Badge>
-                      </div>
+            <TabsContent value="timeline" className="h-full overflow-auto custom-scrollbar">
+              <DetailsCard 
+                title="Timeline Garentille"
+                icon={Clock}
+                accentColor="primary"
+                delay={0}
+              >
+                <p className="text-sm text-muted-foreground mb-6">
+                  Cronologia degli eventi per questa garentille
+                </p>
+                
+                <div className="relative border-l-2 border-primary/20 pl-6 space-y-6">
+                  {/* Created Event */}
+                  <div className="relative stagger-fade-in" style={{ animationDelay: '0ms' }}>
+                    <div className="absolute -left-[1.6rem] w-4 h-4 bg-primary rounded-full ring-4 ring-background shadow-[0_0_10px_hsl(var(--primary)/0.5)]"></div>
+                    <div className="glass-card bg-surface-container/40 p-4">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        Garentille Creata
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {format(new Date(sale.created_at || sale.sale_date), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Updated Event */}
+                  {sale.updated_at && sale.updated_at !== (sale.created_at || sale.sale_date) && (
+                    <div className="relative stagger-fade-in" style={{ animationDelay: '100ms' }}>
+                      <div className="absolute -left-[1.6rem] w-4 h-4 bg-muted-foreground rounded-full ring-4 ring-background"></div>
+                      <div className="glass-card bg-surface-container/40 p-4">
+                        <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          Ultimo Aggiornamento
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {format(new Date(sale.updated_at), "EEEE, dd MMMM yyyy 'alle' HH:mm:ss")}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(sale.updated_at))} fa
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Current Status */}
+                  <div className="relative stagger-fade-in" style={{ animationDelay: '200ms' }}>
+                    <div className={cn(
+                      "absolute -left-[1.6rem] w-4 h-4 rounded-full ring-4 ring-background",
+                      getStatusType(sale.status) === 'success' && "bg-success shadow-[0_0_10px_hsl(var(--success)/0.5)]",
+                      getStatusType(sale.status) === 'warning' && "bg-warning shadow-[0_0_10px_hsl(var(--warning)/0.5)]",
+                      getStatusType(sale.status) === 'error' && "bg-destructive shadow-[0_0_10px_hsl(var(--destructive)/0.5)]",
+                      getStatusType(sale.status) === 'default' && "bg-muted-foreground"
+                    )}></div>
+                    <div className="glass-card bg-surface-container/40 p-4">
+                      <h4 className="font-semibold text-base mb-2">Stato Attuale</h4>
+                      <StatusBadge status={getStatusType(sale.status)} className="text-sm">
+                        {statusDisplay}
+                      </StatusBadge>
+                    </div>
+                  </div>
+                </div>
+              </DetailsCard>
             </TabsContent>
           </div>
         </Tabs>
 
-        {/* Receipt Validation */}
-        <div className="mt-6">
+         {/* Receipt Validation */}
+        <div className="px-6 sm:px-8 pb-6">
           <ReceiptValidationDisplay 
             sale={sale} 
             showDetails={true}
           />
         </div>
 
-        <DialogFooter className="flex items-center justify-between">
+        <DialogFooter>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
             Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
