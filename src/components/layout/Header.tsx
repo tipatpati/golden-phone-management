@@ -49,7 +49,7 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
       </div>
 
       {/* Theme Toggle */}
-      <div className="ml-2">
+      <div className="ml-3 sm:ml-4">
         <ThemeToggle />
       </div>
     </header>
