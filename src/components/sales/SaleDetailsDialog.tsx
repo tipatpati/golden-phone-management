@@ -395,15 +395,6 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                       />
                     )}
                   </div>
-
-                  {clientInfo.address && (
-                    <DetailField
-                      label="Indirizzo"
-                      value={clientInfo.address}
-                      icon={MapPin}
-                      className="mt-4"
-                    />
-                  )}
                 </div>
               </DetailsCard>
             </TabsContent>
