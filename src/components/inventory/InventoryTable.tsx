@@ -1,6 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
+import { InventoryProductRow } from "./InventoryProductRow";
+import { InventoryExpandedUnitRow } from "./InventoryExpandedUnitRow";
 import { 
   Table, 
   TableBody, 
@@ -49,6 +51,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { TableSkeleton } from "@/components/common/LoadingSkeleton";
+import { debugError } from "@/utils/debug";
 
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
@@ -200,7 +203,7 @@ export function InventoryTable({
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setDeleteUnitId(null);
     } catch (error) {
-      console.error('Error deleting unit:', error);
+      debugError('Error deleting unit:', error);
       toast({
         title: "Error",
         description: "Failed to delete unit. Please try again.",
