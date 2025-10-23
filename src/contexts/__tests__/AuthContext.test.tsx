@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 import type { User, Session } from '@supabase/supabase-js';
 
@@ -196,7 +197,11 @@ describe('AuthContext', () => {
       const { supabase } = await import('@/integrations/supabase/client');
       vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({
         data: { session: null },
-        error: { message: 'Auth error', name: 'AuthError', status: 401 }
+        error: { 
+          message: 'Auth error', 
+          name: 'AuthError', 
+          status: 401
+        } as any
       });
 
       render(

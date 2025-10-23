@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SalesList } from '../SalesList';
 import type { Sale } from '@/services/sales/types';
@@ -36,11 +37,21 @@ describe('SalesList', () => {
     {
       id: 'sale-1',
       client_id: 'client-1',
+      sale_number: 'S-001',
+      salesperson_id: 'test-user',
       total_amount: 100.00,
+      subtotal: 90.00,
+      tax_amount: 10.00,
       discount_amount: 10.00,
-      final_amount: 90.00,
+      discount_percentage: 10,
       payment_method: 'cash',
+      payment_type: 'single',
+      cash_amount: 90.00,
+      card_amount: 0,
+      bank_transfer_amount: 0,
+      vat_included: true,
       status: 'completed',
+      sale_date: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       sale_items: [
@@ -50,7 +61,7 @@ describe('SalesList', () => {
           product_id: 'product-1',
           quantity: 2,
           unit_price: 50.00,
-          subtotal: 100.00,
+          total_price: 100.00,
           created_at: new Date().toISOString()
         }
       ]
@@ -58,14 +69,24 @@ describe('SalesList', () => {
     {
       id: 'sale-2',
       client_id: 'client-2',
+      sale_number: 'S-002',
+      salesperson_id: 'test-user',
       total_amount: 200.00,
+      subtotal: 200.00,
+      tax_amount: 0,
       discount_amount: 0,
-      final_amount: 200.00,
+      discount_percentage: 0,
       payment_method: 'card',
+      payment_type: 'single',
+      cash_amount: 0,
+      card_amount: 200.00,
+      bank_transfer_amount: 0,
+      vat_included: true,
       status: 'pending',
+      sale_date: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      sale_items: []
+      sale_items: [] as any[]
     }
   ];
 
@@ -121,24 +142,23 @@ describe('SalesList', () => {
   describe('Business Logic', () => {
     it('should calculate discount correctly', () => {
       const sale = mockSales[0];
-      const expectedDiscount = sale.total_amount - sale.final_amount;
 
       expect(sale.discount_amount).toBe(10.00);
-      expect(expectedDiscount).toBe(10.00);
+      expect(sale.discount_percentage).toBe(10);
     });
 
-    it('should calculate final amount correctly', () => {
+    it('should calculate total amount correctly', () => {
       const sale = mockSales[0];
-      const calculatedFinal = sale.total_amount - sale.discount_amount;
 
-      expect(sale.final_amount).toBe(calculatedFinal);
+      expect(sale.total_amount).toBe(100.00);
+      expect(sale.subtotal).toBe(90.00);
     });
 
     it('should handle sales with no discount', () => {
       const sale = mockSales[1];
 
       expect(sale.discount_amount).toBe(0);
-      expect(sale.final_amount).toBe(sale.total_amount);
+      expect(sale.total_amount).toBe(sale.subtotal);
     });
   });
 
@@ -226,7 +246,7 @@ describe('SalesList', () => {
       const saleWithNegativeDiscount: Sale = {
         ...mockSales[0],
         discount_amount: -10.00,
-        final_amount: 110.00
+        total_amount: 110.00
       };
 
       renderWithProviders(<SalesList sales={[saleWithNegativeDiscount]} />);
