@@ -80,7 +80,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent size="xl" className="custom-scrollbar !max-w-7xl">
+      <DialogContent size="xl" className="custom-scrollbar">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary neon-border-primary">
