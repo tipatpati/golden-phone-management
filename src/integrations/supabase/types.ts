@@ -89,7 +89,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string | null
           updated_at: string
         }
@@ -99,7 +99,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           updated_at?: string
         }
@@ -109,7 +109,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           updated_at?: string
         }
@@ -431,7 +431,7 @@ export type Database = {
           id: string
           name: string
           release_year: number | null
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string | null
           storage_variants: string[] | null
           updated_at: string
@@ -444,7 +444,7 @@ export type Database = {
           id?: string
           name: string
           release_year?: number | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           storage_variants?: string[] | null
           updated_at?: string
@@ -457,7 +457,7 @@ export type Database = {
           id?: string
           name?: string
           release_year?: number | null
-          search_vector?: unknown | null
+          search_vector?: unknown
           slug?: string | null
           storage_variants?: string[] | null
           updated_at?: string
@@ -1091,6 +1091,137 @@ export type Database = {
           },
         ]
       }
+      sale_return_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          refund_amount: number
+          return_condition: string
+          return_id: string
+          sale_item_id: string
+          serial_number: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          refund_amount: number
+          return_condition: string
+          return_id: string
+          sale_item_id: string
+          serial_number?: string | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          refund_amount?: number
+          return_condition?: string
+          return_id?: string
+          sale_item_id?: string
+          serial_number?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_effective_stock"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sale_return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "sale_returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_return_items_sale_item_id_fkey"
+            columns: ["sale_item_id"]
+            isOneToOne: false
+            referencedRelation: "sale_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_returns: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          refund_amount: number
+          refund_method: string
+          restocking_fee: number
+          return_date: string
+          return_number: string
+          return_reason: string
+          returned_by: string | null
+          sale_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          refund_amount?: number
+          refund_method: string
+          restocking_fee?: number
+          return_date?: string
+          return_number: string
+          return_reason: string
+          returned_by?: string | null
+          sale_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          refund_amount?: number
+          refund_method?: string
+          restocking_fee?: number
+          return_date?: string
+          return_number?: string
+          return_reason?: string
+          returned_by?: string | null
+          sale_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_returns_returned_by_fkey"
+            columns: ["returned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_returns_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           bank_transfer_amount: number | null
@@ -1181,7 +1312,7 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           user_id: string | null
         }
@@ -1190,7 +1321,7 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -1199,7 +1330,7 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           user_id?: string | null
         }
@@ -1570,22 +1701,13 @@ export type Database = {
         Args: { client_ip: unknown }
         Returns: boolean
       }
-      calculate_employee_bonuses: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      can_view_purchase_price: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      calculate_employee_bonuses: { Args: never; Returns: undefined }
+      can_view_purchase_price: { Args: never; Returns: boolean }
       can_view_salary: {
         Args: { target_employee_id: string }
         Returns: boolean
       }
-      check_account_lockout: {
-        Args: { user_email: string }
-        Returns: Json
-      }
+      check_account_lockout: { Args: { user_email: string }; Returns: Json }
       check_failed_auth_attempts: {
         Args: { user_email: string }
         Returns: number
@@ -1599,14 +1721,8 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_invalid_auth_state: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_invalid_auth_state: { Args: never; Returns: undefined }
+      cleanup_old_security_logs: { Args: never; Returns: undefined }
       detect_concurrent_sessions: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -1624,7 +1740,7 @@ export type Database = {
         Returns: Json
       }
       fix_product_consistency_issues: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           details: string
           fixed_count: number
@@ -1640,24 +1756,13 @@ export type Database = {
         }
         Returns: string
       }
-      generate_repair_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_sale_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_supplier_transaction_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_transaction_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_repair_number: { Args: never; Returns: string }
+      generate_return_number: { Args: never; Returns: string }
+      generate_sale_number: { Args: never; Returns: string }
+      generate_supplier_transaction_number: { Args: never; Returns: string }
+      generate_transaction_number: { Args: never; Returns: string }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_employee_profile: {
@@ -1688,26 +1793,6 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
       }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1719,14 +1804,8 @@ export type Database = {
         Args: { counter_type: string }
         Returns: number
       }
-      is_ip_blocked: {
-        Args: { client_ip: unknown }
-        Returns: boolean
-      }
-      log_purchase_price_access_attempt: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      is_ip_blocked: { Args: { client_ip: unknown }; Returns: boolean }
+      log_purchase_price_access_attempt: { Args: never; Returns: undefined }
       sanitize_and_validate_input: {
         Args: { input_text: string; input_type: string; max_length?: number }
         Returns: Json
@@ -1757,24 +1836,11 @@ export type Database = {
           storage_variants: string[]
         }[]
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
-      slugify: {
-        Args: { input: string }
-        Returns: string
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      slugify: { Args: { input: string }; Returns: string }
       validate_product_consistency: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           description: string
           issue_type: string

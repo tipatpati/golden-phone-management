@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart, Undo2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/currency';
@@ -25,6 +25,7 @@ import type { Sale } from '@/services/sales';
 import { SaleReceiptDialog } from './SaleReceiptDialog';
 import { ReceiptValidationDisplay } from './ReceiptValidationDisplay';
 import { SalesDataService } from '@/services/sales/SalesDataService';
+import { ProcessReturnDialog } from './ProcessReturnDialog';
 
 interface SaleDetailsDialogProps {
   sale: Sale;
@@ -33,6 +34,7 @@ interface SaleDetailsDialogProps {
 
 export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+  const [showReturnDialog, setShowReturnDialog] = useState(false);
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   
@@ -482,13 +484,25 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
             <Clock className="h-4 w-4" />
             Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
           </div>
-          <Button
-            onClick={() => setShowReceiptDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Printer className="h-4 w-4" />
-            Stampa Ricevuta
-          </Button>
+          <div className="flex gap-2">
+            {sale.status !== 'refunded' && sale.status !== 'cancelled' && (
+              <Button
+                variant="outlined"
+                onClick={() => setShowReturnDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Undo2 className="h-4 w-4" />
+                Elabora Reso
+              </Button>
+            )}
+            <Button
+              onClick={() => setShowReceiptDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Stampa Ricevuta
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
       
@@ -497,6 +511,13 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         sale={sale} 
         open={showReceiptDialog} 
         onOpenChange={setShowReceiptDialog} 
+      />
+      
+      {/* Process Return Dialog */}
+      <ProcessReturnDialog
+        sale={sale}
+        open={showReturnDialog}
+        onClose={() => setShowReturnDialog(false)}
       />
     </Dialog>
   );

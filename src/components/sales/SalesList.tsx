@@ -10,6 +10,7 @@ import { ControlledSaleDetailsDialog } from "./ControlledSaleDetailsDialog";
 import { SaleReceiptDialog } from "./SaleReceiptDialog";
 import { ComprehensiveEditSaleDialog } from "./ComprehensiveEditSaleDialog";
 import { BulkSalesActionsToolbar } from "./BulkSalesActionsToolbar";
+import { ProcessReturnDialog } from "./ProcessReturnDialog";
 import { useDeleteSale } from "@/services/sales/SalesReactQueryService";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,7 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const [selectedSaleForDetails, setSelectedSaleForDetails] = useState<Sale | null>(null);
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
+  const [selectedSaleForReturn, setSelectedSaleForReturn] = useState<Sale | null>(null);
   const [expandedSales, setExpandedSales] = useState<Set<string>>(new Set());
   const deleteSaleMutation = useDeleteSale();
 
@@ -699,6 +701,15 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
           sale={selectedSaleForReceipt}
           open={true}
           onOpenChange={(open) => !open && setSelectedSaleForReceipt(null)}
+        />
+      )}
+      
+      {/* Process Return Dialog */}
+      {selectedSaleForReturn && (
+        <ProcessReturnDialog
+          sale={selectedSaleForReturn}
+          open={true}
+          onClose={() => setSelectedSaleForReturn(null)}
         />
       )}
     </>
