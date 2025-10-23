@@ -80,7 +80,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent size="xl" className="custom-scrollbar">
+      <DialogContent size="xl" className="custom-scrollbar !max-w-7xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary neon-border-primary">
@@ -479,12 +479,12 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           />
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-3 px-6 sm:px-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
             Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {sale.status !== 'refunded' && sale.status !== 'cancelled' && (
               <Button
                 variant="outlined"
