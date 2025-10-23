@@ -114,7 +114,7 @@ export const responsiveDialogVariants = cva(
         sm: "max-w-md md:max-w-lg max-h-[85vh] overflow-y-auto p-4 sm:p-6 md:p-8",
         md: "max-w-2xl md:max-w-3xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-10",
         lg: "max-w-4xl md:max-w-5xl max-h-[85vh] md:max-h-[92vh] overflow-y-auto p-4 sm:p-6 md:p-12",
-        xl: "max-w-7xl max-h-[90vh] md:max-h-[94vh] overflow-y-auto p-6 sm:p-8 md:p-14",
+        xl: "max-w-[90vw] xl:max-w-7xl max-h-[90vh] md:max-h-[94vh] overflow-y-auto p-6 sm:p-8 md:p-14",
       }
     },
     defaultVariants: {

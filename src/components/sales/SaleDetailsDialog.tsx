@@ -479,30 +479,32 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           />
         </div>
 
-        <DialogFooter className="sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {sale.status !== 'refunded' && sale.status !== 'cancelled' && (
+        <DialogFooter>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              {sale.status !== 'refunded' && sale.status !== 'cancelled' && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowReturnDialog(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Undo2 className="h-4 w-4" />
+                  Elabora Reso
+                </Button>
+              )}
               <Button
                 variant="outlined"
-                onClick={() => setShowReturnDialog(true)}
+                onClick={() => setShowReceiptDialog(true)}
                 className="flex items-center gap-2"
               >
-                <Undo2 className="h-4 w-4" />
-                Elabora Reso
+                <Printer className="h-4 w-4" />
+                Stampa Ricevuta
               </Button>
-            )}
-            <Button
-              variant="outlined"
-              onClick={() => setShowReceiptDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Stampa Ricevuta
-            </Button>
+            </div>
           </div>
         </DialogFooter>
       </DialogContent>
