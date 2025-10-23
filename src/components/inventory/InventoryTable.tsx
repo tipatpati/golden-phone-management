@@ -1,6 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
+import { InventoryProductRow } from "./InventoryProductRow";
+import { InventoryExpandedUnitRow } from "./InventoryExpandedUnitRow";
 import { 
   Table, 
   TableBody, 
@@ -48,6 +50,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { TableSkeleton } from "@/components/common/LoadingSkeleton";
+import { debugError } from "@/utils/debug";
 
 
 const formatCurrency = (amount: number) => `€${amount.toFixed(2)}`;
@@ -199,7 +203,7 @@ export function InventoryTable({
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setDeleteUnitId(null);
     } catch (error) {
-      console.error('Error deleting unit:', error);
+      debugError('Error deleting unit:', error);
       toast({
         title: "Error",
         description: "Failed to delete unit. Please try again.",
@@ -215,7 +219,7 @@ export function InventoryTable({
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <Checkbox disabled />
+                <Checkbox disabled aria-label="Loading" />
               </TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Category</TableHead>
@@ -226,15 +230,7 @@ export function InventoryTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[1, 2, 3].map((i) => (
-              <TableRow key={i}>
-                {[1, 2, 3, 4, 5, 6, 7].map((j) => (
-                  <TableCell key={j}>
-                    <div className="h-6 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            <TableSkeleton rows={5} columns={7} />
           </TableBody>
         </Table>
       </div>
@@ -272,22 +268,22 @@ export function InventoryTable({
             </div>
           </div>
         )}
-        <Table>
+        <Table role="table" aria-label="Product inventory table">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">
+            <TableHead className="w-12" scope="col">
               <Checkbox
                 checked={isAllSelected}
                 onCheckedChange={onSelectAll}
                 aria-label="Select all products"
               />
             </TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Pricing</TableHead>
-            <TableHead>Serial Info</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead scope="col">Product</TableHead>
+            <TableHead scope="col">Category</TableHead>
+            <TableHead scope="col">Stock</TableHead>
+            <TableHead scope="col">Pricing</TableHead>
+            <TableHead scope="col">Serial Info</TableHead>
+            <TableHead className="text-right" scope="col">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -327,11 +323,13 @@ export function InventoryTable({
                           size="sm"
                           className="h-6 w-6 p-0"
                           onClick={(e) => toggleProductExpansion(product.id, e)}
+                          aria-label={isExpanded ? `Collapse units for ${product.brand} ${product.model}` : `Expand units for ${product.brand} ${product.model}`}
+                          aria-expanded={isExpanded}
                         >
                           {isExpanded ? (
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
                           ) : (
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-4 w-4" aria-hidden="true" />
                           )}
                         </Button>
                       )}
@@ -456,7 +454,7 @@ export function InventoryTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2" role="group" aria-label="Product actions">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -467,8 +465,9 @@ export function InventoryTable({
                         }}
                         className="h-8 w-8 p-0"
                         title="View details and manage unit pricing"
+                        aria-label={`View details for ${product.brand} ${product.model}`}
                       >
-                        <Info className="h-4 w-4" />
+                        <Info className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <div onClick={(e) => e.stopPropagation()}>
                         <UnifiedInventoryLabels
@@ -487,8 +486,9 @@ export function InventoryTable({
                         }}
                         disabled={product.has_serial && product.stock === 0}
                         className="h-8 w-8 p-0"
+                        aria-label={`Edit ${product.brand} ${product.model}`}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -498,8 +498,9 @@ export function InventoryTable({
                           onDelete(product.id);
                         }}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        aria-label={`Delete ${product.brand} ${product.model}`}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </TableCell>
