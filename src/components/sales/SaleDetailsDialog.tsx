@@ -479,7 +479,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
           />
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-3 px-6 sm:px-8">
+        <DialogFooter className="sm:justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
             Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
@@ -496,6 +496,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               </Button>
             )}
             <Button
+              variant="outlined"
               onClick={() => setShowReceiptDialog(true)}
               className="flex items-center gap-2"
             >
