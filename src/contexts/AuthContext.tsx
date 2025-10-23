@@ -5,20 +5,21 @@ import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
 import { usePeriodicReminder } from '@/hooks/usePeriodicReminder';
+import { debugLog } from "@/utils/debug";
 // import { logSessionActivity } from '@/utils/securityAudit';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  console.log('AuthProvider rendering...');
+  debugLog('AuthProvider rendering...');
   const authState = useAuthState();
-  console.log('AuthState:', { 
-    user: authState.user?.id, 
-    userRole: authState.userRole, 
-    isInitialized: authState.isInitialized 
+  debugLog('AuthState:', {
+    user: authState.user?.id,
+    userRole: authState.userRole,
+    isInitialized: authState.isInitialized
   });
-  
-  console.log('🏗️ AuthProvider creating auth actions...');
+
+  debugLog('🏗️ AuthProvider creating auth actions...');
   
   // Disable custom session security to rely on Supabase's built-in token management
   // const { isSessionValid, resetActivity } = useSessionSecurity({
