@@ -25,7 +25,7 @@ interface ClientsListProps {
   onDelete?: (client: Client) => void;
 }
 
-export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => {
+export const ClientsList = React.memo(function ClientsList({ clients, onEdit, onDelete }: ClientsListProps) {
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Client>();
   const [viewingClient, setViewingClient] = React.useState<Client | null>(null);
 
@@ -310,4 +310,4 @@ export const ClientsList = ({ clients, onEdit, onDelete }: ClientsListProps) => 
       />
     </>
   );
-};
+});

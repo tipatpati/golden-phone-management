@@ -24,7 +24,7 @@ interface ClientCardProps {
  * Reusable client card component for displaying client information
  * Provides consistent styling and behavior across client views
  */
-export function ClientCard({
+export const ClientCard = React.memo(function ClientCard({
   name,
   type,
   email,
@@ -148,4 +148,4 @@ export function ClientCard({
       </CardContent>
     </Card>
   );
-}
+});

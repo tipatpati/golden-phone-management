@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { logger } from "@/utils/logger";
 
-export function RecentSales() {
+export const RecentSales = React.memo(function RecentSales() {
   const { data: allGarentille = [], isLoading } = useSales();
   
   // Type cast the data array
@@ -155,4 +155,4 @@ export function RecentSales() {
       </CardContent>
     </Card>
   );
-}
+});
