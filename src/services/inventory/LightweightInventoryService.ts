@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Product, CreateProductData } from './types';
 
 class LightweightInventoryService {
@@ -147,8 +147,136 @@ class LightweightInventoryService {
         brandModelMatches: brandModelMatches.length,
       });
     }
-    
+
     return products;
+  }
+
+  // Paginated version for infinite scroll
+  async getProductsPaginated(filters: {
+    categoryId?: number | 'all';
+    stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+    hasSerial?: 'all' | 'yes' | 'no';
+    searchTerm?: string;
+    dateRange?: { start?: Date; end?: Date };
+    priceRange?: { min?: number; max?: number };
+    year?: number | 'all';
+    sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+    page?: number;
+    pageSize?: number;
+  } = {}): Promise<{ products: Product[]; hasMore: boolean; totalCount: number }> {
+    const {
+      categoryId = 'all',
+      stockStatus = 'all',
+      hasSerial = 'all',
+      searchTerm = '',
+      dateRange,
+      priceRange,
+      year = 'all',
+      sortBy = 'newest',
+      page = 0,
+      pageSize = 50
+    } = filters;
+
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        category:categories!inner(id, name),
+        units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
+      `, { count: 'exact' });
+
+    // Apply filters (same as non-paginated version)
+    if (categoryId !== 'all') {
+      query = query.eq('category_id', categoryId);
+    }
+
+    if (stockStatus === 'in_stock') {
+      query = query.gt('stock', 0);
+    } else if (stockStatus === 'out_of_stock') {
+      query = query.eq('stock', 0);
+    }
+
+    if (hasSerial !== 'all') {
+      query = query.eq('has_serial', hasSerial === 'yes');
+    }
+
+    if (dateRange?.start) {
+      query = query.gte('created_at', dateRange.start.toISOString());
+    }
+    if (dateRange?.end) {
+      query = query.lte('created_at', dateRange.end.toISOString());
+    }
+
+    if (priceRange?.min !== undefined) {
+      query = query.gte('price', priceRange.min);
+    }
+    if (priceRange?.max !== undefined) {
+      query = query.lte('price', priceRange.max);
+    }
+
+    if (year !== 'all') {
+      query = query.eq('year', year);
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case 'newest':
+        query = query.order('created_at', { ascending: false });
+        break;
+      case 'oldest':
+        query = query.order('created_at', { ascending: true });
+        break;
+      case 'name_asc':
+        query = query.order('brand', { ascending: true }).order('model', { ascending: true });
+        break;
+      case 'name_desc':
+        query = query.order('brand', { ascending: false }).order('model', { ascending: false });
+        break;
+      case 'price_asc':
+        query = query.order('price', { ascending: true });
+        break;
+      case 'price_desc':
+        query = query.order('price', { ascending: false });
+        break;
+      default:
+        query = query.order('brand', { ascending: true }).order('model', { ascending: true });
+    }
+
+    // Pagination
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    let products = data || [];
+
+    // Client-side low stock filtering
+    if (stockStatus === 'low_stock') {
+      products = products.filter(product =>
+        product.stock > 0 && product.stock <= (product.threshold || 0)
+      );
+    }
+
+    // Search filtering (simplified for pagination)
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      products = products.filter(product =>
+        product.brand?.toLowerCase().includes(term) ||
+        product.model?.toLowerCase().includes(term) ||
+        product.units?.some((unit: any) =>
+          unit.serial_number?.toLowerCase().includes(term) ||
+          unit.barcode?.toLowerCase().includes(term)
+        )
+      );
+    }
+
+    const totalCount = count || 0;
+    const hasMore = (from + products.length) < totalCount;
+
+    return { products, hasMore, totalCount };
   }
 
   async createProduct(productData: any): Promise<Product> {
@@ -283,6 +411,36 @@ export const useCategories = () => {
     queryFn: service.getCategories,
     staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+  });
+};
+
+// Infinite scroll hook for better performance with large datasets
+export const useProductsInfinite = (
+  searchTerm: string = '',
+  filters?: {
+    categoryId?: number | 'all';
+    stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+    hasSerial?: 'all' | 'yes' | 'no';
+    dateRange?: { start?: Date; end?: Date };
+    priceRange?: { min?: number; max?: number };
+    year?: number | 'all';
+    sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+  }
+) => {
+  return useInfiniteQuery({
+    queryKey: ['products-infinite', searchTerm, filters],
+    queryFn: ({ pageParam = 0 }) =>
+      service.getProductsPaginated({
+        ...filters,
+        searchTerm,
+        page: pageParam,
+        pageSize: 50,
+      }),
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.hasMore ? allPages.length : undefined,
+    initialPageParam: 0,
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
