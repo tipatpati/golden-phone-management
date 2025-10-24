@@ -38,7 +38,13 @@ export const supplierTransactionApi = {
           name
         ),
         items:supplier_transaction_items (
-          *,
+          id,
+          transaction_id,
+          product_id,
+          quantity,
+          unit_cost,
+          total_cost,
+          product_unit_ids,
           products (
             id,
             brand,
