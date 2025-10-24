@@ -52,7 +52,6 @@ const EnhancedDialogContent = React.forwardRef<
         "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
         "data-[state=open]:duration-[var(--motion-duration-medium-2)] data-[state=open]:ease-[var(--motion-emphasized-decelerate)]",
         "data-[state=closed]:duration-[var(--motion-duration-short-4)] data-[state=closed]:ease-[var(--motion-emphasized-accelerate)]",
-        "w-[98vw] sm:w-[92vw] md:w-[85vw]",
         responsiveDialogVariants({ size }),
         className
       )}
