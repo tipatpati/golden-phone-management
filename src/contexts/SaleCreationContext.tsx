@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { StockCalculationService } from '@/services/inventory/StockCalculationService';
 import { useToast } from '@/hooks/use-toast';
 import { getEnforcedQuantity } from '@/utils/saleItemsUtils';
+import { debugLog } from '@/utils/debug';
 
 // Types
 export interface SaleItem {
@@ -87,16 +88,16 @@ const initialState: SaleCreationState = {
   isValid: false
 };
 
-// Helper function to calculate totals
+// Helper function to calculate totals - optimized to minimize overhead
 function calculateTotals(state: SaleCreationState): SaleCreationState {
-  console.log('🧮 Calculating totals for items:', state.items.length, 'VAT included:', state.formData.vat_included);
-  
+  debugLog('Calculating totals for items:', state.items.length, 'VAT included:', state.formData.vat_included);
+
   const itemsTotal = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  
+
   let baseSubtotal: number;
   let taxAmount: number;
   let totalBeforeDiscount: number;
-  
+
   if (state.formData.vat_included) {
     // Prices include 22% VAT - extract base price
     baseSubtotal = itemsTotal / 1.22;
@@ -108,9 +109,9 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
     taxAmount = baseSubtotal * 0.22;
     totalBeforeDiscount = baseSubtotal + taxAmount;
   }
-  
-  console.log('💰 Calculation mode:', state.formData.vat_included ? 'VAT Included' : 'VAT Excluded');
-  console.log('💰 Base Subtotal:', baseSubtotal, 'Tax:', taxAmount, 'Total before discount:', totalBeforeDiscount);
+
+  debugLog('Calculation mode:', state.formData.vat_included ? 'VAT Included' : 'VAT Excluded');
+  debugLog('Base Subtotal:', baseSubtotal, 'Tax:', taxAmount, 'Total before discount:', totalBeforeDiscount);
   
   let discountAmount = 0;
   let subtotalAfterDiscount = baseSubtotal;
@@ -134,7 +135,7 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
     }
   }
 
-  console.log('💰 Discount calculation:', {
+  debugLog('Discount calculation:', {
     discountType: state.formData.discount_type,
     discountValue: state.formData.discount_value,
     baseSubtotal: baseSubtotal.toFixed(2),
@@ -183,36 +184,36 @@ function calculateTotals(state: SaleCreationState): SaleCreationState {
   };
 }
 
-// Reducer
+// Reducer - optimized to minimize unnecessary calculations
 function saleCreationReducer(state: SaleCreationState, action: SaleCreationAction): SaleCreationState {
-  console.log('🔄 Reducer action:', action.type);
+  debugLog('Reducer action:', action.type);
   
   switch (action.type) {
     case 'ADD_ITEM': {
-      console.log('➕ ADD_ITEM - New item:', action.payload);
-      
+      debugLog('ADD_ITEM - New item:', action.payload.product_name);
+
       // For serialized products, check by serial number; for non-serialized, check by product_id
-      const existingItemIndex = action.payload.has_serial 
-        ? state.items.findIndex(item => 
-            item.product_id === action.payload.product_id && 
+      const existingItemIndex = action.payload.has_serial
+        ? state.items.findIndex(item =>
+            item.product_id === action.payload.product_id &&
             item.serial_number === action.payload.serial_number
           )
-        : state.items.findIndex(item => 
-            item.product_id === action.payload.product_id && 
+        : state.items.findIndex(item =>
+            item.product_id === action.payload.product_id &&
             !item.has_serial
           );
-      
+
       let newItems: SaleItem[];
-      
+
       if (existingItemIndex >= 0) {
         // If exact same item exists (same product + serial for serialized, or same product for non-serialized)
         const existingItem = state.items[existingItemIndex];
         if (existingItem.has_serial) {
-          console.log('⚠️ Cannot add duplicate serialized item with same serial number:', action.payload.serial_number);
+          debugLog('Cannot add duplicate serialized item with same serial number:', action.payload.serial_number);
           return state; // Return unchanged state - same unit already added
         }
-        
-        console.log('📈 Updating existing non-serialized item quantity');
+
+        debugLog('Updating existing non-serialized item quantity');
         const enforcedQuantity = getEnforcedQuantity(existingItem.has_serial || false, action.payload.quantity);
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
@@ -220,7 +221,7 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
             : item
         );
       } else {
-        console.log('🆕 Adding new item to list');
+        debugLog('Adding new item to list');
         // Enforce quantity = 1 for serialized products
         const enforcedItem = {
           ...action.payload,
@@ -228,8 +229,8 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
         };
         newItems = [...state.items, enforcedItem];
       }
-      
-      console.log('✅ New items array length:', newItems.length);
+
+      debugLog('New items array length:', newItems.length);
       const newState = { ...state, items: newItems };
       return calculateTotals(newState);
     }
@@ -257,27 +258,25 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     }
 
     case 'UPDATE_FORM_DATA': {
-      console.log('📝 Reducer UPDATE_FORM_DATA - payload:', action.payload, 'current formData:', state.formData);
+      debugLog('Reducer UPDATE_FORM_DATA - payload:', action.payload);
       const newFormData = { ...state.formData, ...action.payload };
-      console.log('📝 Reducer UPDATE_FORM_DATA - newFormData:', newFormData);
-      
+
       // Special logging for VAT changes
       if (action.payload.vat_included !== undefined) {
-        console.log('💰 VAT MODE CHANGE IN CONTEXT:', {
+        debugLog('VAT MODE CHANGE:', {
           oldValue: state.formData.vat_included,
-          newValue: action.payload.vat_included,
-          finalValue: newFormData.vat_included
+          newValue: action.payload.vat_included
         });
       }
-      
+
       const newState = { ...state, formData: newFormData };
       return calculateTotals(newState);
     }
 
     case 'SET_SELECTED_CLIENT': {
       const newFormData = { ...state.formData, client_id: action.payload?.id };
-      const newState = { ...state, selectedClient: action.payload, formData: newFormData };
-      return calculateTotals(newState);
+      // Client selection doesn't affect totals - skip recalculation
+      return { ...state, selectedClient: action.payload, formData: newFormData };
     }
 
     case 'UPDATE_STOCK': {
@@ -286,6 +285,7 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
         ...item,
         stock: newStockCache.get(item.product_id) ?? item.stock
       }));
+      // Stock cache update doesn't affect totals - skip recalculation
       return { ...state, stockCache: newStockCache, items: newItems };
     }
 
@@ -335,7 +335,7 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
   useEffect(() => {
     if (!initialSale) return;
     
-    console.log('🔄 Initializing edit mode with sale:', initialSale);
+    debugLog('Initializing edit mode with sale:', initialSale.id);
     
     // Load sale items
     if (initialSale.sale_items && initialSale.sale_items.length > 0) {
@@ -381,7 +381,7 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
     }
   }, [initialSale]);
 
-  console.log('🔄 SaleCreationProvider rendering with state:', {
+  debugLog('SaleCreationProvider rendering with state:', {
     itemsCount: state.items.length,
     subtotal: state.subtotal,
     totalAmount: state.totalAmount,
@@ -391,7 +391,7 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
   // Real-time stock updates via Supabase subscriptions
   useEffect(() => {
     const productIds = state.items.map(item => item.product_id);
-    console.log('📦 Setting up subscriptions for products:', productIds);
+    debugLog('Setting up subscriptions for products:', productIds);
     if (productIds.length === 0) return;
 
     const channel = supabase
@@ -493,7 +493,8 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
     return state.isValid;
   }, [state.items, state.isValid, refreshStock]);
 
-  const contextValue: SaleCreationContextValue = {
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo<SaleCreationContextValue>(() => ({
     state,
     addItem,
     updateItem,
@@ -503,7 +504,7 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
     refreshStock,
     resetSale,
     validateSale
-  };
+  }), [state, addItem, updateItem, removeItem, updateFormData, setSelectedClient, refreshStock, resetSale, validateSale]);
 
   return (
     <SaleCreationContext.Provider value={contextValue}>

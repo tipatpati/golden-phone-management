@@ -38,7 +38,13 @@ export const supplierTransactionApi = {
           name
         ),
         items:supplier_transaction_items (
-          *,
+          id,
+          transaction_id,
+          product_id,
+          quantity,
+          unit_cost,
+          total_cost,
+          product_unit_ids,
           products (
             id,
             brand,
@@ -288,11 +294,11 @@ export const supplierTransactionApi = {
   },
 
   async calculateTransactionTotal(items: CreateTransactionItemData[]): Promise<number> {
-    let total = 0;
-    for (const item of items) {
-      total += await this.calculateItemTotal(item);
-    }
-    return total;
+    // Fix N+1 query: use Promise.all to batch all item calculations in parallel
+    const itemTotals = await Promise.all(
+      items.map(item => this.calculateItemTotal(item))
+    );
+    return itemTotals.reduce((sum, total) => sum + total, 0);
   },
 
   async calculateItemTotal(item: CreateTransactionItemData): Promise<number> {

@@ -15,7 +15,7 @@ interface SuppliersTableProps {
   searchTerm: string;
 }
 
-export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
+export const SuppliersTable = React.memo(function SuppliersTable({ searchTerm }: SuppliersTableProps) {
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [deletingSupplier, setDeletingSupplier] = useState<any>(null);
   const [contactingSupplier, setContactingSupplier] = useState<any>(null);
@@ -319,4 +319,4 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
       />
     </>
   );
-}
+});

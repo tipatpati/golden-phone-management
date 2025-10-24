@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -10,23 +10,26 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { 
-  Calendar, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Printer, 
-  ChevronDown, 
+import {
+  Calendar,
+  Eye,
+  Edit,
+  Trash2,
+  Printer,
+  ChevronDown,
   ChevronRight,
   Package,
   Hash,
   Barcode
 } from "lucide-react";
 import { useSupplierTransactions, supplierTransactionApi } from "@/services/suppliers/SupplierTransactionService";
-import { EditTransactionDialogV2 } from "./EditTransactionDialogV2";
+import { useDebounce } from "@/hooks/useDebounce";
 import { SearchBar } from "@/components/ui/search-bar";
-import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
-import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
+
+// Lazy load heavy dialogs for better performance
+const EditTransactionDialogV2 = lazy(() => import("./EditTransactionDialogV2").then(m => ({ default: m.EditTransactionDialogV2 })));
+const TransactionDetailsDialog = lazy(() => import("./TransactionDetailsDialog").then(m => ({ default: m.TransactionDetailsDialog })));
+const DeleteTransactionDialog = lazy(() => import("./DeleteTransactionDialog").then(m => ({ default: m.DeleteTransactionDialog })));
 import { AdvancedTransactionFilters } from "./AdvancedTransactionFilters";
 import { TransactionSummaryStats } from "./TransactionSummaryStats";
 import { SupplierAcquisitionPrintDialog } from "./dialogs/SupplierAcquisitionPrintDialog";
@@ -43,17 +46,19 @@ interface TransactionsTableProps {
   onSearch?: (query: string) => void;
 }
 
-export function TransactionsTable({ 
+export const TransactionsTable = React.memo(function TransactionsTable({
   searchQuery = '',
   onSearch
 }: TransactionsTableProps) {
   const [filters, setFilters] = useState<TransactionSearchFilters>({});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const [activeSearchQuery, setActiveSearchQuery] = useState('');
   const [expandedTransactions, setExpandedTransactions] = useState<Set<string>>(new Set());
-  
-  const {  
+
+  // Debounce search input for better performance (300ms delay)
+  const debouncedSearchQuery = useDebounce(localSearchQuery, 300);
+
+  const {
     data: allTransactions,
     isLoading,
     error
@@ -62,17 +67,17 @@ export function TransactionsTable({
   // Client-side search filtering with priority ordering
   const transactions = React.useMemo(() => {
     if (!allTransactions) return [];
-    if (!activeSearchQuery.trim()) return allTransactions;
-    
-    return supplierTransactionApi.searchTransactions(allTransactions, activeSearchQuery);
-  }, [allTransactions, activeSearchQuery]);
+    if (!debouncedSearchQuery.trim()) return allTransactions;
+
+    return supplierTransactionApi.searchTransactions(allTransactions, debouncedSearchQuery);
+  }, [allTransactions, debouncedSearchQuery]);
   
   // Auto-expand transactions with matching items when searching
   useEffect(() => {
-    if (activeSearchQuery && activeSearchQuery.trim()) {
-      const term = activeSearchQuery.trim().toLowerCase();
-      const transactionsWithMatches = transactions.filter(t => 
-        t.items?.some(item => 
+    if (debouncedSearchQuery && debouncedSearchQuery.trim()) {
+      const term = debouncedSearchQuery.trim().toLowerCase();
+      const transactionsWithMatches = transactions.filter(t =>
+        t.items?.some(item =>
           item.products?.brand?.toLowerCase().includes(term) ||
           item.products?.model?.toLowerCase().includes(term) ||
           item._enrichedUnits?.some(unit =>
@@ -85,15 +90,10 @@ export function TransactionsTable({
     } else {
       setExpandedTransactions(new Set());
     }
-  }, [activeSearchQuery, transactions]);
-  
-  const handleSearch = () => {
-    setActiveSearchQuery(localSearchQuery);
-  };
-  
+  }, [debouncedSearchQuery, transactions]);
+
   const handleClearSearch = () => {
     setLocalSearchQuery('');
-    setActiveSearchQuery('');
   };
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
@@ -195,7 +195,7 @@ export function TransactionsTable({
     );
   }
 
-  const searchTerm = activeSearchQuery;
+  const searchTerm = debouncedSearchQuery;
 
   return (
     <div className="space-y-4">
@@ -215,7 +215,7 @@ export function TransactionsTable({
         <Button onClick={handleSearch} variant="default">
           Search
         </Button>
-        {activeSearchQuery && (
+        {debouncedSearchQuery && (
           <Button onClick={handleClearSearch} variant="outline">
             Clear
           </Button>
@@ -238,8 +238,8 @@ export function TransactionsTable({
           <Info className="h-4 w-4" />
           <AlertDescription>
             {transactions.length > 0 
-              ? `Showing ${transactions.length} transaction(s) for "${activeSearchQuery}"`
-              : `No transactions found for "${activeSearchQuery}"`
+              ? `Showing ${transactions.length} transaction(s) for "${debouncedSearchQuery}"`
+              : `No transactions found for "${debouncedSearchQuery}"`
             }
           </AlertDescription>
         </Alert>
@@ -283,8 +283,8 @@ export function TransactionsTable({
             ) : paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  {activeSearchQuery 
-                    ? `No transactions found for "${activeSearchQuery}"`
+                  {debouncedSearchQuery
+                    ? `No transactions found for "${debouncedSearchQuery}"`
                     : 'No transactions found'
                   }
                 </TableCell>
@@ -533,34 +533,36 @@ export function TransactionsTable({
         />
       )}
 
-      {/* Dialogs */}
-      <TransactionDetailsDialog
-        transaction={selectedTransaction}
-        open={showDetailsDialog}
-        onOpenChange={setShowDetailsDialog}
-      />
+      {/* Dialogs - Lazy loaded for performance */}
+      <Suspense fallback={<div />}>
+        <TransactionDetailsDialog
+          transaction={selectedTransaction}
+          open={showDetailsDialog}
+          onOpenChange={setShowDetailsDialog}
+        />
 
-      {selectedTransaction && (
-        <>
-          <EditTransactionDialogV2
-            open={showEditDialog}
-            onOpenChange={setShowEditDialog}
-            transaction={selectedTransaction}
-          />
+        {selectedTransaction && (
+          <>
+            <EditTransactionDialogV2
+              open={showEditDialog}
+              onOpenChange={setShowEditDialog}
+              transaction={selectedTransaction}
+            />
 
-          <DeleteTransactionDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-            transaction={selectedTransaction}
-          />
+            <DeleteTransactionDialog
+              open={showDeleteDialog}
+              onOpenChange={setShowDeleteDialog}
+              transaction={selectedTransaction}
+            />
 
-          <SupplierAcquisitionPrintDialog
-            open={showPrintDialog}
-            onOpenChange={setShowPrintDialog}
-            transactions={[selectedTransaction]}
-          />
-        </>
-      )}
+            <SupplierAcquisitionPrintDialog
+              open={showPrintDialog}
+              onOpenChange={setShowPrintDialog}
+              transactions={[selectedTransaction]}
+            />
+          </>
+        )}
+      </Suspense>
     </div>
   );
-}
+});

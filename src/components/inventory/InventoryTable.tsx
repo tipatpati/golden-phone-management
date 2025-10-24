@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, Suspense, lazy } from "react";
 import { formatProductName, formatProductUnitName, parseSerialString } from "@/utils/productNaming";
 import { getProductPricingInfoSync } from "@/utils/unitPricingUtils";
 import { InventoryProductRow } from "./InventoryProductRow";
@@ -30,9 +30,11 @@ import {
 import { cn } from "@/lib/utils";
 import { useProducts } from "@/services/inventory/LightweightInventoryService";
 import { UnifiedInventoryLabels } from "./labels/UnifiedInventoryLabels";
-import { ProductDetailsDialog } from "./ProductDetailsDialog";
-import { UnitDetailsDialog } from "./UnitDetailsDialog";
 import { InventoryCard } from "./InventoryCard";
+
+// Lazy load heavy dialogs for better performance
+const ProductDetailsDialog = lazy(() => import("./ProductDetailsDialog").then(m => ({ default: m.ProductDetailsDialog })));
+const UnitDetailsDialog = lazy(() => import("./UnitDetailsDialog").then(m => ({ default: m.UnitDetailsDialog })));
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
 import type { Product as UnifiedProduct } from "@/services/inventory/types";
@@ -74,7 +76,7 @@ interface InventoryTableProps {
   onDelete: (id: string) => void;
 }
 
-export function InventoryTable({ 
+export const InventoryTable = React.memo(function InventoryTable({
   products,
   isLoading,
   isFetching = false,
@@ -691,19 +693,22 @@ export function InventoryTable({
         )}
       </div>
 
-    <ProductDetailsDialog
-      product={selectedProductForDetails as any}
-      open={detailsDialogOpen}
-      onOpenChange={setDetailsDialogOpen}
-      onEdit={(product) => {
-        setDetailsDialogOpen(false);
-        onEdit(product as Product);
-      }}
-      onPrint={(product) => {
-        setDetailsDialogOpen(false);
-        setPrintProductId(product.id);
-      }}
-    />
+    {/* Lazy loaded dialogs for performance */}
+    <Suspense fallback={<div />}>
+      <ProductDetailsDialog
+        product={selectedProductForDetails as any}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        onEdit={(product) => {
+          setDetailsDialogOpen(false);
+          onEdit(product as Product);
+        }}
+        onPrint={(product) => {
+          setDetailsDialogOpen(false);
+          setPrintProductId(product.id);
+        }}
+      />
+    </Suspense>
 
     {/* Hidden label printer for products */}
     {printProductId && (
@@ -747,17 +752,19 @@ export function InventoryTable({
       );
     })()}
 
-    {/* Unit Details Dialog */}
-    <UnitDetailsDialog
-      unit={selectedUnit}
-      product={selectedProductForUnit}
-      open={unitDetailsOpen}
-      onOpenChange={setUnitDetailsOpen}
-      onPrint={(unitId) => {
-        setUnitDetailsOpen(false);
-        setPrintUnitId(unitId);
-      }}
-    />
+    {/* Unit Details Dialog - Lazy loaded */}
+    <Suspense fallback={<div />}>
+      <UnitDetailsDialog
+        unit={selectedUnit}
+        product={selectedProductForUnit}
+        open={unitDetailsOpen}
+        onOpenChange={setUnitDetailsOpen}
+        onPrint={(unitId) => {
+          setUnitDetailsOpen(false);
+          setPrintUnitId(unitId);
+        }}
+      />
+    </Suspense>
 
     {/* Delete unit confirmation */}
     <AlertDialog open={!!deleteUnitId} onOpenChange={(open) => !open && setDeleteUnitId(null)}>
@@ -781,4 +788,4 @@ export function InventoryTable({
     </AlertDialog>
     </>
   );
-}
+});
