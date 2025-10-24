@@ -1836,8 +1836,6 @@ export type Database = {
           storage_variants: string[]
         }[]
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       slugify: { Args: { input: string }; Returns: string }
       validate_product_consistency: {
         Args: never
