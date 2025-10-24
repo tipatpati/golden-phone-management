@@ -18,7 +18,7 @@ interface EnhancedClientsListProps {
   onDelete?: (client: Client) => void;
 }
 
-export function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClientsListProps) {
+export const EnhancedClientsList = React.memo(function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClientsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<'all' | 'individual' | 'business'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -222,4 +222,4 @@ export function EnhancedClientsList({ clients, onEdit, onDelete }: EnhancedClien
       )}
     </div>
   );
-}
+});

@@ -26,7 +26,7 @@ interface RepairCardProps {
   repair: Repair;
 }
 
-export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
+export const RepairCard = React.memo<RepairCardProps>(function RepairCard({ repair }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
@@ -186,4 +186,4 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair }) => {
       />
     </>
   );
-};
+});

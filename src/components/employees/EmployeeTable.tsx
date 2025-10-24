@@ -26,7 +26,7 @@ interface EmployeeTableProps {
   onRefresh: () => void;
 }
 
-export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: EmployeeTableProps) {
+export const EmployeeTable = React.memo(function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: EmployeeTableProps) {
   const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
   const { dialogState, showConfirmDialog, hideConfirmDialog, confirmAction } = useConfirmDialog<Employee>();
 
@@ -238,4 +238,4 @@ export function EmployeeTable({ employees, isLoading, onEdit, onRefresh }: Emplo
       )}
     </>
   );
-}
+});

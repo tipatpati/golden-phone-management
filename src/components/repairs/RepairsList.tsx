@@ -9,7 +9,7 @@ interface RepairsListProps {
   repairs: Repair[];
 }
 
-export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
+export const RepairsList = React.memo<RepairsListProps>(function RepairsList({ repairs }) {
   const {
     paginatedData,
     currentPage,
@@ -57,4 +57,4 @@ export const RepairsList: React.FC<RepairsListProps> = ({ repairs }) => {
       )}
     </div>
   );
-};
+});

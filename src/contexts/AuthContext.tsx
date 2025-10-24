@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { AuthContextType } from "./auth/types";
 import { useAuthState } from "./auth/useAuthState";
 import { createAuthActions } from "./auth/authActions";
@@ -50,28 +50,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Log session activities (only if not in preview environment)
   useEffect(() => {
-    const isPreview = window.location.hostname.includes('lovable.app') || 
+    const isPreview = window.location.hostname.includes('lovable.app') ||
                      window.location.hostname.includes('localhost') ||
                      window !== window.top;
-    
+
     if (authState.user && !isPreview) {
-      // logSessionActivity('login').catch(err => 
+      // logSessionActivity('login').catch(err =>
       //   console.warn('Session activity logging failed:', err)
       // );
     }
   }, [authState.user]);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    user: authState.user,
+    session: authState.session,
+    isLoggedIn,
+    userRole: authState.userRole,
+    interfaceRole: authState.interfaceRole,
+    username: authState.username,
+    isInitialized: authState.isInitialized,
+    ...authActions
+  }), [
+    authState.user,
+    authState.session,
+    isLoggedIn,
+    authState.userRole,
+    authState.interfaceRole,
+    authState.username,
+    authState.isInitialized,
+    authActions
+  ]);
+
   return (
-    <AuthContext.Provider value={{ 
-      user: authState.user,
-      session: authState.session,
-      isLoggedIn, 
-      userRole: authState.userRole, 
-      interfaceRole: authState.interfaceRole,
-      username: authState.username,
-      isInitialized: authState.isInitialized,
-      ...authActions
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
