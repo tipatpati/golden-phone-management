@@ -74,7 +74,7 @@ interface InventoryTableProps {
   onDelete: (id: string) => void;
 }
 
-export function InventoryTable({ 
+export const InventoryTable = React.memo(function InventoryTable({
   products,
   isLoading,
   isFetching = false,
@@ -781,4 +781,4 @@ export function InventoryTable({
     </AlertDialog>
     </>
   );
-}
+});

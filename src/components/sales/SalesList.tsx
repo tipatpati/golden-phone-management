@@ -28,7 +28,7 @@ interface SalesListProps {
   searchTerm?: string;
 }
 
-export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }: SalesListProps) {
+export const SalesList = React.memo(function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }: SalesListProps) {
   const { userRole } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -714,4 +714,4 @@ export function SalesList({ sales, onEdit, onDelete, onViewDetails, searchTerm }
       )}
     </>
   );
-}
+});

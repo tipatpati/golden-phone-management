@@ -43,7 +43,7 @@ interface TransactionsTableProps {
   onSearch?: (query: string) => void;
 }
 
-export function TransactionsTable({ 
+export const TransactionsTable = React.memo(function TransactionsTable({
   searchQuery = '',
   onSearch
 }: TransactionsTableProps) {
@@ -563,4 +563,4 @@ export function TransactionsTable({
       )}
     </div>
   );
-}
+});
