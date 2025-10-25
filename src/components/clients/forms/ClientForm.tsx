@@ -5,8 +5,6 @@ import { ClientContactInfo } from "./ClientContactInfo";
 import { FormField } from "@/components/common/FormField";
 import { CLIENT_STATUS_OPTIONS } from "./types";
 import { useClientForm } from "./hooks/useClientForm";
-import { DraftIndicator } from "@/components/ui/draft-indicator";
-import { DraftRestoreDialog } from "@/components/ui/draft-restore-dialog";
 
 export function ClientForm({ 
   initialData, 
@@ -19,23 +17,8 @@ export function ClientForm({
     isSubmitting,
     updateField,
     handleSubmit,
-    getFieldError,
-    isDraftAvailable,
-    isAutoSaving,
-    lastSavedAt,
-    restoreDraft,
-    deleteDraft,
-    currentDraft
+    getFieldError
   } = useClientForm({ initialData, onSubmit });
-
-  const [showDraftDialog, setShowDraftDialog] = React.useState(false);
-
-  // Check for draft on mount
-  React.useEffect(() => {
-    if (isDraftAvailable && !initialData && currentDraft) {
-      setShowDraftDialog(true);
-    }
-  }, [isDraftAvailable, initialData, currentDraft]);
 
   // Expose handleSubmit to parent components
   React.useEffect(() => {
@@ -47,18 +30,6 @@ export function ClientForm({
 
   return (
     <div className="space-y-6">
-      {/* Draft Indicator - Subtle positioning */}
-      <div className="flex justify-end">
-        <DraftIndicator
-          isAutoSaving={isAutoSaving}
-          lastSavedAt={lastSavedAt}
-          isDraftAvailable={isDraftAvailable}
-          onRestoreDraft={() => setShowDraftDialog(true)}
-          onClearDraft={deleteDraft}
-          className="opacity-75 hover:opacity-100 transition-opacity"
-        />
-      </div>
-
       {/* Business Information Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Informazioni Cliente</h3>
@@ -100,21 +71,6 @@ export function ClientForm({
           <p className="text-sm text-destructive">{getFieldError('form')}</p>
         </div>
       )}
-
-      {/* Draft Restore Dialog */}
-      <DraftRestoreDialog
-        isOpen={showDraftDialog}
-        onOpenChange={setShowDraftDialog}
-        draft={currentDraft}
-        onRestore={() => {
-          restoreDraft();
-          setShowDraftDialog(false);
-        }}
-        onDiscard={() => {
-          deleteDraft();
-          setShowDraftDialog(false);
-        }}
-      />
     </div>
   );
 }
