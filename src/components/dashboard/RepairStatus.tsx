@@ -1,14 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRepairs } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { logger } from "@/utils/logger";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useQueryClient } from "@tanstack/react-query";
 
 type RepairStatusType = "in_progress" | "awaiting_parts" | "completed" | "quoted" | "cancelled";
 
-export function RepairStatus() {
+export const RepairStatus = React.memo(function RepairStatus() {
+  const queryClient = useQueryClient();
   const { data: allRepairs = [] } = useRepairs();
   
   // Type cast the data array
@@ -20,18 +22,22 @@ export function RepairStatus() {
       .channel('repair-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'repairs' }, () => {
         logger.debug('Repairs data updated', {}, 'RepairStatus');
+        // Invalidate repairs query to refetch data
+        queryClient.invalidateQueries({ queryKey: ['repairs'] });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
 
-  // Filter active repairs (not completed or cancelled)
-  const activeRepairs = repairsArray.filter(repair => 
-    repair.status !== 'completed' && repair.status !== 'cancelled'
-  ).slice(0, 5); // Show only first 5
+  // Memoize filtered active repairs to prevent recalculation on every render
+  const activeRepairs = useMemo(() => {
+    return repairsArray
+      .filter(repair => repair.status !== 'completed' && repair.status !== 'cancelled')
+      .slice(0, 5); // Show only first 5
+  }, [repairsArray]);
 
   const getStatusBadgeType = (status: RepairStatusType): "info" | "warning" | "success" | "default" | "inactive" => {
     switch (status) {
@@ -146,4 +152,4 @@ export function RepairStatus() {
       </CardContent>
     </Card>
   );
-}
+});
