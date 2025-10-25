@@ -92,9 +92,23 @@ export const TransactionsTable = React.memo(function TransactionsTable({
     }
   }, [debouncedSearchQuery, transactions]);
 
+  const handleSearch = () => {
+    // Trigger immediate search by updating state
+    // The debounced value will update automatically
+    if (onSearch) {
+      onSearch(localSearchQuery);
+    }
+  };
+
   const handleClearSearch = () => {
     setLocalSearchQuery('');
+    if (onSearch) {
+      onSearch('');
+    }
   };
+
+  // Track active search query for UI feedback
+  const activeSearchQuery = debouncedSearchQuery.trim();
 
   const [selectedTransaction, setSelectedTransaction] = useState<SupplierTransaction | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
