@@ -41,7 +41,7 @@ const DialogContent = React.forwardRef<
         // Mobile: full-screen modal
         "inset-0 sm:inset-auto",
         "sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]",
-        "sm:max-w-lg sm:rounded-xl sm:border",
+        "sm:max-w-4xl sm:rounded-xl sm:border",
         // Padding: less on mobile, more on desktop
         "p-4 sm:p-6",
         // Height: full on mobile, constrained on desktop
