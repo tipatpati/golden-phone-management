@@ -42,13 +42,13 @@ export interface ReceiptData {
 
 export class ReceiptDataService {
   private static readonly COMPANY_INFO = {
-    name: 'GOLDEN TRADE Q&A SRL',
+    name: 'GOLDEN TRADE O&A SRL',
     address: [
       'Corso Buenos Aires, 90,',
-      '20124 Milano - MI'
+      '20124 Milano MI'
     ],
-    phone: '+39 351 565 6095',
-    vatNumber: '12345678901'
+    phone: '351 565 6095',
+    vatNumber: '13353700969'
   };
 
   private static readonly LEGAL_TERMS = {
