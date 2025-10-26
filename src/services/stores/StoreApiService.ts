@@ -1,18 +1,15 @@
-import { BaseApiService } from '../core/BaseApiService';
 import { supabase } from '@/integrations/supabase/client';
 import type { Store, CreateStoreData, UpdateStoreData, UserStore, AssignUserToStoreData } from './types';
 
-export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
-  constructor() {
-    super('stores');
-  }
+export class StoreApiService {
+  protected tableName = 'stores';
 
   /**
    * Get all stores (respects RLS - super admins see all, users see assigned stores)
    */
   async getAll(): Promise<Store[]> {
     const { data, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .select('*')
       .order('name', { ascending: true });
 
@@ -20,7 +17,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to fetch stores: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []) as unknown as Store[];
   }
 
   /**
@@ -28,7 +25,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async getActiveStores(): Promise<Store[]> {
     const { data, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .select('*')
       .eq('is_active', true)
       .order('name', { ascending: true });
@@ -37,7 +34,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to fetch active stores: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []) as unknown as Store[];
   }
 
   /**
@@ -45,16 +42,20 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async getById(id: string): Promise<Store> {
     const { data, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Failed to fetch store: ${error.message}`);
     }
 
-    return data;
+    if (!data) {
+      throw new Error(`Store with ID ${id} not found`);
+    }
+
+    return data as unknown as Store;
   }
 
   /**
@@ -62,16 +63,16 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async getByCode(code: string): Promise<Store | null> {
     const { data, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .select('*')
       .eq('code', code)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') { // Not found is ok
+    if (error) {
       throw new Error(`Failed to fetch store by code: ${error.message}`);
     }
 
-    return data || null;
+    return data ? (data as unknown as Store) : null;
   }
 
   /**
@@ -79,7 +80,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async create(data: CreateStoreData): Promise<Store> {
     const { data: store, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .insert({
         ...data,
         code: data.code.toUpperCase(), // Enforce uppercase
@@ -93,7 +94,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to create store: ${error.message}`);
     }
 
-    return store;
+    return store as unknown as Store;
   }
 
   /**
@@ -103,7 +104,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
     const { id, ...updateData } = data;
 
     const { data: store, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .update({
         ...updateData,
         ...(updateData.code && { code: updateData.code.toUpperCase() }),
@@ -117,7 +118,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to update store: ${error.message}`);
     }
 
-    return store;
+    return store as unknown as Store;
   }
 
   /**
@@ -125,7 +126,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async deactivate(id: string): Promise<Store> {
     const { data, error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
@@ -135,7 +136,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to deactivate store: ${error.message}`);
     }
 
-    return data;
+    return data as unknown as Store;
   }
 
   /**
@@ -143,7 +144,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
    */
   async delete(id: string): Promise<void> {
     const { error } = await supabase
-      .from(this.tableName)
+      .from(this.tableName as any)
       .delete()
       .eq('id', id);
 
@@ -172,7 +173,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to fetch user stores: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []) as unknown as UserStore[];
   }
 
   /**
@@ -198,13 +199,13 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       `)
       .eq('user_id', userId)
       .eq('is_default', true)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       throw new Error(`Failed to fetch default store: ${error.message}`);
     }
 
-    return data?.store || null;
+    return data?.store ? (data.store as unknown as Store) : null;
   }
 
   /**
@@ -233,7 +234,7 @@ export class StoreApiService extends BaseApiService<Store, CreateStoreData> {
       throw new Error(`Failed to assign user to store: ${error.message}`);
     }
 
-    return assignment;
+    return assignment as unknown as UserStore;
   }
 
   /**

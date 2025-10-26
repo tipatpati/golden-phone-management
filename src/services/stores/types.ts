@@ -4,14 +4,14 @@ export interface Store {
   id: string;
   name: string;
   code: string;
-  address?: string;
-  city?: string;
-  postal_code?: string;
-  phone?: string;
-  email?: string;
-  manager_id?: string;
+  address?: string | null;
+  city?: string | null;
+  postal_code?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  manager_id?: string | null;
   is_active: boolean;
-  settings: Record<string, any>;
+  settings: any; // Json type from Supabase
   created_at: string;
   updated_at: string;
 }
@@ -39,7 +39,7 @@ export interface UserStore {
   store_id: string;
   is_default: boolean;
   created_at: string;
-  store?: Store; // Populated when joined
+  store?: any; // Populated when joined - will be Store type when types regenerate
 }
 
 export interface AssignUserToStoreData {

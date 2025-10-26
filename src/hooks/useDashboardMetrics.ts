@@ -58,7 +58,7 @@ export const useDashboardMetrics = () => {
         throw new Error('No data returned from dashboard metrics query');
       }
 
-      return data as DashboardMetrics;
+      return data as unknown as DashboardMetrics;
     },
     staleTime: 30_000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60_000, // Keep in cache for 5 minutes (formerly cacheTime)
