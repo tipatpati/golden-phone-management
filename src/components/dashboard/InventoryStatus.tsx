@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Button } from "@/components/ui/updated-button";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useQueryClient } from "@tanstack/react-query";
 
-export function InventoryStatus() {
+export const InventoryStatus = React.memo(function InventoryStatus() {
+  const queryClient = useQueryClient();
   const { data: allProducts = [] } = useProducts();
 
   // Set up real-time subscription for inventory updates with unique channel name
@@ -15,25 +17,30 @@ export function InventoryStatus() {
       .channel('inventory-status-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
         logger.debug('Inventory data updated', {}, 'InventoryStatus');
+        // Invalidate products query to refetch data
+        queryClient.invalidateQueries({ queryKey: ['products'] });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
 
-  // Filter products that are at or below their threshold
-  const lowStockItems = Array.isArray(allProducts) 
-    ? allProducts.filter(product => product.stock <= product.threshold)
-    : [];
+  // Memoize filtered low stock items to prevent recalculation on every render
+  const lowStockItems = useMemo(() => {
+    return Array.isArray(allProducts)
+      ? allProducts.filter(product => product.stock <= product.threshold)
+      : [];
+  }, [allProducts]);
 
-  const getStockLevel = (current: number, threshold: number) => {
+  // Memoize getStockLevel function to prevent recreation
+  const getStockLevel = useMemo(() => (current: number, threshold: number) => {
     const percentage = threshold > 0 ? (current / threshold) * 100 : 100;
     if (percentage <= 20) return { color: "bg-destructive", level: "Critica", badgeStatus: "error" as const, bgColor: "bg-destructive/10" };
     if (percentage <= 50) return { color: "bg-warning", level: "Bassa", badgeStatus: "warning" as const, bgColor: "bg-warning-container" };
     return { color: "bg-success", level: "Buona", badgeStatus: "success" as const, bgColor: "bg-success-container" };
-  };
+  }, []);
 
   return (
     <Card className="card-glow border-0 shadow-lg">
@@ -93,4 +100,4 @@ export function InventoryStatus() {
       </CardContent>
     </Card>
   );
-}
+});
