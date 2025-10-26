@@ -69,12 +69,12 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
       </Button>
       
       <BaseDialog
-        title={`Modifica Garentille - ${sale.sale_number}`}
+        title={`Modifica Garanzia - ${sale.sale_number}`}
         open={open}
         onClose={() => setOpen(false)}
         onSubmit={handleSubmit}
         isLoading={updateSale.isPending}
-        submitText={updateSale.isPending ? "Aggiornando..." : "Aggiorna Garentille"}
+        submitText={updateSale.isPending ? "Aggiornando..." : "Aggiorna Garanzia"}
         cancelText="Annulla"
         size="lg"
       >

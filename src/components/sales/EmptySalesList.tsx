@@ -17,12 +17,12 @@ export function EmptySalesList({ searchTerm }: EmptySalesListProps) {
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold text-on-surface">
-              {searchTerm ? "Nessuna garentille trovata" : "Nessuna garentille ancora"}
+              {searchTerm ? "Nessuna garanzia trovata" : "Nessuna garanzia ancora"}
             </h3>
             <p className="text-on-surface-variant text-base max-w-md mx-auto">
               {searchTerm 
-                ? "Prova a modificare i criteri di ricerca o cancella la ricerca per vedere tutte le garentille." 
-                : "Inizia creando la tua prima transazione di garentille."
+                ? "Prova a modificare i criteri di ricerca o cancella la ricerca per vedere tutte le garanzie." 
+                : "Inizia creando la tua prima transazione di garanzia."
               }
             </p>
           </div>
