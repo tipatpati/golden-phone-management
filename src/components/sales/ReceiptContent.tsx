@@ -215,8 +215,7 @@ export function ReceiptContent({
       paddingLeft: '16px',
       paddingRight: '16px',
       fontWeight: 'bold',
-      width: '50%',
-      margin: '0 auto'
+      width: '100%'
     }}>
         <p>{receiptData.legalTerms.termsText}</p>
       </div>
