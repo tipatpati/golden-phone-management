@@ -1765,6 +1765,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_dashboard_metrics: { Args: never; Returns: Json }
       get_employee_profile: {
         Args: { target_user_id?: string }
         Returns: {
