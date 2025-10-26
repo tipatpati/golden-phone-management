@@ -10,6 +10,7 @@ import { VATDebugPanel } from '../VATDebugPanel';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useCreateSale } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCurrentStoreId } from '@/contexts/store/StoreContext';
 import { toast } from 'sonner';
 
 interface CleanSaleSummarySectionProps {
@@ -23,6 +24,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel, isEditMode, 
   const { state, updateFormData } = useSaleCreation();
   const { items, formData, totalAmount, subtotal, discountAmount, taxAmount, isValid, validationErrors } = state;
   const { user } = useAuth();
+  const currentStoreId = useCurrentStoreId();
   const createSale = useCreateSale();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -103,6 +105,7 @@ export function CleanSaleSummarySection({ onSaleComplete, onCancel, isEditMode, 
         });
         
         const saleData = {
+          store_id: currentStoreId,
           salesperson_id: user.id,
           client_id: formData.client_id,
           payment_method: formData.payment_method as any,

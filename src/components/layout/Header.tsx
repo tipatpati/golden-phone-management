@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { StoreSelector } from "@/components/stores/StoreSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface HeaderProps {
   isMenuOpen?: boolean;
@@ -35,17 +36,22 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
       
       <div className="flex flex-1 items-center justify-center gap-2 sm:gap-4 min-w-0">
         <div className="relative w-full max-w-[280px] sm:max-w-sm lg:max-w-md">
-          <Search 
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-on-surface-variant" 
+          <Search
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-on-surface-variant"
             aria-hidden="true"
           />
-          <Input 
-            type="search" 
-            placeholder="Cerca..." 
+          <Input
+            type="search"
+            placeholder="Cerca..."
             className="pl-12 h-12 rounded-full border border-border bg-surface-container text-sm"
             aria-label="Cerca nel sistema"
           />
         </div>
+      </div>
+
+      {/* Store Selector - Shows when user has multiple stores */}
+      <div className="hidden md:block ml-3 sm:ml-4">
+        <StoreSelector />
       </div>
 
       {/* Theme Toggle */}

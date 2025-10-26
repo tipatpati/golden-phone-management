@@ -2,10 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import type { ProductFormData, UnitEntryForm } from "@/services/inventory/types";
 import { useProductValidation } from "./useProductValidation";
 import { toast } from "@/hooks/use-toast";
-import { 
-  transformUnitsToEntries, 
-  validateProductUnitsData, 
-  logDataTransformation 
+import { useCurrentStoreId } from '@/contexts/store/StoreContext';
+import {
+  transformUnitsToEntries,
+  validateProductUnitsData,
+  logDataTransformation
 } from "@/utils/crossModuleDataSync";
 import { logger } from '@/utils/logger';
 
@@ -15,6 +16,7 @@ interface UseProductFormOptions {
 }
 
 export function useProductForm({ initialData, onSubmit }: UseProductFormOptions) {
+  const currentStoreId = useCurrentStoreId();
   const [formData, setFormData] = useState<Partial<ProductFormData>>({
     brand: '',
     model: '',
@@ -192,6 +194,7 @@ export function useProductForm({ initialData, onSubmit }: UseProductFormOptions)
       : [];
 
     const finalData: ProductFormData = {
+      store_id: currentStoreId!,
       brand: formData.brand!,
       model: formData.model!,
       year: formData.year,
