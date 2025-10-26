@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentStoreId, withStoreIdBatch } from '@/services/stores/storeHelpers';
 
 /**
  * Atomic barcode counter increment using company settings
@@ -114,9 +115,12 @@ export async function batchCreateProductUnits(
     supplier_id?: string;
   }>
 ): Promise<void> {
+  // Add store_id to all units
+  const unitsWithStore = await withStoreIdBatch(units);
+  
   const { error } = await supabase
     .from('product_units')
-    .insert(units);
+    .insert(unitsWithStore);
 
   if (error) {
     throw new Error(`Failed to batch create units: ${error.message}`);

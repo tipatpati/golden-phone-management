@@ -67,7 +67,7 @@ export class EmployeeCreationService {
       // Create employee record (should be auto-created by trigger, but insert as fallback)
       const { data: employee, error: employeeError } = await supabase
         .from('employees')
-        .upsert({
+        .upsert([{
           profile_id: userId,
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -77,8 +77,9 @@ export class EmployeeCreationService {
           position: formData.position,
           salary: formData.salary ? parseFloat(formData.salary) : null,
           hire_date: formData.hire_date,
-          status: formData.status
-        }, {
+          status: formData.status,
+          store_id: formData.store_id
+        }], {
           onConflict: 'profile_id'
         })
         .select()

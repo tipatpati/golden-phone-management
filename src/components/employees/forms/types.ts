@@ -12,6 +12,7 @@ export interface EmployeeFormData {
   status: string;
   role: UserRole;
   password: string;
+  store_id: string;
 }
 
 export const getInitialEmployeeFormData = (): EmployeeFormData => ({
@@ -26,6 +27,7 @@ export const getInitialEmployeeFormData = (): EmployeeFormData => ({
   status: "active",
   role: "salesperson" as UserRole,
   password: "",
+  store_id: "", // Will be set by the form component
 });
 
 export const EMPLOYEE_DEPARTMENTS = [

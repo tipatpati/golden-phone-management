@@ -5,6 +5,7 @@
 
 import { ProductUnitManagementService } from "./ProductUnitManagementService";
 import { supabase } from "@/integrations/supabase/client";
+import { withStoreId } from '../stores/storeHelpers';
 
 interface ProductCoordinationEvent {
   type: 'product_created' | 'product_updated' | 'unit_created' | 'unit_updated' | 'stock_updated' | 'sync_requested';
@@ -209,9 +210,10 @@ export class UnifiedProductCoordinator {
       ...sanitizedAdditional
     };
 
+    const productWithStore = await withStoreId(productData);
     const { data: newProduct, error } = await supabase
       .from('products')
-      .insert([productData])
+      .insert([productWithStore])
       .select()
       .single();
 
@@ -263,9 +265,10 @@ export class UnifiedProductCoordinator {
       ...unitData
     };
 
+    const newUnitWithStore = await withStoreId(newUnitData);
     const { data: newUnit, error } = await supabase
       .from('product_units')
-      .insert([newUnitData])
+      .insert([newUnitWithStore])
       .select()
       .single();
 

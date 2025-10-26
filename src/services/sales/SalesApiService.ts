@@ -142,10 +142,11 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         notes: saleData.notes || '',
       };
 
-      // Insert sale
+      // Insert sale with store_id
+      const saleWithStore = await withStoreId(saleToInsert);
       const { data: sale, error: saleError } = await supabase
         .from('sales')
-        .insert([saleToInsert])
+        .insert([saleWithStore])
         .select('*')
         .single();
 
