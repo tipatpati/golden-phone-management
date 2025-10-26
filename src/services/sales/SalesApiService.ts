@@ -3,6 +3,7 @@ import { SalesValidationService } from '@/components/sales/SalesValidationServic
 import type { Sale, CreateSaleData } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesInventoryIntegrationService } from './SalesInventoryIntegrationService';
+import { withStoreId } from '../stores/storeHelpers';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {

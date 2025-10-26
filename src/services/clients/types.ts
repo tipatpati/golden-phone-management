@@ -12,6 +12,7 @@ export interface Client extends BaseEntity {
   tax_id?: string;
   notes?: string;
   status: 'active' | 'inactive';
+  store_id?: string; // Optional in TypeScript, but required by database
 }
 
 export type CreateClientData = Omit<Client, keyof BaseEntity>;

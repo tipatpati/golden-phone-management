@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { StoreSelector } from "@/components/stores/StoreSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface HeaderProps {
   isMenuOpen?: boolean;
@@ -46,6 +47,11 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
             aria-label="Cerca nel sistema"
           />
         </div>
+      </div>
+
+      {/* Store Selector - Only visible for users with multiple stores */}
+      <div className="ml-3 sm:ml-4">
+        <StoreSelector compact />
       </div>
 
       {/* Theme Toggle */}

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { StoreProvider } from "@/contexts/store/StoreContext";
 import { OrchestrationProvider } from "@/services/core/OrchestrationProvider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
@@ -29,13 +30,15 @@ export function AppProviders({ children, includeAuth = true }: AppProvidersProps
   logger.debug('AppProviders rendering', { includeAuth }, 'AppProviders');
   
   try {
-    const content = includeAuth ? (
-      <AuthProvider>
+  const content = includeAuth ? (
+    <AuthProvider>
+      <StoreProvider>
         {children}
-      </AuthProvider>
-    ) : (
-      children
-    );
+      </StoreProvider>
+    </AuthProvider>
+  ) : (
+    children
+  );
 
     return (
       <BrowserRouter>
