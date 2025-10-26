@@ -76,7 +76,7 @@ export function EditSaleDialog({ sale, onSuccess }: EditSaleDialogProps) {
         isLoading={updateSale.isPending}
         submitText={updateSale.isPending ? "Aggiornando..." : "Aggiorna Garentille"}
         cancelText="Annulla"
-        size="md"
+        size="lg"
       >
         <div className="space-y-4">
           <FormField
