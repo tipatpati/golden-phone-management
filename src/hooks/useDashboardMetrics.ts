@@ -61,7 +61,7 @@ export const useDashboardMetrics = () => {
       return data as DashboardMetrics;
     },
     staleTime: 30_000, // Consider data fresh for 30 seconds
-    cacheTime: 5 * 60_000, // Keep in cache for 5 minutes
+    gcTime: 5 * 60_000, // Keep in cache for 5 minutes (formerly cacheTime)
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     retry: 2, // Retry failed requests twice
   });

@@ -1396,6 +1396,62 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          manager_id: string | null
+          name: string
+          phone: string | null
+          postal_code: string | null
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          manager_id?: string | null
+          name: string
+          phone?: string | null
+          postal_code?: string | null
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          manager_id?: string | null
+          name?: string
+          phone?: string | null
+          postal_code?: string | null
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_transaction_items: {
         Row: {
           created_at: string
@@ -1581,6 +1637,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_stores: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          store_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_stores_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_stores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1790,10 +1885,12 @@ export type Database = {
         Args: { product_uuid: string }
         Returns: number
       }
+      get_user_current_store_id: { Args: never; Returns: string }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
       }
+      get_user_store_ids: { Args: never; Returns: string[] }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1837,7 +1934,15 @@ export type Database = {
           storage_variants: string[]
         }[]
       }
+      set_user_current_store: {
+        Args: { target_store_id: string }
+        Returns: undefined
+      }
       slugify: { Args: { input: string }; Returns: string }
+      user_has_store_access: {
+        Args: { target_store_id: string }
+        Returns: boolean
+      }
       validate_product_consistency: {
         Args: never
         Returns: {
