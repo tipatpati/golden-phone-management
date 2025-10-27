@@ -1414,6 +1414,7 @@ export type Database = {
           serial_number: string
           sold_at: string
           sold_price: number
+          store_id: string
           supplier_name: string | null
           updated_at: string
         }
@@ -1433,6 +1434,7 @@ export type Database = {
           serial_number: string
           sold_at?: string
           sold_price: number
+          store_id: string
           supplier_name?: string | null
           updated_at?: string
         }
@@ -1452,10 +1454,19 @@ export type Database = {
           serial_number?: string
           sold_at?: string
           sold_price?: number
+          store_id?: string
           supplier_name?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sold_product_units_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stores: {
         Row: {
