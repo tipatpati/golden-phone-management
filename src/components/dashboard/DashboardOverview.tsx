@@ -13,7 +13,7 @@ export const DashboardOverview = React.memo(function DashboardOverview() {
   const handleCardClick = useCallback((title: string) => {
     switch (title) {
       case "Ricavi Totali":
-      case "Garentille Totali":
+      case "Garanzie Totali":
         navigate("/sales");
         break;
       case "Nuovi Clienti":
@@ -45,7 +45,7 @@ export const DashboardOverview = React.memo(function DashboardOverview() {
         gradient: "from-blue-500 to-blue-600",
       },
       {
-        title: "Garentille Totali",
+        title: "Garanzie Totali",
         value: metrics.today_sales_count.toString(),
         change: `${salesChange}%`,
         isPositive: parseFloat(salesChange) >= 0,

@@ -17,6 +17,7 @@ export type Sale = {
   vat_included?: boolean;
   notes?: string;
   sale_date: string;
+  store_id?: string; // Optional in TypeScript, but required by database
   created_at: string;
   updated_at: string;
   client?: {
@@ -55,6 +56,7 @@ export type SaleItem = {
 export type CreateSaleData = {
   client_id?: string;
   salesperson_id: string;
+  store_id?: string; // Optional in TypeScript, will be injected by API service if not provided
   status?: 'completed' | 'pending' | 'cancelled' | 'refunded';
   payment_method: 'cash' | 'card' | 'bank_transfer' | 'hybrid' | 'other';
   payment_type?: 'single' | 'hybrid';

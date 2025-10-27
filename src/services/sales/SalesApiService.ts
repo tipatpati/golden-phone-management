@@ -3,6 +3,7 @@ import { SalesValidationService } from '@/components/sales/SalesValidationServic
 import type { Sale, CreateSaleData } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesInventoryIntegrationService } from './SalesInventoryIntegrationService';
+import { withStoreId } from '../stores/storeHelpers';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {
@@ -141,10 +142,11 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         notes: saleData.notes || '',
       };
 
-      // Insert sale
+      // Insert sale with store_id
+      const saleWithStore = await withStoreId(saleToInsert);
       const { data: sale, error: saleError } = await supabase
         .from('sales')
-        .insert([saleToInsert])
+        .insert([saleWithStore])
         .select('*')
         .single();
 

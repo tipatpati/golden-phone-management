@@ -6,6 +6,7 @@ import { dataConsistencyLayer } from '../core/DataConsistencyLayer';
 import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
 import type { ProductFormData, UnitEntryForm } from '../inventory/types';
 import type { Supplier } from './types';
+import { withStoreId, withStoreIdBatch } from '../stores/storeHelpers';
 
 export interface AcquisitionItem {
   // For existing products
@@ -420,22 +421,24 @@ class SupplierAcquisitionService {
       'create_product',
       'inventory',
       async () => {
+        const productToInsert = await withStoreId({
+          brand: productData.brand || '',
+          model: productData.model || '',
+          price: productData.price || 0,
+          min_price: productData.min_price,
+          max_price: productData.max_price,
+          description: productData.description,
+          category_id: productData.category_id,
+          year: productData.year,
+          supplier: productData.supplier,
+          threshold: productData.threshold || 0,
+          has_serial: productData.has_serial,
+          stock: productData.has_serial ? 0 : (productData.stock || 0)
+        });
+        
         const { data, error } = await supabase
           .from('products')
-          .insert({
-            brand: productData.brand || '',
-            model: productData.model || '',
-            price: productData.price || 0,
-            min_price: productData.min_price,
-            max_price: productData.max_price,
-            description: productData.description,
-            category_id: productData.category_id,
-            year: productData.year,
-            supplier: productData.supplier,
-            threshold: productData.threshold || 0,
-            has_serial: productData.has_serial,
-            stock: productData.has_serial ? 0 : (productData.stock || 0)
-          })
+          .insert(productToInsert)
           .select('id')
           .single();
 
@@ -502,16 +505,18 @@ class SupplierAcquisitionService {
         } else if (item.quantity > 0) {
           // Create units for non-serialized products (for tracking purposes)
           for (let i = 0; i < item.quantity; i++) {
+            const unitToInsert = await withStoreId({
+              product_id: productId,
+              supplier_id: supplierId,
+              purchase_price: item.unitCost,
+              purchase_date: new Date().toISOString(),
+              serial_number: `BATCH-${Date.now()}-${i}`,
+              status: 'available'
+            });
+            
             const { data, error } = await supabase
               .from('product_units')
-              .insert({
-                product_id: productId,
-                supplier_id: supplierId,
-                purchase_price: item.unitCost,
-                purchase_date: new Date().toISOString(),
-                serial_number: `BATCH-${Date.now()}-${i}`,
-                status: 'available'
-              })
+              .insert(unitToInsert)
               .select('id')
               .single();
 

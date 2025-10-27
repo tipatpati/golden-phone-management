@@ -45,7 +45,7 @@ export function SaleCard({ sale }: SaleCardProps) {
           {/* Salesperson */}
           <div className="xl:col-span-2 space-y-1">
             <div className="font-semibold text-gray-900">{sale.salesperson?.username || "Unknown"}</div>
-            <div className="text-sm text-muted-foreground">Rappresentante Garentille</div>
+            <div className="text-sm text-muted-foreground">Rappresentante Garanzia</div>
           </div>
 
           {/* Items Summary */}

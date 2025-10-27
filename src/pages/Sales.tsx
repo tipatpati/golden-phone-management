@@ -23,7 +23,7 @@ import { EnhancedDeleteDialog } from "@/components/sales/EnhancedDeleteDialog";
 import { BulkEditSaleDialog } from "@/components/sales/BulkEditSaleDialog";
 import { useQueryClient } from "@tanstack/react-query";
 
-const Garentille = () => {
+const Garanzia = () => {
   const { userRole } = useAuth();
   const { trackInteraction } = useSalesMonitoring();
   const [filters, setFilters] = React.useState<SalesFilters>({});
@@ -39,8 +39,8 @@ const Garentille = () => {
   const queryClient = useQueryClient();
   const { data: salesData = [], isLoading, error, refetch } = useSales(searchQuery);
   
-  // Ensure garentille is always an array
-  const garentille = Array.isArray(salesData) ? salesData : [];
+  // Ensure garanzia is always an array
+  const garanzia = Array.isArray(salesData) ? salesData : [];
   
   // Sync local search term with query changes
   React.useEffect(() => {
@@ -60,8 +60,8 @@ const Garentille = () => {
   const canViewAnalytics = userRole === 'super_admin';
   
   // Filter sales based on active filters
-  const filteredGarentille = React.useMemo(() => {
-    let filtered = garentille;
+  const filteredGaranzia = React.useMemo(() => {
+    let filtered = garanzia;
     
     if (filters.dateFrom) {
       filtered = filtered.filter(sale => new Date(sale.created_at) >= filters.dateFrom!);
@@ -85,7 +85,7 @@ const Garentille = () => {
     }
     
     return filtered;
-  }, [garentille, filters]);
+  }, [garanzia, filters]);
   
   // Track page view
   React.useEffect(() => {
@@ -93,7 +93,7 @@ const Garentille = () => {
   }, [trackInteraction]);
   
   // Format sales data for display
-  const formattedGarentille = filteredGarentille.map(sale => 
+  const formattedGaranzia = filteredGaranzia.map(sale => 
     SalesDataService.formatSaleForDisplay(sale)
   );
   
@@ -146,7 +146,7 @@ const Garentille = () => {
     trackInteraction('search_clear');
   };
 
-  if (isLoading && !garentille.length) {
+  if (isLoading && !garanzia.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
@@ -163,7 +163,7 @@ const Garentille = () => {
             <div className="text-center">
               <h3 className="font-semibold">Errore nel caricamento</h3>
               <p className="text-sm text-muted-foreground">
-                Impossibile caricare le garentille. Riprova più tardi.
+                Impossibile caricare le garanzie. Riprova più tardi.
               </p>
             </div>
           </CardContent>
@@ -200,9 +200,9 @@ const Garentille = () => {
           </div>
           
           {showAnalytics ? (
-            <SalesAnalyticsDashboard sales={filteredGarentille} isLoading={isLoading} />
+            <SalesAnalyticsDashboard sales={filteredGaranzia} isLoading={isLoading} />
           ) : (
-            <SalesStats sales={filteredGarentille} />
+            <SalesStats sales={filteredGaranzia} />
           )}
         </div>
       )}
@@ -216,7 +216,7 @@ const Garentille = () => {
       />
       
       <SalesList 
-        sales={formattedGarentille} 
+        sales={formattedGaranzia} 
         onEdit={userRole === 'super_admin' ? handleEditSale : undefined}
         onDelete={userRole === 'super_admin' ? handleDeleteSale : undefined}
         searchTerm={searchQuery}
@@ -251,4 +251,4 @@ const Garentille = () => {
   );
 };
 
-export default Garentille;
+export default Garanzia;

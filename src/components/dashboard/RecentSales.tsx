@@ -7,17 +7,17 @@ import { format } from "date-fns";
 import { logger } from "@/utils/logger";
 
 export const RecentSales = React.memo(function RecentSales() {
-  const { data: allGarentille = [], isLoading } = useSales();
+  const { data: allGaranzia = [], isLoading } = useSales();
   
   // Type cast the data array
-  const garentilleArray = (allGarentille as any[]) || [];
+  const garanziaArray = (allGaranzia as any[]) || [];
 
-  // Set up real-time subscription for garentille updates with unique channel name
+  // Set up real-time subscription for garanzia updates with unique channel name
   useEffect(() => {
     const channel = supabase
-      .channel('recent-garentille-changes')
+      .channel('recent-garanzia-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => {
-        logger.debug('Garentille data updated', {}, 'RecentSales');
+        logger.debug('Garanzia data updated', {}, 'RecentSales');
       })
       .subscribe();
 
@@ -26,8 +26,8 @@ export const RecentSales = React.memo(function RecentSales() {
     };
   }, []);
   
-  // Get the 5 most recent garentille
-  const recentGarentille = garentilleArray.slice(0, 5);
+  // Get the 5 most recent garanzia
+  const recentGaranzia = garanziaArray.slice(0, 5);
 
   const getClientName = (sale: any) => {
     const client = sale.client;
@@ -79,8 +79,8 @@ export const RecentSales = React.memo(function RecentSales() {
     return (
     <Card className="col-span-1 lg:col-span-2 border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Garentille Recenti</CardTitle>
-        <CardDescription className="text-xs sm:text-sm">Caricamento garentille recenti...</CardDescription>
+        <CardTitle className="text-base sm:text-lg">Garanzie Recenti</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Caricamento garanzie recenti...</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3 sm:space-y-4">
@@ -106,15 +106,15 @@ export const RecentSales = React.memo(function RecentSales() {
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-base sm:text-lg">Garentille Recenti</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Garanzie Recenti</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {garentilleArray.length > 0 ? `Hai ${garentilleArray.length} garentille totali` : "Nessuna garentille ancora"}
+          {garanziaArray.length > 0 ? `Hai ${garanziaArray.length} garanzie totali` : "Nessuna garanzia ancora"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {recentGarentille.length > 0 ? (
+        {recentGaranzia.length > 0 ? (
           <div className="space-y-3 sm:space-y-4">
-            {recentGarentille.map((sale) => {
+            {recentGaranzia.map((sale) => {
               const clientName = getClientName(sale);
               const clientEmail = getClientEmail(sale.client);
               const initials = getClientInitials(sale.client);
@@ -149,7 +149,7 @@ export const RecentSales = React.memo(function RecentSales() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna garentille ancora. Crea la tua prima garentille!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Nessuna garanzia ancora. Crea la tua prima garanzia!</p>
           </div>
         )}
       </CardContent>

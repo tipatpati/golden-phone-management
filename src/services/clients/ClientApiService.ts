@@ -1,9 +1,16 @@
 import { BaseApiService, type SearchableFields } from '../core/BaseApiService';
 import type { Client, CreateClientData } from './types';
+import { withStoreId } from '../stores/storeHelpers';
 
 export class ClientApiService extends BaseApiService<Client, CreateClientData> {
   constructor() {
     super('clients', '*');
+  }
+
+  // Override create to inject store_id
+  async create(data: CreateClientData): Promise<Client> {
+    const dataWithStore = await withStoreId(data);
+    return super.create(dataWithStore);
   }
 
   async search(searchTerm: string): Promise<Client[]> {

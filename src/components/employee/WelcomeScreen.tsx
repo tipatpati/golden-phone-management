@@ -60,7 +60,7 @@ export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
   // Define all possible modules with their properties
   const allModules: ModuleButton[] = [
     {
-      title: "GARENTILLE",
+      title: "GARANZIE",
       icon: ShoppingCart,
       route: "/sales",
       color: "text-white",

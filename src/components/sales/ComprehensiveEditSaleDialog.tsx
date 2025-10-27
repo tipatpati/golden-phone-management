@@ -63,7 +63,7 @@ export function ComprehensiveEditSaleDialog({ sale, onSuccess, trigger }: Compre
         <DialogContent size="xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              Modifica Garentille - {sale.sale_number}
+              Modifica Garanzia - {sale.sale_number}
             </DialogTitle>
           </DialogHeader>
           

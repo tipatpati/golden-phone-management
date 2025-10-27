@@ -42,17 +42,25 @@ export interface ReceiptData {
 
 export class ReceiptDataService {
   private static readonly COMPANY_INFO = {
-    name: 'GOLDEN TRADE Q&A SRL',
+    name: 'GOLDEN TRADE O&A SRL',
     address: [
       'Corso Buenos Aires, 90,',
-      '20124 Milano - MI'
+      '20124 Milano MI'
     ],
-    phone: '+39 351 565 6095',
-    vatNumber: '12345678901'
+    phone: '351 565 6095',
+    vatNumber: '13353700969'
   };
 
   private static readonly LEGAL_TERMS = {
-    termsText: `TUTTE LE VENDITE SONO DEFINITIVE E NON RIMBORSABILI, A MENO CHE IL PRODOTTO NON SIA DIFETTOSO O DANNEGGIATO. IL NEGOZIO NON SI ASSUME RESPONSABILITÀ PER EVENTUALI DANNI DERIVANTI DALL'USO IMPROPRIO DEI PRODOTTI ACQUISTATI. IL NEGOZIO SI RISERVA IL DIRITTO DI RIFIUTARE LA RESTITUZIONE DI ARTICOLI DANNEGGIATI O UTILIZZATI IN MODO NON APPROPRIATO.`,
+    termsText: `CONDIZIONI DI GARANZIA :
+1. La garanzia copre solo difetti di fabbrica.
+2. Non copre danni causati da cadute, urti, liquidi o uso improprio.
+3. I telefoni caduti in acqua o manomessi non sono coperti da garanzia.
+4. In caso di malfunzionamento, il telefono verrà riparato o sostituito con un modello equivalente.
+5. In caso di malfunzionamento Il cliente deve lasciare il dispositivo fino a 3 giorni lavorativi per il test tecnico.
+6. Non si accettano resi o rimborsi per qualsiasi motivo. In caso di difetto coperto da garanzia, il prodotto verrà riparato o sostituito.
+
+Firma : ———————`,
     fiscalDisclaimer: 'Questo documento non è un documento fiscale.'
   };
 

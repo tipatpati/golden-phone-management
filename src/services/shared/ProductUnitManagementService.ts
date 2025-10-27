@@ -10,6 +10,7 @@ import type { ProductUnit, CreateProductUnitData, UnitEntryForm } from '@/servic
 import { InventoryError, handleInventoryError } from '@/services/inventory/errors';
 import { createRoleAwareSelect, sanitizePurchasePriceArray } from '@/utils/purchasePriceUtils';
 import type { UserRole } from '@/types/roles';
+import { withStoreId } from '../stores/storeHelpers';
 
 interface CreateUnitsParams {
   productId: string;
@@ -80,10 +81,11 @@ export class ProductUnitManagementService {
           status: 'available'
         };
 
-        // Create the unit
+        // Create the unit with store_id
+        const unitWithStore = await withStoreId(unitData);
         const { data: unit, error } = await supabase
           .from('product_units')
-          .insert(unitData)
+          .insert(unitWithStore)
           .select()
           .single();
 

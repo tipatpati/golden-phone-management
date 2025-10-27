@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { debugLog, debugError } from "@/utils/debug";
+import { withStoreId } from './stores/storeHelpers';
 
 export type Product = {
   id: string;
@@ -146,9 +147,10 @@ export const supabaseProductApi = {
   async createProduct(productData: CreateProductData) {
     debugLog('Creating product:', productData);
 
+    const productWithStore = await withStoreId(productData);
     const { data, error } = await supabase
       .from('products')
-      .insert([productData])
+      .insert([productWithStore])
       .select(`
         *,
         category:categories(id, name)

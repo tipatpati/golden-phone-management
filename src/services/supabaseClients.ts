@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { withStoreId } from './stores/storeHelpers';
 
 export type Client = {
   id: string;
@@ -67,9 +68,10 @@ export const supabaseClientApi = {
   async createClient(clientData: CreateClientData) {
     console.log('Creating client:', clientData);
     
+    const clientWithStore = await withStoreId(clientData);
     const { data, error } = await supabase
       .from('clients')
-      .insert([clientData])
+      .insert([clientWithStore])
       .select('*')
       .single();
     

@@ -24,8 +24,8 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       requiredPermissions: ['inventory'] // Salespeople shouldn't access inventory
     },
     {
-      title: "Crea Garentille",
-      description: "Inizia una nuova garentille prodotto",
+      title: "Crea Garanzia",
+      description: "Inizia una nuova garanzia prodotto",
       icon: ShoppingCart,
       href: "/sales",
       module: "sales",

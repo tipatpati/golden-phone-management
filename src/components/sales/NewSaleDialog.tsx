@@ -41,12 +41,12 @@ export function NewSaleDialog({ onSuccess }: NewSaleDialogProps = {}) {
       <DialogTrigger asChild>
         <Button className="w-full lg:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg font-bold py-6 px-8 min-h-[60px]">
           <Plus className="mr-3 h-7 w-7" />
-          NUOVA GARENTILLE
+          NUOVA GARANZIA
         </Button>
       </DialogTrigger>
       <DialogContent size="xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Crea Nuova Garentille</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Crea Nuova Garanzia</DialogTitle>
         </DialogHeader>
         
         <SaleFormContainer

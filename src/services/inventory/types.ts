@@ -30,6 +30,7 @@ export interface Product extends BaseEntity {
   serial_numbers?: string[];
   barcode?: string;
   supplier?: string;
+  store_id?: string; // Optional in TypeScript, but required by database
   // Support both field names for compatibility
   units?: ProductUnit[];
   product_units?: ProductUnit[];
@@ -53,6 +54,7 @@ export interface ProductUnit extends BaseEntity {
   purchase_date?: string;
   supplier_id?: string;
   status?: 'available' | 'sold' | 'reserved' | 'damaged' | string; // Allow string for database compatibility
+  store_id?: string; // Optional in TypeScript, but required by database
 }
 
 export interface Category {

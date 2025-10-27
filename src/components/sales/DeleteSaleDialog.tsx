@@ -36,10 +36,10 @@ export function DeleteSaleDialog({ sale }: DeleteSaleDialogProps) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Elimina Garentille</AlertDialogTitle>
+          <AlertDialogTitle>Elimina Garanzia</AlertDialogTitle>
           <AlertDialogDescription>
-            Sei sicuro di voler eliminare la garentille {sale.sale_number}? Questa azione non può essere annullata.
-            Questo rimuoverà permanentemente la registrazione della garentille e tutti gli elementi associati.
+            Sei sicuro di voler eliminare la garanzia {sale.sale_number}? Questa azione non può essere annullata.
+            Questo rimuoverà permanentemente la registrazione della garanzia e tutti gli elementi associati.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -49,7 +49,7 @@ export function DeleteSaleDialog({ sale }: DeleteSaleDialogProps) {
             disabled={deleteSale.isPending}
             className="bg-red-600 hover:bg-red-700"
           >
-            {deleteSale.isPending ? "Eliminando..." : "Elimina Garentille"}
+            {deleteSale.isPending ? "Eliminando..." : "Elimina Garanzia"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

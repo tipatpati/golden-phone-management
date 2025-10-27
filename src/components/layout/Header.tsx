@@ -49,9 +49,9 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
         </div>
       </div>
 
-      {/* Store Selector - Shows when user has multiple stores */}
-      <div className="hidden md:block ml-3 sm:ml-4">
-        <StoreSelector />
+      {/* Store Selector - Only visible for users with multiple stores */}
+      <div className="ml-3 sm:ml-4">
+        <StoreSelector compact />
       </div>
 
       {/* Theme Toggle */}

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { eventBus, EVENT_TYPES } from '@/services/core/EventBus';
 import { logger } from '@/utils/logger';
+import { withStoreIdBatch } from '../stores/storeHelpers';
 
 /**
  * Service to handle synchronization between supplier transactions and inventory
@@ -523,9 +524,11 @@ export class SupplierInventoryIntegrationService {
         max_price: u.max_price
       })));
 
+      // Add store_id to all units before inserting
+      const unitsWithStore = await withStoreIdBatch(unitsToCreate);
       const { data: createdUnits, error } = await supabase
         .from('product_units')
-        .insert(unitsToCreate)
+        .insert(unitsWithStore)
         .select();
 
       if (error) {

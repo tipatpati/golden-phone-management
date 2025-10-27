@@ -170,34 +170,26 @@ export function SaleReceiptDialog({
     try {
       const htmlContent = capturePreviewHTML();
       
-      // Use the unified capture-and-convert service
-      const { data, error } = await supabase.functions.invoke('capture-and-convert', {
-        body: {
-          html: htmlContent,
-          type: 'pdf',
-          filename: `ricevuta-${sale.sale_number}`,
-          sale_id: sale.id
-        }
-      });
-
-      if (error) {
-        throw error;
+      // Create print window for PDF generation
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups to save as PDF');
+        return;
       }
 
-      // Create download link
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ricevuta-${sale.sale_number}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      
+      // Wait for content to load, then open print dialog
+      // Users can select "Save as PDF" from the print dialog
+      setTimeout(() => {
+        printWindow.print();
+      }, 2000);
 
     } catch (error) {
-      console.error('PDF download failed:', error);
-      alert('PDF download failed. Please try again.');
+      console.error('PDF generation failed:', error);
+      alert('PDF generation failed. Please try again.');
     }
   };
 
