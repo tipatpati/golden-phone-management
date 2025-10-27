@@ -17,11 +17,20 @@ interface StoreSelectorProps {
 }
 
 export function StoreSelector({ className, compact = false }: StoreSelectorProps) {
-  const { currentStore, userStores, setCurrentStore, isLoading } = useStore();
+  const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
   const hasMultipleStores = useHasMultipleStores();
 
-  // Don't show selector if user only has access to one store
-  if (!hasMultipleStores && !isLoading) {
+  // For super admin, always show the selector dropdown (even with one store) so they can see which store they're viewing
+  // For regular users, only show dropdown if they have multiple stores
+  const showDropdown = isSuperAdmin || hasMultipleStores;
+
+  // Don't show anything if user has no stores
+  if (userStores.length === 0 && !isLoading) {
+    return null;
+  }
+
+  // For regular users with only one store, show static text
+  if (!showDropdown && !isLoading) {
     if (compact) return null;
 
     return (

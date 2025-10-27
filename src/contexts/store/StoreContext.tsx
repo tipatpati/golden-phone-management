@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { useUserStores, useSetCurrentStore, type Store } from '@/services/stores';
+import { useUserStores, useActiveStores, useSetCurrentStore, type Store } from '@/services/stores';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
 
@@ -9,6 +9,7 @@ interface StoreContextType {
   userStores: Store[];
   isLoading: boolean;
   error: Error | null;
+  isSuperAdmin: boolean;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -18,37 +19,66 @@ interface StoreProviderProps {
 }
 
 export function StoreProvider({ children }: StoreProviderProps) {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, userRole } = useAuth();
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
 
-  // Fetch user's assigned stores
-  const { data: userStoresData, isLoading, error } = useUserStores();
+  // Check if user is super admin
+  const isSuperAdmin = userRole === 'super_admin';
+
+  // Fetch stores based on role
+  // Super admins see all stores, regular users see only assigned stores
+  const { data: userStoresData, isLoading: userStoresLoading, error: userStoresError } = useUserStores();
+  const { data: allStoresData, isLoading: allStoresLoading, error: allStoresError } = useActiveStores();
+
   const setCurrentStoreMutation = useSetCurrentStore();
 
-  // Extract stores from user_stores data
+  // Determine which stores to use
+  const isLoading = isSuperAdmin ? allStoresLoading : userStoresLoading;
+  const error = isSuperAdmin ? allStoresError : userStoresError;
+
+  // Extract stores based on role
   const userStores = useMemo(() => {
-    if (!userStoresData) return [];
-    return userStoresData
-      .filter(us => us.store)
-      .map(us => us.store!)
-      .filter(store => store.is_active); // Only active stores
-  }, [userStoresData]);
+    if (isSuperAdmin) {
+      // Super admin sees all active stores
+      logger.debug('Super admin mode: showing all stores', { count: allStoresData?.length }, 'StoreContext');
+      return allStoresData || [];
+    } else {
+      // Regular users see only assigned stores
+      if (!userStoresData) return [];
+      const stores = userStoresData
+        .filter(us => us.store)
+        .map(us => us.store!)
+        .filter(store => store.is_active);
+      logger.debug('Regular user mode: showing assigned stores', { count: stores.length }, 'StoreContext');
+      return stores;
+    }
+  }, [isSuperAdmin, allStoresData, userStoresData]);
 
   // Set default store on mount
   useEffect(() => {
-    if (!isLoggedIn || !userStoresData || currentStore) return;
+    if (!isLoggedIn || currentStore) return;
 
-    // Find default store
-    const defaultUserStore = userStoresData.find(us => us.is_default);
-    if (defaultUserStore?.store) {
-      logger.debug('Setting default store', { store: defaultUserStore.store.name }, 'StoreContext');
-      setCurrentStoreState(defaultUserStore.store);
-    } else if (userStoresData.length > 0 && userStoresData[0].store) {
-      // Fallback to first store if no default
-      logger.debug('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
-      setCurrentStoreState(userStoresData[0].store);
+    if (isSuperAdmin) {
+      // For super admin, use first available store
+      if (allStoresData && allStoresData.length > 0) {
+        logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
+        setCurrentStoreState(allStoresData[0]);
+      }
+    } else {
+      // For regular users, find their default assigned store
+      if (!userStoresData) return;
+
+      const defaultUserStore = userStoresData.find(us => us.is_default);
+      if (defaultUserStore?.store) {
+        logger.debug('Setting default store', { store: defaultUserStore.store.name }, 'StoreContext');
+        setCurrentStoreState(defaultUserStore.store);
+      } else if (userStoresData.length > 0 && userStoresData[0].store) {
+        // Fallback to first store if no default
+        logger.debug('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
+        setCurrentStoreState(userStoresData[0].store);
+      }
     }
-  }, [userStoresData, isLoggedIn, currentStore]);
+  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore]);
 
   // Handle store switching
   const handleSetCurrentStore = async (store: Store) => {
@@ -74,6 +104,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
     userStores,
     isLoading,
     error: error as Error | null,
+    isSuperAdmin,
   };
 
   return (
