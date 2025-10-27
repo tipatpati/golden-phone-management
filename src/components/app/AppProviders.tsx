@@ -30,15 +30,15 @@ export function AppProviders({ children, includeAuth = true }: AppProvidersProps
   logger.debug('AppProviders rendering', { includeAuth }, 'AppProviders');
   
   try {
-  const content = includeAuth ? (
-    <AuthProvider>
-      <StoreProvider>
-        {children}
-      </StoreProvider>
-    </AuthProvider>
-  ) : (
-    children
-  );
+    const content = includeAuth ? (
+      <AuthProvider>
+        <StoreProvider>
+          {children}
+        </StoreProvider>
+      </AuthProvider>
+    ) : (
+      children
+    );
 
     return (
       <BrowserRouter>
