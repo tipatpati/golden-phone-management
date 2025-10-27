@@ -69,6 +69,7 @@ export interface Category {
 // ============================================
 
 export interface ProductFormData {
+  store_id?: string;
   brand: string;
   model: string;
   year?: number;
