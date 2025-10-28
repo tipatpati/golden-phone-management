@@ -1,7 +1,7 @@
 import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package, Headphones, Wrench } from "lucide-react";
+import { Smartphone, Shield, Tablet, Laptop, Cable, Plug, Battery, Usb, Package, Headphones } from "lucide-react";
 import { useCategories } from "@/services/inventory/InventoryReactQueryService";
 
 interface Category {
@@ -32,7 +32,6 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   "Alimentatore": Plug,
   "Caricatore": Battery,
   "Power Charger": Usb,
-  "Repairs": Wrench,
 };
 
 // Color mapping for categories
@@ -43,12 +42,11 @@ const categoryColors: Record<string, string> = {
   "Tablet": "bg-warning hover:bg-warning/90",
   "Computers": "bg-info hover:bg-info/90",
   "Laptop": "bg-info hover:bg-info/90",
-  "Accessories": "bg-destructive hover:bg-destructive/90", 
+  "Accessories": "bg-destructive hover:bg-destructive/90",
   "Audio": "bg-accent hover:bg-accent/90",
   "Electronics": "bg-primary hover:bg-primary/90", // Better visibility
   "Cable": "bg-success hover:bg-success/90",
   "Charger": "bg-warning hover:bg-warning/90",
-  "Repairs": "bg-destructive hover:bg-destructive/90",
 };
 
 // Display name mapping to standardize labels shown in UI
