@@ -1713,6 +1713,32 @@ export type Database = {
         }
         Relationships: []
       }
+      user_session_preferences: {
+        Row: {
+          last_selected_store_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          last_selected_store_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          last_selected_store_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_session_preferences_last_selected_store_id_fkey"
+            columns: ["last_selected_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_stores: {
         Row: {
           created_at: string

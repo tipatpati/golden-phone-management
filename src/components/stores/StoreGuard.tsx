@@ -37,29 +37,40 @@ export function StoreGuard({ children }: StoreGuardProps) {
     );
   }
 
-  // Show error if there was a problem loading stores
+  // Show error with actionable guidance
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
+        <Alert variant="destructive" className="max-w-2xl">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Errore di Caricamento</AlertTitle>
-          <AlertDescription className="space-y-2">
-            <p>
-              Si è verificato un errore durante il caricamento dei negozi.
-            </p>
-            <p className="text-xs font-mono">
-              {error.message || 'Errore sconosciuto'}
-            </p>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              size="sm"
-              className="w-full mt-2"
-            >
-              <RefreshCw className="h-3 w-3 mr-2" />
-              Ricarica la Pagina
-            </Button>
+          <AlertTitle>Errore Inizializzazione Negozio</AlertTitle>
+          <AlertDescription className="space-y-4">
+            <p>Il contesto del negozio non può essere inizializzato. Possibili cause:</p>
+            <ul className="list-disc ml-4 space-y-1 text-sm">
+              <li>Non sei assegnato a nessun negozio</li>
+              <li>Problemi di connettività di rete</li>
+              <li>Problemi di configurazione del database</li>
+            </ul>
+            <div className="text-xs bg-surface-container p-2 rounded font-mono">
+              <strong>Dettagli errore:</strong> {error.message}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Ricarica Pagina
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/'}
+              >
+                Torna alla Home
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       </div>
@@ -92,27 +103,38 @@ export function StoreGuard({ children }: StoreGuardProps) {
     );
   }
 
-  // Show error if store context is not initialized (currentStore is null)
+  // Show error if store context is not initialized
   if (!currentStore) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
+        <Alert variant="destructive" className="max-w-2xl">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Contesto Negozio Non Impostato</AlertTitle>
-          <AlertDescription className="space-y-2">
-            <p>
-              Il contesto del negozio non è stato inizializzato. Per favore
-              ricarica la pagina.
-            </p>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              size="sm"
-              className="w-full mt-2"
-            >
-              <RefreshCw className="h-3 w-3 mr-2" />
-              Ricarica la Pagina
-            </Button>
+          <AlertDescription className="space-y-4">
+            <p>Il sistema non ha potuto determinare il negozio attivo.</p>
+            <p className="text-sm">Questo può accadere se:</p>
+            <ul className="list-disc ml-4 space-y-1 text-sm">
+              <li>La sessione è stata persa o è scaduta</li>
+              <li>Non hai i permessi necessari per accedere ai negozi</li>
+              <li>C'è un problema temporaneo con il database</li>
+            </ul>
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Ricarica Pagina
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/'}
+              >
+                Torna alla Home
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       </div>
