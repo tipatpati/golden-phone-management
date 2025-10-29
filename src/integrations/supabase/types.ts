@@ -835,6 +835,7 @@ export type Database = {
           model: string
           price: number
           serial_numbers: string[] | null
+          status: string
           stock: number
           store_id: string
           supplier: string | null
@@ -855,6 +856,7 @@ export type Database = {
           model: string
           price: number
           serial_numbers?: string[] | null
+          status?: string
           stock?: number
           store_id: string
           supplier?: string | null
@@ -875,6 +877,7 @@ export type Database = {
           model?: string
           price?: number
           serial_numbers?: string[] | null
+          status?: string
           stock?: number
           store_id?: string
           supplier?: string | null

@@ -337,7 +337,7 @@ class UniversalProductServiceClass {
     productId: string,
     options: UniversalProductOptions
   ): Promise<{ success: boolean; errors: string[] }> {
-    console.log(`🗑️ UNIVERSAL: Deleting product from ${options.source}:`, productId);
+    console.log(`🗑️ UNIVERSAL: Soft deleting product from ${options.source}:`, productId);
     
     try {
       // Check if product exists first
@@ -355,27 +355,11 @@ class UniversalProductServiceClass {
         throw new Error('Product not found');
       }
 
-      // Step 1: Delete all product units
-      const { error: unitsError } = await supabase
-        .from('product_units')
-        .delete()
-        .eq('product_id', productId);
-
-      if (unitsError) {
-        console.error('Error deleting units:', unitsError);
-        throw new Error(`Failed to delete product units: ${unitsError.message}`);
-      }
-
-      // Step 2: Delete product recommendations (silently ignore errors)
-      await supabase
-        .from('product_recommendations')
-        .delete()
-        .or(`product_id.eq.${productId},related_product_id.eq.${productId}`);
-
-      // Step 3: Delete the product
+      // Soft delete: Mark product as inactive instead of deleting
+      // This preserves sales history and referential integrity
       const { error: productError } = await supabase
         .from('products')
-        .delete()
+        .update({ status: 'inactive' })
         .eq('id', productId);
 
       if (productError) {
