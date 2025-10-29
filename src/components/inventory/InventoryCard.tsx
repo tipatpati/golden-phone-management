@@ -210,7 +210,6 @@ export function InventoryCard({
               e.stopPropagation();
               onEdit(product);
             }}
-            disabled={product.has_serial && product.stock === 0}
           >
             <Edit className="h-4 w-4" />
           </Button>

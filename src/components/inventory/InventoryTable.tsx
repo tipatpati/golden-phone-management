@@ -492,7 +492,6 @@ export const InventoryTable = React.memo(function InventoryTable({
                           e.stopPropagation();
                           onEdit(product);
                         }}
-                        disabled={product.has_serial && product.stock === 0}
                         className="h-8 w-8 p-0"
                         aria-label={`Edit ${product.brand} ${product.model}`}
                       >
