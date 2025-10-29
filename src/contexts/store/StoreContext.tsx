@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { useUserStores, useActiveStores, useSetCurrentStore, type Store } from '@/services/stores';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface StoreContextType {
   currentStore: Store | null;
@@ -58,9 +59,9 @@ export function StoreProvider({ children }: StoreProviderProps) {
   useEffect(() => {
     if (!isLoggedIn || currentStore) return;
 
-    const setInitialStore = async (store: Store) => {
+    const setInitialStore = async (store: Store, retryCount = 0) => {
       try {
-        logger.debug('Setting initial default store', { store: store.name }, 'StoreContext');
+        logger.debug('Setting initial default store', { store: store.name, retryCount }, 'StoreContext');
 
         // IMPORTANT: Call backend to set session store
         await setCurrentStoreMutation.mutateAsync(store.id);
@@ -68,9 +69,25 @@ export function StoreProvider({ children }: StoreProviderProps) {
         // Update local state
         setCurrentStoreState(store);
 
-        logger.info('Initial store set successfully', { store: store.name }, 'StoreContext');
+        logger.info('✅ Initial store set successfully', { store: store.name }, 'StoreContext');
+        toast.success(`Contesto negozio impostato: ${store.name}`);
       } catch (error) {
-        logger.error('Failed to set initial store', { error }, 'StoreContext');
+        logger.error('❌ Failed to set initial store', { error, retryCount }, 'StoreContext');
+        
+        // Retry logic with exponential backoff
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 1000;
+          logger.debug(`Retrying in ${delay}ms...`, { retryCount }, 'StoreContext');
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return setInitialStore(store, retryCount + 1);
+        }
+        
+        // Show user-facing error after all retries
+        toast.error(
+          'Impossibile inizializzare il contesto del negozio. Ricarica la pagina.',
+          { duration: 10000 }
+        );
       }
     };
 
@@ -125,9 +142,11 @@ export function StoreProvider({ children }: StoreProviderProps) {
       // Update local state
       setCurrentStoreState(store);
 
-      logger.info('Store switched successfully', { store: store.name }, 'StoreContext');
+      logger.info('✅ Store switched successfully', { store: store.name }, 'StoreContext');
+      toast.success(`Cambiato a negozio: ${store.name}`);
     } catch (error) {
-      logger.error('Failed to switch store', { error }, 'StoreContext');
+      logger.error('❌ Failed to switch store', { error }, 'StoreContext');
+      toast.error('Impossibile cambiare negozio. Riprova.');
       throw error;
     }
   };
