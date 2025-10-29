@@ -301,6 +301,7 @@ export function UnitEntryForm({
                   }}
                   placeholder="IMEI or Serial Number"
                   className="text-sm h-10 font-mono"
+                  maxLength={15}
                 />
               </div>
 

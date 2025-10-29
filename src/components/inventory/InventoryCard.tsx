@@ -171,7 +171,7 @@ export function InventoryCard({
               <div className="flex items-center gap-1.5 text-green-600">
                 <Package className="h-3.5 w-3.5" />
                 <span className="text-sm font-medium">
-                  {product.serial_numbers?.length || 0} unit{product.serial_numbers?.length !== 1 ? 's' : ''}
+                  {product.stock || 0} unit{product.stock !== 1 ? 's' : ''}
                 </span>
               </div>
             </div>
@@ -210,7 +210,6 @@ export function InventoryCard({
               e.stopPropagation();
               onEdit(product);
             }}
-            disabled={product.has_serial && product.stock === 0}
           >
             <Edit className="h-4 w-4" />
           </Button>

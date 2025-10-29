@@ -238,28 +238,30 @@ export function InventoryFilters({
         <div className="flex w-full sm:w-auto items-center gap-2">
           {canModifyProducts && onAddProduct && (
             <Button onClick={onAddProduct} variant="filled" className="flex items-center gap-2 h-10 flex-1 sm:flex-none">
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">Aggiungi</span>
               <span className="sm:hidden">Nuovo Prodotto</span>
             </Button>
           )}
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Button 
               variant={viewMode === "grid" ? "filled" : "outlined"} 
               size="icon"
               onClick={() => onViewModeChange("grid")}
-              className="h-10 w-10"
+              className="h-10 w-10 shrink-0"
+              aria-label="Grid view"
             >
-              <Grid className="h-4 w-4" />
+              <Grid className="h-4 w-4 shrink-0" />
             </Button>
             <Button 
               variant={viewMode === "list" ? "filled" : "outlined"} 
               size="icon"
               onClick={() => onViewModeChange("list")}
-              className="h-10 w-10"
+              className="h-10 w-10 shrink-0"
+              aria-label="List view"
             >
-              <List className="h-4 w-4" />
+              <List className="h-4 w-4 shrink-0" />
             </Button>
           </div>
         </div>

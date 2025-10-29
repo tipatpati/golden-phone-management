@@ -18,8 +18,10 @@ import {
   Calendar,
   UserCheck,
   Clock,
-  Store
+  Store,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface WelcomeScreenProps {
   userRole: UserRole;
@@ -38,10 +40,20 @@ interface ModuleButton {
 
 export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   
   logger.debug('WelcomeScreen Debug', { userRole, availableRoles: Object.keys(ROLE_CONFIGS) }, 'WelcomeScreen');
   
   const config = ROLE_CONFIGS[userRole];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      logger.error('Logout failed', error, 'WelcomeScreen');
+    }
+  };
 
   if (!config) {
     logger.error('No config found for role', { userRole }, 'WelcomeScreen');
@@ -187,8 +199,18 @@ export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
                       <span className="text-sm text-white font-semibold pl-3.5 drop-shadow-md">{username}</span>
                     )}
                   </div>
-                  <div className="px-3 py-1.5 bg-white/25 hover:bg-white/30 rounded-full text-xs font-black text-white backdrop-blur-sm border border-white/30 shadow-inner transition-colors duration-200">
-                    ADMIN
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1.5 bg-white/25 hover:bg-white/30 rounded-full text-xs font-black text-white backdrop-blur-sm border border-white/30 shadow-inner transition-colors duration-200">
+                      ADMIN
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-sm border border-white/30 shadow-inner transition-all duration-200 hover:scale-105 group"
+                      title="Cambia account"
+                      aria-label="Logout and change account"
+                    >
+                      <LogOut className="h-3.5 w-3.5 group-hover:rotate-12 transition-transform duration-200" />
+                    </button>
                   </div>
                 </div>
                 

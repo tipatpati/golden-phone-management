@@ -1713,6 +1713,32 @@ export type Database = {
         }
         Relationships: []
       }
+      user_session_preferences: {
+        Row: {
+          last_selected_store_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          last_selected_store_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          last_selected_store_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_session_preferences_last_selected_store_id_fkey"
+            columns: ["last_selected_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_stores: {
         Row: {
           created_at: string
@@ -1893,10 +1919,9 @@ export type Database = {
       }
       cleanup_invalid_auth_state: { Args: never; Returns: undefined }
       cleanup_old_security_logs: { Args: never; Returns: undefined }
-      create_sale_transaction: {
-        Args: { p_sale_data: Json; p_sale_items: Json[] }
-        Returns: Json
-      }
+      create_sale_transaction:
+        | { Args: { p_sale_data: Json; p_sale_items: Json[] }; Returns: Json }
+        | { Args: { sale_data: Json; sale_items_data: Json }; Returns: Json }
       debug_user_store_access: { Args: never; Returns: Json }
       detect_concurrent_sessions: {
         Args: { user_uuid: string }

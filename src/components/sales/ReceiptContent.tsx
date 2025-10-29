@@ -54,6 +54,14 @@ export function ReceiptContent({
         fontSize: '10.4px',
         marginBottom: '2px'
       }}>{receiptData.documentType}</div>
+        {receiptData.saleInfo.clientName && (
+          <div style={{
+            fontSize: '10px',
+            marginTop: '4px'
+          }}>
+            Cliente: {receiptData.saleInfo.clientName}
+          </div>
+        )}
       </div>
 
       {/* All Product Items */}
