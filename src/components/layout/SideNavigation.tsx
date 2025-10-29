@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutGrid, 
-  Users, 
+import {
+  LayoutGrid,
+  Users,
   ShoppingCart,
-  PackageSearch, 
-  ClipboardList, 
+  PackageSearch,
+  ClipboardList,
   BarChart4,
   Settings,
   Menu,
@@ -24,6 +24,7 @@ import { UserRole } from "@/types/roles";
 import { Logo } from "@/components/shared/Logo";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
+import { StoreSelector } from "@/components/stores/StoreSelector";
 
 type NavItem = {
   title: string;
@@ -181,6 +182,11 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
               })}
             </ul>
           </nav>
+
+          {/* Store selector for super admin - auto-hidden for regular users */}
+          <div className="px-4 pb-3">
+            <StoreSelector />
+          </div>
 
           <div className="border-t border-border p-4">  {/* 16dp */}
             <div className="flex items-center justify-between">

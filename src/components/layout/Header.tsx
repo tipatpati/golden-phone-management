@@ -49,7 +49,7 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
         </div>
       </div>
 
-      {/* Store Selector - Only visible for users with multiple stores */}
+      {/* Store Selector - Only visible for super admins */}
       <div className="ml-3 sm:ml-4">
         <StoreSelector compact />
       </div>

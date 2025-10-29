@@ -18,27 +18,16 @@ interface StoreSelectorProps {
 
 export function StoreSelector({ className, compact = false }: StoreSelectorProps) {
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
-  const hasMultipleStores = useHasMultipleStores();
 
-  // For super admin, always show the selector dropdown (even with one store) so they can see which store they're viewing
-  // For regular users, only show dropdown if they have multiple stores
-  const showDropdown = isSuperAdmin || hasMultipleStores;
+  // IMPORTANT: Only super admins get a dropdown selector
+  // Regular users (salespeople, etc.) have their store auto-detected - no UI needed
+  if (!isSuperAdmin) {
+    return null;
+  }
 
   // Don't show anything if user has no stores
   if (userStores.length === 0 && !isLoading) {
     return null;
-  }
-
-  // For regular users with only one store, show static text
-  if (!showDropdown && !isLoading) {
-    if (compact) return null;
-
-    return (
-      <div className={cn('flex items-center gap-2 px-3 py-2 text-sm', className)}>
-        <Store className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">{currentStore?.name || 'No Store'}</span>
-      </div>
-    );
   }
 
   const handleStoreChange = async (storeId: string) => {
