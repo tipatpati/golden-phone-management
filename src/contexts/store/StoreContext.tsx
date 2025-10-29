@@ -74,11 +74,30 @@ export function StoreProvider({ children }: StoreProviderProps) {
       }
     };
 
+    const assignAndSetStore = async (store: Store) => {
+      try {
+        // Import the helper at runtime to avoid circular dependencies
+        const { assignUserToStore } = await import('@/services/stores/storeHelpers');
+        await assignUserToStore(store.id);
+        setCurrentStoreState(store);
+        logger.info('User assigned and store set', { store: store.name }, 'StoreContext');
+      } catch (error) {
+        logger.error('Failed to assign user to store', { error }, 'StoreContext');
+      }
+    };
+
     if (isSuperAdmin) {
       // For super admin, use first available store
       if (allStoresData && allStoresData.length > 0) {
         logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
-        setInitialStore(allStoresData[0]);
+        
+        // Check if user has store assignments
+        if (!userStoresData || userStoresData.length === 0) {
+          logger.debug('Super admin has no store assignments, creating one', {}, 'StoreContext');
+          assignAndSetStore(allStoresData[0]);
+        } else {
+          setInitialStore(allStoresData[0]);
+        }
       }
     } else {
       // For regular users, find their default assigned store

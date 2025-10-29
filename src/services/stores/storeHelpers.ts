@@ -91,3 +91,37 @@ export async function checkStoreAccess(storeId: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Assign current user to a store and set it as default
+ */
+export async function assignUserToStore(storeId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No authenticated user');
+
+  // Unset default for all other stores
+  await supabase
+    .from('user_stores')
+    .update({ is_default: false })
+    .eq('user_id', user.id);
+
+  // Insert or update the store assignment
+  const { error } = await supabase
+    .from('user_stores')
+    .upsert({
+      user_id: user.id,
+      store_id: storeId,
+      is_default: true
+    }, {
+      onConflict: 'user_id,store_id'
+    });
+
+  if (error) throw error;
+
+  // Set current store in session
+  await supabase.rpc('set_user_current_store', {
+    target_store_id: storeId
+  });
+
+  logger.info('User assigned to store', { storeId }, 'storeHelpers');
+}
