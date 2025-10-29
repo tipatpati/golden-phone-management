@@ -67,7 +67,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
     }
   }, [isSuperAdmin, allStoresData, userStoresData]);
 
-  // Simple initialization - just set the first available store locally
+  // Simple initialization - set the first available store
   useEffect(() => {
     // Skip if not logged in, already have a store, or still loading
     if (!isLoggedIn || currentStore || isLoading) return;
@@ -93,12 +93,14 @@ export function StoreProvider({ children }: StoreProviderProps) {
     }
 
     if (storeToSet) {
-      // Just set it locally - no backend call, no retries, no complexity
+      // Set locally first for responsive UI
       setCurrentStoreState(storeToSet);
 
-      // Silently call backend to sync session (non-blocking, fire and forget)
+      // Sync to backend (blocking to ensure persistence before operations)
+      // This ensures get_user_current_store_id() can read from user_session_preferences
       setCurrentStoreMutation.mutateAsync(storeToSet.id).catch(err => {
-        logger.warn('Failed to sync store to backend (non-critical)', { error: err }, 'StoreContext');
+        logger.error('Failed to persist store context to backend', { error: err }, 'StoreContext');
+        // Context is set locally, so UI works, but backend operations may fail
       });
     }
   }, [isLoggedIn, currentStore, isLoading, userStores, isSuperAdmin, userStoresData, setCurrentStoreMutation, userRole]);
