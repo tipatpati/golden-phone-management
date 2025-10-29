@@ -37,13 +37,16 @@ export async function withStoreId<T extends Record<string, any>>(
   if ('store_id' in data && data.store_id) {
     return data as T & { store_id: string };
   }
-  
+
   const storeId = await getCurrentStoreId();
-  
+
   if (!storeId) {
-    throw new Error('No store assigned to current user. Please contact administrator.');
+    throw new Error(
+      'No store context set. Please select a store from the header menu before performing this operation. ' +
+      'If you don\'t see a store selector, contact your administrator to assign you to a store.'
+    );
   }
-  
+
   return {
     ...data,
     store_id: storeId,
