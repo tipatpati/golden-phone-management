@@ -19,7 +19,19 @@ export class SalesInventoryIntegrationService {
       .from('products' as any)
       .select('id, has_serial, stock, min_price, max_price')
       .in('id', productIds);
-    if (prodErr) throw new Error(`Impossibile leggere i prodotti: ${prodErr.message}`);
+    
+    if (prodErr) {
+      // Check if error is due to RLS (empty result when store context not set)
+      if (prodErr.code === 'PGRST116' || prodErr.message.includes('no rows')) {
+        throw new Error('Impossibile validare: contesto negozio non inizializzato. Ricarica la pagina.');
+      }
+      throw new Error(`Impossibile leggere i prodotti: ${prodErr.message}`);
+    }
+
+    // If no products returned but we expected some, it's likely an RLS issue
+    if (!products || products.length === 0) {
+      throw new Error('Nessun prodotto trovato. Verifica che il contesto negozio sia impostato correttamente.');
+    }
 
     const productsMap = new Map(((products as any[]) || []).map((p: any) => [p.id, p]));
 

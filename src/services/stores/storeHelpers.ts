@@ -37,13 +37,16 @@ export async function withStoreId<T extends Record<string, any>>(
   if ('store_id' in data && data.store_id) {
     return data as T & { store_id: string };
   }
-  
+
   const storeId = await getCurrentStoreId();
-  
+
   if (!storeId) {
-    throw new Error('No store assigned to current user. Please contact administrator.');
+    throw new Error(
+      'No store context set. Please select a store from the header menu before performing this operation. ' +
+      'If you don\'t see a store selector, contact your administrator to assign you to a store.'
+    );
   }
-  
+
   return {
     ...data,
     store_id: storeId,
@@ -87,4 +90,38 @@ export async function checkStoreAccess(storeId: string): Promise<boolean> {
     logger.error('Error checking store access', { error, storeId }, 'storeHelpers');
     return false;
   }
+}
+
+/**
+ * Assign current user to a store and set it as default
+ */
+export async function assignUserToStore(storeId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No authenticated user');
+
+  // Unset default for all other stores
+  await supabase
+    .from('user_stores')
+    .update({ is_default: false })
+    .eq('user_id', user.id);
+
+  // Insert or update the store assignment
+  const { error } = await supabase
+    .from('user_stores')
+    .upsert({
+      user_id: user.id,
+      store_id: storeId,
+      is_default: true
+    }, {
+      onConflict: 'user_id,store_id'
+    });
+
+  if (error) throw error;
+
+  // Set current store in session
+  await supabase.rpc('set_user_current_store', {
+    target_store_id: storeId
+  });
+
+  logger.info('User assigned to store', { storeId }, 'storeHelpers');
 }

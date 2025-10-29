@@ -14,7 +14,6 @@ export const CATEGORY_ICONS: Record<string, string> = {
   'Computers': '💻',
   'Smartphones': '📱',
   'Accessories': '🎧',
-  'Repairs': '🔧',
   'Electronics': '⚡',
   'Audio': '🔊',
   'Spare Parts': '🔩',

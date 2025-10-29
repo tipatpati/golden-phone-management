@@ -28,9 +28,10 @@ class LightweightInventoryService {
       .from('products')
       .select(`
         *,
-        category:categories!inner(id, name),
+        category:categories(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
-      `);
+      `)
+      .eq('status', 'active'); // Only show active products
 
     // Note: Search is handled client-side to include unit serial/barcode matching
 
@@ -181,9 +182,10 @@ class LightweightInventoryService {
       .from('products')
       .select(`
         *,
-        category:categories!inner(id, name),
+        category:categories(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
-      `, { count: 'exact' });
+      `, { count: 'exact' })
+      .eq('status', 'active'); // Only show active products
 
     // Apply filters (same as non-paginated version)
     if (categoryId !== 'all') {
@@ -285,7 +287,7 @@ class LightweightInventoryService {
       .insert(productData)
       .select(`
         *,
-        category:categories!inner(id, name),
+        category:categories(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
@@ -295,13 +297,13 @@ class LightweightInventoryService {
   }
 
   async updateProduct(id: string, updates: any): Promise<Product> {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('products')
       .update(updates)
       .eq('id', id)
       .select(`
         *,
-        category:categories!inner(id, name),
+        category:categories(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
       `)
       .single();
@@ -311,9 +313,10 @@ class LightweightInventoryService {
   }
 
   async deleteProduct(id: string): Promise<void> {
+    // Soft delete: mark as inactive instead of deleting
     const { error } = await supabase
       .from('products')
-      .delete()
+      .update({ status: 'inactive' })
       .eq('id', id);
 
     if (error) throw error;

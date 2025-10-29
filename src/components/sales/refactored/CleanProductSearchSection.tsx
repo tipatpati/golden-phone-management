@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Search, Plus, Package } from 'lucide-react';
+import { Search, Plus, Package, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SalesProductService } from '@/services/sales/SalesProductService';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStore } from '@/contexts/store/StoreContext';
 import { toast } from 'sonner';
 import type { Product } from '@/services/inventory/types';
 
@@ -15,6 +17,10 @@ export function CleanProductSearchSection() {
   const [isLoading, setIsLoading] = useState(false);
   const { addItem, state } = useSaleCreation();
   const { user } = useAuth();
+  const { currentStore } = useStore();
+
+  // Block product search if store context is not set
+  const isStoreContextReady = !!currentStore;
 
   const performSearch = async (query: string) => {
     if (query.length < 2) {
@@ -129,6 +135,24 @@ export function CleanProductSearchSection() {
         <h2 className="text-lg font-semibold text-on-surface">Aggiungi Prodotti</h2>
       </div>
 
+      {/* Store Context Warning */}
+      {!isStoreContextReady && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            ⚠️ Contesto negozio non inizializzato. Impossibile cercare prodotti.
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.reload()}
+              className="ml-4"
+            >
+              Ricarica Pagina
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Clean Search Input */}
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -137,7 +161,8 @@ export function CleanProductSearchSection() {
           placeholder="Cerca prodotti per brand, modello, codice o ultime 4 cifre IMEI..."
           value={searchTerm}
           onChange={(e) => handleSearchInput(e.target.value)}
-          className="pl-10 h-12 text-base bg-surface-container border-border/50 focus:border-primary"
+          disabled={!isStoreContextReady}
+          className="pl-10 h-12 text-base bg-surface-container border-border/50 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 

@@ -4,6 +4,7 @@ import type { Sale, CreateSaleData } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesInventoryIntegrationService } from './SalesInventoryIntegrationService';
 import { withStoreId } from '../stores/storeHelpers';
+import { logger } from '@/utils/logger';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {
@@ -104,9 +105,35 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   }
 
   static async createSale(saleData: CreateSaleData): Promise<Sale> {
+    // Use a database transaction via RPC to ensure atomicity
     try {
-      // Pre-validate sale against inventory to ensure consistency
+      // Phase 3: Pre-flight store context verification
+      logger.info('🔍 Verifying store context before sale creation', {}, 'SalesApiService');
+      
+      const { data: contextStoreId, error: contextError } = await supabase
+        .rpc('get_user_current_store_id');
+      
+      if (contextError) {
+        logger.error('❌ Failed to verify store context', { error: contextError }, 'SalesApiService');
+        throw new Error(
+          'Impossibile verificare il contesto del negozio. Ricarica la pagina e riprova.\n' +
+          'Se il problema persiste, contatta il supporto.'
+        );
+      }
+      
+      if (!contextStoreId) {
+        logger.error('❌ Store context not set', {}, 'SalesApiService');
+        throw new Error(
+          'Il contesto del negozio non è impostato. Ricarica la pagina e riprova.\n' +
+          'Se il problema persiste, contatta il supporto.'
+        );
+      }
+      
+      logger.info('✅ Store context verified', { storeId: contextStoreId }, 'SalesApiService');
+      
+      // Pre-validate sale against inventory (this will fail fast if store context not set)
       await SalesInventoryIntegrationService.validatePreSale(saleData);
+
       // Generate sale number
       const saleNumber = await this.generateSaleNumber();
       
@@ -138,26 +165,15 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         subtotal: Math.round(subtotal * 100) / 100,
         tax_amount: Math.round(taxAmount * 100) / 100,
         total_amount: Math.round(totalAmount * 100) / 100,
-        vat_included: saleData.vat_included !== false, // default to true for backward compatibility
+        vat_included: saleData.vat_included !== false,
         notes: saleData.notes || '',
       };
 
-      // Insert sale with store_id
+      // Add store_id to sale
       const saleWithStore = await withStoreId(saleToInsert);
-      const { data: sale, error: saleError } = await supabase
-        .from('sales')
-        .insert([saleWithStore])
-        .select('*')
-        .single();
-
-      if (saleError) {
-        console.error('Error creating sale:', saleError);
-        throw new Error(saleError.message);
-      }
-
-      // Insert sale items and handle unit-level tracking
+      
+      // Prepare sale items
       const saleItemsToInsert = saleData.sale_items.map(item => ({
-        sale_id: sale.id,
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
@@ -165,19 +181,32 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
         serial_number: item.serial_number,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('sale_items')
-        .insert(saleItemsToInsert);
+      // Call database function to create sale atomically
+      // This ensures all-or-nothing: if stock validation fails, nothing is created
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc(
+        'create_sale_transaction',
+        {
+          p_sale_data: saleWithStore,
+          p_sale_items: saleItemsToInsert
+        }
+      );
 
-      if (itemsError) {
-        console.error('Error creating sale items:', itemsError);
-        throw new Error(itemsError.message);
+      if (rpcError) {
+        console.error('Error creating sale transaction:', rpcError);
+        throw new Error(rpcError.message);
       }
 
-      // Inventory updates are handled by database triggers (stock, unit status, sold units)
-      console.debug('Inventory updates handled by DB triggers for sale items:', saleData.sale_items.length);
+      // Type guard for the result
+      type SaleTransactionResult = { success: boolean; sale_id: string };
+      const result = rpcResult as SaleTransactionResult;
 
-      // Return full sale data with items for consistent receipt generation
+      if (!result || !result.sale_id) {
+        throw new Error('Failed to create sale - no sale ID returned');
+      }
+
+      const saleId = result.sale_id;
+
+      // Fetch the complete sale data with relations
       const { data: fullSale, error: fetchError } = await supabase
         .from('sales')
         .select(`
@@ -194,12 +223,12 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
             product:products(id, brand, model, year)
           )
         `)
-        .eq('id', sale.id)
+        .eq('id', saleId)
         .single();
 
       if (fetchError) {
-        console.warn('Could not fetch full sale data, returning basic sale:', fetchError);
-        return sale as Sale;
+        console.error('Error fetching created sale:', fetchError);
+        throw new Error('Sale created but could not fetch details');
       }
 
       return fullSale as Sale;

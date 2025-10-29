@@ -21,6 +21,7 @@ import { useSalesMonitoring } from "@/components/sales/SalesMonitoringService";
 import { AdvancedEditSaleDialog } from "@/components/sales/AdvancedEditSaleDialog";
 import { EnhancedDeleteDialog } from "@/components/sales/EnhancedDeleteDialog";
 import { BulkEditSaleDialog } from "@/components/sales/BulkEditSaleDialog";
+import { StoreContextStatus } from "@/components/sales/StoreContextStatus";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Garanzia = () => {
@@ -175,6 +176,10 @@ const Garanzia = () => {
   return (
     <PageLayout>
       <SalesHeader />
+      
+      {/* Store Context Status Indicator */}
+      <StoreContextStatus />
+      
       <ModuleNavCards currentModule="sales" />
       
       {/* Enhanced Filters */}

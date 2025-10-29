@@ -381,7 +381,10 @@ export function UnitDetailsDialog({
                     id="storage"
                     type="number"
                     value={unit.storage || ""}
-                    onChange={(e) => setUnit({ ...unit, storage: parseInt(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseInt(e.target.value);
+                      setUnit({ ...unit, storage: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">
@@ -399,7 +402,10 @@ export function UnitDetailsDialog({
                     id="ram"
                     type="number"
                     value={unit.ram || ""}
-                    onChange={(e) => setUnit({ ...unit, ram: parseInt(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseInt(e.target.value);
+                      setUnit({ ...unit, ram: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">
@@ -419,7 +425,10 @@ export function UnitDetailsDialog({
                     min="0"
                     max="100"
                     value={unit.battery_level || ""}
-                    onChange={(e) => setUnit({ ...unit, battery_level: parseInt(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseInt(e.target.value);
+                      setUnit({ ...unit, battery_level: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">
@@ -447,7 +456,10 @@ export function UnitDetailsDialog({
                     type="number"
                     step="0.01"
                     value={unit.price || ""}
-                    onChange={(e) => setUnit({ ...unit, price: parseFloat(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                      setUnit({ ...unit, price: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">
@@ -465,7 +477,10 @@ export function UnitDetailsDialog({
                     type="number"
                     step="0.01"
                     value={unit.min_price || ""}
-                    onChange={(e) => setUnit({ ...unit, min_price: parseFloat(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                      setUnit({ ...unit, min_price: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">
@@ -483,7 +498,10 @@ export function UnitDetailsDialog({
                     type="number"
                     step="0.01"
                     value={unit.max_price || ""}
-                    onChange={(e) => setUnit({ ...unit, max_price: parseFloat(e.target.value) || null })}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                      setUnit({ ...unit, max_price: isNaN(val as number) ? null : val });
+                    }}
                   />
                 ) : (
                   <div className="text-sm p-2 bg-muted rounded">

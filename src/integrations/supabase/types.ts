@@ -835,6 +835,7 @@ export type Database = {
           model: string
           price: number
           serial_numbers: string[] | null
+          status: string
           stock: number
           store_id: string
           supplier: string | null
@@ -855,6 +856,7 @@ export type Database = {
           model: string
           price: number
           serial_numbers?: string[] | null
+          status?: string
           stock?: number
           store_id: string
           supplier?: string | null
@@ -875,6 +877,7 @@ export type Database = {
           model?: string
           price?: number
           serial_numbers?: string[] | null
+          status?: string
           stock?: number
           store_id?: string
           supplier?: string | null
@@ -1890,6 +1893,11 @@ export type Database = {
       }
       cleanup_invalid_auth_state: { Args: never; Returns: undefined }
       cleanup_old_security_logs: { Args: never; Returns: undefined }
+      create_sale_transaction: {
+        Args: { p_sale_data: Json; p_sale_items: Json[] }
+        Returns: Json
+      }
+      debug_user_store_access: { Args: never; Returns: Json }
       detect_concurrent_sessions: {
         Args: { user_uuid: string }
         Returns: boolean
