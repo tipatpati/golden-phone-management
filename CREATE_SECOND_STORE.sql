@@ -7,7 +7,7 @@
 -- needing to be assigned to them via user_stores table.
 -- ============================================
 
--- Step 1: Create a second store
+-- Step 1: Create a second store (skip if already exists)
 INSERT INTO stores (name, code, address, phone, email, is_active, settings)
 VALUES (
   'Branch Store',
@@ -18,6 +18,13 @@ VALUES (
   true,
   '{}'::jsonb
 )
+ON CONFLICT (code) DO UPDATE SET
+  name = EXCLUDED.name,
+  address = EXCLUDED.address,
+  phone = EXCLUDED.phone,
+  email = EXCLUDED.email,
+  is_active = EXCLUDED.is_active,
+  updated_at = now()
 RETURNING id, name, code, is_active, created_at;
 
 -- The above query will return the new store details
