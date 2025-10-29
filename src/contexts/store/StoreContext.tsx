@@ -23,6 +23,14 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
   const isSuperAdmin = userRole === 'super_admin';
 
+  // Enhanced logging to diagnose role detection issues
+  logger.info('StoreProvider initialized', {
+    isLoggedIn,
+    userRole,
+    isSuperAdmin,
+    currentStore: currentStore?.name
+  }, 'StoreContext');
+
   // Fetch stores based on role
   const { data: userStoresData, isLoading: userStoresLoading, error: userStoresError } = useUserStores();
   const { data: allStoresData, isLoading: allStoresLoading, error: allStoresError } = useActiveStores();
@@ -31,6 +39,15 @@ export function StoreProvider({ children }: StoreProviderProps) {
   // Determine loading and error state
   const isLoading = isSuperAdmin ? allStoresLoading : userStoresLoading;
   const error = isSuperAdmin ? allStoresError : userStoresError;
+
+  // Log when store data changes
+  if (!isLoading && (userStoresData || allStoresData)) {
+    logger.info('Store data loaded', {
+      isSuperAdmin,
+      allStoresCount: allStoresData?.length || 0,
+      userStoresAssignmentsCount: userStoresData?.length || 0
+    }, 'StoreContext');
+  }
 
   // Extract stores based on role
   const userStores = useMemo(() => {

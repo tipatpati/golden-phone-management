@@ -183,7 +183,7 @@ export function SideNavigation({ isOpen, setIsOpen }: SideNavigationProps) {
             </ul>
           </nav>
 
-          {/* Store selector for super admin - auto-hidden for regular users */}
+          {/* Store selector - shown for super admins and users with multiple stores */}
           <div className="px-4 pb-3">
             <StoreSelector />
           </div>
