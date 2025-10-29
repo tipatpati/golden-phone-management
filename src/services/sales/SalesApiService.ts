@@ -4,6 +4,7 @@ import type { Sale, CreateSaleData } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesInventoryIntegrationService } from './SalesInventoryIntegrationService';
 import { withStoreId } from '../stores/storeHelpers';
+import { logger } from '@/utils/logger';
 
 export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   constructor() {
@@ -106,6 +107,30 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
   static async createSale(saleData: CreateSaleData): Promise<Sale> {
     // Use a database transaction via RPC to ensure atomicity
     try {
+      // Phase 3: Pre-flight store context verification
+      logger.info('🔍 Verifying store context before sale creation', {}, 'SalesApiService');
+      
+      const { data: contextStoreId, error: contextError } = await supabase
+        .rpc('get_user_current_store_id');
+      
+      if (contextError) {
+        logger.error('❌ Failed to verify store context', { error: contextError }, 'SalesApiService');
+        throw new Error(
+          'Impossibile verificare il contesto del negozio. Ricarica la pagina e riprova.\n' +
+          'Se il problema persiste, contatta il supporto.'
+        );
+      }
+      
+      if (!contextStoreId) {
+        logger.error('❌ Store context not set', {}, 'SalesApiService');
+        throw new Error(
+          'Il contesto del negozio non è impostato. Ricarica la pagina e riprova.\n' +
+          'Se il problema persiste, contatta il supporto.'
+        );
+      }
+      
+      logger.info('✅ Store context verified', { storeId: contextStoreId }, 'SalesApiService');
+      
       // Pre-validate sale against inventory (this will fail fast if store context not set)
       await SalesInventoryIntegrationService.validatePreSale(saleData);
 
