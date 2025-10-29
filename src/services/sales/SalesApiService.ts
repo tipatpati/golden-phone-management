@@ -158,22 +158,28 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
       // Call database function to create sale atomically
       // This ensures all-or-nothing: if stock validation fails, nothing is created
-      const { data: result, error: rpcError } = await supabase.rpc(
-        'create_sale_transaction' as any,
+      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc(
+        'create_sale_transaction',
         {
           p_sale_data: saleWithStore,
           p_sale_items: saleItemsToInsert
         }
-      ) as { data: { success: boolean; sale_id: string } | null; error: any };
+      );
 
       if (rpcError) {
         console.error('Error creating sale transaction:', rpcError);
         throw new Error(rpcError.message);
       }
 
+      // Type guard for the result
+      type SaleTransactionResult = { success: boolean; sale_id: string };
+      const result = rpcResult as SaleTransactionResult;
+
       if (!result || !result.sale_id) {
         throw new Error('Failed to create sale - no sale ID returned');
       }
+
+      const saleId = result.sale_id;
 
       // Fetch the complete sale data with relations
       const { data: fullSale, error: fetchError } = await supabase
@@ -192,7 +198,7 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
             product:products(id, brand, model, year)
           )
         `)
-        .eq('id', result.sale_id)
+        .eq('id', saleId)
         .single();
 
       if (fetchError) {
