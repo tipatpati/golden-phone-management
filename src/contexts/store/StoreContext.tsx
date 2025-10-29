@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useUserStores, useActiveStores, useSetCurrentStore, type Store } from '@/services/stores';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 interface StoreContextType {
   currentStore: Store | null;
@@ -21,210 +19,83 @@ interface StoreProviderProps {
 }
 
 export function StoreProvider({ children }: StoreProviderProps) {
-  const { user, isLoggedIn, userRole } = useAuth();
+  const { isLoggedIn, userRole } = useAuth();
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
-
-  // Phase 2: Prevent initialization loop with ref guard
-  const initializingRef = useRef(false);
-  const mountedRef = useRef(false);
-
-  // Check if user is super admin
   const isSuperAdmin = userRole === 'super_admin';
 
   // Fetch stores based on role
-  // Super admins see all stores, regular users see only assigned stores
   const { data: userStoresData, isLoading: userStoresLoading, error: userStoresError } = useUserStores();
   const { data: allStoresData, isLoading: allStoresLoading, error: allStoresError } = useActiveStores();
-
   const setCurrentStoreMutation = useSetCurrentStore();
 
-  // Determine which stores to use
+  // Determine loading and error state
   const isLoading = isSuperAdmin ? allStoresLoading : userStoresLoading;
   const error = isSuperAdmin ? allStoresError : userStoresError;
 
   // Extract stores based on role
   const userStores = useMemo(() => {
     if (isSuperAdmin) {
-      // Super admin sees all active stores
-      logger.debug('Super admin mode: showing all stores', { count: allStoresData?.length }, 'StoreContext');
       return allStoresData || [];
     } else {
-      // Regular users see only assigned stores
       if (!userStoresData) return [];
-      const stores = userStoresData
+      return userStoresData
         .filter(us => us.store)
         .map(us => us.store!)
         .filter(store => store.is_active);
-      logger.debug('Regular user mode: showing assigned stores', { count: stores.length }, 'StoreContext');
-      return stores;
     }
   }, [isSuperAdmin, allStoresData, userStoresData]);
 
-  // Set default store on mount
+  // Simple initialization - just set the first available store locally
   useEffect(() => {
-    // Phase 2: Prevent concurrent initializations
-    if (!isLoggedIn || currentStore || initializingRef.current) return;
+    // Skip if not logged in, already have a store, or still loading
+    if (!isLoggedIn || currentStore || isLoading) return;
 
-    // Phase 4: Log mount event
-    if (!mountedRef.current) {
-      logger.info('🏪 StoreContext mounting', {
-        isLoggedIn,
-        isSuperAdmin,
-        currentStore: currentStore?.id,
-        userStoresCount: userStores.length
-      }, 'StoreContext');
-      mountedRef.current = true;
+    // Skip if no stores available
+    if (userStores.length === 0) {
+      logger.warn('No stores available for user', { userRole }, 'StoreContext');
+      return;
     }
 
-    initializingRef.current = true;
-
-    const setInitialStore = async (store: Store, retryCount = 0) => {
-      try {
-        // Phase 4: Enhanced logging
-        logger.info('📡 Setting initial store', {
-          storeId: store.id,
-          storeName: store.name,
-          attempt: retryCount
-        }, 'StoreContext');
-
-        // IMPORTANT: Call backend to set session store
-        await setCurrentStoreMutation.mutateAsync(store.id);
-
-        // Update local state
-        setCurrentStoreState(store);
-
-        logger.info('✅ Initial store set successfully', {
-          storeId: store.id,
-          storeName: store.name
-        }, 'StoreContext');
-        toast.success(`Contesto negozio impostato: ${store.name}`);
-
-        // Phase 2: Clear initialization flag on success
-        initializingRef.current = false;
-      } catch (error) {
-        logger.error('❌ Failed to set initial store via RPC', { error, retryCount }, 'StoreContext');
-
-        // FALLBACK: Try calling debug function to check access
-        try {
-          logger.info('🔄 Attempting to debug store access', {}, 'StoreContext');
-
-          const { data: debugData, error: debugError } = await supabase.rpc('debug_user_store_access');
-
-          if (!debugError && debugData) {
-            logger.info('🔍 Debug info:', { debugData }, 'StoreContext');
-          }
-
-          // Just set the store locally if backend fails
-          setCurrentStoreState(store);
-          logger.info('⚠️ Store set locally (backend failed)', { storeName: store.name }, 'StoreContext');
-          toast.warning(`Negozio impostato localmente: ${store.name}. Alcune funzionalità potrebbero non funzionare.`);
-          initializingRef.current = false;
-        } catch (fallbackError) {
-          logger.error('❌ Fallback method also failed', { fallbackError }, 'StoreContext');
-
-          // Retry logic with exponential backoff
-          if (retryCount < 3) {
-            const delay = Math.pow(2, retryCount) * 1000;
-            logger.info(`🔄 Retrying store initialization in ${delay}ms...`, { retryCount }, 'StoreContext');
-
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return setInitialStore(store, retryCount + 1);
-          }
-
-          // Phase 2: Clear initialization flag after final failure
-          initializingRef.current = false;
-
-          // Show user-facing error after all retries
-          toast.error(
-            'Impossibile inizializzare il contesto del negozio. Ricarica la pagina.',
-            { duration: 10000 }
-          );
-        }
-      }
-    };
-
-    const assignAndSetStore = async (store: Store) => {
-      try {
-        // Import the helper at runtime to avoid circular dependencies
-        const { assignUserToStore } = await import('@/services/stores/storeHelpers');
-        await assignUserToStore(store.id);
-        setCurrentStoreState(store);
-        logger.info('User assigned and store set', { store: store.name }, 'StoreContext');
-      } catch (error) {
-        logger.error('Failed to assign user to store', { error }, 'StoreContext');
-      }
-    };
+    // Find the default store or use the first one
+    let storeToSet: Store | null = null;
 
     if (isSuperAdmin) {
-      // For super admin, use first available store
-      if (allStoresLoading) {
-        logger.debug('Super admin: still loading stores', {}, 'StoreContext');
-        return;
-      }
-
-      if (allStoresData && allStoresData.length > 0) {
-        logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
-
-        // Check if user has store assignments
-        if (!userStoresData || userStoresData.length === 0) {
-          logger.debug('Super admin has no store assignments, creating one', {}, 'StoreContext');
-          assignAndSetStore(allStoresData[0]);
-        } else {
-          setInitialStore(allStoresData[0]);
-        }
-      }
+      // Super admin: use first available store
+      storeToSet = userStores[0];
+      logger.info('Setting first store for super admin', { store: storeToSet.name }, 'StoreContext');
     } else {
-      // For regular users, find their default assigned store
-      if (userStoresLoading) {
-        logger.debug('Regular user: still loading stores', {}, 'StoreContext');
-        return;
-      }
-
-      if (!userStoresData) {
-        logger.warn('Regular user: no user stores data', {}, 'StoreContext');
-        return;
-      }
-
-      const defaultUserStore = userStoresData.find(us => us.is_default);
-      if (defaultUserStore?.store) {
-        setInitialStore(defaultUserStore.store);
-      } else if (userStoresData.length > 0 && userStoresData[0].store) {
-        // Fallback to first store if no default
-        logger.debug('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
-        setInitialStore(userStoresData[0].store);
-      }
+      // Regular user: find default or use first
+      const defaultUserStore = userStoresData?.find(us => us.is_default);
+      storeToSet = defaultUserStore?.store || userStores[0];
+      logger.info('Setting default store for user', { store: storeToSet?.name }, 'StoreContext');
     }
 
-    // Phase 2: Cleanup function
-    return () => {
-      if (!currentStore) {
-        initializingRef.current = false;
-      }
-    };
-  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore, setCurrentStoreMutation, allStoresLoading, userStoresLoading, userStores.length]);
+    if (storeToSet) {
+      // Just set it locally - no backend call, no retries, no complexity
+      setCurrentStoreState(storeToSet);
 
-  // Handle store switching
+      // Silently call backend to sync session (non-blocking, fire and forget)
+      setCurrentStoreMutation.mutateAsync(storeToSet.id).catch(err => {
+        logger.warn('Failed to sync store to backend (non-critical)', { error: err }, 'StoreContext');
+      });
+    }
+  }, [isLoggedIn, currentStore, isLoading, userStores, isSuperAdmin, userStoresData, setCurrentStoreMutation, userRole]);
+
+  // Handle store switching (user action)
   const handleSetCurrentStore = async (store: Store) => {
+    logger.info('User switching store', { from: currentStore?.name, to: store.name }, 'StoreContext');
+
+    // Update local state immediately for responsive UI
+    setCurrentStoreState(store);
+
+    // Sync to backend - let the mutation handle errors
     try {
-      // Phase 4: Enhanced logging
-      logger.info('🔄 Switching store', {
-        fromId: currentStore?.id,
-        fromName: currentStore?.name,
-        toId: store.id,
-        toName: store.name
-      }, 'StoreContext');
-
-      // Call backend to set session store
       await setCurrentStoreMutation.mutateAsync(store.id);
-
-      // Update local state
-      setCurrentStoreState(store);
-
-      logger.info('✅ Store switched successfully', { store: store.name }, 'StoreContext');
-      toast.success(`Cambiato a negozio: ${store.name}`);
+      logger.info('Store switched successfully', { store: store.name }, 'StoreContext');
     } catch (error) {
-      logger.error('❌ Failed to switch store', { error }, 'StoreContext');
-      toast.error('Impossibile cambiare negozio. Riprova.');
+      logger.error('Failed to sync store switch to backend', { error }, 'StoreContext');
+      // Don't revert local state - user can still work with local state
+      // The mutation already shows error toast
       throw error;
     }
   };
