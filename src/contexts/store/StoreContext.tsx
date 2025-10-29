@@ -23,17 +23,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
   const isSuperAdmin = userRole === 'super_admin';
 
-  // Enhanced logging to diagnose role detection issues
-  useEffect(() => {
-    logger.debug('StoreProvider state', {
-      isLoggedIn,
-      userRole,
-      isSuperAdmin,
-      hasCurrentStore: !!currentStore,
-      currentStoreName: currentStore?.name
-    }, 'StoreContext');
-  }, [isLoggedIn, userRole, isSuperAdmin, currentStore]);
-
   // Fetch stores based on role
   const { data: userStoresData, isLoading: userStoresLoading, error: userStoresError } = useUserStores();
   const { data: allStoresData, isLoading: allStoresLoading, error: allStoresError } = useActiveStores();

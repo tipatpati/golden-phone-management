@@ -20,15 +20,6 @@ export function StoreSelector({ className, compact = false }: StoreSelectorProps
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
   const hasMultipleStores = useHasMultipleStores();
 
-  // Debug logging to help diagnose role issues
-  logger.debug('StoreSelector render', {
-    isSuperAdmin,
-    hasMultipleStores,
-    userStoresCount: userStores.length,
-    currentStore: currentStore?.name,
-    isLoading
-  }, 'StoreSelector');
-
   // Show dropdown for:
   // 1. Super admins (can switch between all stores)
   // 2. Users with multiple store assignments
