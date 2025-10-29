@@ -3,6 +3,7 @@ import { useUserStores, useActiveStores, useSetCurrentStore, type Store } from '
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StoreContextType {
   currentStore: Store | null;
@@ -101,25 +102,44 @@ export function StoreProvider({ children }: StoreProviderProps) {
         // Phase 2: Clear initialization flag on success
         initializingRef.current = false;
       } catch (error) {
-        logger.error('❌ Failed to set initial store', { error, retryCount }, 'StoreContext');
+        logger.error('❌ Failed to set initial store via RPC', { error, retryCount }, 'StoreContext');
         
-        // Retry logic with exponential backoff
-        if (retryCount < 3) {
-          const delay = Math.pow(2, retryCount) * 1000;
-          logger.info(`🔄 Retrying store initialization in ${delay}ms...`, { retryCount }, 'StoreContext');
+        // FALLBACK: Try calling debug function to check access
+        try {
+          logger.info('🔄 Attempting to debug store access', {}, 'StoreContext');
           
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return setInitialStore(store, retryCount + 1);
+          const { data: debugData, error: debugError } = await supabase.rpc('debug_user_store_access');
+          
+          if (!debugError && debugData) {
+            logger.info('🔍 Debug info:', { debugData }, 'StoreContext');
+          }
+
+          // Just set the store locally if backend fails
+          setCurrentStoreState(store);
+          logger.info('⚠️ Store set locally (backend failed)', { storeName: store.name }, 'StoreContext');
+          toast.warning(`Negozio impostato localmente: ${store.name}. Alcune funzionalità potrebbero non funzionare.`);
+          initializingRef.current = false;
+        } catch (fallbackError) {
+          logger.error('❌ Fallback method also failed', { fallbackError }, 'StoreContext');
+          
+          // Retry logic with exponential backoff
+          if (retryCount < 3) {
+            const delay = Math.pow(2, retryCount) * 1000;
+            logger.info(`🔄 Retrying store initialization in ${delay}ms...`, { retryCount }, 'StoreContext');
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return setInitialStore(store, retryCount + 1);
+          }
+          
+          // Phase 2: Clear initialization flag after final failure
+          initializingRef.current = false;
+          
+          // Show user-facing error after all retries
+          toast.error(
+            'Impossibile inizializzare il contesto del negozio. Ricarica la pagina.',
+            { duration: 10000 }
+          );
         }
-        
-        // Phase 2: Clear initialization flag after final failure
-        initializingRef.current = false;
-        
-        // Show user-facing error after all retries
-        toast.error(
-          'Impossibile inizializzare il contesto del negozio. Ricarica la pagina.',
-          { duration: 10000 }
-        );
       }
     };
 

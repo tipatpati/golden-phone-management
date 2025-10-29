@@ -1897,6 +1897,7 @@ export type Database = {
         Args: { p_sale_data: Json; p_sale_items: Json[] }
         Returns: Json
       }
+      debug_user_store_access: { Args: never; Returns: Json }
       detect_concurrent_sessions: {
         Args: { user_uuid: string }
         Returns: boolean
