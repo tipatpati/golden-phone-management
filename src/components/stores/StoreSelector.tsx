@@ -19,9 +19,18 @@ interface StoreSelectorProps {
 export function StoreSelector({ className, compact = false }: StoreSelectorProps) {
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
 
+  // Debug logging
+  logger.debug('StoreSelector render', {
+    isSuperAdmin,
+    isLoading,
+    storeCount: userStores.length,
+    hasCurrentStore: !!currentStore
+  }, 'StoreSelector');
+
   // IMPORTANT: Only super admins get a dropdown selector
   // Regular users (salespeople, etc.) have their store auto-detected - no UI needed
   if (!isSuperAdmin) {
+    logger.warn('StoreSelector hidden: not super admin', { isSuperAdmin }, 'StoreSelector');
     return null;
   }
 
