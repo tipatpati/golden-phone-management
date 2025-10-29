@@ -20,6 +20,16 @@ export function StoreSelector({ className, compact = false }: StoreSelectorProps
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
   const hasMultipleStores = useHasMultipleStores();
 
+  // DEBUG: Log all values to diagnose visibility issue
+  console.log('🔍 StoreSelector visibility check:', {
+    isSuperAdmin,
+    hasMultipleStores,
+    userStoresLength: userStores.length,
+    isLoading,
+    currentStore: currentStore?.name,
+    userStores: userStores.map(s => s.name)
+  });
+
   // Show dropdown for:
   // 1. Super admins (can switch between all stores)
   // 2. Users with multiple store assignments
@@ -33,9 +43,11 @@ export function StoreSelector({ className, compact = false }: StoreSelectorProps
 
   // Hide for regular users with only one store
   if (!showDropdown && !isLoading) {
-    logger.debug('Hiding StoreSelector - single store regular user', {}, 'StoreSelector');
+    console.log('❌ StoreSelector hidden - showDropdown:', showDropdown, 'isSuperAdmin:', isSuperAdmin, 'hasMultipleStores:', hasMultipleStores);
     return null;
   }
+
+  console.log('✅ StoreSelector should render - showDropdown:', showDropdown);
 
   const handleStoreChange = async (storeId: string) => {
     const selectedStore = userStores.find(s => s.id === storeId);
