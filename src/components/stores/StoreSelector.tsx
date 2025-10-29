@@ -10,6 +10,7 @@ import { Store, MapPin } from 'lucide-react';
 import { useStore, useHasMultipleStores } from '@/contexts/store/StoreContext';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
+import { useMemo } from 'react';
 
 interface StoreSelectorProps {
   className?: string;
@@ -18,36 +19,36 @@ interface StoreSelectorProps {
 
 export function StoreSelector({ className, compact = false }: StoreSelectorProps) {
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
-  const hasMultipleStores = useHasMultipleStores();
 
-  // DEBUG: Log all values to diagnose visibility issue
-  console.log('🔍 StoreSelector visibility check:', {
-    isSuperAdmin,
-    hasMultipleStores,
-    userStoresLength: userStores.length,
-    isLoading,
-    currentStore: currentStore?.name,
-    userStores: userStores.map(s => s.name)
-  });
+  // Visibility rules (simplified):
+  // 1. Always show for super admins (even with 1 store)
+  // 2. Show for regular users only if they have 2+ stores
+  // 3. Hide during loading unless super admin
+  const shouldShow = useMemo(() => {
+    if (isSuperAdmin) return true;
+    return userStores.length > 1;
+  }, [isSuperAdmin, userStores.length]);
 
-  // Show dropdown for:
-  // 1. Super admins (can switch between all stores)
-  // 2. Users with multiple store assignments
-  const showDropdown = isSuperAdmin || hasMultipleStores;
-
-  // Don't show anything if user has no stores
-  if (userStores.length === 0 && !isLoading) {
-    logger.warn('User has no stores available', { isSuperAdmin }, 'StoreSelector');
+  // Early returns for clarity
+  if (!shouldShow) {
     return null;
   }
 
-  // Hide for regular users with only one store
-  if (!showDropdown && !isLoading) {
-    console.log('❌ StoreSelector hidden - showDropdown:', showDropdown, 'isSuperAdmin:', isSuperAdmin, 'hasMultipleStores:', hasMultipleStores);
-    return null;
+  // Show loading state only if stores aren't loaded yet
+  if (isLoading && userStores.length === 0) {
+    return (
+      <div className={cn('flex items-center gap-2 px-3 py-2', className)}>
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-sm text-muted-foreground">Loading stores...</span>
+      </div>
+    );
   }
 
-  console.log('✅ StoreSelector should render - showDropdown:', showDropdown);
+  // Safety check - if no stores available, don't render
+  if (userStores.length === 0) {
+    logger.warn('StoreSelector visible but no stores available', { isSuperAdmin }, 'StoreSelector');
+    return null;
+  }
 
   const handleStoreChange = async (storeId: string) => {
     const selectedStore = userStores.find(s => s.id === storeId);
@@ -64,14 +65,6 @@ export function StoreSelector({ className, compact = false }: StoreSelectorProps
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={cn('flex items-center gap-2 px-3 py-2', className)}>
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-sm text-muted-foreground">Loading stores...</span>
-      </div>
-    );
-  }
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

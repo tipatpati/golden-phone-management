@@ -21,15 +21,19 @@ interface StoreProviderProps {
 export function StoreProvider({ children }: StoreProviderProps) {
   const { isLoggedIn, userRole } = useAuth();
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
-  const isSuperAdmin = userRole === 'super_admin';
+  const isSuperAdmin = useMemo(() => userRole === 'super_admin', [userRole]);
 
   // Fetch stores based on role
   const { data: userStoresData, isLoading: userStoresLoading, error: userStoresError } = useUserStores();
   const { data: allStoresData, isLoading: allStoresLoading, error: allStoresError } = useActiveStores();
   const setCurrentStoreMutation = useSetCurrentStore();
 
-  // Determine loading and error state
-  const isLoading = isSuperAdmin ? allStoresLoading : userStoresLoading;
+  // Determine loading state - check both queries during initialization
+  const isLoading = useMemo(() => {
+    if (!isLoggedIn) return false;
+    return isSuperAdmin ? allStoresLoading : userStoresLoading;
+  }, [isLoggedIn, isSuperAdmin, allStoresLoading, userStoresLoading]);
+
   const error = isSuperAdmin ? allStoresError : userStoresError;
 
   // Log when store data changes
@@ -43,11 +47,15 @@ export function StoreProvider({ children }: StoreProviderProps) {
     }
   }, [isLoading, userStoresData, allStoresData, isSuperAdmin]);
 
-  // Extract stores based on role
+  // Extract stores based on role - ONLY return data when fully loaded
   const userStores = useMemo(() => {
+    // During loading, return empty array but isLoading will be true
     if (isSuperAdmin) {
-      return allStoresData || [];
+      // For super admin, return all stores only when data is loaded
+      if (!allStoresData) return [];
+      return allStoresData;
     } else {
+      // For regular users, extract stores from assignments
       if (!userStoresData) return [];
       return userStoresData
         .filter(us => us.store)
