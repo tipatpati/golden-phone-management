@@ -56,29 +56,54 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
   // Set default store on mount
   useEffect(() => {
-    if (!isLoggedIn || currentStore) return;
+    if (!isLoggedIn) {
+      logger.debug('User not logged in, skipping store initialization', {}, 'StoreContext');
+      return;
+    }
+
+    if (currentStore) {
+      logger.debug('Store already set, skipping re-initialization', { currentStore: currentStore.name }, 'StoreContext');
+      return;
+    }
 
     if (isSuperAdmin) {
       // For super admin, use first available store
+      if (allStoresLoading) {
+        logger.debug('Super admin: still loading stores', {}, 'StoreContext');
+        return;
+      }
+
       if (allStoresData && allStoresData.length > 0) {
-        logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
+        logger.info('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
         setCurrentStoreState(allStoresData[0]);
+      } else {
+        logger.warn('Super admin: no stores available', {}, 'StoreContext');
       }
     } else {
       // For regular users, find their default assigned store
-      if (!userStoresData) return;
+      if (userStoresLoading) {
+        logger.debug('Regular user: still loading stores', {}, 'StoreContext');
+        return;
+      }
+
+      if (!userStoresData) {
+        logger.warn('Regular user: no user stores data', {}, 'StoreContext');
+        return;
+      }
 
       const defaultUserStore = userStoresData.find(us => us.is_default);
       if (defaultUserStore?.store) {
-        logger.debug('Setting default store', { store: defaultUserStore.store.name }, 'StoreContext');
+        logger.info('Setting default store', { store: defaultUserStore.store.name }, 'StoreContext');
         setCurrentStoreState(defaultUserStore.store);
       } else if (userStoresData.length > 0 && userStoresData[0].store) {
         // Fallback to first store if no default
-        logger.debug('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
+        logger.info('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
         setCurrentStoreState(userStoresData[0].store);
+      } else {
+        logger.warn('Regular user: no stores available or accessible', { userStoresCount: userStoresData.length }, 'StoreContext');
       }
     }
-  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore]);
+  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore, allStoresLoading, userStoresLoading]);
 
   // Handle store switching
   const handleSetCurrentStore = async (store: Store) => {
