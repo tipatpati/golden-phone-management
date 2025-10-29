@@ -9,6 +9,7 @@ import { Menu, X } from "lucide-react";
 import { useIsMobile, useIsTablet, useIsDesktop } from "@/hooks/use-mobile";
 import { SideNavigation } from "./SideNavigation";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { StoreGuard } from "@/components/stores/StoreGuard";
 
 interface TabletLayoutProps {
   children: React.ReactNode;
@@ -17,9 +18,10 @@ interface TabletLayoutProps {
 
 export function TabletLayout({ children, userRole }: TabletLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+
   return (
-    <div className="flex min-h-screen w-full bg-background overflow-hidden">
+    <StoreGuard>
+      <div className="flex min-h-screen w-full bg-background overflow-hidden">
       {/* Navigation Overlay for all screen sizes */}
       <SideNavigation 
         isOpen={isMenuOpen} 
@@ -60,14 +62,15 @@ export function TabletLayout({ children, userRole }: TabletLayoutProps) {
         </header>
           
         
-        <div className="flex-1 overflow-auto">
-          <main className="page-container py-3 sm:py-4 md:py-6">
-            <div className="w-full overflow-hidden">
-              {children}
-            </div>
-          </main>
+          <div className="flex-1 overflow-auto">
+            <main className="page-container py-3 sm:py-4 md:py-6">
+              <div className="w-full overflow-hidden">
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </StoreGuard>
   );
 }

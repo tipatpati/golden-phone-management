@@ -23,7 +23,7 @@ interface StoreProviderProps {
 export function StoreProvider({ children }: StoreProviderProps) {
   const { user, isLoggedIn, userRole } = useAuth();
   const [currentStore, setCurrentStoreState] = useState<Store | null>(null);
-  
+
   // Phase 2: Prevent initialization loop with ref guard
   const initializingRef = useRef(false);
   const mountedRef = useRef(false);
@@ -64,7 +64,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
   useEffect(() => {
     // Phase 2: Prevent concurrent initializations
     if (!isLoggedIn || currentStore || initializingRef.current) return;
-    
+
     // Phase 4: Log mount event
     if (!mountedRef.current) {
       logger.info('🏪 StoreContext mounting', {
@@ -75,16 +75,16 @@ export function StoreProvider({ children }: StoreProviderProps) {
       }, 'StoreContext');
       mountedRef.current = true;
     }
-    
+
     initializingRef.current = true;
 
     const setInitialStore = async (store: Store, retryCount = 0) => {
       try {
         // Phase 4: Enhanced logging
-        logger.info('📡 Setting initial store', { 
-          storeId: store.id, 
-          storeName: store.name, 
-          attempt: retryCount 
+        logger.info('📡 Setting initial store', {
+          storeId: store.id,
+          storeName: store.name,
+          attempt: retryCount
         }, 'StoreContext');
 
         // IMPORTANT: Call backend to set session store
@@ -93,23 +93,23 @@ export function StoreProvider({ children }: StoreProviderProps) {
         // Update local state
         setCurrentStoreState(store);
 
-        logger.info('✅ Initial store set successfully', { 
-          storeId: store.id, 
-          storeName: store.name 
+        logger.info('✅ Initial store set successfully', {
+          storeId: store.id,
+          storeName: store.name
         }, 'StoreContext');
         toast.success(`Contesto negozio impostato: ${store.name}`);
-        
+
         // Phase 2: Clear initialization flag on success
         initializingRef.current = false;
       } catch (error) {
         logger.error('❌ Failed to set initial store via RPC', { error, retryCount }, 'StoreContext');
-        
+
         // FALLBACK: Try calling debug function to check access
         try {
           logger.info('🔄 Attempting to debug store access', {}, 'StoreContext');
-          
+
           const { data: debugData, error: debugError } = await supabase.rpc('debug_user_store_access');
-          
+
           if (!debugError && debugData) {
             logger.info('🔍 Debug info:', { debugData }, 'StoreContext');
           }
@@ -121,19 +121,19 @@ export function StoreProvider({ children }: StoreProviderProps) {
           initializingRef.current = false;
         } catch (fallbackError) {
           logger.error('❌ Fallback method also failed', { fallbackError }, 'StoreContext');
-          
+
           // Retry logic with exponential backoff
           if (retryCount < 3) {
             const delay = Math.pow(2, retryCount) * 1000;
             logger.info(`🔄 Retrying store initialization in ${delay}ms...`, { retryCount }, 'StoreContext');
-            
+
             await new Promise(resolve => setTimeout(resolve, delay));
             return setInitialStore(store, retryCount + 1);
           }
-          
+
           // Phase 2: Clear initialization flag after final failure
           initializingRef.current = false;
-          
+
           // Show user-facing error after all retries
           toast.error(
             'Impossibile inizializzare il contesto del negozio. Ricarica la pagina.',
@@ -157,9 +157,14 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
     if (isSuperAdmin) {
       // For super admin, use first available store
+      if (allStoresLoading) {
+        logger.debug('Super admin: still loading stores', {}, 'StoreContext');
+        return;
+      }
+
       if (allStoresData && allStoresData.length > 0) {
         logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
-        
+
         // Check if user has store assignments
         if (!userStoresData || userStoresData.length === 0) {
           logger.debug('Super admin has no store assignments, creating one', {}, 'StoreContext');
@@ -170,7 +175,15 @@ export function StoreProvider({ children }: StoreProviderProps) {
       }
     } else {
       // For regular users, find their default assigned store
-      if (!userStoresData) return;
+      if (userStoresLoading) {
+        logger.debug('Regular user: still loading stores', {}, 'StoreContext');
+        return;
+      }
+
+      if (!userStoresData) {
+        logger.warn('Regular user: no user stores data', {}, 'StoreContext');
+        return;
+      }
 
       const defaultUserStore = userStoresData.find(us => us.is_default);
       if (defaultUserStore?.store) {
@@ -181,24 +194,24 @@ export function StoreProvider({ children }: StoreProviderProps) {
         setInitialStore(userStoresData[0].store);
       }
     }
-    
+
     // Phase 2: Cleanup function
     return () => {
       if (!currentStore) {
         initializingRef.current = false;
       }
     };
-  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore, setCurrentStoreMutation]);
+  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore, setCurrentStoreMutation, allStoresLoading, userStoresLoading, userStores.length]);
 
   // Handle store switching
   const handleSetCurrentStore = async (store: Store) => {
     try {
       // Phase 4: Enhanced logging
-      logger.info('🔄 Switching store', { 
+      logger.info('🔄 Switching store', {
         fromId: currentStore?.id,
-        fromName: currentStore?.name, 
+        fromName: currentStore?.name,
         toId: store.id,
-        toName: store.name 
+        toName: store.name
       }, 'StoreContext');
 
       // Call backend to set session store
