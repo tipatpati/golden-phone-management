@@ -18,24 +18,31 @@ interface StoreSelectorProps {
 
 export function StoreSelector({ className, compact = false }: StoreSelectorProps) {
   const { currentStore, userStores, setCurrentStore, isLoading, isSuperAdmin } = useStore();
+  const hasMultipleStores = useHasMultipleStores();
 
-  // Debug logging
+  // Debug logging to help diagnose role issues
   logger.debug('StoreSelector render', {
     isSuperAdmin,
-    isLoading,
-    storeCount: userStores.length,
-    hasCurrentStore: !!currentStore
+    hasMultipleStores,
+    userStoresCount: userStores.length,
+    currentStore: currentStore?.name,
+    isLoading
   }, 'StoreSelector');
 
-  // IMPORTANT: Only super admins get a dropdown selector
-  // Regular users (salespeople, etc.) have their store auto-detected - no UI needed
-  if (!isSuperAdmin) {
-    logger.warn('StoreSelector hidden: not super admin', { isSuperAdmin }, 'StoreSelector');
-    return null;
-  }
+  // Show dropdown for:
+  // 1. Super admins (can switch between all stores)
+  // 2. Users with multiple store assignments
+  const showDropdown = isSuperAdmin || hasMultipleStores;
 
   // Don't show anything if user has no stores
   if (userStores.length === 0 && !isLoading) {
+    logger.warn('User has no stores available', { isSuperAdmin }, 'StoreSelector');
+    return null;
+  }
+
+  // Hide for regular users with only one store
+  if (!showDropdown && !isLoading) {
+    logger.debug('Hiding StoreSelector - single store regular user', {}, 'StoreSelector');
     return null;
   }
 
