@@ -58,11 +58,27 @@ export function StoreProvider({ children }: StoreProviderProps) {
   useEffect(() => {
     if (!isLoggedIn || currentStore) return;
 
+    const setInitialStore = async (store: Store) => {
+      try {
+        logger.debug('Setting initial default store', { store: store.name }, 'StoreContext');
+
+        // IMPORTANT: Call backend to set session store
+        await setCurrentStoreMutation.mutateAsync(store.id);
+
+        // Update local state
+        setCurrentStoreState(store);
+
+        logger.info('Initial store set successfully', { store: store.name }, 'StoreContext');
+      } catch (error) {
+        logger.error('Failed to set initial store', { error }, 'StoreContext');
+      }
+    };
+
     if (isSuperAdmin) {
       // For super admin, use first available store
       if (allStoresData && allStoresData.length > 0) {
         logger.debug('Super admin: setting first store as default', { store: allStoresData[0].name }, 'StoreContext');
-        setCurrentStoreState(allStoresData[0]);
+        setInitialStore(allStoresData[0]);
       }
     } else {
       // For regular users, find their default assigned store
@@ -70,15 +86,14 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
       const defaultUserStore = userStoresData.find(us => us.is_default);
       if (defaultUserStore?.store) {
-        logger.debug('Setting default store', { store: defaultUserStore.store.name }, 'StoreContext');
-        setCurrentStoreState(defaultUserStore.store);
+        setInitialStore(defaultUserStore.store);
       } else if (userStoresData.length > 0 && userStoresData[0].store) {
         // Fallback to first store if no default
         logger.debug('No default store, using first available', { store: userStoresData[0].store.name }, 'StoreContext');
-        setCurrentStoreState(userStoresData[0].store);
+        setInitialStore(userStoresData[0].store);
       }
     }
-  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore]);
+  }, [isSuperAdmin, allStoresData, userStoresData, isLoggedIn, currentStore, setCurrentStoreMutation]);
 
   // Handle store switching
   const handleSetCurrentStore = async (store: Store) => {
