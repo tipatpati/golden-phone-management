@@ -453,14 +453,43 @@ class UniversalProductServiceClass {
   }
 
   /**
-   * REMOVED: Stock updates are now handled exclusively by database triggers
-   * The sync_product_stock_from_units() trigger automatically maintains accurate stock counts
-   * This eliminates race conditions and ensures a single source of truth
+   * Update product stock directly in the database
+   * For serialized products: triggers will sync from units
+   * For non-serialized products: direct update is required
    */
   private async updateProductStock(productId: string, newStock: number): Promise<void> {
-    console.log(`🚫 [Stock Management] Stock update bypassed - handled by database trigger for product ${productId}`);
-    console.log(`📊 [Stock Info] Expected stock: ${newStock} (will be set by trigger automatically)`);
-    // No-op: Database trigger handles all stock updates
+    console.log(`📊 [Stock Management] Updating stock for product ${productId} to ${newStock}`);
+    
+    // Get product to check if it has serial numbers
+    const { data: product } = await supabase
+      .from('products')
+      .select('has_serial')
+      .eq('id', productId)
+      .single();
+    
+    if (!product) {
+      console.error(`❌ Product not found: ${productId}`);
+      return;
+    }
+    
+    if (product.has_serial) {
+      // For serialized products, let the trigger handle it
+      console.log(`🔄 Serialized product - stock will be synced by trigger`);
+      return;
+    }
+    
+    // For non-serialized products, update stock directly
+    const { error } = await supabase
+      .from('products')
+      .update({ stock: newStock })
+      .eq('id', productId);
+    
+    if (error) {
+      console.error(`❌ Failed to update stock:`, error);
+      throw error;
+    }
+    
+    console.log(`✅ Stock updated successfully to ${newStock}`);
   }
 }
 

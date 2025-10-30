@@ -220,7 +220,7 @@ export function EditProductDialog({
       if (addedUnits > 0) {
         toast.success(`Product updated successfully! Added ${addedUnits} new units. Total stock: ${data.stock}`);
       } else {
-        toast.success(`Product updated successfully! Stock: ${data.stock}`);
+        toast.success(`Product updated! Stock: ${data.stock || 0}`);
       }
       
       onSuccess();

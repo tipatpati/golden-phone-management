@@ -26,7 +26,9 @@ export function ProductFormFields({
   templateAppliedDefaults,
   isSuperAdmin = false
 }: ProductFormFieldsProps) {
-  const isStockEditable = isSuperAdmin && !formData.has_serial;
+  // Super admins can edit any product, or non-serialized products can be edited
+  const isStockEditable = isSuperAdmin || !formData.has_serial;
+  
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
