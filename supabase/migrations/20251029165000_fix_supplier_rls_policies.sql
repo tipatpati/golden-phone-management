@@ -3,13 +3,39 @@
 -- Solution: Make suppliers global (shared across all stores)
 
 -- =====================================================
--- DROP BROKEN POLICIES
+-- DROP ALL EXISTING SUPPLIER POLICIES
 -- =====================================================
 
+-- Drop all possible policy names that might exist
 DROP POLICY IF EXISTS "Users can view suppliers from their assigned stores" ON suppliers;
 DROP POLICY IF EXISTS "Managers can manage suppliers in their assigned stores" ON suppliers;
+DROP POLICY IF EXISTS "Authorized users can view suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Managers can manage suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Authenticated users can view suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Authenticated users can create suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Authenticated users can update suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Authenticated users can delete suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Admins and managers can manage suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Managers can insert suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Managers can update suppliers" ON suppliers;
+DROP POLICY IF EXISTS "Admins can delete suppliers" ON suppliers;
+
+-- Drop supplier transaction policies
 DROP POLICY IF EXISTS "Users can view supplier transactions from their assigned stores" ON supplier_transactions;
 DROP POLICY IF EXISTS "Managers can manage supplier transactions" ON supplier_transactions;
+DROP POLICY IF EXISTS "Authorized users can view supplier transactions" ON supplier_transactions;
+DROP POLICY IF EXISTS "Authenticated users can view transactions" ON supplier_transactions;
+DROP POLICY IF EXISTS "Authenticated users can create transactions" ON supplier_transactions;
+DROP POLICY IF EXISTS "Authenticated users can update transactions" ON supplier_transactions;
+DROP POLICY IF EXISTS "Authenticated users can delete transactions" ON supplier_transactions;
+
+-- Drop supplier transaction items policies
+DROP POLICY IF EXISTS "Authorized users can view supplier transaction items" ON supplier_transaction_items;
+DROP POLICY IF EXISTS "Managers can manage supplier transaction items" ON supplier_transaction_items;
+DROP POLICY IF EXISTS "Authenticated users can view transaction items" ON supplier_transaction_items;
+DROP POLICY IF EXISTS "Authenticated users can create transaction items" ON supplier_transaction_items;
+DROP POLICY IF EXISTS "Authenticated users can update transaction items" ON supplier_transaction_items;
+DROP POLICY IF EXISTS "Authenticated users can delete transaction items" ON supplier_transaction_items;
 
 -- =====================================================
 -- CREATE CORRECT GLOBAL SUPPLIER POLICIES
