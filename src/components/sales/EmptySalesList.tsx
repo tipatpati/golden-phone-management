@@ -1,35 +1,70 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/updated-card";
-import { Receipt } from "lucide-react";
+import { Receipt, Plus, X } from "lucide-react";
+import { EnhancedEmptyState } from "@/components/common/EnhancedEmptyState";
 import { NewSaleDialog } from "./NewSaleDialog";
 
 interface EmptySalesListProps {
   searchTerm: string;
+  onClearSearch?: () => void;
+  onNewSale?: () => void;
 }
 
-export function EmptySalesList({ searchTerm }: EmptySalesListProps) {
+export function EmptySalesList({ searchTerm, onClearSearch, onNewSale }: EmptySalesListProps) {
+  const [showNewSaleDialog, setShowNewSaleDialog] = React.useState(false);
+
+  if (searchTerm) {
+    // Search results empty state
+    return (
+      <Card variant="outlined" className="glass-card border-glow">
+        <CardContent className="p-6 sm:p-12">
+          <EnhancedEmptyState
+            icon={Receipt}
+            title="Nessuna vendita trovata"
+            description={`Nessun risultato per "${searchTerm}". Prova con un termine diverso o cancella la ricerca.`}
+            primaryAction={
+              onClearSearch
+                ? {
+                    label: 'Cancella ricerca',
+                    onClick: onClearSearch,
+                    icon: X,
+                  }
+                : undefined
+            }
+            secondaryAction={
+              onNewSale
+                ? {
+                    label: 'Nuova vendita',
+                    onClick: onNewSale,
+                    variant: 'outline',
+                  }
+                : undefined
+            }
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // No sales at all empty state
   return (
     <Card variant="outlined" className="glass-card border-glow">
-      <CardContent className="p-12">
-        <div className="text-center space-y-6">
-          <div className="mx-auto w-16 h-16 bg-primary/10 ring-1 ring-primary/20 rounded-full flex items-center justify-center">
-            <Receipt className="w-8 h-8 text-primary" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-on-surface">
-              {searchTerm ? "Nessuna garanzia trovata" : "Nessuna garanzia ancora"}
-            </h3>
-            <p className="text-on-surface-variant text-base max-w-md mx-auto">
-              {searchTerm 
-                ? "Prova a modificare i criteri di ricerca o cancella la ricerca per vedere tutte le garanzie." 
-                : "Inizia creando la tua prima transazione di garanzia."
-              }
-            </p>
-          </div>
-          {!searchTerm && (
-            <NewSaleDialog />
-          )}
-        </div>
+      <CardContent className="p-6 sm:p-12">
+        <EnhancedEmptyState
+          icon={Receipt}
+          title="Nessuna vendita ancora"
+          description="Inizia creando la tua prima vendita. Aggiungi prodotti, seleziona un cliente e completa la transazione."
+          primaryAction={{
+            label: 'Crea Nuova Vendita',
+            onClick: () => setShowNewSaleDialog(true),
+            icon: Plus,
+          }}
+        />
+
+        {/* NewSaleDialog */}
+        {showNewSaleDialog && (
+          <NewSaleDialog />
+        )}
       </CardContent>
     </Card>
   );
