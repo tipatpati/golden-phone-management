@@ -281,12 +281,9 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
 
     case 'UPDATE_STOCK': {
       const newStockCache = new Map([...state.stockCache, ...action.payload]);
-      const newItems = state.items.map(item => ({
-        ...item,
-        stock: newStockCache.get(item.product_id) ?? item.stock
-      }));
-      // Stock cache update doesn't affect totals - skip recalculation
-      return { ...state, stockCache: newStockCache, items: newItems };
+      // Don't auto-update item stock values - preserve initial stock from when added
+      // Only update stockCache for reference, not the items themselves
+      return { ...state, stockCache: newStockCache };
     }
 
     case 'SET_LOADING':
@@ -484,14 +481,11 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
   }, [toast]);
 
   const validateSale = useCallback(async (): Promise<boolean> => {
-    const productIds = state.items.map(item => item.product_id);
-    if (productIds.length > 0) {
-      await refreshStock(productIds);
-    }
-    
+    // Don't refresh stock automatically - trust initial values
+    // Server-side validation in create_sale_transaction is authoritative
     dispatch({ type: 'CALCULATE_TOTALS' });
     return state.isValid;
-  }, [state.items, state.isValid, refreshStock]);
+  }, [state.isValid]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<SaleCreationContextValue>(() => ({

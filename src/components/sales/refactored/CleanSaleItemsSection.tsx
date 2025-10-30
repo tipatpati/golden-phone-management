@@ -1,5 +1,5 @@
 import React from 'react';
-import { Minus, Plus, Trash2, Package, AlertTriangle } from 'lucide-react';
+import { Minus, Plus, Trash2, Package, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +8,17 @@ import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { toast } from 'sonner';
 
 export function CleanSaleItemsSection() {
-  const { state, updateItem, removeItem } = useSaleCreation();
+  const { state, updateItem, removeItem, refreshStock } = useSaleCreation();
   const { items } = state;
+
+  const handleRefreshStock = async () => {
+    const productIds = items.map(i => i.product_id);
+    if (productIds.length === 0) return;
+    
+    toast.info('Aggiornamento stock in corso...');
+    await refreshStock(productIds);
+    toast.success('Stock aggiornato');
+  };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
     const item = items.find(i => i.product_id === productId);
@@ -57,9 +66,20 @@ export function CleanSaleItemsSection() {
           <Package className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold text-on-surface">Prodotti Selezionati</h2>
         </div>
-        <Badge variant="secondary" className="text-xs">
-          {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleRefreshStock}
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Aggiorna Stock
+          </Button>
+          <Badge variant="secondary" className="text-xs">
+            {items.length} {items.length === 1 ? 'prodotto' : 'prodotti'}
+          </Badge>
+        </div>
       </div>
 
       {/* Items Table-like Layout */}
