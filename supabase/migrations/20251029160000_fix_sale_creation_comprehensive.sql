@@ -22,10 +22,17 @@ DROP TRIGGER IF EXISTS trigger_update_product_stock_on_sale ON sale_items;
 -- sale_items_to_sold_units_* (creates sold_product_units records)
 
 -- ============================================
--- STEP 2: Create clean, straightforward RPC
+-- STEP 2: Drop old function versions completely
 -- ============================================
 
-CREATE OR REPLACE FUNCTION public.create_sale_transaction(
+DROP FUNCTION IF EXISTS public.create_sale_transaction(jsonb, jsonb);
+DROP FUNCTION IF EXISTS public.create_sale_transaction(jsonb, jsonb[]);
+
+-- ============================================
+-- STEP 3: Create clean, straightforward RPC
+-- ============================================
+
+CREATE FUNCTION public.create_sale_transaction(
   p_sale_data jsonb,
   p_sale_items jsonb[]
 )
