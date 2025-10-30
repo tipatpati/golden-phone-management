@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { useUserStores, useActiveStores, useSetCurrentStore, type Store } from '@/services/stores';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/logger';
+import { toast } from '@/components/ui/sonner';
+import { MapPin } from 'lucide-react';
 
 interface StoreContextType {
   currentStore: Store | null;
@@ -107,7 +109,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
   // Handle store switching (user action)
   const handleSetCurrentStore = async (store: Store) => {
-    logger.info('User switching store', { from: currentStore?.name, to: store.name }, 'StoreContext');
+    const previousStore = currentStore;
+    logger.info('User switching store', { from: previousStore?.name, to: store.name }, 'StoreContext');
 
     // Update local state immediately for responsive UI
     setCurrentStoreState(store);
@@ -116,10 +119,31 @@ export function StoreProvider({ children }: StoreProviderProps) {
     try {
       await setCurrentStoreMutation.mutateAsync(store.id);
       logger.info('Store switched successfully', { store: store.name }, 'StoreContext');
+
+      // Show success toast with store name
+      toast.success('Negozio cambiato', {
+        description: (
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>Ora lavori in: <strong>{store.name}</strong></span>
+          </div>
+        ),
+        duration: 3000,
+      });
     } catch (error) {
       logger.error('Failed to sync store switch to backend', { error }, 'StoreContext');
-      // Don't revert local state - user can still work with local state
-      // The mutation already shows error toast
+
+      // Revert to previous store and show error
+      setCurrentStoreState(previousStore);
+
+      toast.error('Errore cambio negozio', {
+        description: 'Impossibile cambiare negozio. Riprova.',
+        action: {
+          label: 'Riprova',
+          onClick: () => handleSetCurrentStore(store),
+        },
+      });
+
       throw error;
     }
   };

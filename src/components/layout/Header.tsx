@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { StoreSelector } from "@/components/stores/StoreSelector";
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface HeaderProps {
   isMenuOpen?: boolean;
@@ -49,13 +50,18 @@ export function Header({ isMenuOpen, toggleMenu }: HeaderProps = {}) {
         </div>
       </div>
 
+      {/* Store Badge - Always visible to show current store */}
+      <div className="ml-2 sm:ml-3 hidden sm:block">
+        <StoreBadge />
+      </div>
+
       {/* Store Selector - Visible for super admins and users with multiple stores */}
-      <div className="ml-3 sm:ml-4">
+      <div className="ml-2 sm:ml-3">
         <StoreSelector compact />
       </div>
 
       {/* Theme Toggle */}
-      <div className="ml-3 sm:ml-4">
+      <div className="ml-2 sm:ml-3">
         <ThemeToggle />
       </div>
     </header>
