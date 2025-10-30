@@ -14,6 +14,7 @@ interface ProductFormFieldsProps {
     min_price?: number;
     max_price?: number;
   } | null;
+  isSuperAdmin?: boolean;
 }
 
 export function ProductFormFields({
@@ -22,8 +23,10 @@ export function ProductFormFields({
   getFieldError,
   uniqueBrands,
   uniqueModels,
-  templateAppliedDefaults
+  templateAppliedDefaults,
+  isSuperAdmin = false
 }: ProductFormFieldsProps) {
+  const isStockEditable = isSuperAdmin && !formData.has_serial;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -106,6 +109,43 @@ export function ProductFormFields({
           error={getFieldError("max_price")}
         />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Stock"
+          type="input"
+          inputType="number"
+          value={formData.stock?.toString() || "0"}
+          onChange={(value) => onFieldChange("stock", parseInt(value) || 0)}
+          placeholder="0"
+          error={getFieldError("stock")}
+          description={
+            formData.has_serial 
+              ? "Auto-calculated from serial numbers" + (isSuperAdmin ? " (Super Admin can override)" : "")
+              : "Manually set stock quantity"
+          }
+          disabled={formData.has_serial && !isSuperAdmin}
+        />
+        
+        <FormField
+          label="Low Stock Threshold"
+          type="input"
+          inputType="number"
+          value={formData.threshold?.toString() || "0"}
+          onChange={(value) => onFieldChange("threshold", parseInt(value) || 0)}
+          placeholder="0"
+          error={getFieldError("threshold")}
+          description="Get alerts when stock falls below this number"
+        />
+      </div>
+
+      {isSuperAdmin && formData.has_serial && isStockEditable && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800">
+            ⚠️ <strong>Super Admin Override:</strong> Stock is normally auto-calculated from units
+          </p>
+        </div>
+      )}
 
       {templateAppliedDefaults && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">

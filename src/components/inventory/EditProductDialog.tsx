@@ -203,9 +203,13 @@ export function EditProductDialog({
         }
       }
 
-      // Force cache invalidation for immediate UI updates
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['products', 'detail', product.id] });
+      // Force cache invalidation and refetch for immediate UI updates
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['products'] }),
+        queryClient.invalidateQueries({ queryKey: ['products', 'detail', product.id] }),
+        queryClient.refetchQueries({ queryKey: ['products'] }),
+        queryClient.refetchQueries({ queryKey: ['products', 'detail', product.id] })
+      ]);
       
       // Refresh thermal labels after product update
       if (typeof (window as any).__refreshThermalLabels === 'function') {
@@ -216,7 +220,7 @@ export function EditProductDialog({
       if (addedUnits > 0) {
         toast.success(`Product updated successfully! Added ${addedUnits} new units. Total stock: ${data.stock}`);
       } else {
-        toast.success("Product updated successfully!");
+        toast.success(`Product updated successfully! Stock: ${data.stock}`);
       }
       
       onSuccess();

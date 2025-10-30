@@ -5,6 +5,7 @@ import { SerialNumberManager } from "./SerialNumberManager";
 import { useProductForm } from "./hooks/useProductForm";
 import { useProducts } from "@/services/inventory/InventoryReactQueryService";
 import { categoryRequiresSerialNumbers } from "@/utils/categoryUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ProductForm({ 
   initialData, 
@@ -14,6 +15,9 @@ export function ProductForm({
   onRegisterSubmit,
   productId
 }: ProductFormProps) {
+  const { userRole } = useAuth();
+  const isSuperAdmin = userRole === 'super_admin';
+  
   const {
     formData,
     unitEntries,
@@ -137,6 +141,7 @@ export function ProductForm({
         uniqueBrands={uniqueBrands}
         uniqueModels={uniqueModels}
         templateAppliedDefaults={templateAppliedDefaults}
+        isSuperAdmin={isSuperAdmin}
       />
 
       {/* Serial Number Toggle */}

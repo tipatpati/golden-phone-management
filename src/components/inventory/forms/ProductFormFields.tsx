@@ -13,13 +13,14 @@
     description?: string;
   }
 
-  interface InputFieldProps extends BaseFieldProps {
-    type?: "input";
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-    inputType?: "text" | "email" | "tel" | "number" | "password";
-  }
+interface InputFieldProps extends BaseFieldProps {
+  type?: "input";
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  inputType?: "text" | "email" | "tel" | "number" | "password";
+  disabled?: boolean;
+}
 
   interface TextareaFieldProps extends BaseFieldProps {
     type: "textarea";
@@ -121,8 +122,10 @@ export type FormFieldProps = InputFieldProps | TextareaFieldProps |
                 props.onChange(value);
               }}
               placeholder={props.placeholder}
+              disabled={props.disabled}
               className={`
                 w-full h-10 transition-colors
+                ${props.disabled ? "bg-muted cursor-not-allowed opacity-60" : ""}
                 ${error ? "border-destructive focus:border-destructive" :
   "focus:border-primary"}
               `}
