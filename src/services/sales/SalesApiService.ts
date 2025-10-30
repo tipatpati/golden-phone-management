@@ -183,13 +183,13 @@ export class SalesApiService extends BaseApiService<Sale, CreateSaleData> {
 
       // Call database function to create sale atomically
       // This ensures all-or-nothing: if stock validation fails, nothing is created
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc(
-        'create_sale_transaction',
-        {
-          p_sale_data: saleWithStore,
-          p_sale_items: saleItemsToInsert
-        }
-      );
+    const { data: rpcResult, error: rpcError } = await (supabase as any).rpc(
+      'create_sale_transaction',
+      {
+        sale_data: saleWithStore,
+        sale_items_data: saleItemsToInsert
+      }
+    );
 
       if (rpcError) {
         console.error('Error creating sale transaction:', rpcError);
