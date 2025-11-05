@@ -1,18 +1,15 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/updated-card";
-import { Receipt, Plus, X } from "lucide-react";
+import { Receipt, X } from "lucide-react";
 import { EnhancedEmptyState } from "@/components/common/EnhancedEmptyState";
 import { NewSaleDialog } from "./NewSaleDialog";
 
 interface EmptySalesListProps {
   searchTerm: string;
   onClearSearch?: () => void;
-  onNewSale?: () => void;
 }
 
-export function EmptySalesList({ searchTerm, onClearSearch, onNewSale }: EmptySalesListProps) {
-  const [showNewSaleDialog, setShowNewSaleDialog] = React.useState(false);
-
+export function EmptySalesList({ searchTerm, onClearSearch }: EmptySalesListProps) {
   if (searchTerm) {
     // Search results empty state
     return (
@@ -31,40 +28,33 @@ export function EmptySalesList({ searchTerm, onClearSearch, onNewSale }: EmptySa
                   }
                 : undefined
             }
-            secondaryAction={
-              onNewSale
-                ? {
-                    label: 'Nuova vendita',
-                    onClick: onNewSale,
-                    variant: 'outline',
-                  }
-                : undefined
-            }
           />
         </CardContent>
       </Card>
     );
   }
 
-  // No sales at all empty state
+  // No sales at all empty state - show the NewSaleDialog with its built-in trigger
   return (
     <Card variant="outlined" className="glass-card border-glow">
       <CardContent className="p-6 sm:p-12">
-        <EnhancedEmptyState
-          icon={Receipt}
-          title="Nessuna vendita ancora"
-          description="Inizia creando la tua prima vendita. Aggiungi prodotti, seleziona un cliente e completa la transazione."
-          primaryAction={{
-            label: 'Crea Nuova Vendita',
-            onClick: () => setShowNewSaleDialog(true),
-            icon: Plus,
-          }}
-        />
-
-        {/* NewSaleDialog */}
-        {showNewSaleDialog && (
-          <NewSaleDialog />
-        )}
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary">
+            <Receipt className="h-8 w-8" aria-hidden="true" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">
+              Nessuna vendita ancora
+            </h3>
+            <p className="text-muted-foreground text-base max-w-md mx-auto">
+              Inizia creando la tua prima vendita. Aggiungi prodotti, seleziona un cliente e completa la transazione.
+            </p>
+          </div>
+          <div className="pt-2">
+            {/* NewSaleDialog has its own trigger button */}
+            <NewSaleDialog />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
