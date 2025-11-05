@@ -36,12 +36,12 @@ export function BaseDialog({
 }: BaseDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent size={size} className="p-0 gap-0 custom-scrollbar">
-        <DialogHeader>
+      <DialogContent size={size} className="p-0 gap-0 overflow-y-auto custom-scrollbar flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
-        <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto">
+        <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto custom-scrollbar">
           {children}
         </div>
 
