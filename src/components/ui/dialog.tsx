@@ -46,9 +46,10 @@ const DialogContent = React.forwardRef<
         "p-4 sm:p-6",
         // Height: full on mobile, constrained on desktop
         "max-h-[100vh] sm:max-h-[90vh]",
-        "overflow-y-auto",
         // Mobile: rounded corners only at top
         "rounded-t-2xl sm:rounded-xl",
+        // Ensure scrolling is always enabled for overflow content
+        "!overflow-y-auto",
         className
       )}
       {...props}
