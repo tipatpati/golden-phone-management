@@ -19,9 +19,11 @@ interface AppProvidersProps {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 10, // 10 minutes (increased from 5 for better performance)
+      gcTime: 1000 * 60 * 30, // 30 minutes garbage collection time
       retry: 3,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false, // Don't refetch on every tab switch (performance)
     }
   }
 });
