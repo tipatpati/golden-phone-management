@@ -92,60 +92,63 @@ const Garanzia = () => {
   React.useEffect(() => {
     trackInteraction('page_view', { page: 'sales' });
   }, [trackInteraction]);
-  
-  // Format sales data for display
-  const formattedGaranzia = filteredGaranzia.map(sale => 
-    SalesDataService.formatSaleForDisplay(sale)
+
+  // Format sales data for display - MEMOIZED for performance
+  // Only re-compute when filteredGaranzia changes, not on every render
+  const formattedGaranzia = React.useMemo(() =>
+    filteredGaranzia.map(sale => SalesDataService.formatSaleForDisplay(sale)),
+    [filteredGaranzia]
   );
   
-  const resetFilters = () => {
+  // Memoize handlers to prevent unnecessary re-renders of child components
+  const resetFilters = React.useCallback(() => {
     setFilters({});
     trackInteraction('filters_reset');
-  };
+  }, [trackInteraction]);
 
   // Enhanced CRUD handlers for super admin
-  const handleEditSale = (sale: Sale) => {
+  const handleEditSale = React.useCallback((sale: Sale) => {
     setSelectedSaleForEdit(sale);
     trackInteraction('edit_sale', { saleId: sale.id });
-  };
+  }, [trackInteraction]);
 
-  const handleDeleteSale = (sale: Sale) => {
+  const handleDeleteSale = React.useCallback((sale: Sale) => {
     setSelectedSaleForDelete(sale);
     trackInteraction('delete_sale_attempt', { saleId: sale.id });
-  };
+  }, [trackInteraction]);
 
-  const handleBulkEdit = (sales: Sale[]) => {
+  const handleBulkEdit = React.useCallback((sales: Sale[]) => {
     setSelectedSales(sales);
     setShowBulkEdit(true);
     trackInteraction('bulk_edit_open', { count: sales.length });
-  };
+  }, [trackInteraction]);
 
-  const handleEditSuccess = () => {
+  const handleEditSuccess = React.useCallback(() => {
     setSelectedSaleForEdit(null);
     trackInteraction('edit_sale_success');
-  };
+  }, [trackInteraction]);
 
-  const handleDeleteSuccess = () => {
+  const handleDeleteSuccess = React.useCallback(() => {
     setSelectedSaleForDelete(null);
     trackInteraction('delete_sale_success');
-  };
+  }, [trackInteraction]);
 
-  const handleBulkEditSuccess = () => {
+  const handleBulkEditSuccess = React.useCallback(() => {
     setShowBulkEdit(false);
     setSelectedSales([]);
     trackInteraction('bulk_edit_success');
-  };
+  }, [trackInteraction]);
 
-  const handleSearch = () => {
+  const handleSearch = React.useCallback(() => {
     executeSearch(localSearchQuery);
     trackInteraction('search', { query: localSearchQuery });
-  };
+  }, [executeSearch, localSearchQuery, trackInteraction]);
 
-  const handleClearSearch = () => {
+  const handleClearSearch = React.useCallback(() => {
     setLocalSearchQuery('');
     clearSearch();
     trackInteraction('search_clear');
-  };
+  }, [clearSearch, trackInteraction]);
 
   if (isLoading && !garanzia.length) {
     return (
