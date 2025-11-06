@@ -196,34 +196,37 @@ Cliente: ${clientName}`;
           return new Promise((resolve) => {
             img.onload = resolve;
             img.onerror = resolve;
-            // Timeout after 5 seconds
             setTimeout(() => resolve(null), 5000);
           });
         })
       );
 
-      // Small delay to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Store original styles
+      const originalMaxHeight = previewElement.style.maxHeight;
+      const originalOverflow = previewElement.style.overflow;
+      
+      // Temporarily remove height constraints to capture full content
+      previewElement.style.maxHeight = 'none';
+      previewElement.style.overflow = 'visible';
 
-      // Get the actual scroll height to capture full content
-      const scrollHeight = previewElement.scrollHeight;
-      const scrollWidth = previewElement.scrollWidth;
+      // Small delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Capture the receipt as canvas with full height
       const canvas = await html2canvas(previewElement, {
         scale: 2,
         backgroundColor: '#ffffff',
-        width: scrollWidth,
-        height: scrollHeight,
-        windowWidth: scrollWidth,
-        windowHeight: scrollHeight,
         logging: false,
         allowTaint: true,
         useCORS: true,
         imageTimeout: 0,
-        scrollY: -window.scrollY,
-        scrollX: -window.scrollX,
+        scrollY: 0,
+        scrollX: 0,
       });
+
+      // Restore original styles
+      previewElement.style.maxHeight = originalMaxHeight;
+      previewElement.style.overflow = originalOverflow;
 
       // Calculate dimensions for thermal receipt (80mm width)
       const imgWidth = 80; // 80mm width
