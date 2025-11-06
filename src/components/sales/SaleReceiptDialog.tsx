@@ -10,6 +10,7 @@ import { apiConfig } from "@/config/api";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "@/hooks/use-toast";
+import { getCanonicalBaseUrl } from "@/utils/authRedirect";
 
 interface SaleReceiptDialogProps {
   sale: Sale;
@@ -41,16 +42,13 @@ export function SaleReceiptDialog({
     setIsQrCodeGenerating(true);
     
     try {
-      // Create QR content with receipt information
-      const receiptData = `RICEVUTA #${sale.sale_number}
-Data: ${new Date(sale.sale_date).toLocaleDateString('it-IT')}
-Totale: €${sale.total_amount.toFixed(2)}
-Cliente: ${clientName}`;
+      // Generate QR code with URL to public receipt viewer
+      const qrUrl = `${getCanonicalBaseUrl()}/receipt/${sale.sale_number}`;
       
-      // Generate actual QR code with receipt data
-      const qrDataUrl = await QRCode.toDataURL(receiptData, {
-        width: 60,
-        margin: 0,
+      // Generate actual QR code with receipt URL
+      const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+        width: 120,
+        margin: 1,
         errorCorrectionLevel: 'M',
         color: {
           dark: '#000000',
@@ -66,7 +64,7 @@ Cliente: ${clientName}`;
     } finally {
       setIsQrCodeGenerating(false);
     }
-  }, [isQrCodeGenerating]);
+  }, [isQrCodeGenerating, sale.sale_number]);
 
   // Generate QR code when dialog opens
   React.useEffect(() => {

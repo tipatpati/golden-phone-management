@@ -25,6 +25,7 @@ const Documentation = React.lazy(() => import("@/pages/Documentation"));
 const Finances = React.lazy(() => import("@/pages/Finances"));
 const ServiceMonitoring = React.lazy(() => import("@/components/admin/ServiceMonitoringDashboard"));
 const ProductTracing = React.lazy(() => import("@/pages/ProductTracing"));
+const ReceiptViewer = React.lazy(() => import("@/pages/ReceiptViewer"));
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -66,6 +67,13 @@ export function AppRouter() {
       
       {/* Password reset route - accessible without authentication */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      
+      {/* Public receipt viewer - no authentication required */}
+      <Route path="/receipt/:saleNumber" element={
+        <Suspense fallback={<PageLoader />}>
+          <ReceiptViewer />
+        </Suspense>
+      } />
       
       {/* Legacy login routes redirect to root */}
       <Route path="/login" element={<Navigate to="/" replace />} />

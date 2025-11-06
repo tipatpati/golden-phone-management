@@ -72,13 +72,17 @@ export function ReceiptContent({
       marginBottom: '8px',
       fontSize: '10px'
     }}>
-        <div style={{
+      <div style={{
         fontWeight: 'bold',
         fontSize: '11px',
         marginBottom: '4px',
-        borderBottom: '1px solid #000',
         paddingBottom: '2px'
       }}>ARTICOLI VENDUTI:</div>
+      
+      <div style={{
+        borderBottom: '1px solid #000',
+        marginBottom: '4px'
+      }} />
         
         {receiptData.items.map((item, index) => <div key={index} style={{
         marginBottom: '6px',
@@ -119,22 +123,24 @@ export function ReceiptContent({
       borderTop: '1px solid #000',
       paddingTop: '4px'
     }}>
-        <div style={{
+      <div style={{
         display: 'flex',
         justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '2px'
       }}>
-          <span>Subtotale (senza IVA):</span>
-          <span>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT)}</span>
+          <span style={{ textAlign: 'left' }}>Subtotale (senza IVA):</span>
+          <span style={{ textAlign: 'right', fontWeight: 'bold' }}>{ReceiptDataService.formatAmount(receiptData.totals.subtotalWithoutVAT)}</span>
         </div>
         
         <div style={{
         display: 'flex',
         justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '2px'
       }}>
-          <span>IVA (22%):</span>
-          <span>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
+          <span style={{ textAlign: 'left' }}>IVA (22%):</span>
+          <span style={{ textAlign: 'right', fontWeight: 'bold' }}>{ReceiptDataService.formatAmount(receiptData.totals.vatAmount)}</span>
         </div>
         
         {receiptData.totals.discountAmount > 0 && (
@@ -162,22 +168,24 @@ export function ReceiptContent({
         <div style={{
         borderTop: '2px solid #000',
         paddingTop: '6px',
-        marginTop: '4px',
+        marginTop: '6px',
         textAlign: 'center'
       }}>
           <div style={{
           fontWeight: 'bold',
-          fontSize: '14px',
-          marginBottom: '4px'
+          fontSize: '13px',
+          marginBottom: '6px',
+          letterSpacing: '0.5px'
         }}>TOTALE FINALE</div>
           
           <div style={{
           fontWeight: 'bold',
-          fontSize: '18px',
+          fontSize: '20px',
           backgroundColor: '#f0f0f0',
-          padding: '8px',
+          padding: '10px 8px',
           border: '2px solid #000',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          letterSpacing: '0.5px'
         }}>
             {ReceiptDataService.formatAmount(receiptData.totals.finalTotal)}
           </div>
