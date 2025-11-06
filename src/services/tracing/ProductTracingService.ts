@@ -122,7 +122,7 @@ export class ProductTracingService {
             )
           )
         `)
-        .contains('product_unit_ids', [productUnit.id])
+        .filter('product_unit_ids', 'cs', `["${productUnit.id}"]`)
         .order('created_at', { ascending: false })
         .limit(1);
 
