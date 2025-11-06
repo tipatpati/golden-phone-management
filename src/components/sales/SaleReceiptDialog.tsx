@@ -7,6 +7,9 @@ import QRCode from "qrcode";
 import { ReceiptContent } from "./ReceiptContent";
 import { supabase } from "@/integrations/supabase/client";
 import { apiConfig } from "@/config/api";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { toast } from "@/hooks/use-toast";
 
 interface SaleReceiptDialogProps {
   sale: Sale;
@@ -168,28 +171,46 @@ export function SaleReceiptDialog({
 
   const handleDownloadPDF = async () => {
     try {
-      const htmlContent = capturePreviewHTML();
-      
-      // Create print window for PDF generation
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        alert('Please allow popups to save as PDF');
+      const previewElement = previewRef.current;
+      if (!previewElement) {
+        toast.error('Ricevuta non disponibile');
         return;
       }
 
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      printWindow.focus();
-      
-      // Wait for content to load, then open print dialog
-      // Users can select "Save as PDF" from the print dialog
-      setTimeout(() => {
-        printWindow.print();
-      }, 2000);
+      // Show loading toast
+      toast.info('Generazione PDF in corso...');
 
+      // Capture the receipt as canvas with high quality
+      const canvas = await html2canvas(previewElement, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        width: 300,
+        windowWidth: 300,
+        logging: false
+      });
+
+      // Calculate dimensions for thermal receipt (80mm width)
+      const imgWidth = 80; // 80mm width
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Create PDF with thermal receipt size
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [imgWidth, imgHeight]
+      });
+
+      // Convert canvas to image and add to PDF
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      // Download the PDF
+      pdf.save(`ricevuta-${sale.sale_number}.pdf`);
+
+      toast.success('PDF scaricato con successo');
     } catch (error) {
       console.error('PDF generation failed:', error);
-      alert('PDF generation failed. Please try again.');
+      toast.error('Errore nella generazione del PDF');
     }
   };
 
