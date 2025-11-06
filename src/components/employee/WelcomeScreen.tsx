@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { logger } from "@/utils/logger";
 import goldenPhoneLogo from "@/assets/golden-phone-logo.png";
@@ -128,6 +129,14 @@ export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
       feature: "gestione_finanziaria"
     },
     {
+      title: "TRACCIAMENTO",
+      icon: Search,
+      route: "/tracing",
+      color: "text-white",
+      bgColor: "bg-[#ec4899]/50 hover:bg-[#ec4899]/70 border-[#f472b6] hover:border-white shadow-[0_0_20px_rgba(255,255,255,0.3),0_0_40px_rgba(236,72,153,0.7)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5),0_0_60px_rgba(236,72,153,1)]", // Brighter pink neon
+      permission: "super_admin"
+    },
+    {
       title: "PROFILO",
       icon: Settings,
       route: "/profile",
@@ -136,9 +145,15 @@ export function WelcomeScreen({ userRole, username }: WelcomeScreenProps) {
     }
   ];
 
-  // Filter modules based on user role and features
+  // Filter modules based on user role, features, and permissions
   const availableModules = allModules.filter(module => {
-    if (!module.feature) return true; // Always show modules without feature restrictions (like profile)
+    // Check permission-based access (for super_admin only modules)
+    if (module.permission) {
+      return userRole === module.permission;
+    }
+    // Always show modules without feature restrictions (like profile)
+    if (!module.feature) return true;
+    // Check feature-based access
     if (Array.isArray(module.feature)) {
       return module.feature.some(f => config.features.includes(f));
     }
