@@ -41,14 +41,17 @@ export function SaleReceiptDialog({
     setIsQrCodeGenerating(true);
     
     try {
-      // Create QR content with URL to the receipt
-      const receiptUrl = `${apiConfig.functions.captureAndConvert}?sale_id=${saleId}`;
+      // Create QR content with receipt information
+      const receiptData = `RICEVUTA #${sale.sale_number}
+Data: ${new Date(sale.sale_date).toLocaleDateString('it-IT')}
+Totale: €${sale.total_amount.toFixed(2)}
+Cliente: ${clientName}`;
       
-      // Generate actual QR code
-      const qrDataUrl = await QRCode.toDataURL(receiptUrl, {
+      // Generate actual QR code with receipt data
+      const qrDataUrl = await QRCode.toDataURL(receiptData, {
         width: 60,
         margin: 0,
-        errorCorrectionLevel: 'L',
+        errorCorrectionLevel: 'M',
         color: {
           dark: '#000000',
           light: '#FFFFFF'
@@ -177,8 +180,30 @@ export function SaleReceiptDialog({
         return;
       }
 
-      // Show loading toast
+      // Ensure QR code is generated first
+      if (!qrCode) {
+        toast.error('Attendere generazione QR code...');
+        return;
+      }
+
       toast.info('Generazione PDF in corso...');
+
+      // Wait for all images (including QR code) to load
+      const images = previewElement.querySelectorAll('img');
+      await Promise.all(
+        Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+            // Timeout after 5 seconds
+            setTimeout(() => resolve(null), 5000);
+          });
+        })
+      );
+
+      // Small delay to ensure rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Capture the receipt as canvas with high quality
       const canvas = await html2canvas(previewElement, {
@@ -186,7 +211,10 @@ export function SaleReceiptDialog({
         backgroundColor: '#ffffff',
         width: 300,
         windowWidth: 300,
-        logging: false
+        logging: false,
+        allowTaint: true,
+        useCORS: true,
+        imageTimeout: 0
       });
 
       // Calculate dimensions for thermal receipt (80mm width)

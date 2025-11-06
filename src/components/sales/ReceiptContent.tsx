@@ -33,10 +33,10 @@ export function ReceiptContent({
         fontSize: '11px',
         lineHeight: '1.3'
       }}>
-          {receiptData.companyInfo.address.map((line, index) => <React.Fragment key={index}>
+          {receiptData.companyInfo.address.map((line, index) => <span key={index}>
               {line}
               {index < receiptData.companyInfo.address.length - 1 && <br />}
-            </React.Fragment>)}
+            </span>)}
           <br />
           P. IVA: {receiptData.companyInfo.vatNumber}<br />
           Tel: {receiptData.companyInfo.phone}
