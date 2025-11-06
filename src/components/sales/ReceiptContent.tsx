@@ -13,7 +13,10 @@ export function ReceiptContent({
 }: ReceiptContentProps) {
   // Generate unified receipt data
   const receiptData = ReceiptDataService.generateReceiptData(sale, clientName);
-  return <>
+  return <div style={{ 
+    color: '#000',
+    textDecoration: 'none'
+  }}>
       {/* Company Header */}
       <div style={{
       textAlign: 'center',
@@ -190,7 +193,8 @@ export function ReceiptContent({
         width: '60px',
         height: '60px',
         margin: '0 auto',
-        border: '1px solid #000'
+        border: '1px solid #000',
+        display: 'block'
       }} /> : <div data-qr-url={qrCode} style={{
         width: '60px',
         height: '60px',
@@ -225,7 +229,7 @@ export function ReceiptContent({
       fontWeight: 'bold',
       width: '100%'
     }}>
-        <p>{receiptData.legalTerms.termsText}</p>
+        <p style={{ margin: 0 }}>{receiptData.legalTerms.termsText}</p>
       </div>
 
       {/* Final Footer */}
@@ -235,5 +239,5 @@ export function ReceiptContent({
     }}>
         {receiptData.legalTerms.fiscalDisclaimer}
       </div>
-    </>;
+    </div>;
 }

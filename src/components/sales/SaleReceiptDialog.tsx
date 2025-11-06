@@ -277,7 +277,10 @@ Cliente: ${clientName}`;
               fontSize: '11px',
               lineHeight: '1.2',
               width: '300px',
-              margin: '0 auto'
+              margin: '0 auto',
+              color: '#000',
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale'
             }}
           >
             <ReceiptContent 
