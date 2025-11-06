@@ -205,16 +205,24 @@ Cliente: ${clientName}`;
       // Small delay to ensure rendering is complete
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Capture the receipt as canvas with high quality
+      // Get the actual scroll height to capture full content
+      const scrollHeight = previewElement.scrollHeight;
+      const scrollWidth = previewElement.scrollWidth;
+
+      // Capture the receipt as canvas with full height
       const canvas = await html2canvas(previewElement, {
         scale: 2,
         backgroundColor: '#ffffff',
-        width: 300,
-        windowWidth: 300,
+        width: scrollWidth,
+        height: scrollHeight,
+        windowWidth: scrollWidth,
+        windowHeight: scrollHeight,
         logging: false,
         allowTaint: true,
         useCORS: true,
-        imageTimeout: 0
+        imageTimeout: 0,
+        scrollY: -window.scrollY,
+        scrollX: -window.scrollX,
       });
 
       // Calculate dimensions for thermal receipt (80mm width)
