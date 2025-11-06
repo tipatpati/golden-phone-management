@@ -259,8 +259,8 @@ export const TransactionsTable = React.memo(function TransactionsTable({
         </Alert>
       )}
 
-      {/* Table */}
-      <div className="rounded-md border">
+      {/* Desktop Table View - Hidden on Mobile/Tablet */}
+      <div className="hidden lg:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -534,6 +534,242 @@ export const TransactionsTable = React.memo(function TransactionsTable({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile/Tablet Card View - Visible only on Mobile/Tablet */}
+      <div className="lg:hidden space-y-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : paginatedData.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground border rounded-lg bg-surface">
+            {debouncedSearchQuery
+              ? `No transactions found for "${debouncedSearchQuery}"`
+              : 'No transactions found'
+            }
+          </div>
+        ) : (
+          paginatedData.map((transaction) => {
+            const isSelected = selectedIds.includes(transaction.id);
+            const isExpanded = expandedTransactions.has(transaction.id);
+            const hasItems = transaction.items && transaction.items.length > 0;
+            const matchedItems = searchTerm
+              ? transaction.items?.filter(item => itemMatchesSearch(item, searchTerm)) || []
+              : [];
+
+            return (
+              <div
+                key={transaction.id}
+                className={cn(
+                  "border rounded-lg p-4 space-y-3 transition-all",
+                  isSelected && "bg-muted/50 border-primary",
+                  matchedItems.length > 0 && "bg-blue-50/30 border-blue-200",
+                  "hover:shadow-md cursor-pointer"
+                )}
+                onClick={() => {
+                  setSelectedTransaction(transaction);
+                  setShowDetailsDialog(true);
+                }}
+              >
+                {/* Header Row */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <Checkbox
+                      checked={isSelected}
+                      onClick={(e) => e.stopPropagation()}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedIds(prev => [...prev, transaction.id]);
+                        } else {
+                          setSelectedIds(prev => prev.filter(id => id !== transaction.id));
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="font-medium font-mono text-sm break-all">
+                        {transaction.transaction_number}
+                      </div>
+                      <div className="text-sm text-muted-foreground truncate">
+                        {transaction.suppliers?.name || 'Unknown'}
+                      </div>
+                      {matchedItems.length > 0 && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
+                          {matchedItems.length} matched
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {hasItems && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 shrink-0"
+                      onClick={(e) => toggleTransactionExpansion(transaction.id, e)}
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Type</div>
+                    <Badge className={getTypeColor(transaction.type)}>
+                      {transaction.type}
+                    </Badge>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Status</div>
+                    <Badge className={getStatusColor(transaction.status)}>
+                      {transaction.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Date</div>
+                    <div className="font-medium">
+                      {new Date(transaction.transaction_date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Amount</div>
+                    <div className="font-semibold text-primary">
+                      {formatCurrency(transaction.total_amount)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedTransaction(transaction);
+                      setShowDetailsDialog(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">View</span>
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedTransaction(transaction);
+                      setShowEditDialog(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    className="flex-1 text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      setSelectedTransaction(transaction);
+                      setShowDeleteDialog(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </Button>
+                  {transaction.type === 'purchase' && transaction.status === 'completed' && (
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTransaction(transaction);
+                        setShowPrintDialog(true);
+                      }}
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Expanded Items for Mobile */}
+                {isExpanded && hasItems && (
+                  <div className="mt-3 pt-3 border-t space-y-2">
+                    {(searchTerm && searchTerm.trim()
+                      ? transaction.items!.filter(item => itemMatchesSearch(item, searchTerm))
+                      : transaction.items!
+                    ).map((item) => {
+                      const isItemMatched = searchTerm && itemMatchesSearch(item, searchTerm);
+                      const hasUnits = item._enrichedUnits && item._enrichedUnits.length > 0;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={cn(
+                            "p-3 rounded-lg border-l-4 bg-muted/30",
+                            isItemMatched ? "border-l-blue-400 bg-blue-50/50" : "border-l-transparent"
+                          )}
+                        >
+                          <div className="flex items-start gap-2 mb-2">
+                            <Package className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm break-words">
+                                {item.products?.brand} {item.products?.model}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Qty: {item.quantity} × {formatCurrency(item.unit_cost)} = {formatCurrency(item.total_cost)}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Units */}
+                          {hasUnits && (
+                            <div className="mt-2 space-y-1.5">
+                              {(searchTerm && searchTerm.trim()
+                                ? item._enrichedUnits!.filter(unit => unitMatchesSearch(unit, searchTerm))
+                                : item._enrichedUnits!
+                              ).map((unit) => {
+                                const isUnitMatched = searchTerm && unitMatchesSearch(unit, searchTerm);
+
+                                return (
+                                  <div
+                                    key={unit.id}
+                                    className={cn(
+                                      "flex items-center gap-2 text-xs p-2 rounded bg-background/50",
+                                      isUnitMatched && "bg-yellow-50 ring-1 ring-yellow-200"
+                                    )}
+                                  >
+                                    {unit.serial_number && (
+                                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                                        <Hash className="h-3 w-3 text-muted-foreground shrink-0" />
+                                        <span className="font-mono truncate">{unit.serial_number}</span>
+                                      </div>
+                                    )}
+                                    {unit.barcode && (
+                                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                                        <Barcode className="h-3 w-3 text-muted-foreground shrink-0" />
+                                        <span className="font-mono truncate">{unit.barcode}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Pagination */}
