@@ -105,16 +105,16 @@ export const gridVariants = cva(
   }
 );
 
-// Responsive dialog pattern
+// Responsive dialog pattern - Mobile-first with full-height on mobile
 export const responsiveDialogVariants = cva(
-  "w-[95vw] sm:w-full overflow-y-auto",
+  "w-full sm:w-[95vw] md:w-full overflow-y-auto rounded-none sm:rounded-lg",
   {
     variants: {
       size: {
-        sm: "max-w-md md:max-w-lg max-h-[85vh] p-4 sm:p-6 md:p-8",
-        md: "max-w-2xl md:max-w-3xl max-h-[85vh] md:max-h-[90vh] p-4 sm:p-6 md:p-10",
-        lg: "max-w-4xl md:max-w-5xl max-h-[85vh] md:max-h-[92vh] p-4 sm:p-6 md:p-12",
-        xl: "max-w-[90vw] xl:max-w-7xl max-h-[90vh] md:max-h-[94vh] p-6 sm:p-8 md:p-14",
+        sm: "h-full sm:h-auto max-h-screen sm:max-h-[85vh] sm:max-w-md md:max-w-lg p-4 sm:p-6",
+        md: "h-full sm:h-auto max-h-screen sm:max-h-[90vh] sm:max-w-2xl md:max-w-3xl p-4 sm:p-6",
+        lg: "h-full sm:h-auto max-h-screen sm:max-h-[92vh] sm:max-w-4xl md:max-w-5xl p-4 sm:p-6",
+        xl: "h-full sm:h-auto max-h-screen sm:max-h-[94vh] sm:max-w-[90vw] xl:max-w-7xl p-4 sm:p-6 md:p-8",
       }
     },
     defaultVariants: {
