@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/enhanced-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/enhanced-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Phone, Building, Calendar, Edit, Trash2 } from "lucide-react";
+import { Mail, Phone, Building, Calendar, Edit, Trash2, KeyRound } from "lucide-react";
 import { Employee } from "@/services/employees/types";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
+import { useAuth } from "@/contexts/AuthContext";
+import { ChangePasswordDialog } from "../ChangePasswordDialog";
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -15,6 +17,10 @@ interface EmployeeCardProps {
 }
 
 export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: EmployeeCardProps) {
+  const { userRole } = useAuth();
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const isSuperAdmin = userRole === 'super_admin';
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
@@ -154,7 +160,7 @@ export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: Em
           )}
         </div>
 
-        {(onEdit || onDelete) && (
+        {(onEdit || onDelete || isSuperAdmin) && (
           <div className="flex justify-end space-x-2 pt-4 border-t">
             {onEdit && (
               <Button
@@ -165,6 +171,17 @@ export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: Em
               >
                 <Edit className="h-4 w-4" />
                 <span>Modifica</span>
+              </Button>
+            )}
+            {isSuperAdmin && employee.profile_id && (
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={() => setPasswordDialogOpen(true)}
+                className="flex items-center space-x-1"
+              >
+                <KeyRound className="h-4 w-4" />
+                <span>Password</span>
               </Button>
             )}
             {onDelete && (
@@ -179,6 +196,15 @@ export function EmployeeCard({ employee, onEdit, onDelete, compact = false }: Em
               </Button>
             )}
           </div>
+        )}
+
+        {isSuperAdmin && employee.profile_id && (
+          <ChangePasswordDialog
+            open={passwordDialogOpen}
+            onOpenChange={setPasswordDialogOpen}
+            employeeId={employee.profile_id}
+            employeeName={`${employee.first_name} ${employee.last_name}`}
+          />
         )}
       </CardContent>
     </Card>
