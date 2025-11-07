@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select";
 import { UserRole, ROLE_CONFIGS } from "@/types/roles";
 import { EmployeeFormData, EMPLOYEE_DEPARTMENTS, EMPLOYEE_POSITIONS, EMPLOYEE_STATUS_OPTIONS } from "./types";
+import { useStore } from "@/contexts/store/StoreContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EmployeeWorkInfoProps {
   formData: EmployeeFormData;
@@ -24,8 +26,32 @@ export function EmployeeWorkInfo({
   onFieldChange, 
   onFieldBlur 
 }: EmployeeWorkInfoProps) {
+  const { userStores, isSuperAdmin } = useStore();
+  const { userRole } = useAuth();
+  const canAssignStore = userRole === 'super_admin' || userRole === 'admin';
+  
   return (
     <div className="space-y-4">
+      {canAssignStore && userStores.length > 0 && (
+        <div>
+          <Label htmlFor="store_id">Negozio *</Label>
+          <Select value={formData.store_id} onValueChange={(value) => onFieldChange("store_id", value)}>
+            <SelectTrigger className={errors.store_id ? "border-destructive" : ""}>
+              <SelectValue placeholder="Seleziona un negozio" />
+            </SelectTrigger>
+            <SelectContent>
+              {userStores.map((store) => (
+                <SelectItem key={store.id} value={store.id}>
+                  {store.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.store_id && (
+            <p className="text-sm text-destructive mt-1">{errors.store_id}</p>
+          )}
+        </div>
+      )}
       <div>
         <Label htmlFor="role">Ruolo *</Label>
         <Select value={formData.role} onValueChange={(value) => onFieldChange("role", value)}>
