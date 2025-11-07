@@ -20,16 +20,10 @@ export default function Login() {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sanitizedEmail = sanitizeEmail(email) || sanitizeInput(email);
+    const sanitizedEmail = sanitizeInput(email);
     const sanitizedPassword = sanitizeInput(password);
     if (!sanitizedEmail || !sanitizedPassword) {
       toast.error("Inserisci credenziali valide");
-      return;
-    }
-
-    // Basic password strength check
-    if (sanitizedPassword.length < 6) {
-      toast.error("La password deve essere di almeno 6 caratteri");
       return;
     }
     setIsLoading(true);
@@ -82,7 +76,7 @@ export default function Login() {
               </Label>
               <Input 
                 id="email" 
-                type="email" 
+                type="text" 
                 value={email} 
                 onChange={e => setEmail(sanitizeInput(e.target.value))} 
                 placeholder="Inserisci la tua email" 
@@ -107,7 +101,6 @@ export default function Login() {
                   placeholder="Inserisci la tua password" 
                   className="h-12 pr-12 bg-white/10 backdrop-blur-md border-white/30 text-white placeholder:text-white/70 focus:border-white/40 focus:text-black hover:text-black transition-all duration-200 focus:scale-[1.02]" 
                   maxLength={128} 
-                  minLength={6} 
                   required 
                 />
                 <button 
