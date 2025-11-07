@@ -26,11 +26,18 @@ serve(async (req) => {
       }
     )
 
-    const { email, password, role = 'salesperson', first_name, last_name } = await req.json()
+    const { email, password, role = 'salesperson', first_name, last_name, store_id } = await req.json()
 
     if (!email || !password) {
       return new Response(
         JSON.stringify({ error: 'Email e password sono obbligatori' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!store_id) {
+      return new Response(
+        JSON.stringify({ error: 'Il negozio è obbligatorio' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }

@@ -34,6 +34,11 @@ export class EmployeeCreationService {
   }
 
   static async createEmployee(formData: EmployeeFormData): Promise<{ employee: any; tempPassword: string }> {
+    // Validate store_id is present
+    if (!formData.store_id) {
+      throw new Error("Il negozio è obbligatorio per creare un dipendente");
+    }
+
     // Generate a temporary password if not provided
     const tempPassword = formData.password || generateRandomPassword();
     logger.info("Creating employee using secure edge function", {}, 'EmployeeCreationService');
@@ -46,7 +51,8 @@ export class EmployeeCreationService {
           password: tempPassword,
           role: formData.role,
           first_name: formData.first_name,
-          last_name: formData.last_name
+          last_name: formData.last_name,
+          store_id: formData.store_id
         }
       });
 

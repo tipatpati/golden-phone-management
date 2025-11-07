@@ -49,6 +49,10 @@ export function useEmployeeValidation() {
         if (!value) return 'Ruolo è obbligatorio';
         return '';
 
+      case 'store_id':
+        if (!value) return 'Negozio è obbligatorio';
+        return '';
+
       default:
         return '';
     }
