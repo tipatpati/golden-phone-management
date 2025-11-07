@@ -158,40 +158,37 @@ const Suppliers = () => {
         <TabsContent value="transactions" className="space-y-4 sm:space-y-6">
           <Card variant="elevated" className="glass-card border-glow">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex flex-col gap-4">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-on-surface">
                   <Receipt className="h-5 w-5 text-primary" />
                   Transaction History
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <Button 
                     variant="outlined"
                     onClick={() => setShowAcquisitionDialog(true)}
-                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    className="flex items-center justify-center gap-2 text-sm min-h-[44px] w-full sm:w-auto"
                     size="sm"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    <span className="hidden sm:inline">New Acquisition</span>
-                    <span className="sm:hidden">Acquire</span>
+                    <span>New Acquisition</span>
                   </Button>
                   <Button 
                     variant="outlined"
                     onClick={() => setShowRecoveryDialog(true)}
-                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    className="flex items-center justify-center gap-2 text-sm min-h-[44px] w-full sm:w-auto"
                     size="sm"
                   >
                     <Package2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Recover Units</span>
-                    <span className="sm:hidden">Recover</span>
+                    <span>Recover Units</span>
                   </Button>
                   <Button 
                     onClick={() => setShowNewTransaction(true)}
-                    className="flex items-center gap-2 text-xs sm:text-sm"
+                    className="flex items-center justify-center gap-2 text-sm min-h-[44px] w-full sm:w-auto"
                     size="sm"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">New Transaction</span>
-                    <span className="sm:hidden">New</span>
+                    <span>New Transaction</span>
                   </Button>
                 </div>
               </div>
