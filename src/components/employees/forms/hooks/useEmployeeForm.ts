@@ -1,10 +1,13 @@
 import { useState, useCallback } from "react";
 import { EmployeeFormData, getInitialEmployeeFormData } from "../types";
 import { useEmployeeValidation } from "./useEmployeeValidation";
+import { useCurrentStoreId } from "@/contexts/store/StoreContext";
 
 export function useEmployeeForm(initialData?: Partial<EmployeeFormData>) {
+  const currentStoreId = useCurrentStoreId();
+  
   const [formData, setFormData] = useState<EmployeeFormData>(() => ({
-    ...getInitialEmployeeFormData(),
+    ...getInitialEmployeeFormData(currentStoreId || undefined),
     ...initialData
   }));
 
@@ -32,11 +35,11 @@ export function useEmployeeForm(initialData?: Partial<EmployeeFormData>) {
 
   const resetForm = useCallback((newData?: Partial<EmployeeFormData>) => {
     setFormData({
-      ...getInitialEmployeeFormData(),
+      ...getInitialEmployeeFormData(currentStoreId || undefined),
       ...newData
     });
     clearAllErrors();
-  }, [clearAllErrors]);
+  }, [currentStoreId, clearAllErrors]);
 
   const isValid = useCallback(() => {
     const validationErrors = validateForm(formData);

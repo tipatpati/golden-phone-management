@@ -25,7 +25,8 @@ export function EditEmployeeDialog({ employee, open, onClose, onSuccess }: EditE
     hire_date: employee.hire_date,
     status: employee.status,
     role: (employee.profiles?.role as UserRole) || "salesperson",
-    password: ""
+    password: "",
+    store_id: employee.store_id || "" // Preserve existing store_id
   });
   
   const { submitEmployee, isLoading } = useEditEmployeeForm(employee);

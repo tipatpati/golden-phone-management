@@ -15,7 +15,7 @@ export interface EmployeeFormData {
   store_id: string;
 }
 
-export const getInitialEmployeeFormData = (): EmployeeFormData => ({
+export const getInitialEmployeeFormData = (storeId?: string): EmployeeFormData => ({
   first_name: "",
   last_name: "",
   email: "",
@@ -27,7 +27,7 @@ export const getInitialEmployeeFormData = (): EmployeeFormData => ({
   status: "active",
   role: "salesperson" as UserRole,
   password: "",
-  store_id: "", // Will be set by the form component
+  store_id: storeId || "", // Set from current store context
 });
 
 export const EMPLOYEE_DEPARTMENTS = [

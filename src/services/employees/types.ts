@@ -13,6 +13,7 @@ export interface Employee extends BaseEntity {
   salary?: number;
   status: 'active' | 'inactive' | 'terminated';
   notes?: string;
+  store_id?: string; // Store assignment
   profiles?: {
     role: string;
     username: string;
