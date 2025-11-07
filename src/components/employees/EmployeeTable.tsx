@@ -151,67 +151,12 @@ export const EmployeeTable = React.memo(function EmployeeTable({ employees, isLo
 
   return (
     <>
-      {/* Desktop Table Layout */}
-      <div className="hidden lg:block">
-        <DataTable
-          data={employees}
-          columns={columns}
-          actions={actions}
-          getRowKey={(employee) => employee.id}
-        />
-      </div>
-
-      {/* Mobile & Tablet Card Layout */}
-      <div className="lg:hidden grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-        {employees.map((employee) => (
-          <DataCard
-            key={employee.id}
-            title={`${employee.first_name} ${employee.last_name}`}
-            subtitle={employee.email}
-            icon={<User className="h-5 w-5 text-primary" />}
-            badge={{
-              text: employee.status,
-              variant: getStatusColor(employee.status) as any
-            }}
-            fields={[
-              {
-                label: "Role",
-                value: getRoleName(employee.profiles?.role || "salesperson")
-              },
-              {
-                label: "Department",
-                value: employee.department || "N/A"
-              },
-              {
-                label: "Position",
-                value: employee.position || "N/A"
-              },
-              ...(employee.hire_date ? [{
-                label: "Hire Date",
-                value: new Date(employee.hire_date).toLocaleDateString()
-              }] : []),
-              ...(employee.salary ? [{
-                label: "Salary",
-                value: <span className="text-base font-bold text-primary">€{employee.salary.toLocaleString()}</span>
-              }] : [])
-            ]}
-            actions={[
-              {
-                icon: <Edit2 className="h-3 w-3 mr-1" />,
-                label: "Edit",
-                onClick: () => onEdit(employee)
-              },
-              {
-                icon: <Trash2 className="h-3 w-3 mr-1" />,
-                label: "Delete",
-                onClick: () => handleDeleteEmployee(employee),
-                variant: "outlined",
-                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              }
-            ]}
-          />
-        ))}
-      </div>
+      <DataTable
+        data={employees}
+        columns={columns}
+        actions={actions}
+        getRowKey={(employee) => employee.id}
+      />
 
       {/* Confirm Dialog */}
       <ConfirmDialog

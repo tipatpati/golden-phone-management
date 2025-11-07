@@ -8,8 +8,6 @@ import { ContactSupplierDialog } from "./ContactSupplierDialog";
 import { SupplierDetailsDialog } from "./SupplierDetailsDialog";
 import { SupplierProductsDialog } from "./dialogs/SupplierProductsDialog";
 import { useSuppliers } from "@/services";
-import { usePagination } from "@/hooks/usePagination";
-import { TablePagination } from "@/components/ui/table-pagination";
 
 interface SuppliersTableProps {
   searchTerm: string;
@@ -32,13 +30,6 @@ export const SuppliersTable = React.memo(function SuppliersTable({ searchTerm }:
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  // CRITICAL: Mobile pagination MUST be called before any early returns to avoid hook violations
-  const {
-    currentPage: mobilePage,
-    totalPages: mobileTotalPages,
-    paginatedData: paginatedMobileSuppliers,
-    goToPage: mobileGoToPage
-  } = usePagination({ data: filteredSuppliers, itemsPerPage: 17 });
 
   const handleDeleteSupplier = (supplier: any) => {
     showConfirmDialog({
@@ -165,100 +156,12 @@ export const SuppliersTable = React.memo(function SuppliersTable({ searchTerm }:
 
   return (
     <>
-      {/* Desktop Table Layout */}
-      <div className="hidden lg:block">
-        <DataTable
-          data={filteredSuppliers}
-          columns={columns}
-          actions={actions}
-          getRowKey={(supplier) => supplier.id}
-        />
-      </div>
-
-      {/* Mobile & Tablet Card Layout */}
-      <div className="lg:hidden space-y-4">
-        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
-          {paginatedMobileSuppliers.map((supplier) => (
-          <DataCard
-            key={supplier.id}
-            title={supplier.name}
-            subtitle={supplier.contact_person}
-            icon={<Building className="h-5 w-5 text-blue-600" />}
-            badge={{
-              text: supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1),
-              variant: getStatusColor(supplier.status) as any
-            }}
-            fields={[
-              ...(supplier.email ? [{
-                label: "Email",
-                value: (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-3 w-3 text-muted-foreground" />
-                    {supplier.email}
-                  </div>
-                )
-              }] : []),
-              ...(supplier.phone ? [{
-                label: "Phone",
-                value: (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-3 w-3 text-muted-foreground" />
-                    {supplier.phone}
-                  </div>
-                )
-              }] : [])
-            ]}
-            actions={[
-              {
-                icon: <Eye className="h-3 w-3 mr-1" />,
-                label: "View",
-                onClick: () => {
-                  console.log('Mobile View clicked for supplier:', supplier.id);
-                  setViewingSupplier(supplier);
-                }
-              },
-              {
-                icon: <MessageCircle className="h-3 w-3 mr-1" />,
-                label: "Contact",
-                onClick: () => {
-                  console.log('Mobile Contact clicked for supplier:', supplier.id);
-                  setContactingSupplier(supplier);
-                }
-              },
-              {
-                icon: <Edit2 className="h-3 w-3 mr-1" />,
-                label: "Edit",
-                onClick: () => {
-                  console.log('Mobile Edit clicked for supplier:', supplier.id);
-                  setEditingSupplier(supplier);
-                }
-              },
-              {
-                icon: <Trash2 className="h-3 w-3 mr-1" />,
-                label: "Delete",
-                onClick: () => {
-                  console.log('Mobile Delete clicked for supplier:', supplier.id);
-                  handleDeleteSupplier(supplier);
-                },
-                variant: "outlined",
-                className: "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
-              }
-            ]}
-          />
-        ))}
-        </div>
-        
-        {/* Mobile Pagination */}
-        {filteredSuppliers.length > 0 && (
-          <TablePagination
-            currentPage={mobilePage}
-            totalPages={mobileTotalPages}
-            onPageChange={mobileGoToPage}
-            pageSize={17}
-            totalItems={filteredSuppliers.length}
-          />
-        )}
-      </div>
+      <DataTable
+        data={filteredSuppliers}
+        columns={columns}
+        actions={actions}
+        getRowKey={(supplier) => supplier.id}
+      />
 
       {/* Confirm Dialog */}
       <ConfirmDialog

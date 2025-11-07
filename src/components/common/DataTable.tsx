@@ -144,6 +144,79 @@ export function DataTable<T>({
         )}
       </div>
 
+      {/* Mobile/Tablet Card View */}
+      <div className="lg:hidden space-y-4">
+        {paginatedData.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground border rounded-lg bg-surface">
+            No data available
+          </div>
+        ) : (
+          paginatedData.map((item) => (
+            <div
+              key={getRowKey(item)}
+              className="border rounded-lg p-4 space-y-3 transition-all hover:shadow-md cursor-pointer bg-surface"
+              onClick={onRowClick ? () => onRowClick(item) : undefined}
+            >
+              {/* Header with first column data */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {columns[0]?.render 
+                    ? columns[0].render(item[columns[0].key], item)
+                    : String(item[columns[0]?.key] || '-')
+                  }
+                </div>
+              </div>
+
+              {/* Details Grid - Remaining columns */}
+              {columns.length > 1 && (
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {columns.slice(1).map((column) => (
+                    <div key={String(column.key)}>
+                      <div className="text-xs text-muted-foreground mb-1">{column.header}</div>
+                      <div className="font-medium">
+                        {column.render 
+                          ? column.render(item[column.key], item)
+                          : String(item[column.key] || '-')
+                        }
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {actions.length > 0 && (
+                <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+                  {actions.map((action, index) => 
+                    action.renderCustom ? (
+                      <div key={index} className="flex-1">
+                        {action.renderCustom(item)}
+                      </div>
+                    ) : (
+                      <Button
+                        key={index}
+                        variant="outlined"
+                        size="sm"
+                        className={`flex-1 ${action.variant === 'destructive' ? 'text-destructive hover:bg-destructive/10' : ''} ${action.className || ''}`}
+                        onClick={() => {
+                          logger.debug('DataTable mobile action clicked', { action: action.label, item }, 'DataTable');
+                          if (typeof action.onClick === 'function') {
+                            action.onClick(item);
+                          }
+                        }}
+                      >
+                        {action.icon}
+                        <span className="hidden sm:inline ml-1">{action.label}</span>
+                      </Button>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Pagination */}
       {totalItems > 0 && (
         <TablePagination
