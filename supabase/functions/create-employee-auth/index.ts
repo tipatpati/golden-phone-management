@@ -120,6 +120,21 @@ serve(async (req) => {
         )
       }
 
+      // Ensure user is assigned to the store (idempotent)
+      const { error: storeAssignmentError } = await supabaseAdmin
+        .from('user_stores')
+        .upsert(
+          { user_id: existingUser.id, store_id: store_id, is_default: true },
+          { onConflict: 'user_id,store_id', ignoreDuplicates: false }
+        )
+      if (storeAssignmentError) {
+        console.error('Store assignment failed for existing user:', storeAssignmentError)
+        return new Response(
+          JSON.stringify({ error: 'Errore nell\'assegnazione al negozio' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       // Audit log for linking existing auth user
       await supabaseAdmin
         .from('security_audit_log')
@@ -223,7 +238,26 @@ serve(async (req) => {
         )
       }
 
-      console.log('Profile and role created successfully for user:', authUser.user.id)
+      // Assign user to the store
+      const { error: storeAssignmentError } = await supabaseAdmin
+        .from('user_stores')
+        .insert({
+          user_id: authUser.user.id,
+          store_id: store_id,
+          is_default: true
+        })
+
+      if (storeAssignmentError) {
+        console.error('Failed to assign user to store:', storeAssignmentError)
+        // Clean up auth user if store assignment fails
+        await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+        return new Response(
+          JSON.stringify({ error: 'Errore nell\'assegnazione al negozio' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log('Profile, role, and store assignment created successfully for user:', authUser.user.id)
       
       // Log successful employee creation for security audit
       await supabaseAdmin
