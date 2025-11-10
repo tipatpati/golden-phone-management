@@ -24,13 +24,15 @@ import { useBrandSuggestions } from '@/hooks/useProductNameSuggestions';
 const { brandSuggestions, isLoading } = useBrandSuggestions();
 ```
 
-### 3. **useModelSuggestions** (Models for specific brand)
+### 3. **useModelSuggestions** (Models for specific brand and category)
 ```tsx
 import { useModelSuggestions } from '@/hooks/useProductNameSuggestions';
 
 const [selectedBrand, setSelectedBrand] = useState('Apple');
-const { modelSuggestions, isLoading } = useModelSuggestions(selectedBrand);
-// Returns only models for "Apple"
+const [selectedCategory, setSelectedCategory] = useState(1); // Smartphones
+const { modelSuggestions, isLoading } = useModelSuggestions(selectedBrand, selectedCategory);
+// Returns only Apple smartphone models (iPhone 15, iPhone 14, etc.)
+// Won't show iPads or MacBooks if category is Smartphones
 ```
 
 ### 4. **useEnhancedBrandSuggestions** (With fallback brands)
