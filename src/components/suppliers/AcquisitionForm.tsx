@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, PackagePlus } from 'lucide-react';
+import { ScrollableDropdown, useDropdownKeyboard, type DropdownItem } from '@/components/ui/scrollable-dropdown';
+import { Package, PackagePlus, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { useSimpleDraft } from '@/hooks/useSimpleDraft';
 import { SimpleDraftButton } from '@/components/ui/simple-draft-button';
 import { SimpleDraftDialog } from '@/components/ui/simple-draft-dialog';
@@ -41,6 +42,8 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const [hasCheckedInitialDraft, setHasCheckedInitialDraft] = useState(false);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>('');
   const [validationSummary, setValidationSummary] = useState<any>(null);
+  const [supplierSearchQuery, setSupplierSearchQuery] = useState('');
+  const [showSupplierSuggestions, setShowSupplierSuggestions] = useState(false);
 
   const { data: suppliers } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -50,17 +53,59 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
   const { uniqueBrands, uniqueModels } = useMemo(() => {
     const brands = new Set<string>();
     const models = new Set<string>();
-    
+
     products.forEach(product => {
       if (product.brand) brands.add(product.brand);
       if (product.model) models.add(product.model);
     });
-    
+
     return {
       uniqueBrands: Array.from(brands),
       uniqueModels: Array.from(models)
     };
   }, [products]);
+
+  // Get selected supplier
+  const selectedSupplier = useMemo(() => {
+    return suppliers?.find(s => s.id === selectedSupplierId);
+  }, [suppliers, selectedSupplierId]);
+
+  // Filter suppliers by search query
+  const filteredSuppliers = useMemo(() => {
+    if (!suppliers || !Array.isArray(suppliers)) return [];
+
+    const searchLower = supplierSearchQuery.toLowerCase();
+    return suppliers.filter(supplier =>
+      supplier.name.toLowerCase().includes(searchLower)
+    ).slice(0, 50); // Limit to 50 results for performance
+  }, [suppliers, supplierSearchQuery]);
+
+  // Convert suppliers to dropdown items
+  const supplierDropdownItems: DropdownItem[] = useMemo(() => {
+    return filteredSuppliers.map(supplier => ({
+      id: supplier.id,
+      label: supplier.name,
+      value: supplier.id,
+    }));
+  }, [filteredSuppliers]);
+
+  // Keyboard navigation for supplier dropdown
+  const {
+    selectedIndex: supplierSelectedIndex,
+    setSelectedIndex: setSupplierSelectedIndex,
+    handleKeyDown: handleSupplierKeyDown
+  } = useDropdownKeyboard(
+    showSupplierSuggestions,
+    supplierDropdownItems.length,
+    () => {
+      if (supplierSelectedIndex >= 0 && supplierSelectedIndex < filteredSuppliers.length) {
+        handleSupplierSelect(filteredSuppliers[supplierSelectedIndex].id);
+      }
+    },
+    () => {
+      setShowSupplierSuggestions(false);
+    }
+  );
 
   const form = useForm<AcquisitionFormData>({
     resolver: zodResolver(acquisitionSchema),
@@ -114,6 +159,41 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
     draft.clearDraft();
     setShowDraftDialog(false);
   };
+
+  const handleSupplierSelect = (supplierId: string) => {
+    form.setValue('supplierId', supplierId);
+    setSelectedSupplierId(supplierId);
+    setSupplierSearchQuery('');
+    setShowSupplierSuggestions(false);
+    setSupplierSelectedIndex(-1);
+  };
+
+  const handleSupplierClear = () => {
+    form.setValue('supplierId', '');
+    setSelectedSupplierId('');
+    setSupplierSearchQuery('');
+    setShowSupplierSuggestions(false);
+  };
+
+  const handleSupplierInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSupplierSearchQuery(e.target.value);
+    setShowSupplierSuggestions(true);
+  };
+
+  const handleSupplierBlur = () => {
+    setTimeout(() => setShowSupplierSuggestions(false), 150);
+  };
+
+  const handleSupplierFocus = () => {
+    if (supplierSearchQuery && filteredSuppliers.length > 0) {
+      setShowSupplierSuggestions(true);
+    }
+  };
+
+  // Reset selected index when search query changes
+  useEffect(() => {
+    setSupplierSelectedIndex(-1);
+  }, [supplierSearchQuery, setSupplierSelectedIndex]);
 
   const addNewProductItem = useCallback(async () => {
     const newItem: AcquisitionItem = {
@@ -337,21 +417,54 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="supplierId">Supplier</Label>
-                <Select onValueChange={(value) => {
-                  form.setValue('supplierId', value);
-                  setSelectedSupplierId(value);
-                }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers && Array.isArray(suppliers) && suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  {selectedSupplier ? (
+                    <div className={cn(
+                      "flex items-center justify-between gap-2 p-2 border rounded-md bg-background",
+                      form.formState.errors.supplierId && "border-destructive"
+                    )}>
+                      <span className="text-sm flex-1">
+                        {selectedSupplier.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSupplierClear}
+                        className="p-1 hover:bg-muted rounded transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={supplierSearchQuery}
+                          onChange={handleSupplierInputChange}
+                          onKeyDown={handleSupplierKeyDown}
+                          onBlur={handleSupplierBlur}
+                          onFocus={handleSupplierFocus}
+                          placeholder="Search suppliers..."
+                          className={cn(
+                            "pl-9",
+                            form.formState.errors.supplierId && "border-destructive"
+                          )}
+                        />
+                      </div>
+
+                      <ScrollableDropdown
+                        isOpen={showSupplierSuggestions && (filteredSuppliers.length > 0 || supplierSearchQuery.length > 0)}
+                        items={supplierDropdownItems}
+                        selectedIndex={supplierSelectedIndex}
+                        onItemSelect={(item) => handleSupplierSelect(item.value as string)}
+                        onSelectedIndexChange={setSupplierSelectedIndex}
+                        emptyMessage="No suppliers found"
+                        maxHeight="md"
+                        variant="plain"
+                      />
+                    </>
+                  )}
+                </div>
                 {form.formState.errors.supplierId && (
                   <p className="text-sm text-red-500">{form.formState.errors.supplierId.message}</p>
                 )}
