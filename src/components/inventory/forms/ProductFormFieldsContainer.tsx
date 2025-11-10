@@ -1,5 +1,8 @@
 import React from "react";
 import { FormField } from "./ProductFormFields";
+import { Label } from "@/components/ui/label";
+import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
+import { useEnhancedBrandSuggestions, useModelSuggestions } from "@/hooks/useProductNameSuggestions";
 import type { ProductFormData } from "@/services/inventory/types";
 
 interface ProductFormFieldsProps {
@@ -28,29 +31,58 @@ export function ProductFormFields({
 }: ProductFormFieldsProps) {
   // Super admins can edit any product, or non-serialized products can be edited
   const isStockEditable = isSuperAdmin || !formData.has_serial;
-  
+
+  // Get brand and model suggestions
+  const { brandSuggestions } = useEnhancedBrandSuggestions();
+  const { modelSuggestions } = useModelSuggestions(formData.brand);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Brand"
-          type="input"
-          value={formData.brand || ""}
-          onChange={(value) => onFieldChange("brand", value)}
-          placeholder="e.g., Apple, Samsung"
-          error={getFieldError("brand")}
-          required
-        />
-        
-        <FormField
-          label="Model"
-          type="input"
-          value={formData.model || ""}
-          onChange={(value) => onFieldChange("model", value)}
-          placeholder="e.g., iPhone 13"
-          error={getFieldError("model")}
-          required
-        />
+        {/* Brand Field with Autocomplete */}
+        <div className="space-y-2">
+          <Label htmlFor="brand" className="text-sm font-medium flex items-center gap-1">
+            Brand
+            <span className="text-destructive">*</span>
+          </Label>
+          <AutocompleteInput
+            value={formData.brand || ""}
+            onChange={(value) => onFieldChange("brand", value)}
+            suggestions={brandSuggestions}
+            entityTypes={[]} // Disable dynamic search, use static suggestions only
+            placeholder="e.g., Apple, Samsung"
+            className={getFieldError("brand") ? "border-destructive" : ""}
+          />
+          {getFieldError("brand") && (
+            <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+              <span className="inline-block w-1 h-1 bg-destructive rounded-full"></span>
+              {getFieldError("brand")}
+            </p>
+          )}
+        </div>
+
+        {/* Model Field with Autocomplete */}
+        <div className="space-y-2">
+          <Label htmlFor="model" className="text-sm font-medium flex items-center gap-1">
+            Model
+            <span className="text-destructive">*</span>
+          </Label>
+          <AutocompleteInput
+            value={formData.model || ""}
+            onChange={(value) => onFieldChange("model", value)}
+            suggestions={modelSuggestions}
+            entityTypes={[]} // Disable dynamic search
+            placeholder={formData.brand ? "e.g., iPhone 13" : "Select brand first"}
+            disabled={!formData.brand}
+            className={getFieldError("model") ? "border-destructive" : ""}
+          />
+          {getFieldError("model") && (
+            <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+              <span className="inline-block w-1 h-1 bg-destructive rounded-full"></span>
+              {getFieldError("model")}
+            </p>
+          )}
+        </div>
       </div>
 
         <FormField
