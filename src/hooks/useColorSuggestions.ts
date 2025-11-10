@@ -10,8 +10,9 @@ interface UseColorSuggestionsReturn {
 /**
  * Hook to get color suggestions from existing product units
  * Provides autocomplete suggestions for the color field
+ * @param categoryId - Optional category ID to filter colors by product category
  */
-export function useColorSuggestions(): UseColorSuggestionsReturn {
+export function useColorSuggestions(categoryId?: number): UseColorSuggestionsReturn {
   const [colors, setColors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +20,7 @@ export function useColorSuggestions(): UseColorSuggestionsReturn {
   // Common predefined colors for mobile devices
   const predefinedColors = [
     'Black',
-    'White', 
+    'White',
     'Silver',
     'Space Gray',
     'Gold',
@@ -49,12 +50,19 @@ export function useColorSuggestions(): UseColorSuggestionsReturn {
       setError(null);
 
       try {
-        // Get distinct colors from product_units table
-        const { data, error: queryError } = await supabase
+        // Build query - join with products to filter by category
+        let query = supabase
           .from('product_units')
-          .select('color')
+          .select('color, products!inner(category_id)')
           .not('color', 'is', null)
           .not('color', 'eq', '');
+
+        // Filter by category if provided
+        if (categoryId !== undefined) {
+          query = query.eq('products.category_id', categoryId);
+        }
+
+        const { data, error: queryError } = await query;
 
         if (queryError) {
           throw queryError;
@@ -75,7 +83,7 @@ export function useColorSuggestions(): UseColorSuggestionsReturn {
     };
 
     fetchUniqueColors();
-  }, []);
+  }, [categoryId]);
 
   // Combine predefined colors with database colors
   const colorSuggestions = useMemo(() => {
@@ -99,9 +107,12 @@ export function useColorSuggestions(): UseColorSuggestionsReturn {
 
 /**
  * Hook to filter color suggestions based on search query
+ * @param query - Search query to filter colors
+ * @param maxResults - Maximum number of results to return
+ * @param categoryId - Optional category ID to filter colors by product category
  */
-export function useFilteredColorSuggestions(query: string = '', maxResults: number = 10) {
-  const { colorSuggestions, isLoading, error } = useColorSuggestions();
+export function useFilteredColorSuggestions(query: string = '', maxResults: number = 10, categoryId?: number) {
+  const { colorSuggestions, isLoading, error } = useColorSuggestions(categoryId);
 
   const filteredSuggestions = useMemo(() => {
     if (!query.trim()) {

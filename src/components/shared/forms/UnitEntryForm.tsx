@@ -33,11 +33,12 @@ interface UnitEntryFormProps {
   onDefaultPricesUpdate?: (defaults: { price?: number; min_price?: number; max_price?: number }, templateName?: string) => void;
   preselectedSupplierId?: string; // When supplier is already selected from parent form
   categoryFieldConfig?: CategoryFieldConfig; // Field visibility based on category
+  categoryId?: number; // Category ID for filtering color suggestions
 }
 
-export function UnitEntryForm({ 
-  entries, 
-  setEntries, 
+export function UnitEntryForm({
+  entries,
+  setEntries,
   onStockChange,
   showPricing = true,
   title = "Product Units",
@@ -48,9 +49,10 @@ export function UnitEntryForm({
   enablePricingPreview = false,
   onDefaultPricesUpdate,
   preselectedSupplierId,
-  categoryFieldConfig
+  categoryFieldConfig,
+  categoryId
 }: UnitEntryFormProps) {
-  const { colorSuggestions } = useFilteredColorSuggestions();
+  const { colorSuggestions } = useFilteredColorSuggestions('', 10, categoryId);
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
   const { data: suppliers = [] } = useSuppliers() as { data: Supplier[] };
   const [pendingPricingChanges, setPendingPricingChanges] = useState<UnitEntryForm[]>([]);
@@ -331,6 +333,7 @@ export function UnitEntryForm({
                       value={entry.color || ''}
                       onChange={(value) => updateEntry(index, 'color', value)}
                       suggestions={colorSuggestions}
+                      entityTypes={[]}
                       placeholder="Black / White / Gold..."
                       className="text-sm h-10"
                       maxSuggestions={8}
