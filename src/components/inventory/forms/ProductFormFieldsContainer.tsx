@@ -34,7 +34,7 @@ export function ProductFormFields({
 
   // Get brand and model suggestions
   const { brandSuggestions } = useEnhancedBrandSuggestions();
-  const { modelSuggestions } = useModelSuggestions(formData.brand);
+  const { modelSuggestions } = useModelSuggestions(formData.brand, formData.category_id);
 
   return (
     <div className="space-y-4">
@@ -72,8 +72,14 @@ export function ProductFormFields({
             onChange={(value) => onFieldChange("model", value)}
             suggestions={modelSuggestions}
             entityTypes={[]} // Disable dynamic search
-            placeholder={formData.brand ? "e.g., iPhone 13" : "Select brand first"}
-            disabled={!formData.brand}
+            placeholder={
+              !formData.brand
+                ? "Select brand first"
+                : !formData.category_id
+                ? "Select category first"
+                : "e.g., iPhone 13"
+            }
+            disabled={!formData.brand || !formData.category_id}
             className={getFieldError("model") ? "border-destructive" : ""}
           />
           {getFieldError("model") && (

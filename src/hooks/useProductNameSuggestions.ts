@@ -107,9 +107,11 @@ export function useBrandSuggestions() {
 }
 
 /**
- * Hook to get model suggestions for a specific brand
+ * Hook to get model suggestions for a specific brand and optionally category
+ * @param brand - Brand name to filter models
+ * @param categoryId - Optional category ID to further filter models
  */
-export function useModelSuggestions(brand?: string) {
+export function useModelSuggestions(brand?: string, categoryId?: number) {
   const [models, setModels] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -122,11 +124,19 @@ export function useModelSuggestions(brand?: string) {
     const fetchModels = async () => {
       setIsLoading(true);
 
-      const { data } = await supabase
+      // Build query with brand filter
+      let query = supabase
         .from('products')
-        .select('model')
+        .select('model, category_id')
         .eq('brand', brand)
         .not('model', 'is', null);
+
+      // Add category filter if provided
+      if (categoryId !== undefined) {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data } = await query;
 
       if (data) {
         const unique = Array.from(new Set(data.map(p => p.model))).sort();
@@ -137,7 +147,7 @@ export function useModelSuggestions(brand?: string) {
     };
 
     fetchModels();
-  }, [brand]);
+  }, [brand, categoryId]);
 
   return { modelSuggestions: models, isLoading };
 }
