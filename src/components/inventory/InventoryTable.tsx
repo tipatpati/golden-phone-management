@@ -748,10 +748,10 @@ export const InventoryTable = React.memo(function InventoryTable({
           }]}
           productId={unitToPrint.product_id}
           existingUnitBarcodes={{ [unitToPrint.serial_number]: unitToPrint.barcode }}
-          showPrintButton={false}
+          showPrintButton={true}
           onPrintRequested={(barcodes) => {
-            // Auto-trigger print after component mounts
-            setTimeout(() => setPrintUnitId(null), 1000);
+            // Clear the print state after printing is initiated
+            setPrintUnitId(null);
           }}
         />
       );
