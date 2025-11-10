@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
-import { LayoutDashboard, ShoppingBag, Package, Users, Wrench, Building2, UserCog, LogOut, User } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Package, Users, Wrench, Building2, UserCog, LogOut, User, Undo2 } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -34,6 +34,11 @@ export function TabletSidebar({
     title: "Vendite",
     url: "/sales",
     icon: ShoppingBag,
+    roles: ["super_admin", "admin", "manager", "salesperson"] as UserRole[]
+  }, {
+    title: "Resi",
+    url: "/returns",
+    icon: Undo2,
     roles: ["super_admin", "admin", "manager", "salesperson"] as UserRole[]
   }, {
     title: "Inventario",
