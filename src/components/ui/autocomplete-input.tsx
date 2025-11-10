@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ScrollableDropdown, useDropdownKeyboard, type DropdownItem } from "@/components/ui/scrollable-dropdown";
 
 interface AutocompleteInputProps {
   value: string;
@@ -20,20 +21,45 @@ export function AutocompleteInput({
   disabled
 }: AutocompleteInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const filteredSuggestions = suggestions
-    .filter(suggestion => 
-      suggestion.toLowerCase().includes(value.toLowerCase()) && 
+    .filter(suggestion =>
+      suggestion.toLowerCase().includes(value.toLowerCase()) &&
       suggestion.toLowerCase() !== value.toLowerCase()
     )
     .slice(0, 5);
 
+  // Convert suggestions to dropdown items
+  const dropdownItems: DropdownItem<string>[] = React.useMemo(() => {
+    return filteredSuggestions.map((suggestion, index) => ({
+      id: `${suggestion}-${index}`,
+      label: suggestion,
+      value: suggestion,
+    }));
+  }, [filteredSuggestions]);
+
+  // Keyboard navigation
+  const {
+    selectedIndex,
+    setSelectedIndex,
+    handleKeyDown: handleDropdownKeyDown
+  } = useDropdownKeyboard(
+    showSuggestions,
+    dropdownItems.length,
+    () => {
+      if (selectedIndex >= 0 && selectedIndex < filteredSuggestions.length) {
+        handleSuggestionClick(filteredSuggestions[selectedIndex]);
+      }
+    },
+    () => {
+      setShowSuggestions(false);
+    }
+  );
+
   useEffect(() => {
     setSelectedIndex(-1);
-  }, [value]);
+  }, [value, setSelectedIndex]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -46,35 +72,6 @@ export function AutocompleteInput({
     onChange(suggestion);
     setShowSuggestions(false);
     setSelectedIndex(-1);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || filteredSuggestions.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < filteredSuggestions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : filteredSuggestions.length - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0) {
-          handleSuggestionClick(filteredSuggestions[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
   };
 
   const handleBlur = () => {
@@ -94,31 +91,24 @@ export function AutocompleteInput({
         ref={inputRef}
         value={value}
         onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
+        onKeyDown={handleDropdownKeyDown}
         onBlur={handleBlur}
         onFocus={handleFocus}
         placeholder={placeholder}
         className={className}
         disabled={disabled}
       />
-      
-      {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background/95 backdrop-blur-sm border rounded-md shadow-lg max-h-60 overflow-auto">{/* Standardized z-index and height */}
-          {filteredSuggestions.map((suggestion, index) => (
-            <div
-              key={suggestion}
-              ref={el => suggestionRefs.current[index] = el}
-              className={cn(
-                "px-3 py-2 cursor-pointer hover:bg-muted/70 transition-colors text-sm",
-                selectedIndex === index && "bg-muted/90"
-              )}
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              {suggestion}
-            </div>
-          ))}
-        </div>
-      )}
+
+      <ScrollableDropdown
+        isOpen={showSuggestions && filteredSuggestions.length > 0}
+        items={dropdownItems}
+        selectedIndex={selectedIndex}
+        onItemSelect={(item) => handleSuggestionClick(item.value)}
+        onSelectedIndexChange={setSelectedIndex}
+        maxHeight="md"
+        variant="plain"
+        className="bg-background/95 backdrop-blur-sm"
+      />
     </div>
   );
 }
