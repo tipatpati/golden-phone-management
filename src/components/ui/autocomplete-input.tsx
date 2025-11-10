@@ -103,7 +103,7 @@ export function AutocompleteInput({
       />
       
       {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-[60] mt-1 bg-background/95 backdrop-blur-sm border rounded-md shadow-xl max-h-40 overflow-y-auto">{/* Higher z-index and better background */}
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background/95 backdrop-blur-sm border rounded-md shadow-lg max-h-60 overflow-auto">{/* Standardized z-index and height */}
           {filteredSuggestions.map((suggestion, index) => (
             <div
               key={suggestion}

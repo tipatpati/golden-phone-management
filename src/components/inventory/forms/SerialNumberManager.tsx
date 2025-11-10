@@ -48,6 +48,7 @@ export function SerialNumberManager({
         showPricing={true}
         showPricingTemplates={true}
         categoryFieldConfig={fieldConfig}
+        categoryId={categoryId}
       />
       
       <UniversalBarcodeManager
