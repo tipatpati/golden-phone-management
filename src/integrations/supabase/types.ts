@@ -1096,6 +1096,8 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          quantity_returned: number
+          return_status: string
           sale_id: string
           serial_number: string | null
           total_price: number
@@ -1106,6 +1108,8 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
+          quantity_returned?: number
+          return_status?: string
           sale_id: string
           serial_number?: string | null
           total_price: number
@@ -1116,10 +1120,13 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          quantity_returned?: number
+          return_status?: string
           sale_id?: string
           serial_number?: string | null
           total_price?: number
           unit_price?: number
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1216,8 +1223,10 @@ export type Database = {
       sale_returns: {
         Row: {
           created_at: string
+          exchange_sale_id: string | null
           id: string
           notes: string | null
+          notes_internal: string | null
           refund_amount: number
           refund_method: string
           restocking_fee: number
@@ -1231,8 +1240,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          exchange_sale_id?: string | null
           id?: string
           notes?: string | null
+          notes_internal?: string | null
           refund_amount?: number
           refund_method: string
           restocking_fee?: number
@@ -1246,8 +1257,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          exchange_sale_id?: string | null
           id?: string
           notes?: string | null
+          notes_internal?: string | null
           refund_amount?: number
           refund_method?: string
           restocking_fee?: number
@@ -1260,6 +1273,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sale_returns_exchange_sale_id_fkey"
+            columns: ["exchange_sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sale_returns_returned_by_fkey"
             columns: ["returned_by"]

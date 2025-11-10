@@ -34,10 +34,13 @@ export interface SaleReturn {
   refund_method: RefundMethod;
   status: 'pending' | 'completed' | 'cancelled';
   notes?: string;
+  notes_internal?: string;
+  exchange_sale_id?: string; // Links to new sale when refund_method is 'exchange'
   created_at: string;
   updated_at: string;
   // Relations
   sale?: Sale;
+  exchange_sale?: any; // The new sale created for exchange
   returned_by_user?: { username: string };
   return_items?: SaleReturnItem[];
 }
