@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart, Undo2 } from 'lucide-react';
+import { Eye, Receipt, User, CreditCard, CalendarDays, Package, Euro, Printer, CheckCircle, Clock, ChevronDown, ChevronRight, Info, Phone, Mail, MapPin, Hash, TrendingUp, FileText, ShoppingCart, Undo2, RefreshCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/currency';
@@ -26,6 +26,8 @@ import { SaleReceiptDialog } from './SaleReceiptDialog';
 import { ReceiptValidationDisplay } from './ReceiptValidationDisplay';
 import { SalesDataService } from '@/services/sales/SalesDataService';
 import { ProcessReturnDialog } from './ProcessReturnDialog';
+import { ProcessExchangeDialog } from './ProcessExchangeDialog';
+import { useSaleReturns, useReturnEligibility } from '@/services/sales/returns/ReturnReactQueryService';
 
 interface SaleDetailsDialogProps {
   sale: Sale;
@@ -35,9 +37,14 @@ interface SaleDetailsDialogProps {
 export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [showReturnDialog, setShowReturnDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  
+
+  // Fetch returns for this sale
+  const { data: saleReturns = [], isLoading: isLoadingReturns } = useSaleReturns(sale.id);
+  const { data: returnEligibility } = useReturnEligibility(sale.id);
+
   // Use SalesDataService for consistent data formatting
   const statusColor = SalesDataService.getStatusColor(sale.status);
   const statusDisplay = SalesDataService.getStatusDisplay(sale.status);
@@ -47,6 +54,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
   // Calculate financial breakdown
   const itemsCount = sale.sale_items?.length || 0;
   const avgItemPrice = itemsCount > 0 ? sale.subtotal / itemsCount : 0;
+  const hasReturns = saleReturns.length > 0;
 
   const getStatusType = (status: string): 'success' | 'warning' | 'error' | 'default' => {
     switch (status) {
@@ -94,7 +102,10 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col px-6 sm:px-8">
-          <TabsList className="grid w-full grid-cols-4 glass-surface">
+          <TabsList className={cn(
+            "grid w-full glass-surface",
+            hasReturns ? "grid-cols-5" : "grid-cols-4"
+          )}>
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -107,6 +118,12 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Cliente</span>
             </TabsTrigger>
+            {hasReturns && (
+              <TabsTrigger value="returns" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
+                <Undo2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Resi</span> ({saleReturns.length})
+              </TabsTrigger>
+            )}
             <TabsTrigger value="timeline" className="flex items-center gap-2 data-[state=active]:neon-border-primary">
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">Timeline</span>
@@ -401,6 +418,126 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
               </DetailsCard>
             </TabsContent>
 
+            {/* Returns Tab */}
+            {hasReturns && (
+              <TabsContent value="returns" className="h-full overflow-auto custom-scrollbar">
+                <DetailsCard
+                  title="Resi per questa vendita"
+                  icon={Undo2}
+                  accentColor="warning"
+                  delay={0}
+                >
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Cronologia dei resi per questa garentille
+                  </p>
+
+                  {isLoadingReturns ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Package className="h-12 w-12 mx-auto mb-3 opacity-30 animate-pulse" />
+                      <p>Caricamento resi...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {saleReturns.map((returnRecord: any, index: number) => (
+                        <div
+                          key={returnRecord.id}
+                          className="glass-card neon-border-left p-4 stagger-fade-in"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-semibold text-base flex items-center gap-2">
+                                #{returnRecord.return_number}
+                                <StatusBadge
+                                  status={
+                                    returnRecord.status === 'completed' ? 'success' :
+                                    returnRecord.status === 'cancelled' ? 'error' :
+                                    'warning'
+                                  }
+                                  className="text-xs"
+                                >
+                                  {returnRecord.status}
+                                </StatusBadge>
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(returnRecord.return_date), "dd MMM yyyy 'alle' HH:mm")}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-success">
+                                {formatCurrency(returnRecord.refund_amount)}
+                              </div>
+                              {returnRecord.restocking_fee > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  Costo riassortimento: -{formatCurrency(returnRecord.restocking_fee)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                            <DetailField
+                              label="Motivo"
+                              value={returnRecord.return_reason}
+                            />
+                            <DetailField
+                              label="Metodo rimborso"
+                              value={
+                                <div className="flex items-center gap-2">
+                                  {returnRecord.refund_method}
+                                  {returnRecord.refund_method === 'exchange' && (
+                                    <Badge variant="outline" className="text-xs">
+                                      <RefreshCcw className="h-3 w-3 mr-1" />
+                                      Cambio
+                                    </Badge>
+                                  )}
+                                </div>
+                              }
+                            />
+                            <DetailField
+                              label="Elaborato da"
+                              value={returnRecord.returned_by_user?.username || 'Unknown'}
+                              icon={User}
+                            />
+                          </div>
+
+                          {returnRecord.return_items && returnRecord.return_items.length > 0 && (
+                            <div className="mt-3 pt-3 border-t">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">
+                                Articoli restituiti
+                              </label>
+                              <div className="space-y-2">
+                                {returnRecord.return_items.map((item: any) => (
+                                  <div key={item.id} className="flex justify-between items-center text-sm">
+                                    <span>
+                                      {item.product?.brand} {item.product?.model}
+                                      <Badge variant="outline" className="ml-2 text-xs">
+                                        {item.return_condition}
+                                      </Badge>
+                                    </span>
+                                    <span className="font-medium">
+                                      {item.quantity}× - {formatCurrency(item.refund_amount)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {returnRecord.notes && (
+                            <div className="mt-3 pt-3 border-t">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Note</label>
+                              <p className="text-sm mt-1">{returnRecord.notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </DetailsCard>
+              </TabsContent>
+            )}
+
             <TabsContent value="timeline" className="h-full overflow-auto custom-scrollbar">
               <DetailsCard 
                 title="Timeline Garentille"
@@ -481,20 +618,52 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
 
         <DialogFooter>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
+              </div>
+              {returnEligibility && (
+                <div className="flex items-center gap-2 text-xs">
+                  {returnEligibility.eligible ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3 text-success" />
+                      <span className="text-success">
+                        Reso disponibile
+                        {returnEligibility.restocking_fee_applicable &&
+                          ` (${returnEligibility.days_since_sale} giorni, costo riassortimento applicato)`
+                        }
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-3 w-3 text-warning" />
+                      <span className="text-warning">{returnEligibility.reason}</span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-3 flex-wrap">
               {sale.status !== 'refunded' && sale.status !== 'cancelled' && (
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowReturnDialog(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Undo2 className="h-4 w-4" />
-                  Elabora Reso
-                </Button>
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setShowReturnDialog(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    Elabora Reso
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setShowExchangeDialog(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Elabora Cambio
+                  </Button>
+                </>
               )}
               <Button
                 variant="outlined"
@@ -521,6 +690,13 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
         sale={sale}
         open={showReturnDialog}
         onClose={() => setShowReturnDialog(false)}
+      />
+
+      {/* Process Exchange Dialog */}
+      <ProcessExchangeDialog
+        sale={sale}
+        open={showExchangeDialog}
+        onClose={() => setShowExchangeDialog(false)}
       />
     </Dialog>
   );
