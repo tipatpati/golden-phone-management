@@ -50,12 +50,15 @@ export function AutocompleteInput({
       s.toLowerCase().includes(value.toLowerCase())
     );
 
-    const dynamicMatches = searchSuggestions.map(s => s.value);
+    // Only include dynamic matches if entityTypes is not empty
+    const dynamicMatches = entityTypes.length > 0
+      ? searchSuggestions.map(s => s.value)
+      : [];
 
     // Remove duplicates and limit results
     const combined = Array.from(new Set([...staticMatches, ...dynamicMatches]));
     return combined.slice(0, maxSuggestions);
-  }, [suggestions, searchSuggestions, value, maxSuggestions]);
+  }, [suggestions, searchSuggestions, value, maxSuggestions, entityTypes.length]);
 
   // Convert suggestions to dropdown items
   const dropdownItems: DropdownItem<string>[] = React.useMemo(() => {
@@ -88,12 +91,12 @@ export function AutocompleteInput({
     }
   );
 
-  // Update search query when value changes
+  // Update search query when value changes (only if dynamic search is enabled)
   useEffect(() => {
-    if (value.length >= minQueryLength) {
+    if (entityTypes.length > 0 && value.length >= minQueryLength) {
       setQuery(value);
     }
-  }, [value, setQuery, minQueryLength]);
+  }, [value, setQuery, minQueryLength, entityTypes.length]);
 
   // Handle input change
   const handleInputChange = (newValue: string) => {
