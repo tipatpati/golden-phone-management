@@ -143,6 +143,12 @@ export function ScrollableDropdown<T = any>({
     ? heightClasses[maxHeight as keyof typeof heightClasses]
     : maxHeight;
 
+  // Map zIndex prop to Tailwind classes (Tailwind requires static class names)
+  const zIndexClass = zIndex === 40 ? 'z-40'
+    : zIndex === 50 ? 'z-50'
+    : zIndex === 60 ? 'z-[60]'
+    : 'z-50'; // Default to z-50
+
   const dropdownClasses = cn(
     // Positioning
     'absolute mt-1',
@@ -153,7 +159,7 @@ export function ScrollableDropdown<T = any>({
     'bg-background border rounded-md shadow-lg',
     'overflow-auto',
     heightClass,
-    `z-${zIndex}`,
+    zIndexClass,
 
     // Variant specific
     variant === 'card' && 'bg-background/95 backdrop-blur-sm',
