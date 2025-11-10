@@ -115,6 +115,33 @@ export function useModelSuggestions(brand?: string, categoryId?: number) {
   const [models, setModels] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Common models as fallback when database is empty
+  const commonModels: Record<string, Record<number, string[]>> = {
+    'Apple': {
+      1: ['iPhone 15', 'iPhone 15 Pro', 'iPhone 14', 'iPhone 13', 'iPhone SE'],
+      2: ['iPad Pro', 'iPad Air', 'iPad Mini', 'iPad'],
+      3: ['MacBook Pro', 'MacBook Air', 'iMac', 'Mac Mini', 'Mac Studio'],
+    },
+    'Samsung': {
+      1: ['Galaxy S24', 'Galaxy S23', 'Galaxy A54', 'Galaxy Z Fold', 'Galaxy Z Flip'],
+      2: ['Galaxy Tab S9', 'Galaxy Tab A', 'Galaxy Tab S8'],
+      3: ['Galaxy Book', 'Galaxy Book Pro'],
+    },
+    'Dell': {
+      3: ['XPS 13', 'XPS 15', 'Inspiron', 'Latitude', 'Precision'],
+    },
+    'HP': {
+      3: ['Pavilion', 'Envy', 'EliteBook', 'ProBook', 'Spectre'],
+    },
+    'Lenovo': {
+      3: ['ThinkPad', 'IdeaPad', 'Yoga', 'Legion'],
+    },
+    'Google': {
+      1: ['Pixel 8', 'Pixel 7', 'Pixel 6'],
+      2: ['Pixel Tablet'],
+    },
+  };
+
   useEffect(() => {
     if (!brand) {
       setModels([]);
@@ -139,8 +166,25 @@ export function useModelSuggestions(brand?: string, categoryId?: number) {
       const { data } = await query;
 
       if (data) {
-        const unique = Array.from(new Set(data.map(p => p.model))).sort();
+        const dbModels = Array.from(new Set(data.map(p => p.model)));
+
+        // Get fallback models for this brand + category
+        const fallbackModels = categoryId !== undefined
+          ? (commonModels[brand]?.[categoryId] || [])
+          : Object.values(commonModels[brand] || {}).flat();
+
+        // Combine database models with fallback models
+        const combined = [...dbModels, ...fallbackModels];
+        const unique = Array.from(new Set(combined)).sort();
+
         setModels(unique);
+      } else {
+        // If no database results, use fallback models only
+        const fallbackModels = categoryId !== undefined
+          ? (commonModels[brand]?.[categoryId] || [])
+          : Object.values(commonModels[brand] || {}).flat();
+
+        setModels(fallbackModels);
       }
 
       setIsLoading(false);
