@@ -97,6 +97,13 @@ export default defineConfig(({ mode }) => ({
             icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
           },
           {
+            name: 'Returns',
+            short_name: 'Returns',
+            description: 'Manage returns and exchanges',
+            url: '/returns',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+          },
+          {
             name: 'Inventory',
             short_name: 'Inventory',
             description: 'Manage inventory',
