@@ -210,10 +210,10 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         supplier: '',
         threshold: 0,
         has_serial: false,
-        stock: 0,
+        stock: 1, // ✅ FIX: Default to 1 instead of 0 for non-serialized products
         unit_entries: []
       },
-      quantity: 1,
+      quantity: 1, // ✅ FIX: Ensure quantity is also 1
       unitCost: 1, // Set default unit cost > 0
       unitEntries: []
     };
