@@ -67,7 +67,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
 
   // Get selected supplier
   const selectedSupplier = useMemo(() => {
-    return suppliers?.find(s => s.id === selectedSupplierId);
+    return Array.isArray(suppliers) ? suppliers.find(s => s.id === selectedSupplierId) : undefined;
   }, [suppliers, selectedSupplierId]);
 
   // Filter suppliers by search query

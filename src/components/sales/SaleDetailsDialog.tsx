@@ -623,7 +623,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                 <Clock className="h-4 w-4" />
                 Creata {formatDistanceToNow(new Date(sale.created_at || sale.sale_date))} fa
               </div>
-              {returnEligibility && (
+              {returnEligibility && typeof returnEligibility === 'object' && 'eligible' in returnEligibility && (
                 <div className="flex items-center gap-2 text-xs">
                   {returnEligibility.eligible ? (
                     <>
@@ -638,7 +638,7 @@ export function SaleDetailsDialog({ sale, trigger }: SaleDetailsDialogProps) {
                   ) : (
                     <>
                       <AlertTriangle className="h-3 w-3 text-warning" />
-                      <span className="text-warning">{returnEligibility.reason}</span>
+                      <span className="text-warning">{String(returnEligibility.reason || '')}</span>
                     </>
                   )}
                 </div>

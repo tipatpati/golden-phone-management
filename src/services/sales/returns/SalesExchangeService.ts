@@ -250,7 +250,7 @@ export class SalesExchangeService {
       'create_sale_transaction',
       {
         sale_data: saleData,
-        sale_items: saleItems
+        sale_items_data: saleItems
       }
     );
 
@@ -265,9 +265,10 @@ export class SalesExchangeService {
     }
 
     // 7. Link the return to the new sale
+    const newSaleId = typeof newSale === 'object' && newSale && 'sale_id' in newSale ? newSale.sale_id : null;
     const { error: linkError } = await supabase
       .from('sale_returns')
-      .update({ exchange_sale_id: newSale.sale_id })
+      .update({ exchange_sale_id: newSaleId as string })
       .eq('id', returnRecord.id);
 
     if (linkError) {
@@ -288,12 +289,12 @@ export class SalesExchangeService {
   /**
    * Gets all exchanges for a store
    */
-  static async getExchanges(): Promise<SaleReturn[]> {
+  static async getExchanges(): Promise<any[]> {
     const { data, error } = await supabase
       .from('sale_returns')
       .select(`
         *,
-        sale:sales(
+        sale:sales!sale_id(
           id, sale_number, sale_date, total_amount,
           client:clients(id, type, first_name, last_name, company_name)
         ),
@@ -325,7 +326,7 @@ export class SalesExchangeService {
       .from('sale_returns')
       .select(`
         *,
-        sale:sales(*),
+        sale:sales!sale_id(*),
         exchange_sale:sales!exchange_sale_id(*),
         return_items:sale_return_items(*)
       `)
@@ -344,7 +345,7 @@ export class SalesExchangeService {
     const exchangeCalc = this.calculateExchangeDifference(returnRefund, newSaleTotal);
 
     return {
-      return: returnRecord as SaleReturn,
+      return: returnRecord as any,
       new_sale: (returnRecord as any).exchange_sale,
       ...exchangeCalc
     };
