@@ -1096,8 +1096,8 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
-          quantity_returned: number
-          return_status: string
+          quantity_returned: number | null
+          return_status: string | null
           sale_id: string
           serial_number: string | null
           total_price: number
@@ -1108,8 +1108,8 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
-          quantity_returned?: number
-          return_status?: string
+          quantity_returned?: number | null
+          return_status?: string | null
           sale_id: string
           serial_number?: string | null
           total_price: number
@@ -1120,13 +1120,12 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
-          quantity_returned?: number
-          return_status?: string
+          quantity_returned?: number | null
+          return_status?: string | null
           sale_id?: string
           serial_number?: string | null
           total_price?: number
           unit_price?: number
-          updated_at?: string
         }
         Relationships: [
           {
@@ -2011,6 +2010,7 @@ export type Database = {
         Args: { product_uuid: string }
         Returns: number
       }
+      get_return_eligibility: { Args: { p_sale_id: string }; Returns: Json }
       get_user_current_store_id: { Args: never; Returns: string }
       get_user_roles: {
         Args: { _user_id: string }
@@ -2081,6 +2081,10 @@ export type Database = {
       validate_product_stock: {
         Args: { product_items: Json }
         Returns: boolean
+      }
+      validate_return_items: {
+        Args: { p_return_items: Json; p_sale_id: string }
+        Returns: Json
       }
       validate_sale_serial_numbers: {
         Args: { sale_items_data: Json }
