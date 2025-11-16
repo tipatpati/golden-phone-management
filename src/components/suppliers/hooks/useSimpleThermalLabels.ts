@@ -96,6 +96,7 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
           return item.product_unit_ids.some((id: any) => typeof id === 'string' && id === unit.id);
         }) || [];
 
+        // Process serialized units
         for (const unit of productUnits) {
           if (!unit.serial_number) continue;
 
@@ -124,6 +125,44 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
             ram: unit.ram,
             batteryLevel: unit.battery_level
           });
+        }
+
+        // Handle non-serialized products or remaining quantity
+        const unitsCount = productUnits.length;
+        const totalQuantity = item.quantity || 0;
+
+        if (totalQuantity > unitsCount) {
+          // Generate generic labels for non-serialized quantity
+          const genericCount = totalQuantity - unitsCount;
+          const productBarcode = product.barcode || `PROD-${product.id.slice(-8)}`;
+          const sellingPrice = product.max_price || product.price || 0;
+          
+          console.log(`📦 NON-SERIALIZED LABELS - ${product.brand} ${product.model}:`, {
+            total_quantity: totalQuantity,
+            units_count: unitsCount,
+            generic_labels: genericCount,
+            barcode: productBarcode,
+            selling_price: sellingPrice
+          });
+
+          for (let i = 0; i < genericCount; i++) {
+            labels.push({
+              id: `${product.id}-generic-${i}`,
+              productName: `${product.brand} ${product.model}`,
+              brand: product.brand,
+              model: product.model,
+              serialNumber: undefined, // No serial for generic labels
+              barcode: productBarcode,
+              price: sellingPrice,
+              maxPrice: product.max_price,
+              minPrice: product.price,
+              // No specific specs for non-serialized items
+              color: undefined,
+              storage: undefined,
+              ram: undefined,
+              batteryLevel: undefined
+            });
+          }
         }
       }
 
