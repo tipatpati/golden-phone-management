@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { transactionCoordinator } from '../core/TransactionCoordinator';
 import { eventBus } from '../core/EventBus';
+import { UnifiedProductCoordinator } from '../shared/UnifiedProductCoordinator';
 import { logger } from '@/utils/logger';
 import { dataConsistencyLayer } from '../core/DataConsistencyLayer';
 import { ProductUnitManagementService } from '@/services/shared/ProductUnitManagementService';
@@ -187,6 +188,33 @@ class SupplierAcquisitionService {
         timestamp: Date.now()
       }
     });
+
+    // Emit through UnifiedProductCoordinator for inventory cache invalidation
+    for (const productId of result.productIds) {
+      UnifiedProductCoordinator.notifyEvent({
+        type: 'product_created',
+        source: 'supplier',
+        entityId: productId,
+        metadata: { 
+          transactionId: supplierTransactionId,
+          supplierId: data.supplierId 
+        }
+      });
+    }
+
+    // Notify about units created
+    if (result.unitIds.length > 0) {
+      UnifiedProductCoordinator.notifyEvent({
+        type: 'unit_created',
+        source: 'supplier',
+        entityId: result.unitIds[0],
+        metadata: { 
+          productIds: result.productIds,
+          unitIds: result.unitIds,
+          transactionId: supplierTransactionId 
+        }
+      });
+    }
 
     logger.info('🎉 Supplier acquisition completed successfully', {
       transactionId: supplierTransactionId,
