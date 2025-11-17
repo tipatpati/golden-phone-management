@@ -115,6 +115,11 @@ class LightweightInventoryService {
     if (error) throw error;
     
     let products = data || [];
+    
+    console.log('📦 Products from DB after status filter:', {
+      count: products.length,
+      statuses: products.map(p => ({ id: p.id, brand: p.brand, model: p.model, status: p.status }))
+    });
 
     // Client-side low stock filtering (stock > 0 AND stock <= threshold)
     if (stockStatus === 'low_stock') {
