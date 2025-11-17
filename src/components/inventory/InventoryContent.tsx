@@ -42,6 +42,7 @@ export function InventoryContent({
   const { data: products = [], isLoading, error, refetch, isFetching } = useProducts(searchQuery, {
     categoryId: filters.categoryId,
     stockStatus: filters.stockStatus,
+    productStatus: filters.productStatus,
     hasSerial: filters.hasSerial,
     dateRange: effectiveDateRange,
     priceRange: filters.priceRange,

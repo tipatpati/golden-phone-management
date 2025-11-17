@@ -52,8 +52,12 @@ export class InventoryManagementService {
           category:categories(id, name),
           units:product_units(id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price)
         `)
-        .eq('status', 'active') // Only show active products
         .order('created_at', { ascending: false });
+
+      // Apply product status filter (defaults to 'active')
+      if (filters?.productStatus && filters.productStatus !== 'all') {
+        query = query.eq('status', filters.productStatus);
+      }
 
       // Apply filters
       if (filters?.searchTerm) {
