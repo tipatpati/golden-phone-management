@@ -2,12 +2,14 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 
 export type StockStatus = 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 export type SerialFilter = 'all' | 'yes' | 'no';
+export type ProductStatus = 'all' | 'active' | 'inactive';
 export type SortOption = 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
 export type DatePreset = 'all' | 'today' | 'week' | 'month' | 'quarter' | 'custom';
 
 export interface InventoryFilters {
   categoryId: number | 'all';
   stockStatus: StockStatus;
+  productStatus: ProductStatus;
   hasSerial: SerialFilter;
   datePreset: DatePreset;
   dateRange?: {
@@ -25,6 +27,7 @@ export interface InventoryFilters {
 const DEFAULT_FILTERS: InventoryFilters = {
   categoryId: 'all',
   stockStatus: 'all',
+  productStatus: 'active', // Default to showing only active products
   hasSerial: 'all',
   datePreset: 'all',
   year: 'all',
@@ -93,6 +96,10 @@ export function useInventoryFilters() {
     setFilters(prev => ({ ...prev, stockStatus }));
   }, []);
 
+  const setProductStatus = useCallback((productStatus: ProductStatus) => {
+    setFilters(prev => ({ ...prev, productStatus }));
+  }, []);
+
   const setHasSerial = useCallback((hasSerial: SerialFilter) => {
     setFilters(prev => ({ ...prev, hasSerial }));
   }, []);
@@ -153,6 +160,7 @@ export function useInventoryFilters() {
     effectiveDateRange,
     setCategoryId,
     setStockStatus,
+    setProductStatus,
     setHasSerial,
     setDatePreset,
     setCustomDateRange,

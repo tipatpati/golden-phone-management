@@ -6,6 +6,7 @@ class LightweightInventoryService {
   async getProducts(filters: {
     categoryId?: number | 'all';
     stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+    productStatus?: 'all' | 'active' | 'inactive';
     hasSerial?: 'all' | 'yes' | 'no';
     searchTerm?: string;
     dateRange?: { start?: Date; end?: Date };
@@ -16,6 +17,7 @@ class LightweightInventoryService {
     const {
       categoryId = 'all',
       stockStatus = 'all',
+      productStatus = 'active',
       hasSerial = 'all',
       searchTerm = '',
       dateRange,
@@ -30,8 +32,12 @@ class LightweightInventoryService {
         *,
         category:categories(id, name),
         units:product_units(id, product_id, serial_number, barcode, color, storage, ram, battery_level, status, price, min_price, max_price, condition)
-      `)
-      .eq('status', 'active'); // Only show active products
+      `);
+
+    // Product status filter - defaults to 'active'
+    if (productStatus !== 'all') {
+      query = query.eq('status', productStatus);
+    }
 
     // Note: Search is handled client-side to include unit serial/barcode matching
 
@@ -340,6 +346,7 @@ export const useProducts = (
   filters?: {
     categoryId?: number | 'all';
     stockStatus?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+    productStatus?: 'all' | 'active' | 'inactive';
     hasSerial?: 'all' | 'yes' | 'no';
     dateRange?: { start?: Date; end?: Date };
     priceRange?: { min?: number; max?: number };
@@ -353,6 +360,7 @@ export const useProducts = (
     searchQuery ?? '',
     filters?.categoryId ?? 'all',
     filters?.stockStatus ?? 'all',
+    filters?.productStatus ?? 'active',
     filters?.hasSerial ?? 'all',
     filters?.dateRange?.start?.getTime() ?? null,
     filters?.dateRange?.end?.getTime() ?? null,

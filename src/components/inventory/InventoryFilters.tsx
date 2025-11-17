@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
-import { useInventoryFilters, type DatePreset, type StockStatus, type SerialFilter, type SortOption } from "@/hooks/useInventoryFilters";
+import { useInventoryFilters, type DatePreset, type StockStatus, type ProductStatus, type SerialFilter, type SortOption } from "@/hooks/useInventoryFilters";
 import { cn } from "@/lib/utils";
 import { SearchBar } from "@/components/ui/search-bar";
 
@@ -38,6 +38,7 @@ export function InventoryFilters({
     filters,
     setCategoryId,
     setStockStatus,
+    setProductStatus,
     setHasSerial,
     setDatePreset,
     setPriceRange,
@@ -97,6 +98,12 @@ export function InventoryFilters({
     in_stock: 'Disponibile',
     low_stock: 'Scorta bassa',
     out_of_stock: 'Esaurito',
+  };
+
+  const productStatusLabels: Record<ProductStatus, string> = {
+    all: 'Tutti',
+    active: 'Attivi',
+    inactive: 'Inattivi',
   };
 
   const sortLabels: Record<SortOption, string> = {
@@ -172,6 +179,26 @@ export function InventoryFilters({
           </SelectTrigger>
           <SelectContent>
             {Object.entries(stockStatusLabels).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Product Status Filter */}
+        <Select 
+          value={filters.productStatus} 
+          onValueChange={(value) => setProductStatus(value as ProductStatus)}
+        >
+          <SelectTrigger className={cn(
+            "w-full sm:w-[140px] h-10",
+            filters.productStatus !== 'active' && "border-primary"
+          )}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(productStatusLabels).map(([value, label]) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>

@@ -214,6 +214,7 @@ export interface InventorySearchFilters {
   categoryId?: number | 'all';
   category?: number;
   status?: string;
+  productStatus?: 'all' | 'active' | 'inactive';
   priceRange?: {
     min?: number;
     max?: number;
