@@ -91,6 +91,7 @@ export function ProductFormFields({
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           label="Category"
           type="select"
@@ -106,6 +107,20 @@ export function ProductFormFields({
           error={getFieldError("category_id")}
           required
         />
+
+        <FormField
+          label="Product Status"
+          type="select"
+          value={(formData as any).status || "active"}
+          onChange={(value) => onFieldChange("status" as any, value)}
+          placeholder="Select status"
+          options={[
+            { value: "active", label: "Active" },
+            { value: "inactive", label: "Inactive" }
+          ]}
+          error={getFieldError("status")}
+        />
+      </div>
 
       <FormField
         label="Description"
