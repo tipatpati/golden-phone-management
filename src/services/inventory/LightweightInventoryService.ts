@@ -26,6 +26,13 @@ class LightweightInventoryService {
       sortBy = 'newest'
     } = filters;
 
+    console.log('🔍 LightweightInventoryService.getProducts - filters:', {
+      productStatus,
+      rawProductStatus: filters.productStatus,
+      stockStatus,
+      categoryId
+    });
+
     let query = supabase
       .from('products')
       .select(`
