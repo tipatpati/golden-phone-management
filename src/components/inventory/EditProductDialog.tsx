@@ -131,6 +131,7 @@ export function EditProductDialog({
         barcode: data.barcode || undefined,
         has_serial: data.has_serial,
         serial_numbers: data.has_serial ? data.serial_numbers : undefined,
+        status: (data as any).status || 'active',
       };
 
       // Update the main product first
