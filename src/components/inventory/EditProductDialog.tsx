@@ -63,7 +63,8 @@ export function EditProductDialog({
           has_serial: result.product.has_serial || false,
           serial_numbers: result.product.serial_numbers || [],
           unit_entries: result.unitEntries,
-        };
+          status: result.product.status || 'active',
+        } as any;
         
         logger.debug('Prepared initial data for edit via coordinator', {
           productId: product.id,
@@ -92,7 +93,8 @@ export function EditProductDialog({
           has_serial: product.has_serial || false,
           serial_numbers: product.serial_numbers || [],
           unit_entries: [],
-        });
+          status: product.status || 'active',
+        } as any);
       }
     };
     
