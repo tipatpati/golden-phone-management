@@ -146,6 +146,7 @@ export function useInventoryFilters() {
     let count = 0;
     if (filters.categoryId !== 'all') count++;
     if (filters.stockStatus !== 'all') count++;
+    if (filters.productStatus !== 'active') count++;
     if (filters.hasSerial !== 'all') count++;
     if (filters.datePreset !== 'all') count++;
     if (filters.priceRange && (filters.priceRange.min !== undefined || filters.priceRange.max !== undefined)) count++;
@@ -154,6 +155,11 @@ export function useInventoryFilters() {
   }, [filters]);
 
   const hasActiveFilters = activeFilterCount > 0;
+
+  // Debug log
+  useEffect(() => {
+    console.log('🎯 Inventory Filters State:', filters);
+  }, [filters]);
 
   return {
     filters,
