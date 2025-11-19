@@ -141,10 +141,15 @@ export function EditProductDialog({
         data: updatedProduct 
       });
       
-      // If store was changed and product has serial numbers, update all units' store_id
-      if ((data as any).store_id && product.store_id !== (data as any).store_id && data.has_serial) {
-        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
-        logger.info(`Updating store assignment for ${existingUnits.length} units to store ${(data as any).store_id}`, {}, 'EditProductDialog');
+      // If store was changed and move_all_units_to_store is enabled, update all units' store_id
+      if (
+        (data as any).store_id && 
+        product.store_id !== (data as any).store_id && 
+        data.has_serial && 
+        (data as any).move_all_units_to_store === true
+      ) {
+        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id, undefined, true);
+        logger.info(`Moving ${existingUnits.length} units to store ${(data as any).store_id}`, {}, 'EditProductDialog');
         
         // Update each unit's store_id
         for (const unit of existingUnits) {
