@@ -17,6 +17,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const { userRole } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
+  const isEditMode = !!productId;
   
   const {
     formData,
@@ -142,6 +143,7 @@ export function ProductForm({
         uniqueModels={uniqueModels}
         templateAppliedDefaults={templateAppliedDefaults}
         isSuperAdmin={isSuperAdmin}
+        isEditMode={isEditMode}
       />
 
       {/* Serial Number Toggle */}

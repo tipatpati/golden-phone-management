@@ -234,6 +234,27 @@ export class ProductUnitManagementService {
   }
 
   /**
+   * Update the store assignment for a product unit
+   */
+  static async updateUnitStore(unitId: string, storeId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('product_units')
+        .update({ 
+          store_id: storeId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', unitId);
+
+      if (error) {
+        throw InventoryError.createDatabaseError('updateUnitStore', error, { unitId, storeId });
+      }
+    } catch (error) {
+      throw handleInventoryError(error);
+    }
+  }
+
+  /**
    * Generate or regenerate barcode for an existing unit
    */
   static async generateBarcodeForUnit(unitId: string): Promise<string> {

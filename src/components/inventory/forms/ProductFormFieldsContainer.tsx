@@ -1,8 +1,11 @@
 import React from "react";
 import { FormField } from "./ProductFormFields";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { useEnhancedBrandSuggestions, useModelSuggestions } from "@/hooks/useProductNameSuggestions";
+import { useStores } from "@/services/stores/StoreReactQueryService";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import type { ProductFormData } from "@/services/inventory/types";
 
 interface ProductFormFieldsProps {
@@ -18,6 +21,7 @@ interface ProductFormFieldsProps {
     max_price?: number;
   } | null;
   isSuperAdmin?: boolean;
+  isEditMode?: boolean;
 }
 
 export function ProductFormFields({
@@ -27,7 +31,8 @@ export function ProductFormFields({
   uniqueBrands,
   uniqueModels,
   templateAppliedDefaults,
-  isSuperAdmin = false
+  isSuperAdmin = false,
+  isEditMode = false
 }: ProductFormFieldsProps) {
   // Super admins can edit any product, or non-serialized products can be edited
   const isStockEditable = isSuperAdmin || !formData.has_serial;
@@ -35,6 +40,11 @@ export function ProductFormFields({
   // Get brand and model suggestions
   const { brandSuggestions } = useEnhancedBrandSuggestions();
   const { modelSuggestions } = useModelSuggestions(formData.brand, formData.category_id);
+  
+  // Get stores and user role for store selection
+  const { data: stores = [] } = useStores();
+  const { data: userRole } = useCurrentUserRole();
+  const canChangeStore = userRole === 'super_admin' || userRole === 'admin';
 
   return (
     <div className="space-y-4">
@@ -108,18 +118,58 @@ export function ProductFormFields({
           required
         />
 
-        <FormField
-          label="Product Status"
-          type="select"
-          value={(formData as any).status || "active"}
-          onChange={(value) => onFieldChange("status" as any, value)}
-          placeholder="Select status"
-          options={[
-            { value: "active", label: "Active" },
-            { value: "inactive", label: "Inactive" }
-          ]}
-          error={getFieldError("status")}
-        />
+        {/* Store Assignment - Only for admins/super admins in edit mode */}
+        {canChangeStore && isEditMode && (
+          <div className="space-y-2">
+            <Label htmlFor="store_id" className="text-sm font-medium flex items-center gap-1">
+              Assigned Store
+              {formData.has_serial && (
+                <span className="text-xs text-muted-foreground ml-1">(updates all units)</span>
+              )}
+            </Label>
+            <Select
+              value={(formData as any).store_id || ''}
+              onValueChange={(value) => onFieldChange('store_id' as any, value)}
+            >
+              <SelectTrigger className={getFieldError('store_id' as any) ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Select store" />
+              </SelectTrigger>
+              <SelectContent>
+                {stores.map((store) => (
+                  <SelectItem key={store.id} value={store.id}>
+                    {store.name} ({store.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {getFieldError('store_id' as any) && (
+              <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                <span className="inline-block w-1 h-1 bg-destructive rounded-full"></span>
+                {getFieldError('store_id' as any)}
+              </p>
+            )}
+            {formData.has_serial && (
+              <p className="text-xs text-muted-foreground">
+                Changing store will move all units of this product to the selected store
+              </p>
+            )}
+          </div>
+        )}
+
+        {!canChangeStore || !isEditMode ? (
+          <FormField
+            label="Product Status"
+            type="select"
+            value={(formData as any).status || "active"}
+            onChange={(value) => onFieldChange("status" as any, value)}
+            placeholder="Select status"
+            options={[
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" }
+            ]}
+            error={getFieldError("status")}
+          />
+        ) : null}
       </div>
 
       <FormField
