@@ -374,7 +374,7 @@ export const InventoryTable = React.memo(function InventoryTable({
                         </div>
                       )}
                       {product.barcode && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-foreground/70">
                           <Barcode className="h-3 w-3" />
                           {product.barcode}
                         </div>
