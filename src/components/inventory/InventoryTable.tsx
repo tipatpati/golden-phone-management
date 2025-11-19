@@ -39,6 +39,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/ui/table-pagination";
 import type { Product as UnifiedProduct } from "@/services/inventory/types";
 import { UnitBarcodeManager } from "@/components/shared/forms/UnitBarcodeManager";
+import { UnitBarcodePrinter } from "./UnitBarcodePrinter";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -728,34 +729,13 @@ export const InventoryTable = React.memo(function InventoryTable({
     )}
 
     {/* Unit barcode printer */}
-    {printUnitId && (() => {
-      // Find the unit to print
-      const unitToPrint = productList
-        .flatMap(p => p.units || [])
-        .find((u: any) => u.id === printUnitId);
-      
-      if (!unitToPrint) return null;
-
-      return (
-        <UnitBarcodeManager
-          units={[{
-            serial: unitToPrint.serial_number,
-            color: unitToPrint.color,
-            storage: unitToPrint.storage,
-            ram: unitToPrint.ram,
-            battery_level: unitToPrint.battery_level,
-            price: unitToPrint.price
-          }]}
-          productId={unitToPrint.product_id}
-          existingUnitBarcodes={{ [unitToPrint.serial_number]: unitToPrint.barcode }}
-          showPrintButton={false}
-          onPrintRequested={(barcodes) => {
-            // Auto-trigger print after component mounts
-            setTimeout(() => setPrintUnitId(null), 1000);
-          }}
-        />
-      );
-    })()}
+    {printUnitId && (
+      <UnitBarcodePrinter
+        unitId={printUnitId}
+        productList={productList}
+        onClose={() => setPrintUnitId(null)}
+      />
+    )}
 
     {/* Unit Details Dialog - Lazy loaded */}
     <Suspense fallback={<div />}>

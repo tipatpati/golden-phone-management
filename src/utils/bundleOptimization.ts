@@ -10,8 +10,8 @@ export const createLazyPage = (importFunc: () => Promise<{ default: React.Compon
 export const loadServiceDynamically = async <T>(serviceName: string): Promise<T> => {
   switch (serviceName) {
     case 'clients':
-      const { clientService } = await import('@/services/clients/ClientReactQueryService');
-      return clientService as T;
+      const clientsModule = await import('@/services/clients/ClientReactQueryService');
+      return clientsModule as T;
     case 'products':
       const inventoryService = await import('@/services/inventory/InventoryReactQueryService');
       return inventoryService as T;

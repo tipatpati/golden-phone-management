@@ -251,6 +251,9 @@ export const EVENT_TYPES = {
   UNIT_DELETED: 'inventory.unit_deleted',
   
   // Supplier events
+  SUPPLIER_CREATED: 'suppliers.created',
+  SUPPLIER_UPDATED: 'suppliers.updated',
+  SUPPLIER_DELETED: 'suppliers.deleted',
   SUPPLIER_TRANSACTION_CREATED: 'suppliers.transaction_created',
   SUPPLIER_TRANSACTION_UPDATED: 'suppliers.transaction_updated',
   SUPPLIER_TRANSACTION_DELETED: 'suppliers.transaction_deleted',
@@ -260,6 +263,21 @@ export const EVENT_TYPES = {
   CLIENT_CREATED: 'clients.created',
   CLIENT_UPDATED: 'clients.updated',
   CLIENT_DELETED: 'clients.deleted',
+  
+  // Brand events
+  BRAND_CREATED: 'brands.created',
+  BRAND_UPDATED: 'brands.updated',
+  BRAND_DELETED: 'brands.deleted',
+  
+  // Employee events
+  EMPLOYEE_CREATED: 'employees.created',
+  EMPLOYEE_UPDATED: 'employees.updated',
+  EMPLOYEE_DELETED: 'employees.deleted',
+  
+  // Repair events
+  REPAIR_CREATED: 'repairs.created',
+  REPAIR_UPDATED: 'repairs.updated',
+  REPAIR_DELETED: 'repairs.deleted',
   
   // System events
   SYSTEM_ERROR: 'system.error',

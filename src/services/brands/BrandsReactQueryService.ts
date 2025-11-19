@@ -1,81 +1,92 @@
-import { BaseReactQueryService } from '../core/BaseReactQueryService';
+import { createCRUDMutations } from '../core/UnifiedCRUDService';
 import { BrandsApiService, ModelsApiService } from './BrandsApiService';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { QUERY_KEYS } from '../core/QueryKeys';
+import { EVENT_TYPES } from '../core/EventBus';
 import type { Brand, Model, CreateBrandData, CreateModelData } from './types';
 
-class BrandsReactQueryServiceClass extends BaseReactQueryService<Brand, CreateBrandData> {
-  private modelsApiService: ModelsApiService;
+const brandsApiService = new BrandsApiService();
+const modelsApiService = new ModelsApiService();
 
-  constructor() {
-    const apiService = new BrandsApiService();
-    super(apiService, 'brands', { queryConfig: 'static' });
-    this.modelsApiService = new ModelsApiService();
+// Create CRUD mutations for brands
+const brandCRUD = createCRUDMutations<Brand, CreateBrandData>(
+  {
+    entityName: 'brand',
+    queryKey: QUERY_KEYS.brands.all[0],
+    eventTypes: {
+      created: EVENT_TYPES.BRAND_CREATED,
+      updated: EVENT_TYPES.BRAND_UPDATED,
+      deleted: EVENT_TYPES.BRAND_DELETED
+    },
+    relatedQueries: [QUERY_KEYS.models.all[0], QUERY_KEYS.inventory.all[0]]
+  },
+  {
+    create: (data) => brandsApiService.create(data),
+    update: (id, data) => brandsApiService.update(id, data),
+    delete: (id) => brandsApiService.delete(id)
   }
+);
 
-  protected getSearchFields(): string[] {
-    return ['name'];
-  }
+// Brand hooks
+export const useBrands = () => 
+  useOptimizedQuery(
+    QUERY_KEYS.brands.all,
+    () => brandsApiService.getAll(),
+    'static'
+  );
 
-  useBrandsByCategory(categoryId: number) {
-    return useOptimizedQuery(
-      ['brands', 'category', categoryId.toString()],
-      () => (this.apiService as BrandsApiService).getByCategory(categoryId),
-      'static'
-    );
-  }
+export const useBrand = (id: string) => 
+  useOptimizedQuery(
+    QUERY_KEYS.brands.detail(id),
+    () => brandsApiService.getById(id),
+    'static'
+  );
 
-  useSearchBrands(searchTerm: string) {
-    return useOptimizedQuery(
-      ['brands', 'search', searchTerm],
-      () => (this.apiService as BrandsApiService).searchBrands(searchTerm),
-      'static'
-    );
-  }
+export const useBrandsByCategory = (categoryId: number) => 
+  useOptimizedQuery(
+    QUERY_KEYS.brands.byCategory(categoryId),
+    () => brandsApiService.getByCategory(categoryId),
+    'static'
+  );
 
-  useModels() {
-    return useOptimizedQuery(
-      ['models'],
-      () => this.modelsApiService.getAll(),
-      'static'
-    );
-  }
+export const useSearchBrands = (searchTerm: string) => 
+  useOptimizedQuery(
+    QUERY_KEYS.brands.search(searchTerm),
+    () => brandsApiService.searchBrands(searchTerm),
+    'static'
+  );
 
-  useModelsByBrand(brandName: string) {
-    return useOptimizedQuery(
-      ['models', 'brand', brandName],
-      () => this.modelsApiService.getByBrandName(brandName),
-      'static'
-    );
-  }
+export const useCreateBrand = brandCRUD.useCreate;
+export const useUpdateBrand = brandCRUD.useUpdate;
+export const useDeleteBrand = brandCRUD.useDelete;
 
-  useSearchModels(searchTerm: string, brandName?: string) {
-    return useOptimizedQuery(
-      ['models', 'search', searchTerm, brandName],
-      () => this.modelsApiService.searchModels(searchTerm, brandName),
-      'static'
-    );
-  }
+// Model hooks
+export const useModels = () => 
+  useOptimizedQuery(
+    QUERY_KEYS.models.all,
+    () => modelsApiService.getAll(),
+    'static'
+  );
 
-  useModelsByCategory(categoryId: number) {
-    return useOptimizedQuery(
-      ['models', 'category', categoryId.toString()],
-      () => this.modelsApiService.getByCategory(categoryId),
-      'static'
-    );
-  }
-}
+export const useModelsByBrand = (brandName: string) => 
+  useOptimizedQuery(
+    QUERY_KEYS.models.byBrand(brandName),
+    () => modelsApiService.getByBrandName(brandName),
+    'static'
+  );
 
-export const brandsService = new BrandsReactQueryServiceClass();
+export const useSearchModels = (searchTerm: string, brandName?: string) => 
+  useOptimizedQuery(
+    QUERY_KEYS.models.search(searchTerm, brandName),
+    () => modelsApiService.searchModels(searchTerm, brandName),
+    'static'
+  );
 
-// Export hooks for use in components
-export const useBrands = () => brandsService.useGetAll();
-export const useBrand = (id: string) => brandsService.useGetById(id);
-export const useBrandsByCategory = (categoryId: number) => brandsService.useBrandsByCategory(categoryId);
-export const useSearchBrands = (searchTerm: string) => brandsService.useSearchBrands(searchTerm);
-
-export const useModels = () => brandsService.useModels();
-export const useModelsByBrand = (brandName: string) => brandsService.useModelsByBrand(brandName);
-export const useSearchModels = (searchTerm: string, brandName?: string) => brandsService.useSearchModels(searchTerm, brandName);
-export const useModelsByCategory = (categoryId: number) => brandsService.useModelsByCategory(categoryId);
+export const useModelsByCategory = (categoryId: number) => 
+  useOptimizedQuery(
+    QUERY_KEYS.models.byCategory(categoryId),
+    () => modelsApiService.getByCategory(categoryId),
+    'static'
+  );
 
 export type { Brand, Model, CreateBrandData, CreateModelData };

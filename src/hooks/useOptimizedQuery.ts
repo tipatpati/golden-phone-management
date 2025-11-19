@@ -38,7 +38,7 @@ export const dataQueryConfigs = {
 
 // Custom hook for optimized queries
 export function useOptimizedQuery<T>(
-  key: string[], 
+  key: readonly string[] | string[], 
   queryFn: () => Promise<T>,
   config: 'realtime' | 'moderate' | 'static' = 'moderate'
 ) {

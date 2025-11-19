@@ -117,8 +117,8 @@ function registerDomainServices(): void {
   sharedServiceRegistry.registerShared({
     name: 'clientService',
     factory: async () => {
-      const { clientService } = await import('../clients/ClientReactQueryService');
-      return clientService;
+      // Import the hooks module (no service instance exported anymore)
+      return await import('../clients/ClientReactQueryService');
     },
     scope: 'singleton',
     config: {
@@ -132,8 +132,8 @@ function registerDomainServices(): void {
   sharedServiceRegistry.registerShared({
     name: 'supplierService',
     factory: async () => {
-      const { suppliersService } = await import('../suppliers/SuppliersReactQueryService');
-      return suppliersService;
+      // Import the hooks module (no service instance exported anymore)
+      return await import('../suppliers/SuppliersReactQueryService');
     },
     scope: 'singleton',
     config: {
@@ -147,8 +147,8 @@ function registerDomainServices(): void {
   sharedServiceRegistry.registerShared({
     name: 'employeeService',
     factory: async () => {
-      const { employeesService } = await import('../employees/EmployeesReactQueryService');
-      return employeesService;
+      // Import the hooks module (no service instance exported anymore)
+      return await import('../employees/EmployeesReactQueryService');
     },
     scope: 'singleton',
     config: {
@@ -162,8 +162,8 @@ function registerDomainServices(): void {
   sharedServiceRegistry.registerShared({
     name: 'repairService',
     factory: async () => {
-      const { repairsService } = await import('../repairs/RepairsReactQueryService');
-      return repairsService;
+      // Import the hooks module (no service instance exported anymore)
+      return await import('../repairs/RepairsReactQueryService');
     },
     scope: 'singleton',
     config: {
