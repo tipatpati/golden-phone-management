@@ -233,6 +233,7 @@ export function InventoryContent({
           searchQuery={searchQuery}
           onSearch={executeSearch}
           onClearSearch={clearSearch}
+          isSearching={isSearching}
         />
       </div>
 
