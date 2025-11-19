@@ -99,6 +99,7 @@ export interface UnitEntryForm {
   ram?: number;
   condition?: 'new' | 'used';
   supplier_id?: string;
+  store_id?: string;
 }
 
 // ============================================

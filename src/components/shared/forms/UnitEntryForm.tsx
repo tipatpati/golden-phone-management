@@ -17,6 +17,8 @@ import { useFilteredColorSuggestions } from "@/hooks/useColorSuggestions";
 import { useBarcodeService } from "@/components/shared/useBarcodeService";
 import { StoragePricingTemplateSelector } from "@/components/pricing/StoragePricingTemplateSelector";
 import { useSuppliers } from "@/services";
+import { useStores } from "@/services/stores/StoreReactQueryService";
+import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import type { Supplier } from "@/services/suppliers/types";
 
 interface UnitEntryFormProps {
@@ -55,6 +57,9 @@ export function UnitEntryForm({
   const { colorSuggestions } = useFilteredColorSuggestions('', 10, categoryId);
   const { generateUnitBarcode, generateProductBarcode, isReady: barcodeServiceReady } = useBarcodeService();
   const { data: suppliers = [] } = useSuppliers() as { data: Supplier[] };
+  const { data: stores = [] } = useStores();
+  const { data: userRole } = useCurrentUserRole();
+  const canManageStores = userRole === 'super_admin' || userRole === 'admin' || userRole === 'manager';
   const [pendingPricingChanges, setPendingPricingChanges] = useState<UnitEntryForm[]>([]);
   const [pendingTemplateName, setPendingTemplateName] = useState<string>('');
   
@@ -425,6 +430,30 @@ export function UnitEntryForm({
                     </Select>
                   )}
                 </div>
+
+                {/* Store Assignment - Only for admins/managers */}
+                {canManageStores && stores.length > 0 && (
+                  <div>
+                    <Label className="text-xs font-medium mb-1 block">
+                      Assigned Store
+                    </Label>
+                    <Select 
+                      value={entry.store_id || ''} 
+                      onValueChange={(value) => updateEntry(index, 'store_id', value || undefined)}
+                    >
+                      <SelectTrigger className="text-sm h-10">
+                        <SelectValue placeholder="Select store" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {stores.map((store: any) => (
+                          <SelectItem key={store.id} value={store.id} className="hover:bg-muted">
+                            {store.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               {/* Pricing - Only show if enabled */}
