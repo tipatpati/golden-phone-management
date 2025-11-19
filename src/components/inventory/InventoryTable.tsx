@@ -345,7 +345,7 @@ export const InventoryTable = React.memo(function InventoryTable({
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="font-medium text-foreground flex items-center gap-2">
+                      <div className="font-medium text-primary flex items-center gap-2">
                         {(() => {
                           const cleanBrand = product.brand.replace(/\s*\([^)]*\)\s*/g, '').trim();
                           const cleanModel = product.model.replace(/\s*\([^)]*\)\s*/g, '').trim();
@@ -374,7 +374,7 @@ export const InventoryTable = React.memo(function InventoryTable({
                         </div>
                       )}
                       {product.barcode && (
-                        <div className="flex items-center gap-1 text-xs text-foreground/70">
+                        <div className="flex items-center gap-1 text-xs text-primary/70">
                           <Barcode className="h-3 w-3" />
                           {product.barcode}
                         </div>
