@@ -132,38 +132,41 @@ export function ProductFormFields({
         error={getFieldError("description")}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormField
-          label="Price"
-          type="input"
-          inputType="number"
-          value={formData.price?.toString() || ""}
-          onChange={(value) => onFieldChange("price", parseFloat(value) || 0)}
-          placeholder="0.00"
-          error={getFieldError("price")}
-          required
-        />
+      {/* Only show pricing fields for non-serialized products */}
+      {!formData.has_serial && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            label="Price"
+            type="input"
+            inputType="number"
+            value={formData.price?.toString() || ""}
+            onChange={(value) => onFieldChange("price", parseFloat(value) || 0)}
+            placeholder="0.00"
+            error={getFieldError("price")}
+            required
+          />
 
-        <FormField
-          label="Min Price"
-          type="input"
-          inputType="number"
-          value={formData.min_price?.toString() || ""}
-          onChange={(value) => onFieldChange("min_price", parseFloat(value) || 0)}
-          placeholder="0.00"
-          error={getFieldError("min_price")}
-        />
+          <FormField
+            label="Min Price"
+            type="input"
+            inputType="number"
+            value={formData.min_price?.toString() || ""}
+            onChange={(value) => onFieldChange("min_price", parseFloat(value) || 0)}
+            placeholder="0.00"
+            error={getFieldError("min_price")}
+          />
 
-        <FormField
-          label="Max Price"
-          type="input"
-          inputType="number"
-          value={formData.max_price?.toString() || ""}
-          onChange={(value) => onFieldChange("max_price", parseFloat(value) || 0)}
-          placeholder="0.00"
-          error={getFieldError("max_price")}
-        />
-      </div>
+          <FormField
+            label="Max Price"
+            type="input"
+            inputType="number"
+            value={formData.max_price?.toString() || ""}
+            onChange={(value) => onFieldChange("max_price", parseFloat(value) || 0)}
+            placeholder="0.00"
+            error={getFieldError("max_price")}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Only show Stock field for non-serialized products or super admins */}
