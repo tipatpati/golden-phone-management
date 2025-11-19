@@ -61,6 +61,14 @@ export function NewProductItem({
           uniqueBrands={uniqueBrands}
           uniqueModels={uniqueModels}
         />
+        
+        {productData.has_serial && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              💰 <strong>Unit-Level Pricing:</strong> Prices are managed individually for each serial number
+            </p>
+          </div>
+        )}
 
         {/* Serial Number Toggle */}
         <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg">
