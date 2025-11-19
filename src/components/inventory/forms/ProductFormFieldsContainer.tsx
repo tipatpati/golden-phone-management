@@ -1,6 +1,7 @@
 import React from "react";
 import { FormField } from "./ProductFormFields";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { useEnhancedBrandSuggestions, useModelSuggestions } from "@/hooks/useProductNameSuggestions";
@@ -124,7 +125,7 @@ export function ProductFormFields({
             <Label htmlFor="store_id" className="text-sm font-medium flex items-center gap-1">
               Assigned Store
               {formData.has_serial && (
-                <span className="text-xs text-muted-foreground ml-1">(updates all units)</span>
+                <span className="text-xs text-muted-foreground ml-1">(units per store)</span>
               )}
             </Label>
             <Select
@@ -149,9 +150,23 @@ export function ProductFormFields({
               </p>
             )}
             {formData.has_serial && (
-              <p className="text-xs text-muted-foreground">
-                Changing store will move all units of this product to the selected store
-              </p>
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="move_all_units_to_store"
+                  checked={(formData as any).move_all_units_to_store ?? false}
+                  onCheckedChange={(checked) =>
+                    onFieldChange('move_all_units_to_store' as any, Boolean(checked))
+                  }
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="move_all_units_to_store" className="text-xs font-medium">
+                    Move all existing units to this store
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    When enabled, all current units for this product will be reassigned to the selected store.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         )}
