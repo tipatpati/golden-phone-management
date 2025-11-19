@@ -290,7 +290,8 @@ class UniversalProductServiceClass {
   private sanitizeProductData(formData: ProductFormData): Record<string, any> {
     const allowedKeys = new Set([
       'price','stock','threshold','has_serial','category_id','barcode',
-      'description','supplier','year','min_price','max_price','serial_numbers'
+      'description','supplier','year','min_price','max_price','serial_numbers',
+      'status'
     ]);
     
     const sanitized: Record<string, any> = {};
@@ -302,7 +303,7 @@ class UniversalProductServiceClass {
     
     return sanitized;
   }
-
+  
   /**
    * Transform database product to our Product interface
    */
