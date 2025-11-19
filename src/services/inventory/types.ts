@@ -346,6 +346,10 @@ export const STORAGE_OPTIONS = [
   { value: 256, label: "256 GB" },
   { value: 512, label: "512 GB" },
   { value: 1024, label: "1 TB" },
+  { value: 2048, label: "2 TB" },
+  { value: 3072, label: "3 TB" },
+  { value: 4096, label: "4 TB" },
+  { value: 5120, label: "5 TB" },
 ] as const;
 
 export const PRODUCT_STATUS_OPTIONS = [
