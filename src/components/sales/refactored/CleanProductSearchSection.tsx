@@ -253,37 +253,50 @@ export function CleanProductSearchSection() {
                         );
                       }
 
-                      return availableUnits.map((unit: any) => (
-                        <div
-                          key={unit.id}
-                          className="flex items-center justify-between p-2 bg-surface border border-border/20 rounded text-sm"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <span className="font-mono text-xs truncate block">
-                              {unit.serial_number || unit.barcode}
-                            </span>
-                            {/* Only show selling prices, never purchase price for sales */}
-                            {(unit.max_price || unit.price) && (
-                              <span className="text-muted-foreground">
-                                €{(unit.max_price || unit.price).toFixed(2)}
-                                {unit.min_price && unit.max_price && unit.min_price !== unit.max_price && (
-                                  <span className="text-xs ml-1">
-                                    (da €{unit.min_price.toFixed(2)})
-                                  </span>
-                                )}
-                              </span>
-                            )}
-                          </div>
-                          <Button
-                            onClick={() => handleUnitSelect(product, unit)}
-                            size="sm"
-                            variant="outline"
-                            className="ml-2 shrink-0"
+                      return availableUnits.map((unit: any) => {
+                        // Check if this unit matches the search term
+                        const unitSearchString = (unit.serial_number || unit.barcode || '').toLowerCase();
+                        const searchLower = searchTerm.toLowerCase();
+                        const isMatchedUnit = unitSearchString.includes(searchLower);
+
+                        return (
+                          <div
+                            key={unit.id}
+                            className={`flex items-center justify-between p-2 border rounded text-sm transition-colors ${
+                              isMatchedUnit 
+                                ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20' 
+                                : 'bg-surface border-border/20'
+                            }`}
                           >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ));
+                            <div className="flex-1 min-w-0">
+                              <span className={`font-mono text-xs truncate block ${
+                                isMatchedUnit ? 'text-primary font-semibold' : ''
+                              }`}>
+                                {unit.serial_number || unit.barcode}
+                              </span>
+                              {/* Only show selling prices, never purchase price for sales */}
+                              {(unit.max_price || unit.price) && (
+                                <span className="text-muted-foreground">
+                                  €{(unit.max_price || unit.price).toFixed(2)}
+                                  {unit.min_price && unit.max_price && unit.min_price !== unit.max_price && (
+                                    <span className="text-xs ml-1">
+                                      (da €{unit.min_price.toFixed(2)})
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              onClick={() => handleUnitSelect(product, unit)}
+                              size="sm"
+                              variant="outline"
+                              className="ml-2 shrink-0"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
