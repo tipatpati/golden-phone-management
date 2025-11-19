@@ -166,21 +166,24 @@ export function ProductFormFields({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Stock"
-          type="input"
-          inputType="number"
-          value={formData.stock?.toString() || "0"}
-          onChange={(value) => onFieldChange("stock", parseInt(value) || 0)}
-          placeholder="0"
-          error={getFieldError("stock")}
-          description={
-            formData.has_serial 
-              ? "Auto-calculated from serial numbers" + (isSuperAdmin ? " (Super Admin can override)" : "")
-              : "Manually set stock quantity"
-          }
-          disabled={formData.has_serial && !isSuperAdmin}
-        />
+        {/* Only show Stock field for non-serialized products or super admins */}
+        {(!formData.has_serial || isSuperAdmin) && (
+          <FormField
+            label="Stock"
+            type="input"
+            inputType="number"
+            value={formData.stock?.toString() || "0"}
+            onChange={(value) => onFieldChange("stock", parseInt(value) || 0)}
+            placeholder="0"
+            error={getFieldError("stock")}
+            description={
+              formData.has_serial 
+                ? "Auto-calculated from serial numbers" + (isSuperAdmin ? " (Super Admin can override)" : "")
+                : "Manually set stock quantity"
+            }
+            disabled={formData.has_serial && !isSuperAdmin}
+          />
+        )}
         
         <FormField
           label="Low Stock Threshold"
