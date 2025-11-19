@@ -1,34 +1,48 @@
-import { BaseReactQueryService } from '../core/BaseReactQueryService';
+import { createCRUDMutations } from '../core/UnifiedCRUDService';
 import { EmployeesApiService } from './EmployeesApiService';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { QUERY_KEYS } from '../core/QueryKeys';
+import { EVENT_TYPES } from '../core/EventBus';
 import type { Employee, CreateEmployeeData } from './types';
 
-class EmployeesReactQueryServiceClass extends BaseReactQueryService<Employee, CreateEmployeeData> {
-  constructor() {
-    const apiService = new EmployeesApiService();
-    super(apiService, 'employees', { queryConfig: 'moderate' });
-  }
+const apiService = new EmployeesApiService();
 
-  protected getSearchFields(): string[] {
-    return ['first_name', 'last_name', 'email', 'phone', 'employee_id'];
+// Create CRUD mutations using unified service
+const employeeCRUD = createCRUDMutations<Employee, CreateEmployeeData>(
+  {
+    entityName: 'employee',
+    queryKey: QUERY_KEYS.employees.all[0],
+    eventTypes: {
+      created: EVENT_TYPES.EMPLOYEE_CREATED,
+      updated: EVENT_TYPES.EMPLOYEE_UPDATED,
+      deleted: EVENT_TYPES.EMPLOYEE_DELETED
+    },
+    relatedQueries: [QUERY_KEYS.employees.profiles.all[0]]
+  },
+  {
+    create: (data) => apiService.create(data),
+    update: (id, data) => apiService.update(id, data),
+    delete: (id) => apiService.delete(id)
   }
-}
-
-export const employeesService = new EmployeesReactQueryServiceClass();
+);
 
 // Export hooks for use in components
-export const useEmployees = () => 
-  employeesService.useGetAll();
+export const useEmployees = (searchTerm: string = '') => 
+  useOptimizedQuery(
+    searchTerm ? [...QUERY_KEYS.employees.all, 'search', searchTerm] : QUERY_KEYS.employees.all,
+    () => searchTerm ? apiService.search(searchTerm) : apiService.getAll(),
+    'moderate'
+  );
 
 export const useEmployee = (id: string) => 
-  employeesService.useGetById(id);
+  useOptimizedQuery(
+    QUERY_KEYS.employees.detail(id),
+    () => apiService.getById(id),
+    'moderate'
+  );
 
-export const useCreateEmployee = () => 
-  employeesService.useCreate();
-
-export const useUpdateEmployee = () => 
-  employeesService.useUpdate();
-
-export const useDeleteEmployee = () => 
-  employeesService.useDelete();
+export const useCreateEmployee = employeeCRUD.useCreate;
+export const useUpdateEmployee = employeeCRUD.useUpdate;
+export const useDeleteEmployee = employeeCRUD.useDelete;
 
 export type { Employee, CreateEmployeeData };
