@@ -64,10 +64,10 @@ export const InventoryExpandedUnitRow = React.memo(({
             )}
           </div>
           {unit.barcode && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Barcode className="h-3 w-3" aria-hidden="true" />
+            <div className="flex items-center gap-2 text-xs">
+              <Barcode className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
               <span className={cn(
-                "font-mono",
+                "font-mono text-foreground/70",
                 isMatched && unit.barcode.toLowerCase().includes(searchLower) && "font-semibold text-blue-700"
               )}>
                 {unit.barcode}
