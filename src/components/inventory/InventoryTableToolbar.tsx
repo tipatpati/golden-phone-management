@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Grid, List, FilterX, Plus } from "lucide-react";
+import { Search, Grid, List, FilterX, Plus, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BarcodeScannerTrigger } from "@/components/ui/barcode-scanner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
@@ -15,6 +15,7 @@ interface InventoryTableToolbarProps {
   searchTerm: string;
   viewMode: "list" | "grid";
   onAddProduct?: () => void;
+  isSearching?: boolean;
 }
 
 export function InventoryTableToolbar({ 
@@ -22,14 +23,13 @@ export function InventoryTableToolbar({
   onViewModeChange, 
   searchTerm, 
   viewMode,
-  onAddProduct
+  onAddProduct,
+  isSearching = false
 }: InventoryTableToolbarProps) {
   const queryClient = useQueryClient();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: currentRole } = useCurrentUserRole();
   
-  
-  // Check if user can add products using permission-based check
   const canModifyProducts = currentRole && roleUtils.hasPermission(currentRole, 'inventory');
   
   const { setupHardwareScanner } = useBarcodeScanner({
@@ -55,14 +55,11 @@ export function InventoryTableToolbar({
     onSearchChange(barcode);
   }, [onSearchChange]);
   
-  // Remove the form submit handler since we don't need it for real-time search
-  // const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   // The search is handled in real-time via onSearchChange
-  // };
-  
   const clearSearch = useCallback(() => {
     onSearchChange("");
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   }, [onSearchChange]);
 
   return (
@@ -73,25 +70,28 @@ export function InventoryTableToolbar({
           <Input
             ref={searchInputRef}
             type="search"
-            placeholder="Cerca prodotti o scansiona barcode..."
-            className="w-full pl-10 pr-20 h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            placeholder="Search by brand, model, barcode, or serial..."
+            className="w-full pl-10 pr-24 h-12 text-base border-input focus:border-primary focus:ring-primary"
             value={searchTerm}
             onChange={handleSearch}
             onKeyDown={(e) => {
-              // Allow Enter key to trigger search but prevent form submission
               if (e.key === 'Enter') {
                 e.preventDefault();
               }
             }}
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {searchTerm && (
+            {isSearching && (
+              <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+            )}
+            {searchTerm && !isSearching && (
               <button 
                 type="button"
                 className="p-1 hover:bg-muted rounded transition-colors"
                 onClick={clearSearch}
+                title="Clear search"
               >
-                <FilterX className="h-4 w-4 text-muted-foreground" />
+                <FilterX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
               </button>
             )}
             <BarcodeScannerTrigger
@@ -102,36 +102,32 @@ export function InventoryTableToolbar({
             />
           </div>
         </div>
-        <Button type="button" variant="outline" className="h-12 px-4 flex-shrink-0" onClick={() => logger.debug('Manual search triggered', {}, 'InventoryTableToolbar')}>
-          <Search className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Cerca</span>
-        </Button>
       </div>
       
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
         {canModifyProducts && onAddProduct && (
           <Button onClick={onAddProduct} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Aggiungi Prodotto
+            Add Product
           </Button>
         )}
         
-        <div className="flex items-center justify-center sm:justify-end gap-2 order-2 sm:order-none">
-          <Button 
-            variant={viewMode === "grid" ? "default" : "outline"} 
-            size="icon"
-            onClick={() => onViewModeChange("grid")}
-            className="h-12 w-12 flex items-center justify-center"
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant={viewMode === "list" ? "default" : "outline"} 
+        <div className="flex items-center gap-2 ml-auto">
+          <Button
+            variant={viewMode === "list" ? "default" : "outline"}
             size="icon"
             onClick={() => onViewModeChange("list")}
-            className="h-12 w-12 flex items-center justify-center"
+            title="List View"
           >
             <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === "grid" ? "default" : "outline"}
+            size="icon"
+            onClick={() => onViewModeChange("grid")}
+            title="Grid View"
+          >
+            <Grid className="h-4 w-4" />
           </Button>
         </div>
       </div>

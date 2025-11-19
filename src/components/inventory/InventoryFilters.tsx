@@ -18,6 +18,7 @@ interface InventoryFiltersProps {
   searchQuery: string;
   onSearch: (query: string) => void;
   onClearSearch: () => void;
+  isSearching?: boolean;
 }
 
 export function InventoryFilters({ 
@@ -28,6 +29,7 @@ export function InventoryFilters({
   searchQuery,
   onSearch,
   onClearSearch,
+  isSearching = false
 }: InventoryFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { data: currentRole } = useCurrentUserRole();
@@ -57,15 +59,10 @@ export function InventoryFilters({
     setLocalSearchTerm(searchQuery);
   }, [searchQuery]);
 
-  // Manual search - only trigger when user submits
-  const handleSearch = () => {
-    onSearch(localSearchTerm.trim());
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+  // Auto-trigger search as you type (debounced via hook)
+  const handleSearchChange = (value: string) => {
+    setLocalSearchTerm(value);
+    onSearch(value);
   };
 
   const handleClearSearch = () => {
@@ -117,26 +114,18 @@ export function InventoryFilters({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Search Bar - Full Width */}
+      {/* Search Bar - Full Width with live search */}
       <div className="flex gap-2 w-full">
-        <div className="flex-1">
+        <div className="flex-1 relative">
           <SearchBar
             value={localSearchTerm}
-            onChange={setLocalSearchTerm}
-            onKeyDown={handleKeyPress}
-            placeholder="Cerca per marca, modello, numero di serie o codice a barre..."
+            onChange={handleSearchChange}
+            placeholder="Search by brand, model, serial number or barcode..."
             className="w-full"
+            isSearching={isSearching}
+            onClear={handleClearSearch}
           />
         </div>
-        <Button 
-          onClick={handleSearch}
-          variant="filled"
-          size="default"
-          className="h-10 px-6"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Cerca
-        </Button>
       </div>
 
       {/* Filters Row - Stack on mobile, wrap on tablet/desktop */}
