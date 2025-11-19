@@ -132,6 +132,7 @@ export function EditProductDialog({
         has_serial: data.has_serial,
         serial_numbers: data.has_serial ? data.serial_numbers : undefined,
         status: (data as any).status || 'active',
+        store_id: (data as any).store_id, // Include store assignment if changed
       };
 
       // Update the main product first
@@ -139,6 +140,19 @@ export function EditProductDialog({
         id: product.id, 
         data: updatedProduct 
       });
+      
+      // If store was changed and product has serial numbers, update all units' store_id
+      if ((data as any).store_id && product.store_id !== (data as any).store_id && data.has_serial) {
+        const existingUnits = await ProductUnitManagementService.getUnitsForProduct(product.id);
+        logger.info(`Updating store assignment for ${existingUnits.length} units to store ${(data as any).store_id}`, {}, 'EditProductDialog');
+        
+        // Update each unit's store_id
+        for (const unit of existingUnits) {
+          await ProductUnitManagementService.updateUnitStore(unit.id, (data as any).store_id);
+        }
+        
+        toast.success(`Moved ${existingUnits.length} units to the selected store`);
+      }
       
       // If product has serial numbers, create/update product units with RAM and storage data
       if (data.has_serial && data.serial_numbers && data.serial_numbers.length > 0) {
