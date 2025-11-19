@@ -39,6 +39,7 @@ export function InventoryContent({
   const { filters, effectiveDateRange, hasActiveFilters } = useInventoryFilters();
   
   const queryClient = useQueryClient();
+  
   const { data: products = [], isLoading, error, refetch, isFetching } = useProducts(searchQuery, {
     categoryId: filters.categoryId,
     stockStatus: filters.stockStatus,
@@ -58,14 +59,12 @@ export function InventoryContent({
     console.log('📦 Categories state:', { categories, categoriesLoading, categoriesError });
   }, [categories, categoriesLoading, categoriesError]);
 
-  // Force refetch when search is triggered
+  // Mark search as complete when data is fetched
   useEffect(() => {
-    if (searchTrigger > 0) {
-      refetch().then(() => {
-        completeSearch();
-      });
+    if (!isFetching && searchTrigger > 0) {
+      completeSearch();
     }
-  }, [searchTrigger, refetch, completeSearch]);
+  }, [isFetching, searchTrigger, completeSearch]);
 
   const refreshTable = useCallback(() => {
     logger.debug('Refreshing inventory table', {}, 'InventoryContent');
