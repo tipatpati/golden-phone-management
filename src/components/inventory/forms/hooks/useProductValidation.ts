@@ -130,24 +130,26 @@ export function useProductValidation() {
       newErrors.push({ field: 'threshold', message: 'Valid threshold is required (must be 0 or greater)' });
     }
 
-    // Default pricing relationships
-    const priceValue = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
-    const minPriceValue = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
-    const maxPriceValue = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
+    // Default pricing relationships: only apply to non-serialized products
+    if (!data.has_serial) {
+      const priceValue = typeof data.price === 'string' ? parseFloat(data.price) : data.price;
+      const minPriceValue = typeof data.min_price === 'string' ? parseFloat(data.min_price) : data.min_price;
+      const maxPriceValue = typeof data.max_price === 'string' ? parseFloat(data.max_price) : data.max_price;
 
-    if (minPriceValue !== undefined && maxPriceValue !== undefined && 
-        !isNaN(minPriceValue) && !isNaN(maxPriceValue) &&
-        minPriceValue > 0 && maxPriceValue > 0 &&
-        minPriceValue >= maxPriceValue) {
-      newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
-    }
-
-    if (priceValue !== undefined && !isNaN(priceValue) && priceValue >= 0) {
-      if (minPriceValue !== undefined && !isNaN(minPriceValue) && minPriceValue > 0 && minPriceValue <= priceValue) {
-        newErrors.push({ field: 'min_price', message: 'Minimum selling price must be greater than purchase price' });
+      if (minPriceValue !== undefined && maxPriceValue !== undefined && 
+          !isNaN(minPriceValue) && !isNaN(maxPriceValue) &&
+          minPriceValue > 0 && maxPriceValue > 0 &&
+          minPriceValue >= maxPriceValue) {
+        newErrors.push({ field: 'min_price', message: 'Minimum price must be less than maximum price' });
       }
-      if (maxPriceValue !== undefined && !isNaN(maxPriceValue) && maxPriceValue > 0 && maxPriceValue <= priceValue) {
-        newErrors.push({ field: 'max_price', message: 'Maximum selling price must be greater than purchase price' });
+
+      if (priceValue !== undefined && !isNaN(priceValue) && priceValue >= 0) {
+        if (minPriceValue !== undefined && !isNaN(minPriceValue) && minPriceValue > 0 && minPriceValue <= priceValue) {
+          newErrors.push({ field: 'min_price', message: 'Minimum selling price must be greater than purchase price' });
+        }
+        if (maxPriceValue !== undefined && !isNaN(maxPriceValue) && maxPriceValue > 0 && maxPriceValue <= priceValue) {
+          newErrors.push({ field: 'max_price', message: 'Maximum selling price must be greater than purchase price' });
+        }
       }
     }
 
