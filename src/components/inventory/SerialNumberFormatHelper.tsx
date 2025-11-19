@@ -49,7 +49,7 @@ export function SerialNumberFormatHelper() {
           
           <div className="text-sm text-muted-foreground space-y-2">
             <div><strong>Format:</strong> SERIAL [COLOR] [STORAGE] [RAM] [BATTERY%]</div>
-            <div><strong>Storage:</strong> 16GB, 32GB, 64GB, 128GB, 256GB, 512GB, 1024GB</div>
+            <div><strong>Storage:</strong> 16GB, 32GB, 64GB, 128GB, 256GB, 512GB, 1024GB (1TB), 2048GB (2TB), 3072GB (3TB), 4096GB (4TB), 5120GB (5TB)</div>
             <div><strong>RAM:</strong> 1GB-RAM, 2GB-RAM, 4GB-RAM, 6GB-RAM, 8GB-RAM, 12GB-RAM, 16GB-RAM, etc.</div>
             <div><strong>Battery:</strong> 0% to 100% (e.g., 85%)</div>
           </div>
