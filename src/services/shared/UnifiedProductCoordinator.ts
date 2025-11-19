@@ -183,14 +183,48 @@ export class UnifiedProductCoordinator {
 
     if (existingProducts && existingProducts.length > 0) {
       console.log(`✅ Found existing product: ${existingProducts[0].id}`);
-      return { product: existingProducts[0], isExisting: true };
+
+      let currentProduct = existingProducts[0];
+
+      // If additional data is provided, apply allowed updates to the existing product
+      if (additionalData && Object.keys(additionalData).length > 0) {
+        const allowedKeys = new Set([
+          'price','stock','threshold','has_serial','category_id','barcode',
+          'description','supplier','year','min_price','max_price','serial_numbers',
+          'status'
+        ]);
+
+        const updates: Record<string, any> = {};
+        for (const [k, v] of Object.entries(additionalData)) {
+          if (allowedKeys.has(k) && v !== undefined) {
+            updates[k] = v;
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          const { data: updated, error: updateError } = await supabase
+            .from('products')
+            .update(updates)
+            .eq('id', currentProduct.id)
+            .select('*')
+            .single();
+
+          if (updateError) {
+            throw new Error(`Failed to update product: ${updateError.message}`);
+          }
+
+          currentProduct = updated!;
+        }
+      }
+
+      return { product: currentProduct, isExisting: true };
     }
 
     // Create new product if not found
     console.log(`🔨 Creating new product: ${brand} ${model}`);
     // Sanitize additionalData to include only valid product columns (prevent schema errors)
     const allowedKeys = new Set([
-      'price','stock','threshold','has_serial','category_id','barcode','description','supplier','year','min_price','max_price','serial_numbers'
+      'price','stock','threshold','has_serial','category_id','barcode','description','supplier','year','min_price','max_price','serial_numbers','status'
     ]);
     const sanitizedAdditional: Record<string, any> = {};
     if (additionalData) {
