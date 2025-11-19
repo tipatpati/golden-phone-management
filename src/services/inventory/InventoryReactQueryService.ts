@@ -1,12 +1,22 @@
-import { InventoryManagementService } from './InventoryManagementService';
-import { useOptimizedQuery } from '@/hooks/useAdvancedCaching';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { eventBus, EVENT_TYPES } from '../core/EventBus';
-import type { Product, CreateProductData, ProductFormData, InventorySearchFilters } from './types';
+/**
+ * INVENTORY REACT QUERY SERVICE
+ * Uses unified CRUD operations for consistency and data integrity
+ */
 
-// Direct hook implementations for inventory management
+import { useState } from 'react';
+import { createCRUDMutations } from '../core/UnifiedCRUDService';
+import { TransactionManager, type TransactionStep } from '../core/TransactionManager';
+import { InventoryManagementService } from './InventoryManagementService';
+import { ProductUnitManagementService } from '../shared/ProductUnitManagementService';
+import { useOptimizedQuery } from '@/hooks/useAdvancedCaching';
+import { EVENT_TYPES } from '../core/EventBus';
+import type { Product, CreateProductData, ProductFormData, InventorySearchFilters, UnitEntryForm } from './types';
+import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
+
+// ==========================================
+// QUERY HOOKS (Read Operations)
+// ==========================================
 
 export const useProducts = (filters?: InventorySearchFilters) => {
   return useOptimizedQuery(
@@ -26,13 +36,11 @@ export const useProduct = (id: string) => {
   return useOptimizedQuery(
     ['products', 'detail', id],
     async () => {
-      // Use ProductUnitCoordinator for unified data loading
       const { productUnitCoordinator } = await import('@/services/shared/ProductUnitCoordinator');
       const result = await productUnitCoordinator.getProductWithUnits(id);
       
       if (!result.product) return null;
       
-      // Transform to match expected inventory format
       return {
         ...result.product,
         units: result.units,
@@ -48,85 +56,268 @@ export const useProduct = (id: string) => {
   );
 };
 
-export const useCreateProduct = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (productData: CreateProductData) => 
-      InventoryManagementService.createProduct(productData as any),
-    onSuccess: (result, productData) => {
-      // Emit product created event
-      eventBus.emit({
-        type: EVENT_TYPES.PRODUCT_CREATED,
-        module: 'inventory',
-        operation: 'create',
-        entityId: (result as any).id || 'unknown',
-        data: productData
-      });
-      
-      // Invalidate all product-related queries for immediate refresh
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
-    },
-  });
-};
+// ==========================================
+// MUTATION HOOKS (Write Operations)
+// ==========================================
 
-export const useUpdateProduct = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateProductData> }) => 
-      InventoryManagementService.updateProduct(id, data),
-    onSuccess: (result, { id, data }) => {
-      // Emit product updated event
-      eventBus.emit({
-        type: EVENT_TYPES.PRODUCT_UPDATED,
-        module: 'inventory',
-        operation: 'update',
-        entityId: id,
-        data: data
+const productCRUD = createCRUDMutations<Product, CreateProductData>(
+  {
+    entityName: 'inventory',
+    queryKey: 'products',
+    eventTypes: {
+      created: EVENT_TYPES.PRODUCT_CREATED,
+      updated: EVENT_TYPES.PRODUCT_UPDATED,
+      deleted: EVENT_TYPES.PRODUCT_DELETED
+    },
+    relatedQueries: ['categories', 'brands']
+  },
+  {
+    create: async (data) => {
+      const result = await InventoryManagementService.createProduct(data as any);
+      if (!result.success || !result.data) {
+        throw new Error(result.errors[0] || 'Failed to create product');
+      }
+      return result.data as Product;
+    },
+    update: async (id, data) => {
+      const result = await InventoryManagementService.updateProduct(id, data);
+      if (!result.success || !result.data) {
+        throw new Error(result.errors[0] || 'Failed to update product');
+      }
+      return result.data as Product;
+    },
+    delete: async (id) => {
+      const result = await InventoryManagementService.deleteProduct(id);
+      if (!result.success) {
+        throw new Error(result.errors[0] || 'Failed to delete product');
+      }
+      return true;
+    }
+  }
+);
+
+/**
+ * CREATE product with transactional unit creation
+ */
+export const useCreateProduct = () => {
+  const baseCreate = productCRUD.useCreate();
+
+  return {
+    ...baseCreate,
+    mutateAsync: async (productData: ProductFormData) => {
+      logger.info('Creating product with units', { 
+        hasSerial: productData.has_serial, 
+        unitCount: productData.unit_entries?.length 
+      }, 'InventoryService');
+
+      const steps: TransactionStep[] = [];
+      let createdProductId: string | null = null;
+
+      // Step 1: Create product
+      steps.push({
+        name: 'create_product',
+        execute: async () => {
+          const product = await baseCreate.mutateAsync({
+            brand: productData.brand,
+            model: productData.model,
+            year: productData.year,
+            category_id: productData.category_id,
+            price: productData.price,
+            min_price: productData.min_price,
+            max_price: productData.max_price,
+            stock: productData.stock || 0,
+            threshold: productData.threshold || 0,
+            description: productData.description,
+            supplier: productData.supplier,
+            barcode: productData.barcode,
+            has_serial: productData.has_serial,
+            status: 'active',
+            store_id: productData.store_id
+          });
+          createdProductId = product.id;
+          return product;
+        },
+        rollback: async (product) => {
+          if (product?.id) {
+            await InventoryManagementService.deleteProduct(product.id);
+          }
+        }
       });
-      
-      // Check if stock changed
-      if (data.stock !== undefined) {
-        eventBus.emit({
-          type: EVENT_TYPES.STOCK_CHANGED,
-          module: 'inventory',
-          operation: 'update',
-          entityId: id,
-          data: { newStock: data.stock, reason: 'product_updated' }
+
+      // Step 2: Create units if has serial
+      if (productData.has_serial && productData.unit_entries?.length) {
+        steps.push({
+          name: 'create_units',
+          execute: async () => {
+            if (!createdProductId) throw new Error('Product ID not available');
+            
+            return await ProductUnitManagementService.createUnitsForProduct({
+              productId: createdProductId,
+              unitEntries: productData.unit_entries || [],
+              defaultPricing: {
+                price: productData.price,
+                min_price: productData.min_price,
+                max_price: productData.max_price
+              }
+            });
+          },
+          rollback: async (result) => {
+            if (result?.barcodes) {
+              // Delete created units
+              for (const barcode of result.barcodes) {
+                try {
+                  const unit = await ProductUnitManagementService.getUnitBySerialNumber(barcode);
+                  if (unit) {
+                    await ProductUnitManagementService.deleteUnit(unit.id);
+                  }
+                } catch (error) {
+                  logger.error('Failed to rollback unit creation', { barcode, error }, 'InventoryService');
+                }
+              }
+            }
+          }
         });
       }
-      
-      // Invalidate all product-related queries for immediate refresh
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['products', 'detail', id] });
-      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
-    },
-  });
+
+      // Execute transaction
+      const result = await TransactionManager.executeTransaction(steps, 'create_product');
+
+      if (!result.success) {
+        const errorMessage = result.errors[0]?.message || 'Failed to create product';
+        toast.error(errorMessage);
+        throw result.errors[0];
+      }
+
+      toast.success('Product created successfully');
+      return result.results[0] as Product;
+    }
+  };
 };
 
-export const useDeleteProduct = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (id: string) => InventoryManagementService.deleteProduct(id),
-    onSuccess: (result, id) => {
-      // Emit product deleted event
-      eventBus.emit({
-        type: EVENT_TYPES.PRODUCT_DELETED,
-        module: 'inventory',
-        operation: 'delete',
-        entityId: id,
-        data: { deletedProduct: result }
+/**
+ * UPDATE product with transactional unit updates
+ */
+export const useUpdateProduct = () => {
+  const baseUpdate = productCRUD.useUpdate();
+
+  return {
+    ...baseUpdate,
+    mutateAsync: async ({ id, data, unitUpdates }: { 
+      id: string; 
+      data: Partial<CreateProductData>;
+      unitUpdates?: {
+        newUnits?: UnitEntryForm[];
+        updatedUnits?: Array<{ id: string; data: Partial<UnitEntryForm> }>;
+        deletedUnitIds?: string[];
+        moveAllUnitsToStore?: string;
+      };
+    }) => {
+      logger.info('Updating product', { id, hasUnitUpdates: !!unitUpdates }, 'InventoryService');
+
+      const steps: TransactionStep[] = [];
+      const rollbackData: any[] = [];
+
+      // Step 1: Update product
+      steps.push({
+        name: 'update_product',
+        execute: async () => {
+          const products = await InventoryManagementService.getProducts();
+          const previousProduct = products.find(p => p.id === id);
+          rollbackData.push({ type: 'product', data: previousProduct });
+          
+          return await baseUpdate.mutateAsync({ id, data });
+        },
+        rollback: async () => {
+          const previous = rollbackData.find(d => d.type === 'product')?.data;
+          if (previous) {
+            await InventoryManagementService.updateProduct(id, previous);
+          }
+        }
       });
-      
-      // Invalidate and refetch all product queries for immediate refresh
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
-    },
-  });
+
+      // Step 2: Handle unit updates if provided
+      if (unitUpdates) {
+        // Move all units to store
+        if (unitUpdates.moveAllUnitsToStore) {
+          steps.push({
+            name: 'move_units_to_store',
+            execute: async () => {
+              const units = await ProductUnitManagementService.getUnitsForProduct(id, undefined, true);
+              const previousStores = units.map(u => ({ id: u.id, store_id: u.store_id }));
+              rollbackData.push({ type: 'unit_stores', data: previousStores });
+
+              for (const unit of units) {
+                await ProductUnitManagementService.updateUnitStore(unit.id, unitUpdates.moveAllUnitsToStore!);
+              }
+              
+              return units.length;
+            },
+            rollback: async () => {
+              const previous = rollbackData.find(d => d.type === 'unit_stores')?.data;
+              if (previous) {
+                for (const { id: unitId, store_id } of previous) {
+                  await ProductUnitManagementService.updateUnitStore(unitId, store_id);
+                }
+              }
+            }
+          });
+        }
+
+        // Create new units
+        if (unitUpdates.newUnits?.length) {
+          steps.push({
+            name: 'create_new_units',
+            execute: async () => {
+              return await ProductUnitManagementService.createUnitsForProduct({
+                productId: id,
+                unitEntries: unitUpdates.newUnits || [],
+                defaultPricing: {
+                  price: data.price,
+                  min_price: data.min_price,
+                  max_price: data.max_price
+                }
+              });
+            }
+          });
+        }
+
+        // Delete units
+        if (unitUpdates.deletedUnitIds?.length) {
+          steps.push({
+            name: 'delete_units',
+            execute: async () => {
+              for (const unitId of unitUpdates.deletedUnitIds || []) {
+                await ProductUnitManagementService.updateUnitStatus(unitId, 'damaged');
+              }
+              return unitUpdates.deletedUnitIds?.length || 0;
+            }
+          });
+        }
+      }
+
+      // Execute transaction
+      const result = await TransactionManager.executeTransaction(steps, 'update_product');
+
+      if (!result.success) {
+        const errorMessage = result.errors[0]?.message || 'Failed to update product';
+        toast.error(errorMessage);
+        throw result.errors[0];
+      }
+
+      toast.success('Product updated successfully');
+      return result.results[0] as Product;
+    }
+  };
 };
+
+/**
+ * DELETE product (uses base implementation)
+ */
+export const useDeleteProduct = productCRUD.useDelete;
+
+// ==========================================
+// CATEGORIES & RECOMMENDATIONS
+// ==========================================
 
 export const useCategories = () => {
   return useOptimizedQuery(
@@ -135,6 +326,7 @@ export const useCategories = () => {
     {
       priority: 'low',
       enablePrefetching: true,
+      enableOptimisticUpdates: false,
       cacheTags: ['static', 'reference']
     }
   );
@@ -143,106 +335,92 @@ export const useCategories = () => {
 export const useProductRecommendations = (productId: string) => {
   return useOptimizedQuery(
     ['product-recommendations', productId],
-    () => Promise.resolve([]), // TODO: Implement recommendations
+    async () => {
+      // Placeholder - implement when needed
+      return [];
+    },
     {
       priority: 'low',
+      enablePrefetching: false,
+      enableOptimisticUpdates: false,
       cacheTags: ['static']
     }
   );
 };
 
-// Real-time subscription hook for products
-export const useProductsRealtime = () => {
-  const queryClient = useQueryClient();
-  
-  useEffect(() => {
-    const channel = supabase
-      .channel('products-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        (payload) => {
-          console.log('🔄 Products table changed:', payload);
-          
-          // More efficient updates based on the change type
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            // Optimistically update specific product in cache
-            const updatedProduct = payload.new;
-            
-            // Update specific product cache
-            queryClient.setQueryData(['products', 'detail', updatedProduct.id], updatedProduct);
-            
-            // Update list cache efficiently
-            queryClient.setQueryData(['products', 'list'], (old: any) => {
-              if (!old) return old;
-              return old.map((product: any) => 
-                product.id === updatedProduct.id ? updatedProduct : product
-              );
-            });
-            
-            // Update search results
-            queryClient.setQueriesData(
-              { queryKey: ['products', 'list'] }, 
-              (old: any) => {
-                if (!old) return old;
-                return old.map((product: any) => 
-                  product.id === updatedProduct.id ? updatedProduct : product
-                );
-              }
-            );
-          } else {
-            // For INSERT/DELETE, just invalidate to refetch
-            queryClient.invalidateQueries({ queryKey: ['products'] });
-          }
-        }
-      )
-      .subscribe();
+// ==========================================
+// BULK OPERATIONS
+// ==========================================
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-};
-
-// Bulk operations
 export const useDeleteProducts = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (ids: string[]) => InventoryManagementService.bulkDeleteProducts({ productIds: ids }),
-    onSuccess: () => {
-      // Force immediate refresh for bulk operations
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
+
+  return {
+    isPending,
+    mutateAsync: async (ids: string[]) => {
+      setIsPending(true);
+      try {
+        const steps: TransactionStep[] = ids.map(id => ({
+          name: `delete_product_${id}`,
+          execute: async () => {
+            const result = await InventoryManagementService.deleteProduct(id);
+            if (!result.success) {
+              throw new Error(result.errors[0] || 'Failed to delete product');
+            }
+            return true;
+          }
+        }));
+
+        const result = await TransactionManager.executeParallel(steps, 'bulk_delete_products');
+
+        if (!result.success) {
+          toast.error(`Failed to delete ${result.errors.length} product(s)`);
+          throw result.errors[0];
+        }
+
+        toast.success(`Successfully deleted ${ids.length} product(s)`);
+        return true;
+      } finally {
+        setIsPending(false);
+      }
+    }
+  };
 };
 
 export const useUpdateProducts = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (updates: Array<{ id: string; [key: string]: any }>) => {
-      if (updates.length === 0) return Promise.resolve({ success: true });
-      
-      const { id, ...updateData } = updates[0];
-      const productIds = updates.map(u => u.id);
-      
-      return InventoryManagementService.bulkUpdateProducts({
-        productIds,
-        updates: updateData
-      });
-    },
-    onSuccess: () => {
-      // Force immediate refresh for bulk operations
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.refetchQueries({ queryKey: ['products', 'list'] });
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
+
+  return {
+    isPending,
+    mutateAsync: async (updates: Array<{ id: string; [key: string]: any }>) => {
+      setIsPending(true);
+      try {
+        const steps: TransactionStep[] = updates.map(({ id, ...data }) => ({
+          name: `update_product_${id}`,
+          execute: async () => {
+            const result = await InventoryManagementService.updateProduct(id, data);
+            if (!result.success) {
+              throw new Error(result.errors[0] || 'Failed to update product');
+            }
+            return result.data;
+          }
+        }));
+
+        const result = await TransactionManager.executeParallel(steps, 'bulk_update_products');
+
+        if (!result.success) {
+          toast.error(`Failed to update ${result.errors.length} product(s)`);
+          throw result.errors[0];
+        }
+
+        toast.success(`Successfully updated ${updates.length} product(s)`);
+        return result.results;
+      } finally {
+        setIsPending(false);
+      }
+    }
+  };
 };
 
-export type { Product, CreateProductData, ProductFormData };
+// Export for compatibility
+export { InventoryManagementService };
