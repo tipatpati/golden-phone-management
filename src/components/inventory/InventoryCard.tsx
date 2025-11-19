@@ -105,9 +105,9 @@ export function InventoryCard({
                 </p>
               )}
               {product.barcode && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                  <Barcode className="h-3 w-3" />
-                  {product.barcode}
+                <div className="flex items-center gap-1 text-xs mt-0.5">
+                  <Barcode className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-mono text-foreground/70">{product.barcode}</span>
                 </div>
               )}
             </div>
