@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/updated-card";
-import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch } from "lucide-react";
+import { Package, ShoppingCart, Users, Wrench, Building2, ArrowRight, PackageSearch, ArrowLeftRight, FileText } from "lucide-react";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
 import { roleUtils } from "@/utils/roleUtils";
 import { UserRole } from "@/types/roles";
@@ -54,6 +54,22 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
       href: "/suppliers",
       module: "suppliers",
       requiredPermissions: ['suppliers'] // Updated to match role permissions
+    },
+    {
+      title: "Visualizza Resi",
+      description: "Gestisci i resi prodotti",
+      icon: FileText,
+      href: "/returns",
+      module: "returns",
+      requiredPermissions: ['sales']
+    },
+    {
+      title: "Gestisci Cambi",
+      description: "Visualizza transazioni di cambio",
+      icon: ArrowLeftRight,
+      href: "/exchanges",
+      module: "exchanges",
+      requiredPermissions: ['sales']
     }
   ];
 
@@ -109,6 +125,18 @@ export function ModuleNavCards({ currentModule }: ModuleNavCardsProps) {
                   bg: 'bg-gradient-to-br from-amber-600 to-amber-700',
                   shadow: 'shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:shadow-[0_0_60px_rgba(245,158,11,0.7)]',
                   border: 'border-2 border-amber-400/50'
+                };
+              case 'returns':
+                return {
+                  bg: 'bg-gradient-to-br from-orange-600 to-orange-700',
+                  shadow: 'shadow-[0_0_40px_rgba(249,115,22,0.5)] hover:shadow-[0_0_60px_rgba(249,115,22,0.7)]',
+                  border: 'border-2 border-orange-400/50'
+                };
+              case 'exchanges':
+                return {
+                  bg: 'bg-gradient-to-br from-purple-600 to-purple-700',
+                  shadow: 'shadow-[0_0_40px_rgba(147,51,234,0.5)] hover:shadow-[0_0_60px_rgba(147,51,234,0.7)]',
+                  border: 'border-2 border-purple-400/50'
                 };
               default:
                 return {

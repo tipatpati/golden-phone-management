@@ -16,6 +16,7 @@ const Dashboard = React.lazy(() => import("@/pages/Dashboard"));
 const Clients = React.lazy(() => import("@/pages/Clients"));
 const Garanzia = React.lazy(() => import("@/pages/Sales"));
 const Returns = React.lazy(() => import("@/pages/Returns"));
+const Exchanges = React.lazy(() => import("@/pages/Exchanges"));
 const Inventory = React.lazy(() => import("@/pages/Inventory"));
 const Suppliers = React.lazy(() => import("@/pages/Suppliers"));
 const Repairs = React.lazy(() => import("@/pages/Repairs"));
@@ -101,6 +102,15 @@ export function AppRouter() {
                   <TabletLayout userRole={effectiveRole}>
                     <Suspense fallback={<PageLoader />}>
                       <Returns />
+                    </Suspense>
+                  </TabletLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/exchanges" element={
+                <ProtectedRoute>
+                  <TabletLayout userRole={effectiveRole}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Exchanges />
                     </Suspense>
                   </TabletLayout>
                 </ProtectedRoute>
@@ -244,6 +254,19 @@ export function AppRouter() {
                     <TabletLayout userRole={effectiveRole}>
                       <Suspense fallback={<PageLoader />}>
                         <Returns />
+                      </Suspense>
+                    </TabletLayout>
+                  </ProtectedRoute>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } />
+              <Route path="/exchanges" element={
+                (roleUtils.canAccessFeature(effectiveRole, 'sales_management') || effectiveRole === 'salesperson' || effectiveRole === 'manager') ? (
+                  <ProtectedRoute>
+                    <TabletLayout userRole={effectiveRole}>
+                      <Suspense fallback={<PageLoader />}>
+                        <Exchanges />
                       </Suspense>
                     </TabletLayout>
                   </ProtectedRoute>

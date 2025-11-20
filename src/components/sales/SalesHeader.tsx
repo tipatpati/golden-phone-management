@@ -1,6 +1,5 @@
 import React from "react";
 import { NewSaleDialog } from "./NewSaleDialog";
-import { NewExchangeDialog } from "./NewExchangeDialog";
 import { PageHeader } from "@/components/common/PageHeader";
 
 export function SalesHeader() {
@@ -11,7 +10,6 @@ export function SalesHeader() {
       actions={
         <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
           <NewSaleDialog />
-          <NewExchangeDialog />
         </div>
       }
     />
