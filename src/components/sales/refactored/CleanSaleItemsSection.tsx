@@ -73,8 +73,8 @@ export function CleanSaleItemsSection() {
       // Remove discount
       handleUpdateDiscount(item, null, 0);
     } else {
-      // Enable discount with default percentage
-      handleUpdateDiscount(item, 'percentage', 0);
+      // Enable discount with default 5% percentage
+      handleUpdateDiscount(item, 'percentage', 5);
     }
   };
 
