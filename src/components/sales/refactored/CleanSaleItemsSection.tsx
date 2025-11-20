@@ -50,6 +50,14 @@ export function CleanSaleItemsSection() {
     const itemSubtotal = item.quantity * item.unit_price;
     const discountAmount = (itemSubtotal * percentValue) / 100;
     
+    console.log('[DISCOUNT] Percentage update:', {
+      productId: item.product_id,
+      serialNumber: item.serial_number,
+      productUnitId: item.product_unit_id,
+      percentValue,
+      discountAmount
+    });
+    
     updateItem(
       item.product_id,
       { 
@@ -58,7 +66,7 @@ export function CleanSaleItemsSection() {
         discount_amount: discountAmount
       },
       item.serial_number,
-      item.product_unit_id
+      item.product_unit_id || undefined
     );
   };
 
@@ -66,6 +74,13 @@ export function CleanSaleItemsSection() {
     const amountValue = parseFloat(value) || 0;
     const itemSubtotal = item.quantity * item.unit_price;
     if (amountValue < 0 || amountValue > itemSubtotal) return;
+    
+    console.log('[DISCOUNT] Amount update:', {
+      productId: item.product_id,
+      serialNumber: item.serial_number,
+      productUnitId: item.product_unit_id,
+      amountValue
+    });
     
     updateItem(
       item.product_id,
@@ -75,11 +90,17 @@ export function CleanSaleItemsSection() {
         discount_amount: amountValue
       },
       item.serial_number,
-      item.product_unit_id
+      item.product_unit_id || undefined
     );
   };
 
   const clearDiscount = (item: typeof items[0]) => {
+    console.log('[DISCOUNT] Clearing discount:', {
+      productId: item.product_id,
+      serialNumber: item.serial_number,
+      productUnitId: item.product_unit_id
+    });
+    
     updateItem(
       item.product_id,
       { 
@@ -88,7 +109,7 @@ export function CleanSaleItemsSection() {
         discount_amount: 0
       },
       item.serial_number,
-      item.product_unit_id
+      item.product_unit_id || undefined
     );
   };
 

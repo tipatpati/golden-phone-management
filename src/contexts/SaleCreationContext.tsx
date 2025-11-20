@@ -262,15 +262,32 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     }
 
     case 'UPDATE_ITEM': {
+      console.log('[REDUCER] UPDATE_ITEM payload:', {
+        product_id: action.payload.product_id,
+        serial_number: action.payload.serial_number,
+        product_unit_id: action.payload.product_unit_id,
+        updates: action.payload.updates
+      });
+      
       const newItems = state.items.map(item => {
-        // Match by product_id AND (serial_number if serialized OR product_unit_id if present)
-        const isTargetItem = item.product_id === action.payload.product_id &&
-          (item.has_serial 
-            ? item.serial_number === action.payload.serial_number || item.product_unit_id === action.payload.product_unit_id
-            : !action.payload.serial_number && !action.payload.product_unit_id
+        // Simplified matching logic
+        let isTargetItem = false;
+        
+        if (item.has_serial) {
+          // For serialized items: match by product_id AND (serial_number OR product_unit_id)
+          isTargetItem = item.product_id === action.payload.product_id && (
+            (item.serial_number && item.serial_number === action.payload.serial_number) ||
+            (item.product_unit_id && item.product_unit_id === action.payload.product_unit_id)
           );
+        } else {
+          // For non-serialized items: match by product_id only
+          isTargetItem = item.product_id === action.payload.product_id && 
+            !action.payload.serial_number && 
+            !action.payload.product_unit_id;
+        }
         
         if (isTargetItem) {
+          console.log('[REDUCER] Matched item:', item.product_name, 'Applying updates:', action.payload.updates);
           const updates = { ...action.payload.updates };
           // Enforce quantity = 1 for serialized products
           if (item.has_serial && updates.quantity !== undefined) {
@@ -280,6 +297,13 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
         }
         return item;
       });
+      
+      console.log('[REDUCER] Items after update:', newItems.map(i => ({
+        name: i.product_name,
+        discount_type: i.discount_type,
+        discount_value: i.discount_value
+      })));
+      
       const newState = { ...state, items: newItems };
       return calculateTotals(newState);
     }
