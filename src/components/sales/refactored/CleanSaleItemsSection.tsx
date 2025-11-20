@@ -1,19 +1,15 @@
-import React, { useState } from 'react';
-import { Minus, Plus, Trash2, Package, AlertTriangle, RefreshCw, Percent, Euro } from 'lucide-react';
+import React from 'react';
+import { Minus, Plus, Trash2, Package, AlertTriangle, RefreshCw, Percent, Euro, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { toast } from 'sonner';
 
 export function CleanSaleItemsSection() {
   const { state, updateItem, removeItem, refreshStock } = useSaleCreation();
   const { items } = state;
-  const [openDiscountPopover, setOpenDiscountPopover] = useState<string | null>(null);
 
   const handleRefreshStock = async () => {
     const productIds = items.map(i => i.product_id);
@@ -64,19 +60,22 @@ export function CleanSaleItemsSection() {
       }
     }
     
-    // Update item but keep popover open by maintaining the key
-    const itemKey = `${item.product_id}-${item.product_unit_id || ''}-${item.serial_number || ''}`;
     updateItem(
       item.product_id, 
       { discount_type: discountType, discount_value: discountValue, discount_amount: discountAmount },
       item.serial_number, 
       item.product_unit_id
     );
-    
-    // Keep popover open after update
-    setTimeout(() => {
-      setOpenDiscountPopover(itemKey);
-    }, 0);
+  };
+
+  const toggleDiscount = (item: typeof items[0]) => {
+    if (item.discount_type) {
+      // Remove discount
+      handleUpdateDiscount(item, null, 0);
+    } else {
+      // Enable discount with default percentage
+      handleUpdateDiscount(item, 'percentage', 0);
+    }
   };
 
   if (items.length === 0) {
@@ -143,7 +142,7 @@ export function CleanSaleItemsSection() {
                   : 'border-border/30'
               }`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-13 gap-4 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-14 gap-4 items-center">
                 {/* Product Info - 4 columns */}
                 <div className="lg:col-span-4">
                   <h3 className="font-medium text-on-surface text-sm truncate">{item.product_name}</h3>
@@ -245,112 +244,95 @@ export function CleanSaleItemsSection() {
                   )}
                 </div>
 
-                {/* Discount & Total - 3 columns */}
-                <div className="lg:col-span-3 flex items-center gap-2">
-                  {/* Discount Popover */}
-                  <Popover 
-                    open={openDiscountPopover === itemKey} 
-                    onOpenChange={(open) => setOpenDiscountPopover(open ? itemKey : null)}
-                    modal={false}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant={item.discount_type ? "default" : "outline"}
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {item.discount_type === 'percentage' ? (
-                          <Percent className="h-3 w-3" />
-                        ) : item.discount_type === 'amount' ? (
-                          <Euro className="h-3 w-3" />
-                        ) : (
-                          <Percent className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-80 bg-popover z-50" 
-                      align="end"
-                      onInteractOutside={(e) => {
-                        // Only close when clicking truly outside, not on form elements
-                        const target = e.target as HTMLElement;
-                        if (target.closest('[role="dialog"]') || target.closest('[data-radix-popper-content-wrapper]')) {
-                          e.preventDefault();
-                        }
-                      }}
+                {/* Discount & Total - 4 columns */}
+                <div className="lg:col-span-4 space-y-2">
+                  {/* Discount Controls */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant={item.discount_type ? "default" : "outline"}
+                      className="h-7 px-2"
+                      onClick={() => toggleDiscount(item)}
                     >
-                      <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                        <h4 className="font-medium">Sconto Articolo</h4>
-                        
-                        <RadioGroup 
-                          value={item.discount_type || 'none'} 
-                          onValueChange={(value) => {
-                            if (value === 'none') {
-                              handleUpdateDiscount(item, null, 0);
-                            } else {
-                              handleUpdateDiscount(item, value as 'percentage' | 'amount', item.discount_value || 0);
-                            }
+                      {item.discount_type === 'percentage' ? (
+                        <><Percent className="h-3 w-3 mr-1" /> Sconto</>
+                      ) : item.discount_type === 'amount' ? (
+                        <><Euro className="h-3 w-3 mr-1" /> Sconto</>
+                      ) : (
+                        <><Percent className="h-3 w-3 mr-1" /> Sconto</>
+                      )}
+                    </Button>
+                    
+                    {item.discount_type && (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant={item.discount_type === 'percentage' ? 'default' : 'outline'}
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleUpdateDiscount(item, 'percentage', item.discount_value || 0)}
+                          >
+                            <Percent className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={item.discount_type === 'amount' ? 'default' : 'outline'}
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleUpdateDiscount(item, 'amount', item.discount_value || 0)}
+                          >
+                            <Euro className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <Input
+                          type="number"
+                          value={item.discount_value || 0}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value) || 0;
+                            handleUpdateDiscount(item, item.discount_type || 'percentage', value);
                           }}
-                          onClick={(e) => e.stopPropagation()}
+                          className="h-7 w-20 text-sm"
+                          step="0.01"
+                          min="0"
+                          max={item.discount_type === 'percentage' ? 100 : undefined}
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleUpdateDiscount(item, null, 0)}
                         >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="none" id={`none-${itemKey}`} />
-                            <Label htmlFor={`none-${itemKey}`}>Nessuno sconto</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="percentage" id={`percentage-${itemKey}`} />
-                            <Label htmlFor={`percentage-${itemKey}`}>Percentuale (%)</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="amount" id={`amount-${itemKey}`} />
-                            <Label htmlFor={`amount-${itemKey}`}>Importo (€)</Label>
-                          </div>
-                        </RadioGroup>
-
-                        {item.discount_type && (
-                          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                            <Label>Valore Sconto</Label>
-                            <Input
-                              type="number"
-                              value={item.discount_value || 0}
-                              onChange={(e) => {
-                                const value = parseFloat(e.target.value) || 0;
-                                handleUpdateDiscount(item, item.discount_type || 'percentage', value);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              step="0.01"
-                              min="0"
-                              max={item.discount_type === 'percentage' ? 100 : undefined}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Sconto: €{itemDiscountAmount.toFixed(2)}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Total Price */}
-                  <div className="flex-1 text-right">
-                    {item.discount_type && itemDiscountAmount > 0 && (
-                      <div className="text-xs text-muted-foreground line-through">
-                        €{itemSubtotal.toFixed(2)}
-                      </div>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
                     )}
-                    <div className="font-semibold text-sm">€{totalPrice.toFixed(2)}</div>
                   </div>
 
-                  {/* Delete Button */}
-                  <Button
-                    onClick={() => removeItem(item.product_id)}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  {/* Total Price */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-right flex-1">
+                      {item.discount_type && itemDiscountAmount > 0 && (
+                        <div className="text-xs text-muted-foreground line-through">
+                          €{itemSubtotal.toFixed(2)}
+                        </div>
+                      )}
+                      <div className="font-semibold text-sm">€{totalPrice.toFixed(2)}</div>
+                      {item.discount_type && itemDiscountAmount > 0 && (
+                        <div className="text-xs text-primary">
+                          -€{itemDiscountAmount.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Delete Button */}
+                    <Button
+                      onClick={() => removeItem(item.product_id)}
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
