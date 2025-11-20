@@ -270,24 +270,38 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       });
       
       const newItems = state.items.map(item => {
-        // Simplified matching logic
+        console.log('[REDUCER] Checking item:', {
+          product_name: item.product_name,
+          product_id: item.product_id,
+          has_serial: item.has_serial,
+          serial_number: item.serial_number,
+          product_unit_id: item.product_unit_id
+        });
+        
         let isTargetItem = false;
         
         if (item.has_serial) {
-          // For serialized items: match by product_id AND (serial_number OR product_unit_id)
+          // For serialized items: must match product_id AND at least one identifier
+          const serialMatch = item.serial_number && action.payload.serial_number && 
+                             item.serial_number === action.payload.serial_number;
+          const unitMatch = item.product_unit_id && action.payload.product_unit_id && 
+                           item.product_unit_id === action.payload.product_unit_id;
+          
+          // Match if product_id matches AND (serial matches OR unit matches OR both are undefined)
           isTargetItem = item.product_id === action.payload.product_id && (
-            (item.serial_number && item.serial_number === action.payload.serial_number) ||
-            (item.product_unit_id && item.product_unit_id === action.payload.product_unit_id)
+            serialMatch || 
+            unitMatch || 
+            (!item.serial_number && !item.product_unit_id && !action.payload.serial_number && !action.payload.product_unit_id)
           );
         } else {
-          // For non-serialized items: match by product_id only
+          // For non-serialized items: match by product_id only (no serial/unit should be present)
           isTargetItem = item.product_id === action.payload.product_id && 
             !action.payload.serial_number && 
             !action.payload.product_unit_id;
         }
         
         if (isTargetItem) {
-          console.log('[REDUCER] Matched item:', item.product_name, 'Applying updates:', action.payload.updates);
+          console.log('[REDUCER] ✅ MATCHED item:', item.product_name, 'Applying updates:', action.payload.updates);
           const updates = { ...action.payload.updates };
           // Enforce quantity = 1 for serialized products
           if (item.has_serial && updates.quantity !== undefined) {
@@ -301,7 +315,8 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       console.log('[REDUCER] Items after update:', newItems.map(i => ({
         name: i.product_name,
         discount_type: i.discount_type,
-        discount_value: i.discount_value
+        discount_value: i.discount_value,
+        discount_amount: i.discount_amount
       })));
       
       const newState = { ...state, items: newItems };
