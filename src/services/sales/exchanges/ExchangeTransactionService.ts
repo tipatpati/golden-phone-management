@@ -150,7 +150,7 @@ export class ExchangeTransactionService {
         `
         *,
         client:clients(id, first_name, last_name, company_name, type),
-        salesperson:profiles!exchange_transactions_salesperson_id_fkey(id, username),
+        salesperson:profiles(id, username),
         trade_in_items:exchange_trade_in_items(*),
         new_sale:sales(*)
       `
@@ -201,7 +201,7 @@ export class ExchangeTransactionService {
         `
         *,
         client:clients(id, first_name, last_name, company_name, type, phone, email),
-        salesperson:profiles!exchange_transactions_salesperson_id_fkey(id, username),
+        salesperson:profiles(id, username),
         trade_in_items:exchange_trade_in_items(*),
         new_sale:sales(
           *,
