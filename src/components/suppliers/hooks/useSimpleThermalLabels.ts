@@ -165,37 +165,36 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         const totalQuantity = item.quantity || 0;
 
         if (totalQuantity > unitsCount) {
-          // Generate generic labels for non-serialized quantity
-          const genericCount = totalQuantity - unitsCount;
+          // Generate ONE label template for non-serialized products
+          // User will select quantity in the UI via LabelQuantitySelector
           const productBarcode = product.barcode || `PROD-${product.id.slice(-8)}`;
           const sellingPrice = product.max_price || product.price || 0;
           
-          console.log(`📦 NON-SERIALIZED LABELS - ${product.brand} ${product.model}:`, {
+          console.log(`📦 NON-SERIALIZED PRODUCT - ${product.brand} ${product.model}:`, {
             total_quantity: totalQuantity,
             units_count: unitsCount,
-            generic_labels: genericCount,
+            non_serialized_quantity: totalQuantity - unitsCount,
             barcode: productBarcode,
-            selling_price: sellingPrice
+            selling_price: sellingPrice,
+            note: 'Generating 1 template label - user will select quantity in UI'
           });
 
-          for (let i = 0; i < genericCount; i++) {
-            labels.push({
-              id: `${product.id}-generic-${i}`,
-              productName: `${product.brand} ${product.model}`,
-              brand: product.brand,
-              model: product.model,
-              serialNumber: undefined, // No serial for generic labels
-              barcode: productBarcode,
-              price: sellingPrice,
-              maxPrice: product.max_price,
-              minPrice: product.price,
-              // No specific specs for non-serialized items
-              color: undefined,
-              storage: undefined,
-              ram: undefined,
-              batteryLevel: undefined
-            });
-          }
+          labels.push({
+            id: `${product.id}-non-serialized`,
+            productName: `${product.brand} ${product.model}`,
+            brand: product.brand,
+            model: product.model,
+            serialNumber: undefined, // No serial for non-serialized products
+            barcode: productBarcode,
+            price: sellingPrice,
+            maxPrice: product.max_price,
+            minPrice: product.price,
+            // No specific specs for non-serialized items
+            color: undefined,
+            storage: undefined,
+            ram: undefined,
+            batteryLevel: undefined
+          });
         }
       }
 

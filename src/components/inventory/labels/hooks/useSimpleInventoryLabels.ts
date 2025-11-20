@@ -139,28 +139,28 @@ export function useSimpleInventoryLabels(productIds: string[]) {
             labels.push(labelData);
           }
         } else {
-          // Create generic product labels based on stock (no individual units)
-          const labelCount = Math.min(product.stock || 1, 10);
+          // Create ONE template label for non-serialized products
+          // User will select quantity in the UI via LabelQuantitySelector
           const sellingPrice = product.max_price || product.price || 0;
           
-          console.log(`🟡 BULK LABEL - ${product.brand} ${product.model}:`, {
+          console.log(`🟡 NON-SERIALIZED PRODUCT - ${product.brand} ${product.model}:`, {
             product_max_price: product.max_price,
             product_price: product.price,
-            SELECTED_SELLING_PRICE: sellingPrice
+            stock: product.stock,
+            SELECTED_SELLING_PRICE: sellingPrice,
+            note: 'Generating 1 template label - user will select quantity in UI'
           });
           
-          for (let i = 0; i < labelCount; i++) {
-            labels.push({
-              id: `${product.id}-bulk-${i}`,
-              productName: `${product.brand} ${product.model}`,
-              brand: product.brand,
-              model: product.model,
-              barcode: product.barcode || `TEMP-${product.id}-${i}`,
-              price: sellingPrice,  // ✅ Selling price for bulk items
-              maxPrice: product.max_price,
-              minPrice: product.price
-            });
-          }
+          labels.push({
+            id: `${product.id}-non-serialized`,
+            productName: `${product.brand} ${product.model}`,
+            brand: product.brand,
+            model: product.model,
+            barcode: product.barcode || `TEMP-${product.id}`,
+            price: sellingPrice,  // ✅ Selling price for non-serialized items
+            maxPrice: product.max_price,
+            minPrice: product.price
+          });
         }
       }
 
