@@ -117,6 +117,45 @@ export class Code128GeneratorService {
     }
   }
 
+  /**
+   * Validate barcode rendering parameters against CODE128 ISO/IEC 15417 standards
+   */
+  static validateRenderingParams(params: {
+    width: number;
+    height: number;
+    margin: number;
+  }): { isValid: boolean; warnings: string[] } {
+    const warnings: string[] = [];
+    
+    // Check bar width (minimum 2.0px recommended for reliable scanning)
+    if (params.width < 2.0) {
+      warnings.push(`Bar width ${params.width}px is below recommended 2.0px minimum`);
+    }
+    
+    // Check height (minimum ~45px for typical barcodes, varies with length)
+    if (params.height < 45) {
+      warnings.push(`Barcode height ${params.height}px may not meet 15% of length requirement`);
+    }
+    
+    // Check quiet zones (10X rule: quiet zone should be 10 times the narrow bar width)
+    const minQuietZone = params.width * 10;
+    if (params.margin < minQuietZone) {
+      warnings.push(`Quiet zone ${params.margin}px is below minimum ${minQuietZone}px (10X rule)`);
+    }
+    
+    // All checks passed
+    if (warnings.length === 0) {
+      console.log('✅ Barcode rendering parameters meet CODE128 ISO/IEC 15417 standards');
+    } else {
+      console.warn('⚠️ Barcode rendering parameter warnings:', warnings);
+    }
+    
+    return {
+      isValid: warnings.length === 0,
+      warnings
+    };
+  }
+
   // Batch generate barcodes for multiple units
   static async generateBulkUnitBarcodes(unitIds: string[]): Promise<Record<string, string>> {
     const results: Record<string, string> = {};

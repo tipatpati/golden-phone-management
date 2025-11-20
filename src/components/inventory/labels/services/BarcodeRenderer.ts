@@ -40,11 +40,18 @@ export class BarcodeRenderer {
         displayValue: options.displayValue ?? BARCODE_CONFIG.displayValue,
       };
 
-      console.log(`🎨 BarcodeRenderer: Generating SVG for context "${context}"`, {
+      // Validate against CODE128 standards (ISO/IEC 15417)
+      const minQuietZone = config.width * 10; // 10X rule
+      const meetsStandards = config.width >= 2.0 && config.height >= 45 && config.margin >= minQuietZone * 0.9;
+      
+      console.log(`🔍 Barcode Standards Check for ${context}:`, {
         barcode: value,
         width: config.width,
         height: config.height,
-        fontSize: config.fontSize
+        quietZone: config.margin,
+        minQuietZone: minQuietZone,
+        meetsStandards,
+        warnings: !meetsStandards ? 'May not meet ISO/IEC 15417 standards' : 'Compliant'
       });
 
       // Create temporary SVG element

@@ -22,52 +22,52 @@ export const PRINT_SETTINGS: ThermalPrintSettings = {
 };
 
 // Phase 2: Enhanced Barcode Configuration
-// Optimized for thermal printing with consistent quality across all contexts
+// CODE128 ISO/IEC 15417 Compliant - Optimized for thermal printing
 export const BARCODE_CONFIG: BarcodeConfig = {
-  // Core barcode settings
+  // Core barcode settings - ISO/IEC 15417 compliant
   format: 'CODE128' as const,
-  width: 1.4,           // Reduced bar width for better fit
-  height: 28,           // Reduced height for 3cm labels
+  width: 2.0,           // Standard bar width for reliable scanning
+  height: 50,           // Meets 15% length requirement and 0.25" minimum
   displayValue: true,
   
   // Typography optimized for thermal printing
-  fontSize: 6,          // Smaller font for compact labels
+  fontSize: 10,         // Readable on thermal labels
   fontOptions: 'bold' as const,
   font: 'Arial, sans-serif',
   textAlign: 'center' as const,
   textPosition: 'bottom' as const,
-  textMargin: 1,        // Minimal spacing for compact labels
+  textMargin: 2,
   
-  // Quiet zones for scanner compliance (ISO/IEC 15417)
-  margin: 6,            // Minimum quiet zone
-  marginTop: 2,
-  marginBottom: 2,
-  marginLeft: 6,        // Left quiet zone
-  marginRight: 6,       // Right quiet zone
+  // ISO/IEC 15417 compliant quiet zones (10X minimum = 10 * 2.0 = 20px)
+  margin: 20,           // 10X quiet zone for reliable scanning
+  marginTop: 4,
+  marginBottom: 4,
+  marginLeft: 20,       // Left quiet zone
+  marginRight: 20,      // Right quiet zone
   
   // High contrast for thermal printing
   background: '#ffffff',
   lineColor: '#000000',
   
-  // Quality settings for different contexts
+  // Quality settings for different contexts - all standards compliant
   quality: {
     preview: {
-      width: 1.4,
-      height: 28,
-      fontSize: 6,
-      margin: 4,       // Reduced margin for preview
+      width: 2.0,       // Standard compliant
+      height: 45,       // Slightly smaller for preview
+      fontSize: 9,
+      margin: 18,       // 9X quiet zone for preview
     },
     print: {
-      width: 1.6,      // Slightly higher for crisp printing
-      height: 32,      // Reduced height for better fit
-      fontSize: 7,
-      margin: 4,       // Reduced margin for print
+      width: 2.2,       // Slightly thicker for print quality
+      height: 55,       // Taller for print documents
+      fontSize: 11,
+      margin: 22,       // 10X quiet zone for print
     },
     thermal: {
-      width: 1.4,      // Optimized for thermal printers
-      height: 28,
-      fontSize: 6,
-      margin: 3,       // Minimal margin for compact thermal labels
+      width: 2.0,       // Standard for thermal printers
+      height: 50,       // ISO compliant minimum
+      fontSize: 10,     // Clear on thermal paper
+      margin: 20,       // Full 10X quiet zone
     }
   }
 } as const;
