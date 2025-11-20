@@ -24,6 +24,9 @@ export interface TradeInItem {
 
 export interface NewPurchaseItem {
   product_id: string;
+  product_unit_id?: string;
+  brand: string;
+  model: string;
   quantity: number;
   unit_price: number;
   total_price: number;

@@ -15,11 +15,13 @@ import { ExchangeStepTradeIn } from './exchanges/ExchangeStepTradeIn';
 import { ExchangeStepPurchase } from './exchanges/ExchangeStepPurchase';
 import { ExchangeStepPayment } from './exchanges/ExchangeStepPayment';
 import { ExchangeStepReview } from './exchanges/ExchangeStepReview';
-import { useCreateExchange } from '@/services/sales/exchanges/ExchangeReactQueryService';
+import { ExchangeReceiptDialog } from './exchanges/ExchangeReceiptDialog';
+import { useCreateExchange, useExchange } from '@/services/sales/exchanges/ExchangeReactQueryService';
 import { ExchangeTransactionService } from '@/services/sales/exchanges/ExchangeTransactionService';
-import type { TradeInItem, NewPurchaseItem } from '@/services/sales/exchanges/types';
+import type { TradeInItem, NewPurchaseItem, ExchangeTransaction } from '@/services/sales/exchanges/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCurrentStoreId } from '@/services/stores/storeHelpers';
+import { useToast } from '@/hooks/use-toast';
 
 type ExchangeStep = 'client' | 'trade_in' | 'purchase' | 'payment' | 'review';
 
@@ -27,7 +29,15 @@ export function NewExchangeDialog() {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<ExchangeStep>('client');
   const { user } = useAuth();
+  const { toast } = useToast();
   const createExchange = useCreateExchange();
+  
+  // Receipt dialog state
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [createdExchangeId, setCreatedExchangeId] = useState<string | null>(null);
+  
+  // Fetch the created exchange for the receipt
+  const { data: createdExchange } = useExchange(createdExchangeId);
 
   // Exchange data state
   const [clientId, setClientId] = useState<string | undefined>();
@@ -86,16 +96,26 @@ export function NewExchangeDialog() {
 
   const handleSubmit = async () => {
     if (!user) {
+      toast({
+        title: 'Errore',
+        description: 'Utente non autenticato',
+        variant: 'destructive',
+      });
       return;
     }
 
     const storeId = await getCurrentStoreId();
     if (!storeId) {
+      toast({
+        title: 'Errore',
+        description: 'Negozio non selezionato',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
-      await createExchange.mutateAsync({
+      const result = await createExchange.mutateAsync({
         store_id: storeId,
         client_id: clientId,
         salesperson_id: user.id,
@@ -112,11 +132,25 @@ export function NewExchangeDialog() {
         trade_in_assessment_notes: assessmentNotes,
       });
 
-      // Reset and close
-      resetForm();
+      toast({
+        title: 'Cambio Creato',
+        description: `Cambio #${result.exchange_number} creato con successo`,
+      });
+
+      // Close wizard and open receipt
       setOpen(false);
+      setCreatedExchangeId(result.exchange_id);
+      setReceiptDialogOpen(true);
+      
+      // Reset form
+      resetForm();
     } catch (error) {
       console.error('Error creating exchange:', error);
+      toast({
+        title: 'Errore',
+        description: 'Errore durante la creazione del cambio',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -135,6 +169,15 @@ export function NewExchangeDialog() {
 
   return (
     <SalesPermissionGuard requiredRole="create">
+      {/* Receipt Dialog */}
+      {createdExchange && (
+        <ExchangeReceiptDialog
+          exchange={createdExchange}
+          open={receiptDialogOpen}
+          onOpenChange={setReceiptDialogOpen}
+        />
+      )}
+      
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="w-full lg:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg font-bold py-6 px-8 min-h-[60px]">

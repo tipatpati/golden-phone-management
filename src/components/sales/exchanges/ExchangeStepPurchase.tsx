@@ -53,11 +53,32 @@ export function ExchangeStepPurchase({
     setSearchResults([]);
   };
 
+  const handleUnitSelect = (product: Product, unit: any) => {
+    const newItem: NewPurchaseItem = {
+      product_id: product.id,
+      product_unit_id: unit.id,
+      brand: product.brand,
+      model: product.model,
+      quantity: 1,
+      unit_price: unit.price || product.price,
+      total_price: unit.price || product.price,
+      serial_number: unit.serial_number,
+    };
+
+    onItemsChange([...items, newItem]);
+
+    // Reset
+    setSelectedProduct(null);
+    setSearchTerm('');
+  };
+
   const handleAddProduct = () => {
     if (!selectedProduct) return;
 
     const newItem: NewPurchaseItem = {
       product_id: selectedProduct.id,
+      brand: selectedProduct.brand,
+      model: selectedProduct.model,
       quantity: selectedProduct.has_serial ? 1 : quantity,
       unit_price: selectedProduct.price,
       total_price: selectedProduct.price * (selectedProduct.has_serial ? 1 : quantity),
@@ -110,20 +131,80 @@ export function ExchangeStepPurchase({
           )}
 
           {searchTerm.length >= 2 && !isLoading && searchResults.length > 0 && (
-            <div className="border rounded-lg max-h-64 overflow-y-auto">
+            <div className="space-y-3">
               {searchResults.map((product) => (
-                <div
-                  key={product.id}
-                  className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0"
-                  onClick={() => handleSelectProduct(product)}
-                >
-                  <div className="font-semibold">
-                    {product.brand} {product.model}
+                <Card key={product.id} className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="font-semibold text-lg">
+                        {product.brand} {product.model}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {!product.has_serial && `Stock: ${product.stock} • `}
+                        Prezzo base: €{product.price.toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Show units for serialized products */}
+                    {product.has_serial && product.product_units && product.product_units.length > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Unità disponibili ({product.product_units.length}):
+                        </p>
+                        <div className="space-y-2">
+                          {product.product_units
+                            .filter((unit: any) => unit.status === 'available')
+                            .map((unit: any) => {
+                              const matchesSearch = searchTerm.length >= 4 && 
+                                unit.serial_number?.toLowerCase().includes(searchTerm.toLowerCase());
+                              
+                              return (
+                                <div
+                                  key={unit.id}
+                                  className={`flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-all ${
+                                    matchesSearch ? 'ring-2 ring-primary shadow-lg' : ''
+                                  }`}
+                                  onClick={() => handleUnitSelect(product, unit)}
+                                >
+                                  <div className="flex-1">
+                                    <div className="font-mono text-sm font-semibold">
+                                      {unit.serial_number || unit.barcode}
+                                    </div>
+                                    {unit.color && (
+                                      <div className="text-xs text-muted-foreground">
+                                        Colore: {unit.color}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold text-primary">
+                                      €{(unit.price || product.price).toFixed(2)}
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="mt-1"
+                                    >
+                                      Seleziona
+                                    </Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    ) : (
+                      /* Non-serialized product - show add button */
+                      <Button
+                        onClick={() => handleSelectProduct(product)}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Seleziona Prodotto
+                      </Button>
+                    )}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Stock: {product.stock} • Prezzo: €{product.price.toFixed(2)}
-                  </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -199,19 +280,21 @@ export function ExchangeStepPurchase({
         <div className="space-y-2">
           <Label>Carrello ({items.length} articoli)</Label>
           {items.map((item, index) => (
-            <Card key={index} className="p-3">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="font-semibold">Prodotto #{index + 1}</div>
+            <Card key={index} className="p-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1 space-y-1">
+                  <div className="font-semibold text-base">
+                    {item.brand} {item.model}
+                  </div>
+                  {item.serial_number && (
+                    <div className="font-mono text-sm text-muted-foreground">
+                      S/N/IMEI: {item.serial_number}
+                    </div>
+                  )}
                   <div className="text-sm text-muted-foreground">
                     Quantità: {item.quantity} × €{item.unit_price.toFixed(2)}
                   </div>
-                  {item.serial_number && (
-                    <div className="text-xs text-muted-foreground">
-                      S/N: {item.serial_number}
-                    </div>
-                  )}
-                  <div className="font-semibold text-blue-600 mt-1">
+                  <div className="font-semibold text-lg text-primary">
                     €{item.total_price.toFixed(2)}
                   </div>
                 </div>
@@ -219,6 +302,7 @@ export function ExchangeStepPurchase({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveItem(index)}
+                  className="shrink-0"
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -226,9 +310,9 @@ export function ExchangeStepPurchase({
             </Card>
           ))}
 
-          <div className="flex justify-between items-center p-3 bg-muted rounded-lg font-semibold">
+          <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg font-semibold text-lg">
             <span>Totale Acquisto:</span>
-            <span className="text-blue-600">€{totalPurchase.toFixed(2)}</span>
+            <span className="text-primary">€{totalPurchase.toFixed(2)}</span>
           </div>
         </div>
       )}
