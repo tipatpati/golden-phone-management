@@ -401,6 +401,194 @@ export type Database = {
           },
         ]
       }
+      exchange_trade_in_items: {
+        Row: {
+          assessed_value: number
+          assessment_notes: string | null
+          brand: string
+          condition: string
+          created_at: string
+          custom_product_description: string | null
+          exchange_id: string
+          id: string
+          imei: string | null
+          model: string
+          original_sale_id: string | null
+          original_sale_item_id: string | null
+          product_id: string | null
+          serial_number: string | null
+          was_originally_sold_here: boolean
+        }
+        Insert: {
+          assessed_value: number
+          assessment_notes?: string | null
+          brand: string
+          condition: string
+          created_at?: string
+          custom_product_description?: string | null
+          exchange_id: string
+          id?: string
+          imei?: string | null
+          model: string
+          original_sale_id?: string | null
+          original_sale_item_id?: string | null
+          product_id?: string | null
+          serial_number?: string | null
+          was_originally_sold_here?: boolean
+        }
+        Update: {
+          assessed_value?: number
+          assessment_notes?: string | null
+          brand?: string
+          condition?: string
+          created_at?: string
+          custom_product_description?: string | null
+          exchange_id?: string
+          id?: string
+          imei?: string | null
+          model?: string
+          original_sale_id?: string | null
+          original_sale_item_id?: string | null
+          product_id?: string | null
+          serial_number?: string | null
+          was_originally_sold_here?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_trade_in_items_exchange_id_fkey"
+            columns: ["exchange_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_trade_in_items_original_sale_id_fkey"
+            columns: ["original_sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_trade_in_items_original_sale_item_id_fkey"
+            columns: ["original_sale_item_id"]
+            isOneToOne: false
+            referencedRelation: "sale_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_trade_in_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_effective_stock"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "exchange_trade_in_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_transactions: {
+        Row: {
+          bank_transfer_amount: number | null
+          card_amount: number | null
+          cash_amount: number | null
+          client_id: string | null
+          created_at: string
+          exchange_date: string
+          exchange_number: string
+          id: string
+          net_difference: number
+          new_sale_id: string | null
+          notes: string | null
+          original_sale_id: string | null
+          payment_method: string
+          purchase_total: number
+          salesperson_id: string
+          status: string
+          store_id: string
+          trade_in_assessment_notes: string | null
+          trade_in_total: number
+          updated_at: string
+        }
+        Insert: {
+          bank_transfer_amount?: number | null
+          card_amount?: number | null
+          cash_amount?: number | null
+          client_id?: string | null
+          created_at?: string
+          exchange_date?: string
+          exchange_number: string
+          id?: string
+          net_difference: number
+          new_sale_id?: string | null
+          notes?: string | null
+          original_sale_id?: string | null
+          payment_method: string
+          purchase_total?: number
+          salesperson_id: string
+          status?: string
+          store_id: string
+          trade_in_assessment_notes?: string | null
+          trade_in_total?: number
+          updated_at?: string
+        }
+        Update: {
+          bank_transfer_amount?: number | null
+          card_amount?: number | null
+          cash_amount?: number | null
+          client_id?: string | null
+          created_at?: string
+          exchange_date?: string
+          exchange_number?: string
+          id?: string
+          net_difference?: number
+          new_sale_id?: string | null
+          notes?: string | null
+          original_sale_id?: string | null
+          payment_method?: string
+          purchase_total?: number
+          salesperson_id?: string
+          status?: string
+          store_id?: string
+          trade_in_assessment_notes?: string | null
+          trade_in_total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_transactions_new_sale_id_fkey"
+            columns: ["new_sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_transactions_original_sale_id_fkey"
+            columns: ["original_sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       model_aliases: {
         Row: {
           alias: string
@@ -1950,6 +2138,14 @@ export type Database = {
       }
       cleanup_invalid_auth_state: { Args: never; Returns: undefined }
       cleanup_old_security_logs: { Args: never; Returns: undefined }
+      create_exchange_transaction: {
+        Args: {
+          exchange_data: Json
+          new_items_data: Json
+          trade_in_items_data: Json
+        }
+        Returns: Json
+      }
       create_sale_transaction: {
         Args: { sale_data: Json; sale_items_data: Json }
         Returns: Json
@@ -1988,6 +2184,7 @@ export type Database = {
         }
         Returns: string
       }
+      generate_exchange_number: { Args: never; Returns: string }
       generate_repair_number: { Args: never; Returns: string }
       generate_return_number: { Args: never; Returns: string }
       generate_sale_number: { Args: never; Returns: string }
