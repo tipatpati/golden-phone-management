@@ -99,6 +99,9 @@ export function CleanSaleItemsSection() {
                 {/* Product Info - 4 columns */}
                 <div className="lg:col-span-4">
                   <h3 className="font-medium text-on-surface text-sm truncate">{item.product_name}</h3>
+                  {item.serial_number && (
+                    <p className="text-xs text-muted-foreground mt-0.5">SN/IMEI: {item.serial_number}</p>
+                  )}
                   <div className="flex items-center gap-2 mt-1">
                     {hasStockIssue && (
                       <TooltipProvider>
