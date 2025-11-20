@@ -62,8 +62,13 @@ export function SupplierAcquisitionPrintDialog({
     companyName
   });
 
-  const handleCloseAttempt = () => {
-    setShowCloseConfirm(true);
+  const handleOpenChange = (newOpen: boolean) => {
+    // If trying to close, show confirmation first
+    if (!newOpen) {
+      setShowCloseConfirm(true);
+    } else {
+      onOpenChange(newOpen);
+    }
   };
   
   const handleConfirmClose = () => {
@@ -77,22 +82,10 @@ export function SupplierAcquisitionPrintDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={() => {}}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent 
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="max-w-4xl max-h-[90vh] overflow-y-auto [&>button]:hidden"
         >
-          {/* Custom close button */}
-          <Button
-            onClick={handleCloseAttempt}
-            variant="ghost"
-            size="icon"
-            className="absolute right-3 top-3 sm:right-4 sm:top-4 flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto rounded-full sm:rounded-sm opacity-70 hover:opacity-100 z-10"
-          >
-            <X className="h-5 w-5 sm:h-4 sm:w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
           
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
