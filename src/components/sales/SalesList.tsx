@@ -423,7 +423,6 @@ export const SalesList = React.memo(function SalesList({ sales, onEdit, onDelete
           columns={columns}
           actions={actions}
           getRowKey={(sale) => sale.id}
-          onRowClick={(sale) => setSelectedSaleForDetails(sale)}
         />
       </div>
 
@@ -460,7 +459,6 @@ export const SalesList = React.memo(function SalesList({ sales, onEdit, onDelete
                       <ComprehensiveEditSaleDialog sale={sale} />
                     ) : null
                   }
-                  onClick={() => setSelectedSaleForDetails(sale)}
                   fields={[
                     {
                       label: "Cliente",
