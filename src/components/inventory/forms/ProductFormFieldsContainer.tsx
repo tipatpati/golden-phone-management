@@ -7,6 +7,7 @@ import { AutocompleteInput } from "@/components/shared/AutocompleteInput";
 import { useEnhancedBrandSuggestions, useModelSuggestions } from "@/hooks/useProductNameSuggestions";
 import { useStores } from "@/services/stores/StoreReactQueryService";
 import { useCurrentUserRole } from "@/hooks/useRoleManagement";
+import { useCategories } from "@/services/inventory/InventoryReactQueryService";
 import type { ProductFormData } from "@/services/inventory/types";
 
 interface ProductFormFieldsProps {
@@ -46,6 +47,9 @@ export function ProductFormFields({
   const { data: stores = [] } = useStores();
   const { data: userRole } = useCurrentUserRole();
   const canChangeStore = userRole === 'super_admin' || userRole === 'admin';
+  
+  // ✅ FIX: Load categories dynamically from database
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   return (
     <div className="space-y-4">
@@ -108,13 +112,11 @@ export function ProductFormFields({
           type="select"
           value={formData.category_id?.toString()}
           onChange={(value) => onFieldChange("category_id", parseInt(value))}
-          placeholder="Select a category"
-          options={[
-            { value: "1", label: "Smartphones" },
-            { value: "2", label: "Tablets" },
-            { value: "3", label: "Laptops" },
-            { value: "4", label: "Accessories" }
-          ]}
+          placeholder={categoriesLoading ? "Loading categories..." : "Select a category"}
+          options={categories.map(cat => ({
+            value: cat.id.toString(),
+            label: cat.name
+          }))}
           error={getFieldError("category_id")}
           required
         />
