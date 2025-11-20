@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 import { PageLayout } from "@/components/common/PageLayout";
 import { PageHeader } from "@/components/common/PageHeader";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 
 const Suppliers = () => {
   const [localSearchQuery, setLocalSearchQuery] = useState("");
@@ -26,6 +27,7 @@ const Suppliers = () => {
   const [showNewSupplier, setShowNewSupplier] = useState(false);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
+  const [showAcquisitionCloseConfirm, setShowAcquisitionCloseConfirm] = useState(false);
   const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
   const [completedTransactionId, setCompletedTransactionId] = useState<string | null>(null);
@@ -42,6 +44,24 @@ const Suppliers = () => {
   const handleClearSearch = () => {
     setLocalSearchQuery('');
     setActiveSearchQuery('');
+  };
+
+  const handleAcquisitionDialogChange = (newOpen: boolean) => {
+    // If trying to close, show confirmation first
+    if (!newOpen) {
+      setShowAcquisitionCloseConfirm(true);
+    } else {
+      setShowAcquisitionDialog(newOpen);
+    }
+  };
+
+  const handleConfirmAcquisitionClose = () => {
+    setShowAcquisitionCloseConfirm(false);
+    setShowAcquisitionDialog(false);
+  };
+
+  const handleCancelAcquisitionClose = () => {
+    setShowAcquisitionCloseConfirm(false);
   };
 
   const handleContactAllSuppliers = async () => {
@@ -214,7 +234,7 @@ const Suppliers = () => {
         onOpenChange={setShowNewTransaction}
       />
 
-      <Dialog open={showAcquisitionDialog} onOpenChange={setShowAcquisitionDialog}>
+      <Dialog open={showAcquisitionDialog} onOpenChange={handleAcquisitionDialogChange}>
         <DialogContent className="w-[95vw] sm:w-full max-w-7xl max-h-[85vh] md:max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl">Supplier Acquisition</DialogTitle>
@@ -258,6 +278,17 @@ const Suppliers = () => {
           setShowRecoveryDialog(false);
           toast.success('Units recovered successfully');
         }}
+      />
+
+      <ConfirmDialog
+        open={showAcquisitionCloseConfirm}
+        onClose={handleCancelAcquisitionClose}
+        onConfirm={handleConfirmAcquisitionClose}
+        title="Close Supplier Acquisition?"
+        message="Are you sure you want to close? Any unsaved acquisition data will be lost."
+        confirmText="Close Anyway"
+        cancelText="Keep Working"
+        variant="destructive"
       />
 
     </PageLayout>
