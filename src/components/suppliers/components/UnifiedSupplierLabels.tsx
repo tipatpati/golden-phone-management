@@ -20,9 +20,22 @@ export function UnifiedSupplierLabels({
 }: UnifiedSupplierLabelsProps) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   
+  console.log('🏷️ UnifiedSupplierLabels RENDER', {
+    transactionIds,
+    transactionIdsCount: transactionIds.length,
+    companyName
+  });
+  
   const labelProvider = useLabelDataProvider({
     source: 'supplier',
     transactionIds
+  });
+  
+  console.log('🏷️ Label provider state', {
+    isLoading: labelProvider.isLoading,
+    error: labelProvider.error,
+    labelsCount: labelProvider.labels.length,
+    labels: labelProvider.labels
   });
 
   const handleOpenGenerator = () => {
