@@ -53,6 +53,7 @@ interface SaleCreationState {
 // Action types
 type SaleCreationAction =
   | { type: 'ADD_ITEM'; payload: SaleItem }
+  | { type: 'INIT_ITEMS'; payload: SaleItem[] } // New action for bulk initialization
   | { type: 'UPDATE_ITEM'; payload: { product_id: string; serial_number?: string; product_unit_id?: string; updates: Partial<SaleItem> } }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_FORM_DATA'; payload: Partial<SaleFormData> }
@@ -235,6 +236,13 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
       return calculateTotals(newState);
     }
 
+    case 'INIT_ITEMS': {
+      // Bulk initialization for edit mode - sets items directly without grouping logic
+      debugLog('INIT_ITEMS - Loading items for edit mode:', action.payload.length);
+      const newState = { ...state, items: action.payload };
+      return calculateTotals(newState);
+    }
+
     case 'UPDATE_ITEM': {
       const newItems = state.items.map(item => {
         // Match by product_id AND (serial_number if serialized OR product_unit_id if present)
@@ -340,26 +348,41 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
     if (!initialSale) return;
     
     debugLog('Initializing edit mode with sale:', initialSale.id);
+    debugLog('Sale items to load:', initialSale.sale_items);
     
-    // Load sale items
+    // Reset first to ensure clean state
+    dispatch({ type: 'RESET_SALE' });
+    
+    // Load sale items - use INIT_ITEMS to preserve exact item structure from database
     if (initialSale.sale_items && initialSale.sale_items.length > 0) {
-      initialSale.sale_items.forEach((item: any) => {
-        const saleItem: SaleItem = {
+      const loadedItems: SaleItem[] = initialSale.sale_items.map((item: any) => {
+        debugLog('Loading sale item:', {
           product_id: item.product_id,
-          product_unit_id: item.product_unit_id,
+          quantity: item.quantity,
+          serial: item.serial_number,
+          unit_id: item.product_unit_id
+        });
+        
+        return {
+          product_id: item.product_id,
+          product_unit_id: item.product_unit_id || undefined,
           product_name: `${item.product?.brand || ''} ${item.product?.model || ''}`.trim(),
           brand: item.product?.brand || '',
           model: item.product?.model || '',
           year: item.product?.year,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          serial_number: item.serial_number,
-          barcode: item.barcode,
-          has_serial: item.product?.has_serial,
-          stock: 999, // Will be refreshed
+          quantity: item.quantity || 1,
+          unit_price: Number(item.unit_price) || 0,
+          min_price: item.product?.min_price ? Number(item.product.min_price) : undefined,
+          max_price: item.product?.max_price ? Number(item.product.max_price) : undefined,
+          serial_number: item.serial_number || undefined,
+          barcode: item.barcode || undefined,
+          has_serial: item.product?.has_serial || false,
+          stock: 0, // Will be refreshed immediately
         };
-        dispatch({ type: 'ADD_ITEM', payload: saleItem });
       });
+      
+      debugLog('Initializing with items:', loadedItems.length);
+      dispatch({ type: 'INIT_ITEMS', payload: loadedItems });
     }
     
     // Load form data
