@@ -343,8 +343,20 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       return;
     }
 
+    // ✅ FIX #4: Sync quantities for non-serialized products before validation
+    const syncedItems = items.map(item => {
+      if (item.createsNewProduct && item.productData && !item.productData.has_serial) {
+        return {
+          ...item,
+          quantity: item.productData.stock || 0,
+          unitCost: item.productData.price || 0
+        };
+      }
+      return item;
+    });
+
     // Validate all items before submission
-    const summary = validation.validateAllItems(items);
+    const summary = validation.validateAllItems(syncedItems);
     if (!summary.isValid) {
       toast.error(`Please fix ${summary.totalErrors} validation error${summary.totalErrors !== 1 ? 's' : ''} before submitting`);
       validation.scrollToFirstError();
@@ -362,7 +374,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
       const result = await supplierAcquisitionService.createAcquisition({
         supplierId: data.supplierId,
         transactionDate: new Date(data.transactionDate),
-        items,
+        items: syncedItems, // Use synced items
         notes: data.notes
       });
 

@@ -130,6 +130,27 @@ export function useAcquisitionValidation() {
         }
       }
 
+      // ✅ FIX #3: Add specific validation for non-serialized products
+      if (!item.productData.has_serial) {
+        // Non-serialized product validation
+        if (!item.productData.stock || item.productData.stock <= 0) {
+          errors.push({
+            field: 'productData.stock',
+            message: 'Quantity must be at least 1 for non-serialized products',
+            itemIndex
+          });
+          hasRequiredFieldErrors = true;
+        }
+        if (!item.productData.price || item.productData.price <= 0) {
+          errors.push({
+            field: 'productData.price',
+            message: 'Purchase price must be greater than 0',
+            itemIndex
+          });
+          hasPricingErrors = true;
+        }
+      }
+
       // Validate unit entries for serialized products
       if (item.productData.has_serial) {
         if (!item.unitEntries || item.unitEntries.length === 0) {

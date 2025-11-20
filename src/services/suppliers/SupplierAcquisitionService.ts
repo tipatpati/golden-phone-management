@@ -394,8 +394,9 @@ class SupplierAcquisitionService {
       ? (item.productData?.has_serial ?? false)
       : await this.getProductHasSerial(productId);
 
-    // Update product stock only for non-serialized products
-    if (!hasSerial && item.quantity > 0) {
+    // ✅ FIX #2: Only update stock for non-serialized EXISTING products
+    // For new products, stock is already set during creation (line 277)
+    if (!hasSerial && item.quantity > 0 && !item.createsNewProduct) {
       await this.updateProductStock(transactionId, productId, item.quantity);
     }
 
