@@ -99,13 +99,13 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-name {
-      font-size: 2.5mm;
+      font-size: 2mm;
       font-weight: 700;
       line-height: 1.0;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.05mm;
-      max-height: 5mm;
+      letter-spacing: 0.03mm;
+      max-height: 4mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
@@ -115,7 +115,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-details {
-      font-size: 1.7mm;
+      font-size: 1.4mm;
       font-weight: 500;
       color: #333;
       text-align: center;
@@ -126,11 +126,11 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .serial-number {
-      font-size: 1.5mm;
+      font-size: 1.3mm;
       font-weight: 600;
       color: #000;
       text-align: center;
-      letter-spacing: 0.05mm;
+      letter-spacing: 0.03mm;
       line-height: 1.0;
     }
 
