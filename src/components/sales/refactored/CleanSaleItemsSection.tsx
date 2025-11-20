@@ -111,6 +111,7 @@ export function CleanSaleItemsSection() {
       {/* Items Table-like Layout */}
       <div className="space-y-3">
         {items.map((item) => {
+          const itemKey = `${item.product_id}-${item.product_unit_id || ''}-${item.serial_number || ''}`;
           const hasStockIssue = !item.has_serial && item.quantity > item.stock;
           const hasPriceIssue = item.unit_price < (item.min_price || 0) || item.unit_price > (item.max_price || 0);
           
@@ -128,7 +129,7 @@ export function CleanSaleItemsSection() {
 
           return (
             <div
-              key={`${item.product_id}-${item.product_unit_id || ''}`}
+              key={itemKey}
               className={`p-4 bg-surface-container rounded-lg border transition-colors ${
                 hasStockIssue || hasPriceIssue 
                   ? 'border-destructive/50 bg-destructive/5' 
@@ -241,8 +242,8 @@ export function CleanSaleItemsSection() {
                 <div className="lg:col-span-3 flex items-center gap-2">
                   {/* Discount Popover */}
                   <Popover 
-                    open={openDiscountPopover === item.product_id} 
-                    onOpenChange={(open) => setOpenDiscountPopover(open ? item.product_id : null)}
+                    open={openDiscountPopover === itemKey} 
+                    onOpenChange={(open) => setOpenDiscountPopover(open ? itemKey : null)}
                   >
                     <PopoverTrigger asChild>
                       <Button
@@ -279,16 +280,16 @@ export function CleanSaleItemsSection() {
                           }}
                         >
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="none" id={`none-${item.product_id}`} />
-                            <Label htmlFor={`none-${item.product_id}`}>Nessuno sconto</Label>
+                            <RadioGroupItem value="none" id={`none-${itemKey}`} />
+                            <Label htmlFor={`none-${itemKey}`}>Nessuno sconto</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="percentage" id={`percentage-${item.product_id}`} />
-                            <Label htmlFor={`percentage-${item.product_id}`}>Percentuale (%)</Label>
+                            <RadioGroupItem value="percentage" id={`percentage-${itemKey}`} />
+                            <Label htmlFor={`percentage-${itemKey}`}>Percentuale (%)</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="amount" id={`amount-${item.product_id}`} />
-                            <Label htmlFor={`amount-${item.product_id}`}>Importo (€)</Label>
+                            <RadioGroupItem value="amount" id={`amount-${itemKey}`} />
+                            <Label htmlFor={`amount-${itemKey}`}>Importo (€)</Label>
                           </div>
                         </RadioGroup>
 
