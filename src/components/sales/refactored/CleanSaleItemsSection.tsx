@@ -53,7 +53,7 @@ export function CleanSaleItemsSection() {
     updateItem(
       item.product_id,
       { 
-        discount_type: percentValue > 0 ? 'percentage' : null,
+        discount_type: 'percentage',
         discount_value: percentValue,
         discount_amount: discountAmount
       },
@@ -70,9 +70,22 @@ export function CleanSaleItemsSection() {
     updateItem(
       item.product_id,
       { 
-        discount_type: amountValue > 0 ? 'amount' : null,
+        discount_type: 'amount',
         discount_value: amountValue,
         discount_amount: amountValue
+      },
+      item.serial_number,
+      item.product_unit_id
+    );
+  };
+
+  const clearDiscount = (item: typeof items[0]) => {
+    updateItem(
+      item.product_id,
+      { 
+        discount_type: null,
+        discount_value: 0,
+        discount_amount: 0
       },
       item.serial_number,
       item.product_unit_id
@@ -231,38 +244,40 @@ export function CleanSaleItemsSection() {
 
                 {/* Discount - 3 columns */}
                 <div className="lg:col-span-3">
-                  <label className="text-xs text-muted-foreground mb-1 block">Sconto</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-muted-foreground">Sconto</label>
+                    {(item.discount_type && (item.discount_value || 0) > 0) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-4 w-4 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => clearDiscount(item)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-1">
                       <Percent className="h-3 w-3 text-muted-foreground" />
                       <Input
                         type="number"
-                        value={item.discount_type === 'percentage' ? item.discount_value || '' : ''}
+                        value={item.discount_type === 'percentage' ? (item.discount_value || '') : ''}
                         onChange={(e) => handleDiscountPercentage(item, e.target.value)}
-                        onFocus={() => {
-                          if (item.discount_type === 'amount') {
-                            handleDiscountPercentage(item, '0');
-                          }
-                        }}
-                        className="h-8 w-16 text-sm"
+                        className="h-8 w-full text-sm"
                         placeholder="0"
-                        step="0.01"
+                        step="1"
                         min="0"
                         max="100"
                       />
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-1">
                       <Euro className="h-3 w-3 text-muted-foreground" />
                       <Input
                         type="number"
-                        value={item.discount_type === 'amount' ? item.discount_value || '' : ''}
+                        value={item.discount_type === 'amount' ? (item.discount_value || '') : ''}
                         onChange={(e) => handleDiscountAmount(item, e.target.value)}
-                        onFocus={() => {
-                          if (item.discount_type === 'percentage') {
-                            handleDiscountAmount(item, '0');
-                          }
-                        }}
-                        className="h-8 w-16 text-sm"
+                        className="h-8 w-full text-sm"
                         placeholder="0"
                         step="0.01"
                         min="0"
@@ -271,7 +286,7 @@ export function CleanSaleItemsSection() {
                   </div>
                   {itemDiscountAmount > 0 && (
                     <div className="text-xs text-primary mt-0.5">
-                      Risparmio: €{itemDiscountAmount.toFixed(2)}
+                      -€{itemDiscountAmount.toFixed(2)}
                     </div>
                   )}
                 </div>
