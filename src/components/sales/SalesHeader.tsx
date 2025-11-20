@@ -1,5 +1,6 @@
 import React from "react";
 import { NewSaleDialog } from "./NewSaleDialog";
+import { NewExchangeDialog } from "./NewExchangeDialog";
 import { PageHeader } from "@/components/common/PageHeader";
 
 export function SalesHeader() {
@@ -7,7 +8,12 @@ export function SalesHeader() {
     <PageHeader
       title="Gestione Garanzie"
       subtitle="Gestisci le transazioni di garanzie, elabora i rimborsi e monitora le prestazioni con analisi complete."
-      actions={<NewSaleDialog />}
+      actions={
+        <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
+          <NewSaleDialog />
+          <NewExchangeDialog />
+        </div>
+      }
     />
   );
 }
