@@ -32,6 +32,12 @@ export function SupplierAcquisitionPrintDialog({
   isLoading = false
 }: SupplierAcquisitionPrintDialogProps) {
   
+  console.log('🖨️ SupplierAcquisitionPrintDialog OPENED', {
+    open,
+    transactionsReceived: transactions,
+    transactionsCount: transactions.length
+  });
+  
   // Filter for completed purchase transactions only
   const eligibleTransactions = transactions.filter(
     transaction => transaction.type === "purchase" && transaction.status === "completed"
@@ -39,6 +45,13 @@ export function SupplierAcquisitionPrintDialog({
 
   const transactionIds = eligibleTransactions.map(t => t.id);
   const companyName = "GOLDEN PHONE SRL";
+  
+  console.log('🖨️ Filtered eligible transactions', {
+    totalTransactions: transactions.length,
+    eligibleCount: eligibleTransactions.length,
+    transactionIds,
+    eligibleTransactions
+  });
   
   logger.info('Simplified SupplierAcquisitionPrintDialog initialized', {
     transactionIds,

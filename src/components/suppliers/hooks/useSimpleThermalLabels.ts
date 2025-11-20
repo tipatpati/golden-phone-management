@@ -14,14 +14,24 @@ import { logger } from "@/utils/logger";
  * No complex transformations - just direct database data
  */
 export function useSimpleThermalLabels(transactionIds: string[]) {
-  return useQuery({
-    queryKey: ["simple-thermal-labels", transactionIds.join(',')],
+  console.log('🔍 useSimpleThermalLabels HOOK CALLED', {
+    transactionIds,
+    count: transactionIds.length,
+    enabled: transactionIds.length > 0
+  });
+  
+  const query = useQuery({
+    queryKey: ["simple-thermal-labels", ...transactionIds],
     queryFn: async (): Promise<ThermalLabelData[]> => {
+      console.log('🔍 useSimpleThermalLabels queryFn EXECUTING', { transactionIds });
+      
       if (!transactionIds.length) {
+        console.warn('❌ No transaction IDs provided for thermal labels');
         logger.warn('No transaction IDs provided for thermal labels');
         return [];
       }
 
+      console.log('✅ Starting to fetch thermal label data', { transactionIds });
       logger.info('Fetching simple thermal label data', { transactionIds });
 
       // Direct query for all needed data
@@ -189,11 +199,24 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         }
       }
 
+      console.log('✅ Generated thermal labels', { count: labels.length, labels });
       logger.info(`Generated ${labels.length} simple thermal labels`);
       return labels;
     },
     enabled: transactionIds.length > 0,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
     retry: 2
   });
+  
+  console.log('🔍 Query state', {
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    error: query.error,
+    dataCount: query.data?.length || 0,
+    status: query.status
+  });
+  
+  return query;
 }
