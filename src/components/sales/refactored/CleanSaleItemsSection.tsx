@@ -50,23 +50,6 @@ export function CleanSaleItemsSection() {
     const itemSubtotal = item.quantity * item.unit_price;
     const discountAmount = (itemSubtotal * percentValue) / 100;
     
-    console.log('[DISCOUNT] 📊 Percentage update:', {
-      productName: item.product_name,
-      productId: item.product_id,
-      hasSerial: item.has_serial,
-      serialNumber: item.serial_number,
-      productUnitId: item.product_unit_id,
-      rawValue: value,
-      percentValue,
-      itemSubtotal,
-      discountAmount,
-      willPassToUpdate: {
-        product_id: item.product_id,
-        serial_number: item.serial_number,
-        product_unit_id: item.product_unit_id || undefined
-      }
-    });
-    
     updateItem(
       item.product_id,
       { 
@@ -75,7 +58,7 @@ export function CleanSaleItemsSection() {
         discount_amount: discountAmount
       },
       item.serial_number,
-      item.product_unit_id || undefined
+      item.product_unit_id
     );
   };
 
@@ -83,22 +66,6 @@ export function CleanSaleItemsSection() {
     const amountValue = parseFloat(value) || 0;
     const itemSubtotal = item.quantity * item.unit_price;
     if (amountValue < 0 || amountValue > itemSubtotal) return;
-    
-    console.log('[DISCOUNT] 💰 Amount update:', {
-      productName: item.product_name,
-      productId: item.product_id,
-      hasSerial: item.has_serial,
-      serialNumber: item.serial_number,
-      productUnitId: item.product_unit_id,
-      rawValue: value,
-      amountValue,
-      itemSubtotal,
-      willPassToUpdate: {
-        product_id: item.product_id,
-        serial_number: item.serial_number,
-        product_unit_id: item.product_unit_id || undefined
-      }
-    });
     
     updateItem(
       item.product_id,
@@ -108,24 +75,11 @@ export function CleanSaleItemsSection() {
         discount_amount: amountValue
       },
       item.serial_number,
-      item.product_unit_id || undefined
+      item.product_unit_id
     );
   };
 
   const clearDiscount = (item: typeof items[0]) => {
-    console.log('[DISCOUNT] ❌ Clearing discount:', {
-      productName: item.product_name,
-      productId: item.product_id,
-      hasSerial: item.has_serial,
-      serialNumber: item.serial_number,
-      productUnitId: item.product_unit_id,
-      willPassToUpdate: {
-        product_id: item.product_id,
-        serial_number: item.serial_number,
-        product_unit_id: item.product_unit_id || undefined
-      }
-    });
-    
     updateItem(
       item.product_id,
       { 
@@ -134,7 +88,7 @@ export function CleanSaleItemsSection() {
         discount_amount: 0
       },
       item.serial_number,
-      item.product_unit_id || undefined
+      item.product_unit_id
     );
   };
 

@@ -262,48 +262,27 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
     }
 
     case 'UPDATE_ITEM': {
-      console.log('[REDUCER] UPDATE_ITEM payload:', {
-        product_id: action.payload.product_id,
-        serial_number: action.payload.serial_number,
-        product_unit_id: action.payload.product_unit_id,
-        updates: action.payload.updates
-      });
-      
       const newItems = state.items.map(item => {
-        console.log('[REDUCER] Checking item:', {
-          product_name: item.product_name,
-          product_id: item.product_id,
-          has_serial: item.has_serial,
-          serial_number: item.serial_number,
-          product_unit_id: item.product_unit_id
-        });
-        
         let isTargetItem = false;
         
-        if (item.has_serial) {
-          // For serialized items: must match product_id AND at least one identifier
-          const serialMatch = item.serial_number && action.payload.serial_number && 
-                             item.serial_number === action.payload.serial_number;
-          const unitMatch = item.product_unit_id && action.payload.product_unit_id && 
-                           item.product_unit_id === action.payload.product_unit_id;
-          
-          // Match if product_id matches AND (serial matches OR unit matches OR both are undefined)
-          isTargetItem = item.product_id === action.payload.product_id && (
-            serialMatch || 
-            unitMatch || 
-            (!item.serial_number && !item.product_unit_id && !action.payload.serial_number && !action.payload.product_unit_id)
-          );
-        } else {
-          // For non-serialized items: match by product_id only (no serial/unit should be present)
+        // Match logic:
+        // - If payload has serial_number: match by product_id + serial_number
+        // - Else if payload has product_unit_id: match by product_id + product_unit_id  
+        // - Else: match by product_id only (for non-serialized items)
+        if (action.payload.serial_number) {
           isTargetItem = item.product_id === action.payload.product_id && 
-            !action.payload.serial_number && 
-            !action.payload.product_unit_id;
+                        item.serial_number === action.payload.serial_number;
+        } else if (action.payload.product_unit_id) {
+          isTargetItem = item.product_id === action.payload.product_id && 
+                        item.product_unit_id === action.payload.product_unit_id;
+        } else {
+          // No identifiers provided - match by product_id only
+          isTargetItem = item.product_id === action.payload.product_id &&
+                        !item.serial_number && !item.product_unit_id;
         }
         
         if (isTargetItem) {
-          console.log('[REDUCER] ✅ MATCHED item:', item.product_name, 'Applying updates:', action.payload.updates);
           const updates = { ...action.payload.updates };
-          // Enforce quantity = 1 for serialized products
           if (item.has_serial && updates.quantity !== undefined) {
             updates.quantity = getEnforcedQuantity(true, updates.quantity);
           }
@@ -311,13 +290,6 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
         }
         return item;
       });
-      
-      console.log('[REDUCER] Items after update:', newItems.map(i => ({
-        name: i.product_name,
-        discount_type: i.discount_type,
-        discount_value: i.discount_value,
-        discount_amount: i.discount_amount
-      })));
       
       const newState = { ...state, items: newItems };
       return calculateTotals(newState);
@@ -525,7 +497,13 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
 
   const updateItem = useCallback((productId: string, updates: Partial<SaleItem>, serialNumber?: string, productUnitId?: string) => {
     console.log('🔄 Updating item:', productId, updates, serialNumber, productUnitId);
-    dispatch({ type: 'UPDATE_ITEM', payload: { product_id: productId, serial_number: serialNumber, product_unit_id: productUnitId, updates } });
+    
+    // Build payload without undefined values to prevent serialization issues
+    const payload: any = { product_id: productId, updates };
+    if (serialNumber) payload.serial_number = serialNumber;
+    if (productUnitId) payload.product_unit_id = productUnitId;
+    
+    dispatch({ type: 'UPDATE_ITEM', payload });
   }, []);
 
   const removeItem = useCallback((productId: string) => {
