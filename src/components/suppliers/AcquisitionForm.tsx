@@ -32,7 +32,7 @@ const acquisitionSchema = z.object({
 type AcquisitionFormData = z.infer<typeof acquisitionSchema>;
 
 interface AcquisitionFormProps {
-  onSuccess: () => void;
+  onSuccess: (transactionId?: string) => void;
 }
 
 export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
@@ -387,7 +387,7 @@ export function AcquisitionForm({ onSuccess }: AcquisitionFormProps) {
         });
         // Clear the draft after successful submission
         draft.onFormSubmitSuccess();
-        onSuccess();
+        onSuccess(result.transactionId);
       } else {
         toast.error(`Acquisition failed: ${result.errors?.join(', ') || 'Unknown error'}`, {
           duration: 8000

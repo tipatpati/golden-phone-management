@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/updated-card";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ModuleNavCards } from "@/components/common/ModuleNavCards";
 import { AcquisitionForm } from "@/components/suppliers/AcquisitionForm";
+import { SupplierAcquisitionPrintDialog } from "@/components/suppliers/dialogs/SupplierAcquisitionPrintDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 import { PageLayout } from "@/components/common/PageLayout";
@@ -27,6 +28,9 @@ const Suppliers = () => {
   const [showAcquisitionDialog, setShowAcquisitionDialog] = useState(false);
   const [showRecoveryDialog, setShowRecoveryDialog] = useState(false);
   const [isContactingSuppliers, setIsContactingSuppliers] = useState(false);
+  const [completedTransactionId, setCompletedTransactionId] = useState<string | null>(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const [printTransactions, setPrintTransactions] = useState<any[]>([]);
 
   // Enable real-time updates
   useRealtimeTransactions();
@@ -217,11 +221,32 @@ const Suppliers = () => {
           </DialogHeader>
           <div className="mt-4">
             <AcquisitionForm
-              onSuccess={() => {
+              onSuccess={async (transactionId) => {
                 setShowAcquisitionDialog(false);
                 toast.success('Acquisition completed successfully');
+                
+                if (transactionId) {
+                  setCompletedTransactionId(transactionId);
+                  // Fetch transaction data for print dialog
+                  const { data, error } = await supabase
+                    .from('supplier_transactions')
+                    .select('*, suppliers(name)')
+                    .eq('id', transactionId)
+                    .single();
+                  
+                  if (!error && data) {
+                    setPrintTransactions([data]);
+                    setShowPrintDialog(true);
+                  }
+                }
               }}
-            />
+      />
+
+      <SupplierAcquisitionPrintDialog
+        open={showPrintDialog}
+        onOpenChange={setShowPrintDialog}
+        transactions={printTransactions}
+      />
           </div>
         </DialogContent>
       </Dialog>
