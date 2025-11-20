@@ -120,13 +120,36 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
       // Transform to ThermalLabelData directly
       const labels: ThermalLabelData[] = [];
       
+      console.log('🔄 Processing supplier transaction items', { 
+        itemsCount: items.length,
+        items: items.map(i => ({
+          product: `${i.products?.brand} ${i.products?.model}`,
+          quantity: i.quantity,
+          product_unit_ids: i.product_unit_ids
+        }))
+      });
+      
       for (const item of items) {
         const product = item.products;
-        if (!product) continue;
+        if (!product) {
+          console.warn('⚠️ Item missing product data', item);
+          continue;
+        }
+
+        console.log(`📦 Processing item: ${product.brand} ${product.model}`, {
+          quantity: item.quantity,
+          product_unit_ids: item.product_unit_ids,
+          has_unit_ids: !!(item.product_unit_ids && Array.isArray(item.product_unit_ids) && item.product_unit_ids.length > 0)
+        });
 
         const productUnits = units.filter(unit => {
           if (!item.product_unit_ids || !Array.isArray(item.product_unit_ids)) return false;
           return item.product_unit_ids.some((id: any) => typeof id === 'string' && id === unit.id);
+        });
+
+        console.log(`📋 Matched units for ${product.brand} ${product.model}:`, {
+          unitsCount: productUnits.length,
+          units: productUnits.map(u => u.serial_number)
         });
 
         // Process serialized units
@@ -164,13 +187,20 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         const unitsCount = productUnits.length;
         const totalQuantity = item.quantity || 0;
 
+        console.log(`🔍 Checking for non-serialized items:`, {
+          product: `${product.brand} ${product.model}`,
+          totalQuantity,
+          unitsCount,
+          shouldGenerateLabel: totalQuantity > unitsCount
+        });
+
         if (totalQuantity > unitsCount) {
           // Generate ONE label template for non-serialized products
           // User will select quantity in the UI via LabelQuantitySelector
           const productBarcode = product.barcode || `PROD-${product.id.slice(-8)}`;
           const sellingPrice = product.max_price || product.price || 0;
           
-          console.log(`📦 NON-SERIALIZED PRODUCT - ${product.brand} ${product.model}:`, {
+          console.log(`✅ GENERATING NON-SERIALIZED LABEL - ${product.brand} ${product.model}:`, {
             total_quantity: totalQuantity,
             units_count: unitsCount,
             non_serialized_quantity: totalQuantity - unitsCount,
@@ -195,6 +225,8 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
             ram: undefined,
             batteryLevel: undefined
           });
+        } else {
+          console.log(`⏭️ Skipping non-serialized label (all units are serialized)`);
         }
       }
 
