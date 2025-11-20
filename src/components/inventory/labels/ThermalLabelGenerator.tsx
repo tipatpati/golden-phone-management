@@ -109,7 +109,14 @@ export function ThermalLabelGenerator({
 
   // Detect non-serialized products (labels without serial numbers)
   const hasNonSerializedProducts = useMemo(() => {
-    return activeLabels.some(label => !label.serialNumber);
+    const hasNonSerialized = activeLabels.some(label => !label.serialNumber);
+    console.log('🔍 Non-serialized detection:', {
+      hasNonSerialized,
+      totalLabels: activeLabels.length,
+      nonSerializedCount: activeLabels.filter(label => !label.serialNumber).length,
+      serializedCount: activeLabels.filter(label => label.serialNumber).length
+    });
+    return hasNonSerialized;
   }, [activeLabels]);
 
   // Use expanded labels if quantities were set, otherwise use selected/active labels
@@ -281,12 +288,22 @@ export function ThermalLabelGenerator({
           )}
 
           {/* Quantity Selector for Non-Serialized Products */}
-          {hasNonSerializedProducts && !allowUnitSelection && activeLabels.length > 0 && (
-            <LabelQuantitySelector
-              labels={activeLabels.filter(label => !label.serialNumber)}
-              onQuantitiesChange={handleQuantitiesChange}
-            />
-          )}
+          {hasNonSerializedProducts && activeLabels.length > 0 && (() => {
+            const nonSerializedLabels = activeLabels.filter(label => !label.serialNumber);
+            console.log('📊 Rendering LabelQuantitySelector:', {
+              hasNonSerializedProducts,
+              allowUnitSelection,
+              activeLabelsLength: activeLabels.length,
+              nonSerializedLabelsCount: nonSerializedLabels.length,
+              willRender: true
+            });
+            return (
+              <LabelQuantitySelector
+                labels={nonSerializedLabels}
+                onQuantitiesChange={handleQuantitiesChange}
+              />
+            );
+          })()}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Configuration Panel */}
