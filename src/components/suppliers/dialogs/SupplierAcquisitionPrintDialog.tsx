@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { UnifiedSupplierLabels } from "../components/UnifiedSupplierLabels";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Package, X } from "lucide-react";
+import { CheckCircle, Package } from "lucide-react";
 import { logger } from "@/utils/logger";
-import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { Button } from "@/components/ui/button";
 
 interface SupplierTransaction {
   id: string;
@@ -34,8 +32,6 @@ export function SupplierAcquisitionPrintDialog({
   isLoading = false
 }: SupplierAcquisitionPrintDialogProps) {
   
-  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
-  
   console.log('🖨️ SupplierAcquisitionPrintDialog OPENED', {
     open,
     transactionsReceived: transactions,
@@ -62,30 +58,16 @@ export function SupplierAcquisitionPrintDialog({
     companyName
   });
 
-  const handleOpenChange = (newOpen: boolean) => {
-    // If trying to close, show confirmation first
-    if (!newOpen) {
-      setShowCloseConfirm(true);
-    } else {
-      onOpenChange(newOpen);
-    }
-  };
-  
-  const handleConfirmClose = () => {
-    setShowCloseConfirm(false);
-    onOpenChange(false);
-  };
-  
-  const handleCancelClose = () => {
-    setShowCloseConfirm(false);
-  };
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent 
-          className="max-w-4xl max-h-[90vh] overflow-y-auto [&>button]:hidden"
-        >
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Supplier Acquisition - Thermal Labels
+            <Badge variant="outline">{transactionIds.length} transactions</Badge>
+          </DialogTitle>
+        </DialogHeader>
           
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -120,18 +102,5 @@ export function SupplierAcquisitionPrintDialog({
         </div>
       </DialogContent>
     </Dialog>
-
-    {/* Close Confirmation Dialog */}
-    <ConfirmDialog
-      open={showCloseConfirm}
-      onClose={handleCancelClose}
-      onConfirm={handleConfirmClose}
-      title="Close Label Printing?"
-      message="Are you sure you want to close? Any unsaved label selections or configurations will be lost."
-      confirmText="Close Anyway"
-      cancelText="Keep Working"
-      variant="destructive"
-    />
-    </>
   );
 }
