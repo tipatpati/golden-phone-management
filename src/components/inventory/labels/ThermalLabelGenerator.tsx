@@ -10,6 +10,7 @@ import { Printer, Eye, History, AlertCircle, Wrench } from "lucide-react";
 import { ThermalLabelPreview } from "./ThermalLabelPreview";
 import { ProductUnitSelector } from "./ProductUnitSelector";
 import { SupplierProductUnitSelector } from "@/components/suppliers/forms/SupplierProductUnitSelector";
+import { LabelQuantitySelector } from "./LabelQuantitySelector";
 import { BarcodeFixTool } from "@/components/inventory/admin/BarcodeFixTool";
 import { useThermalLabelPrint } from "./hooks/useThermalLabelPrint";
 import { ThermalLabelData, ThermalLabelOptions } from "./types";
@@ -69,6 +70,7 @@ export function ThermalLabelGenerator({
   const [showPreview, setShowPreview] = useState(false);
   const [showBarcodeFixTool, setShowBarcodeFixTool] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<ThermalLabelData[]>([]);
+  const [expandedLabels, setExpandedLabels] = useState<ThermalLabelData[]>([]); // For quantity-expanded labels
   
   // Determine the source of labels
   const activeLabels = dataProvider?.labels || labels;
@@ -105,8 +107,15 @@ export function ThermalLabelGenerator({
 
   const { printState, printLabels } = useThermalLabelPrint();
 
-  // Use selected labels for calculations
-  const currentLabels = allowUnitSelection ? selectedLabels : activeLabels;
+  // Detect non-serialized products (labels without serial numbers)
+  const hasNonSerializedProducts = useMemo(() => {
+    return activeLabels.some(label => !label.serialNumber);
+  }, [activeLabels]);
+
+  // Use expanded labels if quantities were set, otherwise use selected/active labels
+  const currentLabels = expandedLabels.length > 0 
+    ? expandedLabels 
+    : (allowUnitSelection ? selectedLabels : activeLabels);
   
   // Memoized calculations for performance
   const labelStats = useMemo(() => {
@@ -172,6 +181,21 @@ export function ThermalLabelGenerator({
     value: ThermalLabelOptions[K]
   ) => {
     setOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Handle quantity changes for non-serialized products
+  const handleQuantitiesChange = (items: Array<{ label: ThermalLabelData; quantity: number }>) => {
+    const expanded: ThermalLabelData[] = [];
+    items.forEach(item => {
+      for (let i = 0; i < item.quantity; i++) {
+        expanded.push({ ...item.label, id: `${item.label.id || item.label.productName}-${i}` });
+      }
+    });
+    setExpandedLabels(expanded);
+    console.log('📋 Expanded labels for non-serialized products', { 
+      originalCount: items.length, 
+      expandedCount: expanded.length 
+    });
   };
 
   // Only show error dialog if we truly have no data to work with
@@ -253,6 +277,14 @@ export function ThermalLabelGenerator({
               productBarcode={productBarcode}
               productCategory={activeLabels[0]?.category || productCategory}
               productId={productId}
+            />
+          )}
+
+          {/* Quantity Selector for Non-Serialized Products */}
+          {hasNonSerializedProducts && !allowUnitSelection && activeLabels.length > 0 && (
+            <LabelQuantitySelector
+              labels={activeLabels.filter(label => !label.serialNumber)}
+              onQuantitiesChange={handleQuantitiesChange}
             />
           )}
 
