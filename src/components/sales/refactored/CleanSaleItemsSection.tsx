@@ -64,12 +64,19 @@ export function CleanSaleItemsSection() {
       }
     }
     
+    // Update item but keep popover open by maintaining the key
+    const itemKey = `${item.product_id}-${item.product_unit_id || ''}-${item.serial_number || ''}`;
     updateItem(
       item.product_id, 
       { discount_type: discountType, discount_value: discountValue, discount_amount: discountAmount },
       item.serial_number, 
       item.product_unit_id
     );
+    
+    // Keep popover open after update
+    setTimeout(() => {
+      setOpenDiscountPopover(itemKey);
+    }, 0);
   };
 
   if (items.length === 0) {
@@ -244,6 +251,7 @@ export function CleanSaleItemsSection() {
                   <Popover 
                     open={openDiscountPopover === itemKey} 
                     onOpenChange={(open) => setOpenDiscountPopover(open ? itemKey : null)}
+                    modal={false}
                   >
                     <PopoverTrigger asChild>
                       <Button
