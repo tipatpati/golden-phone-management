@@ -65,9 +65,9 @@ export class UnifiedPrintService implements IPrintService {
       overflow: hidden;
     }
 
-    /* Zone 1: Header - 10.6mm (0.4cm) */
+    /* Zone 1: Header - 3mm (compact for barcode compliance) */
     .label-header {
-      height: 4mm;
+      height: 3mm;
       border-bottom: 0.1mm solid #e5e5e5;
       display: flex;
       align-items: center;
@@ -76,7 +76,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .company-name {
-      font-size: 1.8mm;
+      font-size: 1.6mm;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
@@ -87,25 +87,25 @@ export class UnifiedPrintService implements IPrintService {
       text-overflow: ellipsis;
     }
 
-    /* Zone 2: Content - 18mm (1.8cm) */
+    /* Zone 2: Content - 10mm (optimized for barcode compliance) */
     .product-info {
-      height: 18mm;
+      height: 10mm;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 0.5mm;
+      gap: 0.3mm;
       overflow: hidden;
-      padding: 0.5mm 0;
+      padding: 0.3mm 0;
     }
 
     .product-name {
-      font-size: 3.7mm;
+      font-size: 2.8mm;
       font-weight: 700;
       line-height: 1.0;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.1mm;
-      max-height: 7.4mm;
+      letter-spacing: 0.05mm;
+      max-height: 5.6mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
@@ -115,7 +115,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-details {
-      font-size: 2.6mm;
+      font-size: 1.8mm;
       font-weight: 500;
       color: #333;
       text-align: center;
@@ -126,21 +126,21 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .serial-number {
-      font-size: 2.1mm;
+      font-size: 1.6mm;
       font-weight: 600;
       color: #000;
       text-align: center;
-      letter-spacing: 0.1mm;
+      letter-spacing: 0.05mm;
       line-height: 1.0;
     }
 
     .price {
-      font-size: 4.7mm;
+      font-size: 3.2mm;
       font-weight: 700;
       color: #000;
       text-align: center;
-      margin-top: 0.5mm;
-      letter-spacing: 0.1mm;
+      margin-top: 0.3mm;
+      letter-spacing: 0.05mm;
       line-height: 1.0;
     }
 
