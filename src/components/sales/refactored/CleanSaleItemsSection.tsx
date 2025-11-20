@@ -20,12 +20,9 @@ export function CleanSaleItemsSection() {
     toast.success('Stock aggiornato');
   };
 
-  const handleUpdateQuantity = (productId: string, quantity: number) => {
-    const item = items.find(i => i.product_id === productId);
-    if (!item) return;
-
+  const handleUpdateQuantity = (item: typeof items[0], quantity: number) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(item.product_id);
       return;
     }
 
@@ -35,15 +32,15 @@ export function CleanSaleItemsSection() {
       return;
     }
 
-    updateItem(productId, { quantity });
+    updateItem(item.product_id, { quantity }, item.serial_number, item.product_unit_id);
   };
 
-  const handleUpdatePrice = (productId: string, price: number) => {
-    updateItem(productId, { unit_price: price });
+  const handleUpdatePrice = (item: typeof items[0], price: number) => {
+    updateItem(item.product_id, { unit_price: price }, item.serial_number, item.product_unit_id);
   };
 
-  const handleUpdateSerial = (productId: string, serialNumber: string) => {
-    updateItem(productId, { serial_number: serialNumber });
+  const handleUpdateSerial = (item: typeof items[0], serialNumber: string) => {
+    updateItem(item.product_id, { serial_number: serialNumber }, item.serial_number, item.product_unit_id);
   };
 
   if (items.length === 0) {
@@ -136,7 +133,7 @@ export function CleanSaleItemsSection() {
                 <div className="lg:col-span-2">
                   <div className="flex items-center gap-1">
                     <Button
-                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
+                      onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                       size="sm"
                       variant="outline"
                       className="h-8 w-8 p-0"
@@ -147,13 +144,13 @@ export function CleanSaleItemsSection() {
                     <Input
                       type="number"
                       value={item.quantity}
-                      onChange={(e) => handleUpdateQuantity(item.product_id, parseInt(e.target.value) || 1)}
+                      onChange={(e) => handleUpdateQuantity(item, parseInt(e.target.value) || 1)}
                       className="h-8 w-16 text-center text-sm"
                       min="1"
                       disabled={item.has_serial}
                     />
                     <Button
-                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
+                      onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                       size="sm"
                       variant="outline"
                       className="h-8 w-8 p-0"
@@ -170,7 +167,7 @@ export function CleanSaleItemsSection() {
                     <Input
                       type="number"
                       value={item.unit_price}
-                      onChange={(e) => handleUpdatePrice(item.product_id, parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleUpdatePrice(item, parseFloat(e.target.value) || 0)}
                       className="h-8 text-sm"
                       step="0.01"
                       min="0"

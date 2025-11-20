@@ -53,7 +53,7 @@ interface SaleCreationState {
 // Action types
 type SaleCreationAction =
   | { type: 'ADD_ITEM'; payload: SaleItem }
-  | { type: 'UPDATE_ITEM'; payload: { product_id: string; updates: Partial<SaleItem> } }
+  | { type: 'UPDATE_ITEM'; payload: { product_id: string; serial_number?: string; product_unit_id?: string; updates: Partial<SaleItem> } }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_FORM_DATA'; payload: Partial<SaleFormData> }
   | { type: 'SET_SELECTED_CLIENT'; payload: any | null }
@@ -237,7 +237,14 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
 
     case 'UPDATE_ITEM': {
       const newItems = state.items.map(item => {
-        if (item.product_id === action.payload.product_id) {
+        // Match by product_id AND (serial_number if serialized OR product_unit_id if present)
+        const isTargetItem = item.product_id === action.payload.product_id &&
+          (item.has_serial 
+            ? item.serial_number === action.payload.serial_number || item.product_unit_id === action.payload.product_unit_id
+            : !action.payload.serial_number && !action.payload.product_unit_id
+          );
+        
+        if (isTargetItem) {
           const updates = { ...action.payload.updates };
           // Enforce quantity = 1 for serialized products
           if (item.has_serial && updates.quantity !== undefined) {
@@ -307,7 +314,7 @@ function saleCreationReducer(state: SaleCreationState, action: SaleCreationActio
 interface SaleCreationContextValue {
   state: SaleCreationState;
   addItem: (item: SaleItem) => void;
-  updateItem: (productId: string, updates: Partial<SaleItem>) => void;
+  updateItem: (productId: string, updates: Partial<SaleItem>, serialNumber?: string, productUnitId?: string) => void;
   removeItem: (productId: string) => void;
   updateFormData: (data: Partial<SaleFormData>) => void;
   setSelectedClient: (client: any | null) => void;
@@ -436,9 +443,9 @@ export function SaleCreationProvider({ children, initialSale }: SaleCreationProv
     dispatch({ type: 'ADD_ITEM', payload: item });
   }, []);
 
-  const updateItem = useCallback((productId: string, updates: Partial<SaleItem>) => {
-    console.log('🔄 Updating item:', productId, updates);
-    dispatch({ type: 'UPDATE_ITEM', payload: { product_id: productId, updates } });
+  const updateItem = useCallback((productId: string, updates: Partial<SaleItem>, serialNumber?: string, productUnitId?: string) => {
+    console.log('🔄 Updating item:', productId, updates, serialNumber, productUnitId);
+    dispatch({ type: 'UPDATE_ITEM', payload: { product_id: productId, serial_number: serialNumber, product_unit_id: productUnitId, updates } });
   }, []);
 
   const removeItem = useCallback((productId: string) => {
