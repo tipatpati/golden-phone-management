@@ -144,20 +144,21 @@ export class UnifiedPrintService implements IPrintService {
       line-height: 1.0;
     }
 
-    /* Zone 3: Barcode - 12mm (1.2cm) with quiet zones */
+    /* Zone 3: Barcode - 15mm (CODE128 standards compliant) */
     .barcode-container {
-      height: 12mm;
+      height: 15mm;        /* Increased for CODE128 ISO/IEC 15417 compliance */
       display: flex;
       justify-content: center;
       align-items: center;
       background: #ffffff;
-      overflow: hidden;
+      overflow: visible;   /* Preserve quiet zones */
       margin-top: 0.5mm;
+      padding: 0 1mm;      /* Horizontal padding for quiet zones */
     }
 
     .barcode-svg {
-      max-width: 54.7mm; /* 5.5cm for barcode + quiet zones */
-      height: 10mm;
+      max-width: 100%;     /* Allow full width within container */
+      height: 13mm;        /* Increased for better scanning reliability */
       display: block;
     }
     
