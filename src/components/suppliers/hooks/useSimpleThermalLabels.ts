@@ -17,7 +17,10 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
   return useQuery({
     queryKey: ["simple-thermal-labels", transactionIds.join(',')],
     queryFn: async (): Promise<ThermalLabelData[]> => {
-      if (!transactionIds.length) return [];
+      if (!transactionIds.length) {
+        logger.warn('No transaction IDs provided for thermal labels');
+        return [];
+      }
 
       logger.info('Fetching simple thermal label data', { transactionIds });
 
@@ -46,8 +49,13 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         throw error;
       }
 
+      logger.info('Fetched supplier transaction items', { 
+        count: items?.length || 0,
+        items: items 
+      });
+
       if (!items?.length) {
-        logger.warn('No items found for thermal labels');
+        logger.warn('No items found for thermal labels', { transactionIds });
         return [];
       }
 
@@ -60,28 +68,43 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         }
       });
 
-      
-       const { data: units, error: unitsError } = await supabase
-        .from('product_units')
-        .select(`
-          id,
-          serial_number,
-          barcode,
-          status,
-          max_price,
-          price,
-          product_id,
-          storage,
-          ram,
-          battery_level,
-          color
-        `)
-        .in('id', allUnitIds);
-        // Note: No status filter - supplier labels should show all units from transaction
+      logger.info('Extracted unit IDs from items', { 
+        allUnitIds,
+        count: allUnitIds.length 
+      });
 
-      if (unitsError) {
-        logger.error('Failed to fetch product units', unitsError);
-        throw unitsError;
+      if (allUnitIds.length === 0) {
+        logger.warn('No unit IDs found in transaction items');
+        // Still continue - we can create generic labels for non-serialized products
+      }
+      
+      let units: any[] = [];
+      if (allUnitIds.length > 0) {
+        const { data: unitsData, error: unitsError } = await supabase
+          .from('product_units')
+          .select(`
+            id,
+            serial_number,
+            barcode,
+            status,
+            max_price,
+            price,
+            product_id,
+            storage,
+            ram,
+            battery_level,
+            color
+          `)
+          .in('id', allUnitIds);
+          // Note: No status filter - supplier labels should show all units from transaction
+
+        if (unitsError) {
+          logger.error('Failed to fetch product units', unitsError);
+          throw unitsError;
+        }
+
+        units = unitsData || [];
+        logger.info('Fetched product units', { count: units.length });
       }
 
       // Transform to ThermalLabelData directly
@@ -91,10 +114,10 @@ export function useSimpleThermalLabels(transactionIds: string[]) {
         const product = item.products;
         if (!product) continue;
 
-        const productUnits = units?.filter(unit => {
+        const productUnits = units.filter(unit => {
           if (!item.product_unit_ids || !Array.isArray(item.product_unit_ids)) return false;
           return item.product_unit_ids.some((id: any) => typeof id === 'string' && id === unit.id);
-        }) || [];
+        });
 
         // Process serialized units
         for (const unit of productUnits) {
