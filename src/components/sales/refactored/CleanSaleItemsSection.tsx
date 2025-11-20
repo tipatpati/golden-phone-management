@@ -43,39 +43,40 @@ export function CleanSaleItemsSection() {
     updateItem(item.product_id, { serial_number: serialNumber }, item.serial_number, item.product_unit_id);
   };
 
-  const handleUpdateDiscount = (
-    item: typeof items[0], 
-    discountType: 'percentage' | 'amount' | null, 
-    discountValue: number
-  ) => {
-    // Calculate discount amount
-    const itemSubtotal = item.quantity * item.unit_price;
-    let discountAmount = 0;
+  const handleDiscountPercentage = (item: typeof items[0], value: string) => {
+    const percentValue = parseFloat(value) || 0;
+    if (percentValue < 0 || percentValue > 100) return;
     
-    if (discountType && discountValue > 0) {
-      if (discountType === 'percentage') {
-        discountAmount = (itemSubtotal * discountValue) / 100;
-      } else {
-        discountAmount = Math.min(discountValue, itemSubtotal);
-      }
-    }
+    const itemSubtotal = item.quantity * item.unit_price;
+    const discountAmount = (itemSubtotal * percentValue) / 100;
     
     updateItem(
-      item.product_id, 
-      { discount_type: discountType, discount_value: discountValue, discount_amount: discountAmount },
-      item.serial_number, 
+      item.product_id,
+      { 
+        discount_type: percentValue > 0 ? 'percentage' : null,
+        discount_value: percentValue,
+        discount_amount: discountAmount
+      },
+      item.serial_number,
       item.product_unit_id
     );
   };
 
-  const toggleDiscount = (item: typeof items[0]) => {
-    if (item.discount_type) {
-      // Remove discount
-      handleUpdateDiscount(item, null, 0);
-    } else {
-      // Enable discount with default 5% percentage
-      handleUpdateDiscount(item, 'percentage', 5);
-    }
+  const handleDiscountAmount = (item: typeof items[0], value: string) => {
+    const amountValue = parseFloat(value) || 0;
+    const itemSubtotal = item.quantity * item.unit_price;
+    if (amountValue < 0 || amountValue > itemSubtotal) return;
+    
+    updateItem(
+      item.product_id,
+      { 
+        discount_type: amountValue > 0 ? 'amount' : null,
+        discount_value: amountValue,
+        discount_amount: amountValue
+      },
+      item.serial_number,
+      item.product_unit_id
+    );
   };
 
   if (items.length === 0) {
@@ -142,9 +143,9 @@ export function CleanSaleItemsSection() {
                   : 'border-border/30'
               }`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-14 gap-4 items-center">
-                {/* Product Info - 4 columns */}
-                <div className="lg:col-span-4">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                {/* Product Info - 3 columns */}
+                <div className="lg:col-span-3">
                   <h3 className="font-medium text-on-surface text-sm truncate">{item.product_name}</h3>
                   {item.serial_number && (
                     <p className="text-xs text-muted-foreground mt-0.5">SN/IMEI: {item.serial_number}</p>
@@ -181,6 +182,7 @@ export function CleanSaleItemsSection() {
 
                 {/* Quantity - 2 columns */}
                 <div className="lg:col-span-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">Quantità</label>
                   <div className="flex items-center gap-1">
                     <Button
                       onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
@@ -213,122 +215,84 @@ export function CleanSaleItemsSection() {
 
                 {/* Unit Price - 2 columns */}
                 <div className="lg:col-span-2">
-                  <div className="space-y-1">
-                    <Input
-                      type="number"
-                      value={item.unit_price}
-                      onChange={(e) => handleUpdatePrice(item, parseFloat(e.target.value) || 0)}
-                      className="h-8 text-sm"
-                      step="0.01"
-                      min="0"
-                    />
-                    <div className="text-xs text-muted-foreground">
-                      €{(item.min_price || 0).toFixed(2)} - €{(item.max_price || 0).toFixed(2)}
-                    </div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Prezzo unitario</label>
+                  <Input
+                    type="number"
+                    value={item.unit_price}
+                    onChange={(e) => handleUpdatePrice(item, parseFloat(e.target.value) || 0)}
+                    className="h-8 text-sm"
+                    step="0.01"
+                    min="0"
+                  />
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    €{(item.min_price || 0).toFixed(2)} - €{(item.max_price || 0).toFixed(2)}
                   </div>
                 </div>
 
-                {/* Serial Number - 2 columns */}
-                <div className="lg:col-span-2">
-                  {item.has_serial ? (
-                    <Input
-                      type="text"
-                      value={item.serial_number || ''}
-                      placeholder="Numero seriale"
-                      className="h-8 text-sm font-mono"
-                      readOnly
-                      disabled
-                    />
-                  ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
+                {/* Discount - 3 columns */}
+                <div className="lg:col-span-3">
+                  <label className="text-xs text-muted-foreground mb-1 block">Sconto</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Percent className="h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        value={item.discount_type === 'percentage' ? item.discount_value || '' : ''}
+                        onChange={(e) => handleDiscountPercentage(item, e.target.value)}
+                        onFocus={() => {
+                          if (item.discount_type === 'amount') {
+                            handleDiscountPercentage(item, '0');
+                          }
+                        }}
+                        className="h-8 w-16 text-sm"
+                        placeholder="0"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Euro className="h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        value={item.discount_type === 'amount' ? item.discount_value || '' : ''}
+                        onChange={(e) => handleDiscountAmount(item, e.target.value)}
+                        onFocus={() => {
+                          if (item.discount_type === 'percentage') {
+                            handleDiscountAmount(item, '0');
+                          }
+                        }}
+                        className="h-8 w-16 text-sm"
+                        placeholder="0"
+                        step="0.01"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                  {itemDiscountAmount > 0 && (
+                    <div className="text-xs text-primary mt-0.5">
+                      Risparmio: €{itemDiscountAmount.toFixed(2)}
+                    </div>
                   )}
                 </div>
 
-                {/* Discount & Total - 4 columns */}
-                <div className="lg:col-span-4 space-y-2">
-                  {/* Discount Controls */}
+                {/* Total & Actions - 2 columns */}
+                <div className="lg:col-span-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">Totale</label>
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant={item.discount_type ? "default" : "outline"}
-                      className="h-7 px-2"
-                      onClick={() => toggleDiscount(item)}
-                    >
-                      {item.discount_type === 'percentage' ? (
-                        <><Percent className="h-3 w-3 mr-1" /> Sconto</>
-                      ) : item.discount_type === 'amount' ? (
-                        <><Euro className="h-3 w-3 mr-1" /> Sconto</>
-                      ) : (
-                        <><Percent className="h-3 w-3 mr-1" /> Sconto</>
-                      )}
-                    </Button>
-                    
-                    {item.discount_type && (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant={item.discount_type === 'percentage' ? 'default' : 'outline'}
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateDiscount(item, 'percentage', item.discount_value || 0)}
-                          >
-                            <Percent className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={item.discount_type === 'amount' ? 'default' : 'outline'}
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateDiscount(item, 'amount', item.discount_value || 0)}
-                          >
-                            <Euro className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <Input
-                          type="number"
-                          value={item.discount_value || 0}
-                          onChange={(e) => {
-                            const value = parseFloat(e.target.value) || 0;
-                            handleUpdateDiscount(item, item.discount_type || 'percentage', value);
-                          }}
-                          className="h-7 w-20 text-sm"
-                          step="0.01"
-                          min="0"
-                          max={item.discount_type === 'percentage' ? 100 : undefined}
-                        />
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={() => handleUpdateDiscount(item, null, 0)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Total Price */}
-                  <div className="flex items-center justify-between">
                     <div className="text-right flex-1">
-                      {item.discount_type && itemDiscountAmount > 0 && (
+                      {itemDiscountAmount > 0 && (
                         <div className="text-xs text-muted-foreground line-through">
                           €{itemSubtotal.toFixed(2)}
                         </div>
                       )}
                       <div className="font-semibold text-sm">€{totalPrice.toFixed(2)}</div>
-                      {item.discount_type && itemDiscountAmount > 0 && (
-                        <div className="text-xs text-primary">
-                          -€{itemDiscountAmount.toFixed(2)}
-                        </div>
-                      )}
                     </div>
-
-                    {/* Delete Button */}
                     <Button
                       onClick={() => removeItem(item.product_id)}
                       size="sm"
                       variant="ghost"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
