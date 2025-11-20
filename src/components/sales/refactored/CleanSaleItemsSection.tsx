@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 export function CleanSaleItemsSection() {
   const { state, updateItem, removeItem, refreshStock } = useSaleCreation();
   const { items } = state;
+  const [openDiscountPopover, setOpenDiscountPopover] = useState<string | null>(null);
 
   const handleRefreshStock = async () => {
     const productIds = items.map(i => i.product_id);
@@ -239,12 +240,16 @@ export function CleanSaleItemsSection() {
                 {/* Discount & Total - 3 columns */}
                 <div className="lg:col-span-3 flex items-center gap-2">
                   {/* Discount Popover */}
-                  <Popover>
+                  <Popover 
+                    open={openDiscountPopover === item.product_id} 
+                    onOpenChange={(open) => setOpenDiscountPopover(open ? item.product_id : null)}
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         size="sm"
                         variant={item.discount_type ? "default" : "outline"}
                         className="h-8 w-8 p-0"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {item.discount_type === 'percentage' ? (
                           <Percent className="h-3 w-3" />
@@ -255,7 +260,11 @@ export function CleanSaleItemsSection() {
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80" align="end">
+                    <PopoverContent 
+                      className="w-80 bg-popover z-50" 
+                      align="end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="space-y-4">
                         <h4 className="font-medium">Sconto Articolo</h4>
                         
