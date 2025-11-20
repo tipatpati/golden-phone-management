@@ -264,9 +264,15 @@ export function CleanSaleItemsSection() {
                     <PopoverContent 
                       className="w-80 bg-popover z-50" 
                       align="end"
-                      onClick={(e) => e.stopPropagation()}
+                      onInteractOutside={(e) => {
+                        // Only close when clicking truly outside, not on form elements
+                        const target = e.target as HTMLElement;
+                        if (target.closest('[role="dialog"]') || target.closest('[data-radix-popper-content-wrapper]')) {
+                          e.preventDefault();
+                        }
+                      }}
                     >
-                      <div className="space-y-4">
+                      <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
                         <h4 className="font-medium">Sconto Articolo</h4>
                         
                         <RadioGroup 
@@ -278,6 +284,7 @@ export function CleanSaleItemsSection() {
                               handleUpdateDiscount(item, value as 'percentage' | 'amount', item.discount_value || 0);
                             }
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="none" id={`none-${itemKey}`} />
@@ -294,7 +301,7 @@ export function CleanSaleItemsSection() {
                         </RadioGroup>
 
                         {item.discount_type && (
-                          <div className="space-y-2">
+                          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                             <Label>Valore Sconto</Label>
                             <Input
                               type="number"
@@ -303,6 +310,7 @@ export function CleanSaleItemsSection() {
                                 const value = parseFloat(e.target.value) || 0;
                                 handleUpdateDiscount(item, item.discount_type || 'percentage', value);
                               }}
+                              onClick={(e) => e.stopPropagation()}
                               step="0.01"
                               min="0"
                               max={item.discount_type === 'percentage' ? 100 : undefined}
