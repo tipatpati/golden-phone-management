@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/updated-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Plus, Trash2 } from 'lucide-react';
-import { ProductSelector } from '../ProductSelector';
+import { Plus, Trash2, Search } from 'lucide-react';
 import type { NewPurchaseItem } from '@/services/sales/exchanges/types';
+import { SalesProductService } from '@/services/sales/SalesProductService';
+import type { Product } from '@/services/inventory/types';
 
 interface ExchangeStepPurchaseProps {
   items: NewPurchaseItem[];
@@ -16,9 +17,41 @@ export function ExchangeStepPurchase({
   items,
   onItemsChange,
 }: ExchangeStepPurchaseProps) {
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [serialNumber, setSerialNumber] = useState('');
+
+  const performSearch = async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const results = await SalesProductService.getProductsForSales(query);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearchInput = (value: string) => {
+    setSearchTerm(value);
+    performSearch(value);
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setSearchTerm('');
+    setSearchResults([]);
+  };
 
   const handleAddProduct = () => {
     if (!selectedProduct) return;
@@ -54,17 +87,64 @@ export function ExchangeStepPurchase({
         </p>
       </div>
 
-      {/* Product Selection */}
-      <Card className="p-4 space-y-4">
-        <div>
-          <Label>Cerca Prodotto *</Label>
-          <ProductSelector
-            onProductAdd={setSelectedProduct}
-            selectedCategory={undefined}
-          />
-        </div>
+      {/* Product Search */}
+      {!selectedProduct && (
+        <Card className="p-4 space-y-4">
+          <div>
+            <Label>Cerca Prodotto *</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => handleSearchInput(e.target.value)}
+                placeholder="Cerca per nome, marca, modello..."
+                className="pl-10"
+              />
+            </div>
+          </div>
 
-        {selectedProduct && (
+          {isLoading && (
+            <div className="text-center text-muted-foreground py-4">
+              Ricerca in corso...
+            </div>
+          )}
+
+          {searchTerm.length >= 2 && !isLoading && searchResults.length > 0 && (
+            <div className="border rounded-lg max-h-64 overflow-y-auto">
+              {searchResults.map((product) => (
+                <div
+                  key={product.id}
+                  className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0"
+                  onClick={() => handleSelectProduct(product)}
+                >
+                  <div className="font-semibold">
+                    {product.brand} {product.model}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Stock: {product.stock} • Prezzo: €{product.price.toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {searchTerm.length >= 2 && !isLoading && searchResults.length === 0 && (
+            <div className="border rounded-lg p-4 text-center text-muted-foreground">
+              Nessun prodotto trovato per "{searchTerm}"
+            </div>
+          )}
+
+          {searchTerm.length > 0 && searchTerm.length < 2 && (
+            <div className="text-sm text-muted-foreground">
+              Inserisci almeno 2 caratteri per cercare
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Selected Product Form */}
+      {selectedProduct && (
+        <Card className="p-4 space-y-4">
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
             <div className="font-semibold">
               {selectedProduct.brand} {selectedProduct.model}
@@ -111,8 +191,8 @@ export function ExchangeStepPurchase({
               Aggiungi al Carrello
             </Button>
           </div>
-        )}
-      </Card>
+        </Card>
+      )}
 
       {/* Purchase Items List */}
       {items.length > 0 && (
