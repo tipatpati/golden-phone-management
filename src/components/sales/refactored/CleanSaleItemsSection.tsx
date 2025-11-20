@@ -1,9 +1,12 @@
-import React from 'react';
-import { Minus, Plus, Trash2, Package, AlertTriangle, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Minus, Plus, Trash2, Package, AlertTriangle, RefreshCw, Percent, Euro } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useSaleCreation } from '@/contexts/SaleCreationContext';
 import { toast } from 'sonner';
 
@@ -41,6 +44,31 @@ export function CleanSaleItemsSection() {
 
   const handleUpdateSerial = (item: typeof items[0], serialNumber: string) => {
     updateItem(item.product_id, { serial_number: serialNumber }, item.serial_number, item.product_unit_id);
+  };
+
+  const handleUpdateDiscount = (
+    item: typeof items[0], 
+    discountType: 'percentage' | 'amount' | null, 
+    discountValue: number
+  ) => {
+    // Calculate discount amount
+    const itemSubtotal = item.quantity * item.unit_price;
+    let discountAmount = 0;
+    
+    if (discountType && discountValue > 0) {
+      if (discountType === 'percentage') {
+        discountAmount = (itemSubtotal * discountValue) / 100;
+      } else {
+        discountAmount = Math.min(discountValue, itemSubtotal);
+      }
+    }
+    
+    updateItem(
+      item.product_id, 
+      { discount_type: discountType, discount_value: discountValue, discount_amount: discountAmount },
+      item.serial_number, 
+      item.product_unit_id
+    );
   };
 
   if (items.length === 0) {
@@ -84,7 +112,18 @@ export function CleanSaleItemsSection() {
         {items.map((item) => {
           const hasStockIssue = !item.has_serial && item.quantity > item.stock;
           const hasPriceIssue = item.unit_price < (item.min_price || 0) || item.unit_price > (item.max_price || 0);
-          const totalPrice = item.quantity * item.unit_price;
+          
+          // Calculate item total with discount
+          const itemSubtotal = item.quantity * item.unit_price;
+          let itemDiscountAmount = 0;
+          if (item.discount_type && item.discount_value && item.discount_value > 0) {
+            if (item.discount_type === 'percentage') {
+              itemDiscountAmount = (itemSubtotal * item.discount_value) / 100;
+            } else {
+              itemDiscountAmount = Math.min(item.discount_value, itemSubtotal);
+            }
+          }
+          const totalPrice = itemSubtotal - itemDiscountAmount;
 
           return (
             <div
@@ -95,7 +134,7 @@ export function CleanSaleItemsSection() {
                   : 'border-border/30'
               }`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-13 gap-4 items-center">
                 {/* Product Info - 4 columns */}
                 <div className="lg:col-span-4">
                   <h3 className="font-medium text-on-surface text-sm truncate">{item.product_name}</h3>
@@ -197,11 +236,87 @@ export function CleanSaleItemsSection() {
                   )}
                 </div>
 
-                {/* Total & Actions - 2 columns */}
-                <div className="lg:col-span-2 flex items-center justify-between">
-                  <div className="text-right">
+                {/* Discount & Total - 3 columns */}
+                <div className="lg:col-span-3 flex items-center gap-2">
+                  {/* Discount Popover */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={item.discount_type ? "default" : "outline"}
+                        className="h-8 w-8 p-0"
+                      >
+                        {item.discount_type === 'percentage' ? (
+                          <Percent className="h-3 w-3" />
+                        ) : item.discount_type === 'amount' ? (
+                          <Euro className="h-3 w-3" />
+                        ) : (
+                          <Percent className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" align="end">
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Sconto Articolo</h4>
+                        
+                        <RadioGroup 
+                          value={item.discount_type || 'none'} 
+                          onValueChange={(value) => {
+                            if (value === 'none') {
+                              handleUpdateDiscount(item, null, 0);
+                            } else {
+                              handleUpdateDiscount(item, value as 'percentage' | 'amount', item.discount_value || 0);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="none" id={`none-${item.product_id}`} />
+                            <Label htmlFor={`none-${item.product_id}`}>Nessuno sconto</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="percentage" id={`percentage-${item.product_id}`} />
+                            <Label htmlFor={`percentage-${item.product_id}`}>Percentuale (%)</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="amount" id={`amount-${item.product_id}`} />
+                            <Label htmlFor={`amount-${item.product_id}`}>Importo (€)</Label>
+                          </div>
+                        </RadioGroup>
+
+                        {item.discount_type && (
+                          <div className="space-y-2">
+                            <Label>Valore Sconto</Label>
+                            <Input
+                              type="number"
+                              value={item.discount_value || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                handleUpdateDiscount(item, item.discount_type || 'percentage', value);
+                              }}
+                              step="0.01"
+                              min="0"
+                              max={item.discount_type === 'percentage' ? 100 : undefined}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Sconto: €{itemDiscountAmount.toFixed(2)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Total Price */}
+                  <div className="flex-1 text-right">
+                    {item.discount_type && itemDiscountAmount > 0 && (
+                      <div className="text-xs text-muted-foreground line-through">
+                        €{itemSubtotal.toFixed(2)}
+                      </div>
+                    )}
                     <div className="font-semibold text-sm">€{totalPrice.toFixed(2)}</div>
                   </div>
+
+                  {/* Delete Button */}
                   <Button
                     onClick={() => removeItem(item.product_id)}
                     size="sm"

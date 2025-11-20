@@ -21,6 +21,9 @@ export interface SaleItem {
   barcode?: string;
   has_serial?: boolean;
   stock: number;
+  discount_type?: 'percentage' | 'amount' | null;
+  discount_value?: number;
+  discount_amount?: number;
 }
 
 export interface SaleFormData {
@@ -93,7 +96,22 @@ const initialState: SaleCreationState = {
 function calculateTotals(state: SaleCreationState): SaleCreationState {
   debugLog('Calculating totals for items:', state.items.length, 'VAT included:', state.formData.vat_included);
 
-  const itemsTotal = state.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  // Calculate item totals including item-level discounts
+  const itemsTotal = state.items.reduce((sum, item) => {
+    const itemSubtotal = item.quantity * item.unit_price;
+    let itemDiscount = 0;
+    
+    // Calculate item-level discount
+    if (item.discount_type && item.discount_value && item.discount_value > 0) {
+      if (item.discount_type === 'percentage') {
+        itemDiscount = (itemSubtotal * item.discount_value) / 100;
+      } else {
+        itemDiscount = Math.min(item.discount_value, itemSubtotal);
+      }
+    }
+    
+    return sum + (itemSubtotal - itemDiscount);
+  }, 0);
 
   let baseSubtotal: number;
   let taxAmount: number;

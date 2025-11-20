@@ -1093,6 +1093,9 @@ export type Database = {
       sale_items: {
         Row: {
           created_at: string
+          discount_amount: number | null
+          discount_type: string | null
+          discount_value: number | null
           id: string
           product_id: string
           quantity: number
@@ -1102,9 +1105,13 @@ export type Database = {
           serial_number: string | null
           total_price: number
           unit_price: number
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           id?: string
           product_id: string
           quantity?: number
@@ -1114,9 +1121,13 @@ export type Database = {
           serial_number?: string | null
           total_price: number
           unit_price: number
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           id?: string
           product_id?: string
           quantity?: number
@@ -1126,6 +1137,7 @@ export type Database = {
           serial_number?: string | null
           total_price?: number
           unit_price?: number
+          updated_at?: string | null
         }
         Relationships: [
           {
