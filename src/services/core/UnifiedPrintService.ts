@@ -65,9 +65,9 @@ export class UnifiedPrintService implements IPrintService {
       overflow: hidden;
     }
 
-    /* Zone 1: Header - 3mm (compact for barcode compliance) */
+    /* Zone 1: Header - 2.5mm (optimized) */
     .label-header {
-      height: 3mm;
+      height: 2.5mm;
       border-bottom: 0.1mm solid #e5e5e5;
       display: flex;
       align-items: center;
@@ -76,36 +76,36 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .company-name {
-      font-size: 1.6mm;
+      font-size: 1.5mm;
       font-weight: 700;
       text-transform: uppercase;
       color: #000;
-      letter-spacing: 0.1mm;
+      letter-spacing: 0.05mm;
       line-height: 1.0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Zone 2: Content - 10mm (optimized for barcode compliance) */
+    /* Zone 2: Content - 12mm (increased for readability) */
     .product-info {
-      height: 10mm;
+      height: 12mm;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 0.3mm;
+      gap: 0.4mm;
       overflow: hidden;
-      padding: 0.3mm 0;
+      padding: 0.4mm 0;
     }
 
     .product-name {
-      font-size: 2.8mm;
+      font-size: 3.2mm;
       font-weight: 700;
-      line-height: 1.0;
+      line-height: 1.05;
       color: #000;
       text-transform: uppercase;
-      letter-spacing: 0.05mm;
-      max-height: 5.6mm;
+      letter-spacing: 0.08mm;
+      max-height: 6.6mm;
       overflow: hidden;
       text-align: center;
       display: -webkit-box;
@@ -115,7 +115,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .product-details {
-      font-size: 1.8mm;
+      font-size: 2.2mm;
       font-weight: 500;
       color: #333;
       text-align: center;
@@ -126,7 +126,7 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .serial-number {
-      font-size: 1.6mm;
+      font-size: 1.9mm;
       font-weight: 600;
       color: #000;
       text-align: center;
@@ -135,18 +135,18 @@ export class UnifiedPrintService implements IPrintService {
     }
 
     .price {
-      font-size: 3.2mm;
+      font-size: 4mm;
       font-weight: 700;
       color: #000;
       text-align: center;
-      margin-top: 0.3mm;
-      letter-spacing: 0.05mm;
+      margin-top: 0.4mm;
+      letter-spacing: 0.08mm;
       line-height: 1.0;
     }
 
-    /* Zone 3: Barcode - 15mm (CODE128 standards compliant) */
+    /* Zone 3: Barcode - 14mm (CODE128 compliant, optimized) */
     .barcode-container {
-      height: 15mm;        /* Increased for CODE128 ISO/IEC 15417 compliance */
+      height: 14mm;        /* Slightly reduced but still standards-compliant */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -158,7 +158,7 @@ export class UnifiedPrintService implements IPrintService {
 
     .barcode-svg {
       max-width: 100%;     /* Allow full width within container */
-      height: 13mm;        /* Increased for better scanning reliability */
+      height: 12mm;        /* Reduced slightly for better fit */
       display: block;
     }
     
