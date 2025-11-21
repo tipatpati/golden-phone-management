@@ -104,7 +104,7 @@ export function ExchangeDetailsDialog({ exchange, open, onClose }: ExchangeDetai
                   <div>
                     <p className="text-sm font-medium">Venditore</p>
                     <p className="text-sm text-muted-foreground">
-                      {exchange.salesperson?.username || 'N/A'}
+                      {exchange.salesperson_id ? `ID: ${exchange.salesperson_id.slice(0, 8)}` : 'N/A'}
                     </p>
                   </div>
                 </div>

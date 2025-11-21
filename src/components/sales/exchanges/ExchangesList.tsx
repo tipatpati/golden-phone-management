@@ -217,7 +217,7 @@ export function ExchangesList({ exchanges, searchTerm }: ExchangesListProps) {
             <DataCard
               key={exchange.id}
               title={`Cambio #${exchange.exchange_number}`}
-              subtitle={exchange.salesperson?.username || "Unknown"}
+              subtitle={exchange.salesperson_id ? `ID: ${exchange.salesperson_id.slice(0, 8)}` : "Unknown"}
               icon={<ArrowLeftRight className="h-5 w-5 text-primary" />}
               badge={{
                 text: exchange.status === 'completed' ? 'Completato' : 'Annullato',
