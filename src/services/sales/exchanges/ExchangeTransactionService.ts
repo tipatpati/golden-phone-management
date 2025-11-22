@@ -151,7 +151,7 @@ export class ExchangeTransactionService {
         *,
         client:clients(id, first_name, last_name, company_name, type),
         trade_in_items:exchange_trade_in_items(*),
-        new_sale:sales(*)
+        new_sale:sales!exchange_transactions_new_sale_id_fkey(*)
       `
       )
       .order('exchange_date', { ascending: false });
@@ -201,7 +201,7 @@ export class ExchangeTransactionService {
         *,
         client:clients(id, first_name, last_name, company_name, type, phone, email),
         trade_in_items:exchange_trade_in_items(*),
-        new_sale:sales(
+        new_sale:sales!exchange_transactions_new_sale_id_fkey(
           *,
           sale_items(
             *,
