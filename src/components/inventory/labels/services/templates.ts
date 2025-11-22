@@ -104,17 +104,19 @@ export function generateSingleLabel(
           ${escapeHtml(formattedLabel.productName)}
         </div>
         
-        <!-- Storage and RAM specifications -->
-        ${(formattedLabel.storage || formattedLabel.ram) ? `
-          <div class="product-specs">
-            ${[formattedLabel.storage, formattedLabel.ram].filter(Boolean).join(' • ')}
-          </div>
-        ` : ''}
-        
-        <!-- Serial Number Section -->
-        ${formattedLabel.serialNumber ? `
-          <div class="serial-section">
-            ${escapeHtml(formattedLabel.serialNumber)}
+        <!-- Specs and Serial on same row -->
+        ${(formattedLabel.storage || formattedLabel.ram || formattedLabel.serialNumber) ? `
+          <div class="specs-serial-row">
+            ${(formattedLabel.storage || formattedLabel.ram) ? `
+              <span class="product-specs">
+                ${[formattedLabel.storage, formattedLabel.ram].filter(Boolean).join(' • ')}
+              </span>
+            ` : ''}
+            ${formattedLabel.serialNumber ? `
+              <span class="serial-section">
+                ${escapeHtml(formattedLabel.serialNumber)}
+              </span>
+            ` : ''}
           </div>
         ` : ''}
       </div>
