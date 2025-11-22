@@ -1,5 +1,6 @@
 // ============================================
 // DATA CONSISTENCY HOOKS
+// Now includes exchange module validation
 // ============================================
 
 import { useCallback, useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { dataConsistencyLayer, ConsistencyReport, ConsistencyViolation } from '@
 import { conflictResolution, DataConflict } from '@/services/core/ConflictResolution';
 import { eventBus } from '@/services/core/EventBus';
 import { logger } from '@/utils/logger';
+import { useExchangeConsistency } from './useExchangeConsistency';
 
 export function useConsistencyReport() {
   const queryClient = useQueryClient();
@@ -189,25 +191,38 @@ export function useConflictResolution() {
   };
 }
 
+/**
+ * Convenience hook that combines consistency and conflict management
+ * for a specific entity, including exchange validation
+ */
 export function useDataIntegrity(entity: string, entityId?: string) {
   const { violations, getViolationsByEntity } = useConsistencyViolations();
   const { conflicts } = useConflictResolution();
+  const exchangeConsistency = useExchangeConsistency();
 
   const entityViolations = getViolationsByEntity(entity);
   const entityConflicts = conflicts.filter(c => 
     c.entity === entity && (!entityId || c.entityId === entityId)
   );
 
-  const hasIssues = entityViolations.length > 0 || entityConflicts.length > 0;
+  // Include exchange violations if checking exchange entity
+  const exchangeViolations = entity === 'exchange' && entityId
+    ? exchangeConsistency.getViolationsForExchange(entityId)
+    : [];
+
+  const hasIssues = entityViolations.length > 0 || entityConflicts.length > 0 || exchangeViolations.length > 0;
   const hasCriticalIssues = 
     entityViolations.some(v => v.severity === 'critical') ||
-    entityConflicts.some(c => c.severity === 'critical');
+    entityConflicts.some(c => c.severity === 'critical') ||
+    exchangeViolations.some(v => v.severity === 'critical');
 
   return {
     violations: entityViolations,
     conflicts: entityConflicts,
+    exchangeViolations,
     hasIssues,
     hasCriticalIssues,
-    issueCount: entityViolations.length + entityConflicts.length
+    issueCount: entityViolations.length + entityConflicts.length + exchangeViolations.length,
+    exchangeConsistency
   };
 }
