@@ -176,15 +176,19 @@ export function ExchangeReceiptDialog({
     });
   };
 
+  const formatCurrency = (value: number | null | undefined): string => {
+    return `€${(value ?? 0).toFixed(2)}`;
+  };
+
   const getPaymentMethodLabel = () => {
     if (exchange.payment_method === 'hybrid') {
       const methods = [];
       if (exchange.cash_amount && exchange.cash_amount > 0) 
-        methods.push(`Contanti: €${exchange.cash_amount.toFixed(2)}`);
+        methods.push(`Contanti: ${formatCurrency(exchange.cash_amount)}`);
       if (exchange.card_amount && exchange.card_amount > 0) 
-        methods.push(`Carta: €${exchange.card_amount.toFixed(2)}`);
+        methods.push(`Carta: ${formatCurrency(exchange.card_amount)}`);
       if (exchange.bank_transfer_amount && exchange.bank_transfer_amount > 0)
-        methods.push(`Bonifico: €${exchange.bank_transfer_amount.toFixed(2)}`);
+        methods.push(`Bonifico: ${formatCurrency(exchange.bank_transfer_amount)}`);
       return methods.join(', ');
     }
 
@@ -252,14 +256,14 @@ export function ExchangeReceiptDialog({
                   )}
                   <div className="flex justify-between text-xs">
                     <span>Condizione: {item.condition}</span>
-                    <span className="font-bold">€{item.assessed_value.toFixed(2)}</span>
+                    <span className="font-bold">{formatCurrency(item.assessed_value)}</span>
                   </div>
                 </div>
               ))}
               
               <div className="flex justify-between font-bold mt-2">
                 <span>Totale Permuta:</span>
-                <span>€{exchange.trade_in_total.toFixed(2)}</span>
+                <span>{formatCurrency(exchange.trade_in_total)}</span>
               </div>
             </div>
 
@@ -277,7 +281,7 @@ export function ExchangeReceiptDialog({
               
               <div className="flex justify-between font-bold mt-2">
                 <span>Totale Acquisto:</span>
-                <span>€{exchange.purchase_total.toFixed(2)}</span>
+                <span>{formatCurrency(exchange.purchase_total)}</span>
               </div>
             </div>
 
@@ -285,23 +289,23 @@ export function ExchangeReceiptDialog({
             <div className="mb-4 text-xs border-t-2 border-black pt-3">
               <div className="flex justify-between mb-1">
                 <span>Totale Permuta:</span>
-                <span className="font-bold">€{exchange.trade_in_total.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(exchange.trade_in_total)}</span>
               </div>
               <div className="flex justify-between mb-1">
                 <span>Totale Acquisto:</span>
-                <span className="font-bold">€{exchange.purchase_total.toFixed(2)}</span>
+                <span className="font-bold">{formatCurrency(exchange.purchase_total)}</span>
               </div>
               <div className="border-t border-dashed border-gray-400 my-2" />
               
-              {exchange.net_difference > 0 ? (
+              {(exchange.net_difference ?? 0) > 0 ? (
                 <div className="flex justify-between font-bold text-sm text-red-600">
                   <span>Il cliente paga:</span>
-                  <span>€{exchange.net_difference.toFixed(2)}</span>
+                  <span>{formatCurrency(exchange.net_difference)}</span>
                 </div>
-              ) : exchange.net_difference < 0 ? (
+              ) : (exchange.net_difference ?? 0) < 0 ? (
                 <div className="flex justify-between font-bold text-sm text-green-600">
                   <span>Il cliente riceve:</span>
-                  <span>€{Math.abs(exchange.net_difference).toFixed(2)}</span>
+                  <span>{formatCurrency(Math.abs(exchange.net_difference ?? 0))}</span>
                 </div>
               ) : (
                 <div className="text-center font-bold text-sm">
