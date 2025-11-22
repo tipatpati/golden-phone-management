@@ -4,6 +4,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, ArrowLeftRight } from "lucide-react";
 import { useExchanges } from "@/services/sales/exchanges/ExchangeReactQueryService";
+import { useRealtimeExchanges } from "@/hooks/useRealtimeExchanges";
 import { ExchangesList } from "@/components/sales/exchanges/ExchangesList";
 import { ExchangesStats } from "@/components/sales/exchanges/ExchangesStats";
 import { ExchangesHeader } from "@/components/sales/exchanges/ExchangesHeader";
@@ -13,6 +14,9 @@ import { Button } from "@/components/ui/button";
 const Exchanges = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { data: exchanges = [], isLoading, error } = useExchanges();
+  
+  // Enable real-time synchronization
+  useRealtimeExchanges();
 
   // Filter exchanges based on search
   const filteredExchanges = React.useMemo(() => {

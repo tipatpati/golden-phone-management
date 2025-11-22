@@ -491,6 +491,44 @@ export type Database = {
           },
         ]
       }
+      exchange_transaction_log: {
+        Row: {
+          created_at: string
+          details: Json | null
+          error_message: string | null
+          exchange_id: string | null
+          id: string
+          step_name: string
+          step_status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          exchange_id?: string | null
+          id?: string
+          step_name: string
+          step_status: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          exchange_id?: string | null
+          id?: string
+          step_name?: string
+          step_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_transaction_log_exchange_id_fkey"
+            columns: ["exchange_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_transactions: {
         Row: {
           bank_transfer_amount: number | null
@@ -2239,6 +2277,10 @@ export type Database = {
       }
       is_ip_blocked: { Args: { client_ip: unknown }; Returns: boolean }
       log_purchase_price_access_attempt: { Args: never; Returns: undefined }
+      rollback_exchange_transaction: {
+        Args: { p_exchange_id: string }
+        Returns: Json
+      }
       sanitize_and_validate_input: {
         Args: { input_text: string; input_type: string; max_length?: number }
         Returns: Json
@@ -2277,6 +2319,16 @@ export type Database = {
       user_has_store_access: {
         Args: { target_store_id: string }
         Returns: boolean
+      }
+      validate_exchange_integrity: {
+        Args: never
+        Returns: {
+          description: string
+          details: Json
+          exchange_id: string
+          issue_type: string
+          severity: string
+        }[]
       }
       validate_product_consistency: {
         Args: never

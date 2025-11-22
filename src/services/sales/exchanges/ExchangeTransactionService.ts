@@ -226,21 +226,42 @@ export class ExchangeTransactionService {
   }
 
   /**
-   * Cancel exchange (rollback inventory, cancel linked sale)
+   * Cancel an exchange transaction with full rollback
+   * Uses the atomic rollback function to restore inventory and cancel sales
    */
-  static async cancelExchange(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('exchange_transactions')
-      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-      .eq('id', id);
+  static async cancelExchange(id: string): Promise<{
+    success: boolean;
+    unitsRestored: number;
+    unitsRemoved: number;
+    saleCancelled: boolean;
+  }> {
+    console.log(`🔄 [Exchange] Cancelling exchange ${id} with full rollback...`);
 
-    if (error) {
-      console.error('Error cancelling exchange:', error);
+    try {
+      const { data, error } = await supabase.rpc('rollback_exchange_transaction', {
+        p_exchange_id: id
+      });
+
+      if (error) {
+        console.error('❌ [Exchange] Rollback failed:', error);
+        throw new Error(`Failed to rollback exchange: ${error.message}`);
+      }
+
+      console.log('✅ [Exchange] Rollback completed:', data);
+
+      const result = data as any;
+
+      return {
+        success: result.success || false,
+        unitsRestored: result.units_restored || 0,
+        unitsRemoved: result.units_removed || 0,
+        saleCancelled: result.sale_cancelled || false
+      };
+
+    } catch (error: any) {
+      console.error('❌ [Exchange] Cancel failed:', error);
       throw new Error(`Failed to cancel exchange: ${error.message}`);
     }
-
-    // Note: Inventory rollback would need to be handled separately
-    // This is a simplified implementation
   }
 
   /**

@@ -8,8 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { withStoreId } from '../stores/storeHelpers';
 
 interface ProductCoordinationEvent {
-  type: 'product_created' | 'product_updated' | 'unit_created' | 'unit_updated' | 'stock_updated' | 'sync_requested';
-  source: 'supplier' | 'inventory';
+  type: 'product_created' | 'product_updated' | 'unit_created' | 'unit_updated' | 'stock_updated' | 'sync_requested' | 'exchange_trade_in';
+  source: 'supplier' | 'inventory' | 'exchange';
   entityId: string;
   metadata?: Record<string, any>;
 }
@@ -143,6 +143,12 @@ export class UnifiedProductCoordinator {
         // Keep full sync capability for manual operations
         console.log('🎯 [Coordination] Full sync requested - performing comprehensive sync');
         await this.performFullSync();
+        break;
+        
+      case 'exchange_trade_in':
+        // Handle trade-in items from exchanges
+        console.log('🎯 [Coordination] Exchange trade-in detected - inventory updated');
+        // Database triggers handle the inventory update, just invalidate caches
         break;
     }
   }
