@@ -65,11 +65,11 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 34px !important;
-        line-height: 1.0 !important;
+        font-size: 40px !important;
+        line-height: 1.1 !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.2px !important;
+        letter-spacing: 1px !important;
         color: #000 !important;
         text-align: center !important;
         max-height: 20px !important;
@@ -82,21 +82,31 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-specs {
-        font-size: 32px !important;
-        font-weight: 500 !important;
+        font-size: 36px !important;
+        font-weight: 600 !important;
         color: #555 !important;
         text-align: center !important;
-        line-height: 1.0 !important;
+        line-height: 1.1 !important;
+        letter-spacing: 0.8px !important;
+      }
+
+      .specs-serial-row {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        margin-top: 2px !important;
       }
 
       .serial-section {
-        font-size: 7px !important;
+        font-size: 36px !important;
         font-weight: 600 !important;
         color: #000 !important;
         text-align: center !important;
-        letter-spacing: 0.1px !important;
-        line-height: 1.0 !important;
-        margin-top: 1px !important;
+        letter-spacing: 0.8px !important;
+        line-height: 1.1 !important;
+        margin-top: 0 !important;
       }
 
       .price-section {
@@ -197,9 +207,9 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
     }
 
     .product-name {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 800;
-      line-height: 1.0;
+      line-height: 1.1;
       color: #000;
       text-align: center;
       margin-bottom: 1px;
@@ -209,28 +219,38 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       text-transform: uppercase;
-      letter-spacing: 0.2px;
+      letter-spacing: 1px;
       word-break: break-word;
       hyphens: auto;
     }
 
     .serial-section {
-      font-size: 10px;
+      font-size: 20px;
       font-weight: 600;
       color: #000;
       text-align: center;
-      margin-top: 2px;
-      letter-spacing: 0.1px;
+      margin-top: 0;
+      letter-spacing: 0.8px;
     }
 
     .product-specs {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: #333;
       text-align: center;
       margin-top: 1px;
       margin-bottom: 2px;
-      line-height: 1.0;
+      line-height: 1.1;
+      letter-spacing: 0.8px;
+    }
+
+    .specs-serial-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 2px;
     }
 
     .barcode-container {
