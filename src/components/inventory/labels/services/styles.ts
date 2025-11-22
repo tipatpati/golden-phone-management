@@ -65,7 +65,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 18px !important;
+        font-size: 22px !important;
         line-height: 1.0 !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
@@ -82,7 +82,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-specs {
-        font-size: 18px !important;
+        font-size: 22px !important;
         font-weight: 500 !important;
         color: #555 !important;
         text-align: center !important;
@@ -125,7 +125,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .price-section {
-        font-size: 32px !important;
+        font-size: 36px !important;
         margin: 0 !important;
         padding: 2px 0 !important;
         font-weight: 900 !important;
