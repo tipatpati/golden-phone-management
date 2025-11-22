@@ -65,7 +65,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-name {
-        font-size: 13px !important;
+        font-size: 18px !important;
         line-height: 1.0 !important;
         font-weight: 700 !important;
         text-transform: uppercase !important;
@@ -82,7 +82,7 @@ export function generateLabelStyles(options: ThermalLabelOptions): string {
       }
 
       .product-specs {
-        font-size: 12px !important;
+        font-size: 18px !important;
         font-weight: 500 !important;
         color: #555 !important;
         text-align: center !important;
