@@ -179,9 +179,11 @@ export function ExchangeReceiptDialog({
   const getPaymentMethodLabel = () => {
     if (exchange.payment_method === 'hybrid') {
       const methods = [];
-      if (exchange.cash_amount > 0) methods.push(`Contanti: €${exchange.cash_amount.toFixed(2)}`);
-      if (exchange.card_amount > 0) methods.push(`Carta: €${exchange.card_amount.toFixed(2)}`);
-      if (exchange.bank_transfer_amount > 0)
+      if (exchange.cash_amount && exchange.cash_amount > 0) 
+        methods.push(`Contanti: €${exchange.cash_amount.toFixed(2)}`);
+      if (exchange.card_amount && exchange.card_amount > 0) 
+        methods.push(`Carta: €${exchange.card_amount.toFixed(2)}`);
+      if (exchange.bank_transfer_amount && exchange.bank_transfer_amount > 0)
         methods.push(`Bonifico: €${exchange.bank_transfer_amount.toFixed(2)}`);
       return methods.join(', ');
     }
