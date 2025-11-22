@@ -25,7 +25,7 @@ export const TablePagination = memo(({
         Showing {startItem} to {endItem} of {totalItems} results
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 relative z-20">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
